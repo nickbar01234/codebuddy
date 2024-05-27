@@ -9,5 +9,8 @@ module.exports = {
   ignorePatterns: ["dist", ".eslintrc.cjs"],
   parser: "@typescript-eslint/parser",
   plugins: [],
-  rules: {},
+  rules: {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
+  },
 };

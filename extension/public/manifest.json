@@ -6,6 +6,7 @@
   "action": {},
   "content_scripts": [
     {
+      "js": ["assets/index.js"],
       "matches": ["https://leetcode.com/problems/*"]
     }
   ]
