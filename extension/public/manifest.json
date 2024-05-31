@@ -7,6 +7,7 @@
   "content_scripts": [
     {
       "js": ["assets/index.js"],
+      "css": ["assets/index.css"],
       "matches": ["https://leetcode.com/problems/*"]
     }
   ]
