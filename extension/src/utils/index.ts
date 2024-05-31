@@ -4,7 +4,7 @@ export const waitForElement = (
 ): Promise<Element> => {
   return new Promise((resolve, reject) => {
     const node = document.querySelector(selector);
-    if (node) {
+    if (node != null) {
       return resolve(node);
     }
 
