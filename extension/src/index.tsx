@@ -21,6 +21,6 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
   })
   .catch((_reason) =>
     console.error(
-      `Unable to mount ${EXTENSION_ID} within ${TIME_OUT} - most likely due to LeetCode changing HTML page`
+      `Unable to mount ${EXTENSION_ID} within ${TIME_OUT}ms - most likely due to LeetCode changing HTML page`
     )
   );
