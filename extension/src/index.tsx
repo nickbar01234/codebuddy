@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App";
 import { waitForElement } from "./utils";
 import "./style/index.css";
+import "react-resizable/css/styles.css";
 
 const TIME_OUT = 2000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
