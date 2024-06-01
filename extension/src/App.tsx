@@ -1,7 +1,8 @@
 import React from "react";
+import AppPanel from "./components/panel";
 
 const App = () => {
-  return <div className="cb-h-full cb-w-[200px] cb-bg-red-500">Code Buddy</div>;
+  return <AppPanel />;
 };
 
 export default App;
