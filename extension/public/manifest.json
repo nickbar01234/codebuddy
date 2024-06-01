@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "CodeBuddy",
+  "description": "Leetcode together",
+  "version": "1.0.0",
+  "action": {},
+  "content_scripts": [
+    {
+      "js": ["assets/index.js"],
+      "css": ["assets/index.css"],
+      "matches": ["https://leetcode.com/problems/*"]
+    }
+  ]
+}
