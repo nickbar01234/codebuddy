@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 
+ * Leetcode className flexlayout__layout
+ */
+:root {
+  --color-drag: var(--blue-60);
+  --color-drag-background: #007aff14;
+  --color-tabset-background: var(--layer-01);
+  --color-tabset-tabbar-background: var(--fill-quaternary);
+  --color-tabset-tabbar-background-fixed: #fafafa;
+  --color-tabset-border: var(--border-secondary);
+  --color-tab-divider: var(--border-tertiary);
+  --color-tab-hover-background: var(--fill-tertiary);
+  --color-tab-hover-background-fixed: #f0f0f0;
+  --color-tab-selected: var(--text-primary);
+  --color-tab-selected-background: #0000;
+  --color-tab-unselected: var(--text-secondary);
+  --color-tab-unselected-background: #0000;
+  --color-tab-close-background: var(--fill-tertiary);
+  --color-tab-close-icon: var(--gray-60);
+  --color-tab-close-icon-hover: var(--gray-60);
+  --color-splitter: var(--border-tertiary);
+  --color-splitter-hover: var(--blue-60);
+  --color-splitter-drag: var(--blue-60);
+  --color-drag-rect-border: var(--border-tertiary);
+  --color-drag-rect-background: var(--layer-02);
+  --color-drag-rect: var(--text-primary);
+  --color-edge-marker: var(--blue-60);
+}
