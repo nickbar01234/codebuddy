@@ -1,5 +1,5 @@
 import { ResizableBox } from "react-resizable";
-import AppHandle from "./AppHandle";
+import { VerticalHandle } from "./Handle";
 
 const AppPanel = () => {
   return (
@@ -9,11 +9,7 @@ const AppPanel = () => {
       axis="x"
       resizeHandles={["w"]}
       className="h-full flex relative"
-      handle={
-        <div>
-          <AppHandle />
-        </div>
-      }
+      handle={VerticalHandle}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 p-2 h-full">
         Code Buddy
