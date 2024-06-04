@@ -21,7 +21,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     rollupOptions: {
-      input: ["./src/index.tsx"],
+      input: ["./src/index.tsx", "./src/services/background.ts"],
       output: {
         entryFileNames: "assets/[name].js",
         assetFileNames: (assetInfo) => {

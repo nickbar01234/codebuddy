@@ -22,7 +22,10 @@
     "paths": {
       "@hooks": ["./hooks/index.ts"],
       "@hooks/*": ["./hooks/*"],
-      "@components/*": ["./components/*"]
+      "@components/*": ["./components/*"],
+      "@utils": ["./utils/index.ts"],
+      "@types": ["./types/index.ts"],
+      "@services": ["./services/index.ts"]
     }
   },
   "include": ["src"],

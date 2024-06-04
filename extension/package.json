@@ -16,6 +16,7 @@
     "react-resizable": "^3.0.5"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.268",
     "@types/node": "^20.13.0",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
