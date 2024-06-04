@@ -4,8 +4,8 @@ import { VerticalHandle } from "./Handle";
 import { waitForElement } from "../../utils";
 import { useEffect, useState, useRef } from "react";
 import EditorProvider, { Tab } from "./editor";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
-const newString = `<div style="top:8px;height:20px;" class="view-line"><span><span class="mtk3">/**</span></span></div>`;
 const AppPanel = () => {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -18,16 +18,14 @@ const AppPanel = () => {
           const newNode = leetCodeNode.cloneNode(true);
           ref.current?.appendChild(newNode);
         }, 5000);
+        console.log("mounted");
+        console.dir(monaco);
       })
       .catch((_reason) =>
         console.error(
           `Unable to mount within ${TIME_OUT}ms - most likely due to LeetCode changing HTML page`
         )
       );
-    chrome.devtools.inspectedWindow.getResources((resources) => {
-      console.log(resources);
-    });
-    console.log("hihih");
   }, []);
   return (
     // TODO(nickbar01234) - Save user preference in local storage

@@ -8,7 +8,7 @@
   "permissions": ["cookies"],
   "content_scripts": [
     {
-      "js": ["assets/index.js", "contentScript.js"],
+      "js": ["assets/index.js"],
       "css": ["assets/index.css"],
       "matches": ["https://leetcode.com/problems/*"]
     }

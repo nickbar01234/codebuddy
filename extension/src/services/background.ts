@@ -23,6 +23,8 @@ const handleCookieRequest = async (): Promise<Status> => {
  *
  * @docs https://stackoverflow.com/a/61056192
  */
+
+console.dir(chrome);
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
     console.debug("Receiving", request);
