@@ -4,15 +4,16 @@
   "description": "Leetcode together",
   "version": "1.0.0",
   "action": {},
-  "permissions": ["activeTab", "scripting"],
-  "background": {
-    "service_worker": "background.js"
-  },
+  "host_permissions": ["https://leetcode.com/problems/*"],
+  "permissions": ["cookies"],
   "content_scripts": [
     {
       "js": ["assets/index.js", "contentScript.js"],
       "css": ["assets/index.css"],
       "matches": ["https://leetcode.com/problems/*"]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "assets/background.js"
+  }
 }

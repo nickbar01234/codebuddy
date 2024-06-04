@@ -18,7 +18,9 @@
     "vite-plugin-monaco-editor-nls": "^2.0.2"
   },
   "devDependencies": {
-    "@types/react": "^18.3.3",
+    "@types/chrome": "^0.0.268",
+    "@types/node": "^20.13.0",
+    "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",

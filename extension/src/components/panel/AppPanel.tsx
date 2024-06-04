@@ -3,6 +3,7 @@ import { ResizableBox } from "react-resizable";
 import { VerticalHandle } from "./Handle";
 import { waitForElement } from "../../utils";
 import { useEffect, useState, useRef } from "react";
+import EditorProvider, { Tab } from "./editor";
 
 const newString = `<div style="top:8px;height:20px;" class="view-line"><span><span class="mtk3">/**</span></span></div>`;
 const AppPanel = () => {
@@ -38,8 +39,15 @@ const AppPanel = () => {
       className="h-full flex relative"
       handle={VerticalHandle}
     >
-      <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 p-2 h-full">
-        Code Buddy
+      <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
+        <EditorProvider defaultActiveId="Nick">
+          <Tab id="Nick" displayHeader="Nick">
+            Hello world
+          </Tab>
+          <Tab id="Hung" displayHeader="Hung">
+            Bye world
+          </Tab>
+        </EditorProvider>
         <div ref={ref}></div>
       </div>
     </ResizableBox>
