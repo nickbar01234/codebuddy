@@ -3,6 +3,7 @@ import AppPanel from "./components/panel";
 import { Status } from "@types";
 import { useOnMount } from "./hooks";
 import { sendMessage } from "@services";
+import UserProvider from "@context/UserProvider";
 
 const App = () => {
   const [status, setStatus] = React.useState<Status>({
@@ -14,7 +15,11 @@ const App = () => {
   });
 
   if (status.status === "AUTHENTICATED") {
-    return <AppPanel />;
+    return (
+      <UserProvider user={status.user}>
+        <AppPanel />;
+      </UserProvider>
+    );
   } else {
     // TODO(nickbar01234) - Handle unauthenticated
     return null;

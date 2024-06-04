@@ -25,7 +25,8 @@
       "@components/*": ["./components/*"],
       "@utils": ["./utils/index.ts"],
       "@types": ["./types/index.ts"],
-      "@services": ["./services/index.ts"]
+      "@services": ["./services/index.ts"],
+      "@context/*": ["./context/*"]
     }
   },
   "include": ["src"],
