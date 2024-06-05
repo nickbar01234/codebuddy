@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { useEffect, useRef } from "react";
 import { ResizableBox } from "react-resizable";
-import { VerticalHandle } from "./Handle";
 import { waitForElement } from "../../utils";
-import { useEffect, useState, useRef } from "react";
+import { VerticalHandle } from "./Handle";
 import EditorProvider, { Tab } from "./editor";
-import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 
 const AppPanel = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -19,7 +19,6 @@ const AppPanel = () => {
           ref.current?.appendChild(newNode);
         }, 5000);
         console.log("mounted");
-        console.dir(monaco);
       })
       .catch((_reason) =>
         console.error(
