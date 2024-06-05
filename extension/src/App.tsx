@@ -1,9 +1,10 @@
-import React from "react";
-import AppPanel from "./components/panel";
-import { Status } from "@types";
-import { useOnMount } from "./hooks";
-import { sendMessage } from "@services";
+import AppPanel from "@components/panel";
+import MonacoProvider from "@context/MonacoProvider";
 import UserProvider from "@context/UserProvider";
+import { useOnMount } from "@hooks";
+import { sendMessage } from "@services";
+import { Status } from "@types";
+import React from "react";
 
 const App = () => {
   const [status, setStatus] = React.useState<Status>({
@@ -17,7 +18,9 @@ const App = () => {
   if (status.status === "AUTHENTICATED") {
     return (
       <UserProvider user={status.user}>
-        <AppPanel />;
+        <MonacoProvider>
+          <AppPanel />;
+        </MonacoProvider>
       </UserProvider>
     );
   } else {

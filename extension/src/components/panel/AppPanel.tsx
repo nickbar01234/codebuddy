@@ -5,9 +5,16 @@ import { ResizableBox } from "react-resizable";
 import { waitForElement } from "../../utils";
 import { VerticalHandle } from "./Handle";
 import EditorProvider, { Tab } from "./editor";
+import { useMonaco } from "@hooks/useMonaco";
+import { useState } from "react";
 
 const AppPanel = () => {
   const ref = useRef<HTMLDivElement>(null);
+  const editor = useMonaco();
+  const [value, setValue] = useState<string>("");
+  useEffect(() => {
+    console.log(value);
+  }, [value]);
   useEffect(() => {
     const TIME_OUT = 2000; // ms
     const MONACO_ROOT_ID =
@@ -40,6 +47,26 @@ const AppPanel = () => {
         <EditorProvider defaultActiveId="Nick">
           <Tab id="Nick" displayHeader="Nick">
             Hello world
+            <button
+              onClick={async () => {
+                console.log("Click Getting value");
+                const value = await editor?.getValue();
+                console.log("done");
+                setValue(value);
+              }}
+            >
+              Get Value
+            </button>
+            <button
+              onClick={async () => {
+                console.log("Click Setting value");
+                await editor?.setValue("Hello world");
+                console.log("done");
+              }}
+            >
+              Set Value
+            </button>
+            <div>{value}</div>
           </Tab>
           <Tab id="Hung" displayHeader="Hung">
             Bye world

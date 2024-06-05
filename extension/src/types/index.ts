@@ -1,3 +1,4 @@
+import { set } from 'mongoose';
 export interface User {
   id: string;
   username: string;
@@ -5,18 +6,28 @@ export interface User {
 
 export type Status =
   | {
-      status: "AUTHENTICATED";
-      user: User;
-    }
+    status: "AUTHENTICATED";
+    user: User;
+  }
   | { status: "LOADING" }
   | { status: "UNAUTHENTICATED" };
 
 interface CookieRequest {
-  action: "cookie";
+  action: "cookie"
+}
+interface GetValueRequest {
+  action: "getValue"
 }
 
-export type ServiceRequest = CookieRequest;
+interface SetValueRequest {
+  action: "setValue";
+  value: string;
+}
+
+export type ServiceRequest = CookieRequest | GetValueRequest | SetValueRequest;
 
 export type ServiceResponse = {
   cookie: Status;
+  getValue: string;
+  setValue: void;
 };

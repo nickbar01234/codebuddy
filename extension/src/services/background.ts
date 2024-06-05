@@ -23,8 +23,25 @@ const handleCookieRequest = async (): Promise<Status> => {
  *
  * @docs https://stackoverflow.com/a/61056192
  */
+const waitiingToLoad = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  while ((window as any).monaco) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
 
-console.dir(chrome);
+const getValue = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userEditor = (window as any).monaco.editor.getModels()[0];
+  return userEditor.getValue();
+}
+
+const setValue = async (value: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userEditor = (window as any).monaco.editor.getModels()[0];
+  userEditor.setValue(value);
+}
+
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
     console.debug("Receiving", request);
@@ -36,7 +53,27 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
-
+      case "getValue": {
+        chrome.scripting.executeScript({
+          target: { tabId: _sender.tab?.id ?? 0 },
+          func: getValue,
+          world: "MAIN",
+        }).then((result) => {
+          sendResponse(result[0].result);
+        })
+        break;
+      }
+      case "setValue": {
+        chrome.scripting.executeScript({
+          target: { tabId: _sender.tab?.id ?? 0 },
+          func: setValue,
+          args: [request.value],
+          world: "MAIN",
+        }).then(() => {
+          sendResponse();
+        })
+        break;
+      }
       default:
         console.error(`Unhandled request ${request}`);
         break;

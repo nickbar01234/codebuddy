@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@monaco-editor/react": "^4.6.0",
     "@types/chrome": "^0.0.268",
     "@types/react-resizable": "^3.0.7",
     "react": "^18.2.0",

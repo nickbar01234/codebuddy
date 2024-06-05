@@ -5,15 +5,19 @@
   "version": "1.0.0",
   "action": {},
   "host_permissions": ["https://leetcode.com/problems/*"],
-  "permissions": ["cookies"],
+  "permissions": ["webNavigation", "cookies", "scripting", "tabs", "activeTab"],
   "content_scripts": [
     {
       "js": ["assets/index.js"],
       "css": ["assets/index.css"],
-      "matches": ["https://leetcode.com/problems/*"]
+      "matches": ["https://leetcode.com/problems/*"],
+      "run_at": "document_end"
     }
   ],
   "background": {
     "service_worker": "assets/background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
   }
 }
