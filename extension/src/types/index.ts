@@ -20,3 +20,11 @@ export type ServiceRequest = CookieRequest;
 export type ServiceResponse = {
   cookie: Status;
 };
+
+interface EditorPreference {
+  width: number;
+}
+
+export interface ExtensionStorage {
+  editorPreference: EditorPreference;
+}

@@ -17,7 +17,7 @@ const App = () => {
   if (status.status === "AUTHENTICATED") {
     return (
       <UserProvider user={status.user}>
-        <AppPanel />;
+        <AppPanel />
       </UserProvider>
     );
   } else {
