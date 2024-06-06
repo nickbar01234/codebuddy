@@ -1,5 +1,5 @@
 import React from "react";
-import { sendMessage } from "@services";
+import { sendMessage } from "../services";
 
 export interface MonacoProps {
   children?: React.ReactNode;

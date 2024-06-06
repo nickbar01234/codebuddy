@@ -1,9 +1,9 @@
-import AppPanel from "@components/panel";
-import MonacoProvider from "@context/MonacoProvider";
-import UserProvider from "@context/UserProvider";
-import { useOnMount } from "@hooks";
-import { sendMessage } from "@services";
-import { Status } from "@types";
+import AppPanel from "./components/panel";
+import MonacoProvider from "./context/MonacoProvider";
+import UserProvider from "./context/UserProvider";
+import { useOnMount } from "./hooks";
+import { sendMessage } from "./services";
+import { Status } from "./types";
 import React from "react";
 
 const App = () => {

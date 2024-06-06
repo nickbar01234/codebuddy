@@ -12,6 +12,8 @@
   "dependencies": {
     "@types/chrome": "^0.0.268",
     "@types/react-resizable": "^3.0.7",
+    "dotenv": "^16.4.5",
+    "firebase": "^10.12.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-resizable": "^3.0.5"

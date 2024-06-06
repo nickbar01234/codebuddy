@@ -14,9 +14,9 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: [
-      { find: /@(.*)/, replacement: join(resolve(__dirname, "src"), "$1") },
-    ],
+    // alias: [
+    //   { find: /@(.*)/, replacement: join(resolve(__dirname, "src"), "$1") },
+    // ],
   },
   build: {
     outDir: "dist",

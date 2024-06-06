@@ -1,6 +1,6 @@
 import React from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
-import { useOnMount } from "@hooks";
+import { useOnMount } from "../../../hooks";
 
 interface TabProps extends TabMetadata {
   children?: React.ReactNode;
