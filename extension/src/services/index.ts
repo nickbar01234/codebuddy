@@ -1,4 +1,4 @@
-import { ServiceRequest, ServiceResponse } from "@types";
+import { ServiceRequest, ServiceResponse } from "../types";
 
 export const sendMessage = <T extends ServiceRequest>(
   request: T
