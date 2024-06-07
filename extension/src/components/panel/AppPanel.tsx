@@ -30,13 +30,23 @@ const AppPanel = () => {
     const leetCodeNode = await waitForElement(MONACO_ROOT_ID, 2000);
     return leetCodeNode;
   }
+
+  async function gettingCode() {
+    const leetCodeNode = await gettingLeetCodeNode();
+    const outerHTML = leetCodeNode.outerHTML;
+    const code = await editor?.getValue();
+    return { code: code, outerHTML: outerHTML };
+  }
+
+  const sendCode = async () => {
+    const message = await gettingCode();
+    sendMessage(JSON.stringify(message));
+  };
+
   useEffect(() => {
     const observer = new MutationObserver(async (mutations) => {
       console.log("mutation");
-      const leetCodeNode = await gettingLeetCodeNode();
-      const outerHTML = leetCodeNode.outerHTML;
-      const code = await editor?.getValue();
-      sendMessage(JSON.stringify({ code: code, outerHTML: outerHTML }));
+      await sendCode();
     });
     observer.observe(document, {
       childList: true,
@@ -46,13 +56,6 @@ const AppPanel = () => {
       observer.disconnect();
     };
   }, [code, sendMessage]);
-
-  const sendCode = async () => {
-    const code = await editor?.getValue();
-    const leetCodeNode = await gettingLeetCodeNode();
-    const outerHTML = leetCodeNode.outerHTML;
-    sendMessage(JSON.stringify({ code: code, outerHTML: outerHTML }));
-  };
 
   const pasteCode = async (code: string) => {
     await editor?.setValue(code);
