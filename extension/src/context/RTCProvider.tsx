@@ -51,37 +51,38 @@ export const RTCContext = createContext({} as RTCContext);
 
 const RTCProvider = ({ children }: { children: ReactNode }) => {
   const pc = useRef(new RTCPeerConnection(servers));
-  let dataChannel = pc.current.createDataChannel("myDataChannel");
+  const dataChannel = useRef<RTCDataChannel>();
   console.log(pc.current.iceConnectionState);
   console.dir(pc.current);
 
-  dataChannel.onerror = function (error) {
+  const onerror = function (error: Event) {
     console.log("Error:", error);
   };
 
-  dataChannel.onmessage = function (event) {
-    console.log("Got message:", dataChannel);
+  const onmessage = function (event: MessageEvent) {
+    console.log("Got message:", dataChannel.current);
     setMessageGot(event.data);
   };
 
-  dataChannel.onopen = function () {
-    console.dir("Open", dataChannel);
+  const onopen = function () {
+    console.dir("Open", dataChannel.current);
     console.log("data channel is open and ready to be used.");
   };
 
-  dataChannel.onclose = function () {
+  const onclose = function () {
     console.log("data channel is closed.");
   };
 
-  pc.current.ondatachannel = function (event) {
-    console.log("data channel is created");
-    dataChannel = event.channel;
-  };
   const sendMessage = (message: string) => {
     console.log("Using data channel");
     console.dir("Sent");
     console.dir(dataChannel);
-    dataChannel.send(message);
+    if (dataChannel.current !== undefined) {
+      console.dir(dataChannel.current);
+      dataChannel.current.send(message);
+    } else {
+      console.log("Data Channel not created yet");
+    }
   };
 
   const [localStream, setLocalStream] = useState<MediaStream>(
@@ -126,6 +127,12 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
     const offerCandidates = collection(callDoc, "offerCandidates");
     const answerCandidates = collection(callDoc, "answerCandidates");
     setCallInput(callDoc.id);
+
+    dataChannel.current = pc.current.createDataChannel("channel");
+    dataChannel.current.onerror = onerror;
+    dataChannel.current.onmessage = onmessage;
+    dataChannel.current.onopen = onopen;
+    dataChannel.current.onclose = onclose;
 
     // Get candidates for caller, save to db
     pc.current.onicecandidate = async (event) => {
@@ -172,6 +179,15 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
 
     const answerCandidates = collection(callDoc, "answerCandidates");
     const offerCandidates = collection(callDoc, "offerCandidates");
+
+    pc.current.ondatachannel = function (event) {
+      console.log("data channel is created");
+      dataChannel.current = event.channel;
+      dataChannel.current.onerror = onerror;
+      dataChannel.current.onmessage = onmessage;
+      dataChannel.current.onopen = onopen;
+      dataChannel.current.onclose = onclose;
+    };
 
     pc.current.onicecandidate = async (event) => {
       event.candidate &&
