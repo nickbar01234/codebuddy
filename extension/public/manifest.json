@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "action": {},
   "host_permissions": ["https://leetcode.com/problems/*"],
-  "permissions": ["webNavigation", "cookies", "scripting", "tabs", "activeTab"],
+  "permissions": [    "webNavigation", "cookies", "scripting", "tabs", "activeTab"],
   "content_scripts": [
     {
       "js": ["assets/index.js"],

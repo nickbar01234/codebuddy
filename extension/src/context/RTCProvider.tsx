@@ -38,11 +38,11 @@ const servers = {
 interface RTCContext {
   callInput: string;
   setCallInput: (input: string) => void;
-  webCamOnClick: () => Promise<void>;
+  // webCamOnClick: () => Promise<void>;
+  // localStream: MediaStream;
+  // remoteStream: MediaStream;
   createOffer: () => Promise<void>;
   answerOffer: () => Promise<void>;
-  localStream: MediaStream;
-  remoteStream: MediaStream;
   closeCall: () => Promise<void>;
   messageGot: string;
   sendMessage: (message: string) => void;
@@ -95,34 +95,32 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
   );
   const [callInput, setCallInput] = useState<string>("");
 
-  const webCamOnClick = async () => {
-    const localStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    pc.current = new RTCPeerConnection(servers);
+  // const webCamOnClick = async () => {
+  //   const localStream = await navigator.mediaDevices.getUserMedia({
+  //     video: true,
+  //     audio: true,
+  //   });
+  //   const remoteStream = new MediaStream();
+  //   pc.current.ontrack = (event) => {
+  //     console.log("adding track for remote");
+  //     console.dir(remoteStream);
+  //     event.streams[0].getTracks().forEach((track) => {
+  //       remoteStream.addTrack(track);
+  //     });
+  //     setRemoteStream(remoteStream.clone());
+  //   };
 
-    const remoteStream = new MediaStream();
-    pc.current.ontrack = (event) => {
-      console.log("adding track for remote");
-      console.dir(remoteStream);
-      event.streams[0].getTracks().forEach((track) => {
-        remoteStream.addTrack(track);
-      });
-      setRemoteStream(remoteStream.clone());
-    };
-
-    // Push tracks from local stream to peer connection
-    localStream.getTracks().forEach((track) => {
-      console.log("adding track for local");
-      pc.current.addTrack(track, localStream);
-    });
-
-    setLocalStream(localStream);
-    setRemoteStream(remoteStream);
-  };
+  //   // Push tracks from local stream to peer connection
+  //   localStream.getTracks().forEach((track) => {
+  //     console.log("adding track for local");
+  //     pc.current.addTrack(track, localStream);
+  //   });
+  //   setLocalStream(localStream);
+  //   setRemoteStream(remoteStream);
+  // };
 
   const createOffer = async () => {
+    pc.current = new RTCPeerConnection(servers);
     const callDoc = doc(collection(firestore, "calls"));
     const offerCandidates = collection(callDoc, "offerCandidates");
     const answerCandidates = collection(callDoc, "answerCandidates");
@@ -234,11 +232,11 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
   return (
     <RTCContext.Provider
       value={{
-        localStream: localStream,
-        remoteStream: remoteStream,
+        // webCamOnClick,
+        // localStream: localStream,
+        // remoteStream: remoteStream,
         callInput,
         setCallInput,
-        webCamOnClick,
         createOffer,
         answerOffer,
         closeCall,

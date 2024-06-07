@@ -1,20 +1,14 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ResizableBox } from "react-resizable";
-import VideoPlayer from "../../components/VideoPlayer";
+import { useMonaco } from "../../hooks/useMonaco";
 import { useRTC } from "../../hooks/useRTC";
+import { waitForElement } from "../../utils";
 import { VerticalHandle } from "./Handle";
 import EditorProvider, { Tab } from "./editor";
-import { useMonaco } from "../../hooks/useMonaco";
-import { useState } from "react";
-import { waitForElement } from "../../utils";
-import { set } from "mongoose";
 
 const AppPanel = () => {
   const otherCodeRef = useRef<HTMLDivElement>(null);
   const {
-    localStream,
-    remoteStream,
-    webCamOnClick,
     createOffer,
     answerOffer,
     callInput,
@@ -30,12 +24,32 @@ const AppPanel = () => {
     otherCodeRef.current.innerHTML = JSON.parse(messageGot).outerHTML;
     code = JSON.parse(messageGot).code;
   }
-
-  const sendCode = async () => {
-    const code = await editor?.getValue();
+  async function gettingLeetCodeNode() {
     const MONACO_ROOT_ID =
       "#editor > div.flex.flex-1.flex-col.overflow-hidden.pb-2 > div.flex-1.overflow-hidden > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text";
     const leetCodeNode = await waitForElement(MONACO_ROOT_ID, 2000);
+    return leetCodeNode;
+  }
+  useEffect(() => {
+    const observer = new MutationObserver(async (mutations) => {
+      console.log("mutation");
+      const leetCodeNode = await gettingLeetCodeNode();
+      const outerHTML = leetCodeNode.outerHTML;
+      const code = await editor?.getValue();
+      sendMessage(JSON.stringify({ code: code, outerHTML: outerHTML }));
+    });
+    observer.observe(document, {
+      childList: true,
+      subtree: true,
+    });
+    return () => {
+      observer.disconnect();
+    };
+  }, [code, sendMessage]);
+
+  const sendCode = async () => {
+    const code = await editor?.getValue();
+    const leetCodeNode = await gettingLeetCodeNode();
     const outerHTML = leetCodeNode.outerHTML;
     sendMessage(JSON.stringify({ code: code, outerHTML: outerHTML }));
   };
@@ -55,20 +69,7 @@ const AppPanel = () => {
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
         <EditorProvider defaultActiveId="Nick">
           <Tab id="Nick" displayHeader="Nick">
-            <VideoPlayer
-              localStream={localStream}
-              remoteStream={remoteStream}
-            />
             <div className="flex flex-col gap-2 ">
-              <button
-                id="webcamButton"
-                onClick={async () => {
-                  console.log("opening webcam");
-                  await webCamOnClick();
-                }}
-              >
-                Start webcam
-              </button>
               <br></br>
               <button id="callButton" onClick={createOffer}>
                 Create Call (offer)
