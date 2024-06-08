@@ -44,6 +44,7 @@ const AppPanel = () => {
   };
 
   useEffect(() => {
+    sendCode();
     const observer = new MutationObserver(async (mutations) => {
       console.log("mutation");
       await sendCode();
