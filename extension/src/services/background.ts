@@ -46,18 +46,18 @@ chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
     console.dir(chrome.webNavigation)
     console.debug("Receiving", request);
-    setTimeout(() => {
-      chrome.scripting.executeScript({
-        target: { tabId: _sender.tab?.id ?? 0 },
-        func: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).monaco.editor.getModels()[0].onDidChangeContent((event: any) => {
-            console.dir(event);
-          })
-        },
-        world: "MAIN",
-      })
-    }, 1000);
+    // setTimeout(() => {
+    //   chrome.scripting.executeScript({
+    //     target: { tabId: _sender.tab?.id ?? 0 },
+    //     func: () => {
+    //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    //       (window as any).monaco.editor.getModels()[0].onDidChangeContent((event: any) => {
+    //         console.dir(event);
+    //       })
+    //     },
+    //     world: "MAIN",
+    //   })
+    // }, 1000);
     switch (request.action) {
       case "cookie": {
         handleCookieRequest().then((res) => {
