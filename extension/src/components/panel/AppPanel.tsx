@@ -1,7 +1,7 @@
 import { ResizableBox } from "react-resizable";
 import { VerticalHandle } from "./Handle";
 import EditorProvider, { Tab } from "./editor";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRTC } from "@cb/hooks";
 import { sendMessage as sendServiceMessage } from "@cb/services";
 import { waitForElement } from "@cb/utils";
@@ -16,6 +16,7 @@ const AppPanel = () => {
     informations,
   } = useRTC();
   const [roomId, setRoomId] = React.useState<string | null>(null);
+  const codeRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
   const editor = {
     getValue: () => sendServiceMessage({ action: "getValue" }),
@@ -23,23 +24,18 @@ const AppPanel = () => {
       sendServiceMessage({ action: "setValue", value: code }),
   };
 
-  async function gettingLeetCodeNode() {
+  const sendCode = async () => {
     const MONACO_ROOT_ID =
       "#editor > div.flex.flex-1.flex-col.overflow-hidden.pb-2 > div.flex-1.overflow-hidden > div > div";
     const leetCodeNode = await waitForElement(MONACO_ROOT_ID, 2000);
-    return leetCodeNode;
-  }
-
-  async function gettingCode() {
-    const leetCodeNode = await gettingLeetCodeNode();
     const outerHTML = leetCodeNode.outerHTML;
     const code = await editor?.getValue();
-    return code;
-  }
-
-  const sendCode = async () => {
-    const message = await gettingCode();
-    sendMessages(message);
+    sendMessages(
+      JSON.stringify({
+        code: code,
+        outerHTML: outerHTML,
+      })
+    );
   };
 
   React.useEffect(() => {
@@ -54,10 +50,10 @@ const AppPanel = () => {
       observer.disconnect();
     };
   }, []);
+
   const pasteCode = async (code: string) => {
     await editor?.setValue(code);
   };
-  console.log(informations);
   return (
     <ResizableBox
       width={200}
@@ -97,7 +93,17 @@ const AppPanel = () => {
               <div className="flex flex-col">
                 {Object.keys(informations).map((username, index) => (
                   <div key={username}>
-                    {username}: {informations[username]}
+                    {username}: {JSON.parse(informations[username]).code}
+                    <div className="relative mx-auto  dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] w-3/4  border-sky-500">
+                      <div
+                        ref={(el) => (codeRefs.current[username] = el)}
+                        className="text-gray-900"
+                      ></div>
+                      <button onClick={() => pasteCode(informations[username])}>
+                        {" "}
+                        Paste Code
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

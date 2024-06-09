@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import {
   DocumentData,
   DocumentReference,
+  Unsubscribe,
   addDoc,
   arrayUnion,
   collection,
@@ -69,6 +70,7 @@ const RTCProvider = (props: RTCProviderProps) => {
   const [informations, setInformations] = React.useState<
     Record<string, string>
   >({});
+  const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
 
   const sendMessages = (value: string) => {
     for (const username of Object.keys(pcs.current)) {
@@ -116,52 +118,15 @@ const RTCProvider = (props: RTCProviderProps) => {
         merge: true,
       }
     );
-
-    const usersRef = collection(roomRef, "users");
-    onSnapshot(usersRef, (snapshot) => {
-      snapshot.docChanges().forEach(async (change) => {
-        if (change.type === "added") {
-          if (change.doc.data().username !== username) {
-            console.log("New user added" + change.doc.data().username);
-            const currentPeer = change.doc.data().username;
-            await createOffer(currentPeer, roomRef);
-          }
-        }
-      });
-    });
   };
 
   const joinRoom = async (roomId: string) => {
-    if (roomId === null) {
-      return;
-    }
     setRoomId(roomId);
     console.log("Joining room   " + roomId);
     const roomRef = doc(firestore, "rooms", roomId);
-    const previousUser = (await getDoc(roomRef))?.data()?.usernames;
     await updateDoc(roomRef, { usernames: arrayUnion(username) });
     const newUserRef = doc(roomRef, "users", username);
     await setDoc(newUserRef, { username });
-
-    if (roomId !== null) {
-      const roomRef = doc(firestore, "rooms", roomId);
-      const usersRef = collection(roomRef, "users");
-      onSnapshot(usersRef, (snapshot) => {
-        snapshot.docChanges().forEach(async (change) => {
-          console.log("receving something new");
-          if (change.type === "added") {
-            if (
-              change.doc.data().username !== username &&
-              !previousUser.includes(change.doc.data().username)
-            ) {
-              console.log("New user added" + change.doc.data().username);
-              const currentPeer = change.doc.data().username;
-              await createOffer(currentPeer, roomRef);
-            }
-          }
-        });
-      });
-    }
 
     const myUserRef = doc(roomRef, "users", username);
     const myConnectionRef = collection(myUserRef, "connections");
@@ -241,62 +206,99 @@ const RTCProvider = (props: RTCProviderProps) => {
     });
   };
 
-  const createOffer = async (
-    currentPeer: string,
-    roomRef: DocumentReference<DocumentData, DocumentData>
-  ) => {
-    const newUserRef = doc(roomRef, "users", currentPeer);
-    const myConnectionRef = doc(newUserRef, "connections", username);
-    const offerCandidates = collection(myConnectionRef, "offerCandidates");
-    const answerCandidates = collection(myConnectionRef, "answerCandidates");
+  const createOffer = React.useCallback(
+    async (
+      currentPeer: string,
+      roomRef: DocumentReference<DocumentData, DocumentData>
+    ) => {
+      const newUserRef = doc(roomRef, "users", currentPeer);
+      const myConnectionRef = doc(newUserRef, "connections", username);
+      const offerCandidates = collection(myConnectionRef, "offerCandidates");
+      const answerCandidates = collection(myConnectionRef, "answerCandidates");
 
-    const pc = new RTCPeerConnection(servers);
-    pcs.current[currentPeer] = {
-      username: currentPeer,
-      pc: pc,
-      channel: pc.createDataChannel("channel"),
-    };
-    pcs.current[currentPeer].channel.onmessage = onmessage(currentPeer);
-    pcs.current[currentPeer].channel.onerror = onerror;
-    pcs.current[currentPeer].channel.onopen = onopen;
-    pcs.current[currentPeer].channel.onclose = onclose;
+      const pc = new RTCPeerConnection(servers);
+      pcs.current[currentPeer] = {
+        username: currentPeer,
+        pc: pc,
+        channel: pc.createDataChannel("channel"),
+      };
+      pcs.current[currentPeer].channel.onmessage = onmessage(currentPeer);
+      pcs.current[currentPeer].channel.onerror = onerror;
+      pcs.current[currentPeer].channel.onopen = onopen;
+      pcs.current[currentPeer].channel.onclose = onclose;
 
-    pc.onicecandidate = async (event) => {
-      event.candidate &&
-        (await addDoc(offerCandidates, event.candidate.toJSON()));
-    };
+      pc.onicecandidate = async (event) => {
+        event.candidate &&
+          (await addDoc(offerCandidates, event.candidate.toJSON()));
+      };
 
-    const offerDescription = await pcs.current[currentPeer].pc.createOffer();
-    await pc.setLocalDescription(offerDescription);
-    const offer = {
-      sdp: offerDescription.sdp,
-      type: offerDescription.type,
-    };
-    await setDoc(myConnectionRef, { username, offer });
+      const offerDescription = await pcs.current[currentPeer].pc.createOffer();
+      await pc.setLocalDescription(offerDescription);
+      const offer = {
+        sdp: offerDescription.sdp,
+        type: offerDescription.type,
+      };
+      await setDoc(myConnectionRef, { username, offer });
 
-    onSnapshot(myConnectionRef, (snapshot) => {
-      const data = snapshot.data();
-      if (pc && data?.answer) {
-        const answerDescription = new RTCSessionDescription(data.answer);
-        pcs.current[currentPeer].pc.setRemoteDescription(answerDescription);
-      }
-    });
-
-    onSnapshot(answerCandidates, (snapshot) => {
-      snapshot.docChanges().forEach((change) => {
-        if (change.type === "added" && pc) {
-          const data = change.doc.data();
-          console.log("Adding ice candidate for answer");
-          pc.addIceCandidate(new RTCIceCandidate(data));
+      onSnapshot(myConnectionRef, (snapshot) => {
+        const data = snapshot.data();
+        if (pc && data?.answer) {
+          const answerDescription = new RTCSessionDescription(data.answer);
+          pcs.current[currentPeer].pc.setRemoteDescription(answerDescription);
         }
       });
-    });
 
-    pc.addEventListener("connectionstatechange", (event) => {
-      console.log("Connection state change");
-      console.dir(event);
-    });
-  };
+      onSnapshot(answerCandidates, (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added" && pc) {
+            const data = change.doc.data();
+            console.log("Adding ice candidate for answer");
+            pc.addIceCandidate(new RTCIceCandidate(data));
+          }
+        });
+      });
+
+      pc.addEventListener("connectionstatechange", (event) => {
+        console.log("Connection state change");
+        console.dir(event);
+      });
+    },
+    [username]
+  );
+
+  React.useEffect(() => {
+    const connection = async () => {
+      if (roomId != null) {
+        const roomRef = doc(firestore, "rooms", roomId);
+        const usersRef = collection(roomRef, "users");
+        const previousUser = (await getDoc(roomRef))?.data()?.usernames;
+        const unsubscribe = onSnapshot(usersRef, (snapshot) => {
+          snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "added") {
+              if (
+                change.doc.data().username !== username &&
+                !previousUser.includes(change.doc.data().username)
+              ) {
+                console.log("New user added" + change.doc.data().username);
+                const currentPeer = change.doc.data().username;
+                await createOffer(currentPeer, roomRef);
+              }
+            }
+          });
+        });
+        unsubscribeRef.current = unsubscribe;
+      }
+    };
+
+    if (roomId != null) {
+      connection();
+      return () => {
+        if (unsubscribeRef.current != null) {
+          unsubscribeRef.current();
+        }
+      };
+    }
+  }, [roomId, username, createOffer]);
 
   const leaveRoom = () => {};
 
