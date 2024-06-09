@@ -1,6 +1,5 @@
 import React from "react";
 import AppPanel from "./components/panel";
-import MonacoProvider from "./context/MonacoProvider";
 import UserProvider from "./context/UserProvider";
 import { useOnMount } from "./hooks";
 import { sendMessage } from "./services";
@@ -18,9 +17,7 @@ const App = () => {
   if (status.status === "AUTHENTICATED") {
     return (
       <UserProvider user={status.user}>
-        <MonacoProvider>
-          <AppPanel />
-        </MonacoProvider>
+        <AppPanel />
       </UserProvider>
     );
   } else {

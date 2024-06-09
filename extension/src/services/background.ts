@@ -1,4 +1,4 @@
-import { ServiceRequest, Status } from "@types";
+import { ServiceRequest, Status } from "@cb/types";
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({

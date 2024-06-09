@@ -21,13 +21,13 @@
 
     "baseUrl": "./src",
     "paths": {
-      "@hooks": ["./hooks/index.ts"],
-      "@hooks/*": ["./hooks/*"],
-      "@components/*": ["./components/*"],
-      "@utils": ["./utils/index.ts"],
-      "@types": ["./types/index.ts"],
-      "@services": ["./services/index.ts"],
-      "@context/*": ["./context/*"]
+      "@cb/hooks": ["./hooks/index.ts"],
+      "@cb/hooks/*": ["./hooks/*"],
+      "@cb/components/*": ["./components/*"],
+      "@cb/utils": ["./utils/index.ts"],
+      "@cb/types": ["./types/index.ts"],
+      "@cb/services": ["./services/index.ts"],
+      "@cb/context/*": ["./context/*"]
     }
   },
   "include": ["src"],
