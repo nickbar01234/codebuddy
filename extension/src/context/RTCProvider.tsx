@@ -4,13 +4,15 @@ import {
   collection,
   doc,
   getDoc,
+  getDocs,
   getFirestore,
   onSnapshot,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 import { set } from "mongoose";
-import { ReactNode, createContext, useEffect, useRef, useState } from "react";
+import { ReactNode, createContext, useRef, useState } from "react";
 
 const firebaseConfig = {
   // your config
@@ -46,27 +48,25 @@ interface RTCContext {
   closeCall: () => Promise<void>;
   messageGot: string;
   sendMessage: (message: string) => void;
+  connected: boolean;
 }
 export const RTCContext = createContext({} as RTCContext);
 
 const RTCProvider = ({ children }: { children: ReactNode }) => {
-  const pc = useRef(new RTCPeerConnection(servers));
+  const pc = useRef<RTCPeerConnection | null>(null);
   const dataChannel = useRef<RTCDataChannel>();
-  console.log(pc.current.iceConnectionState);
-  console.dir(pc.current);
 
   const onerror = function (error: Event) {
     console.log("Error:", error);
   };
 
   const onmessage = function (event: MessageEvent) {
-    console.log("Got message:", dataChannel.current);
     setMessageGot(event.data);
   };
 
   const onopen = function () {
-    console.dir("Open", dataChannel.current);
     console.log("data channel is open and ready to be used.");
+    setConnected(true);
   };
 
   const onclose = function () {
@@ -74,54 +74,22 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const sendMessage = (message: string) => {
-    console.log("Using data channel");
-    console.dir("Sent");
-    console.dir(dataChannel);
     if (dataChannel.current !== undefined) {
-      console.dir(dataChannel.current);
       dataChannel.current.send(message);
     } else {
       console.log("Data Channel not created yet");
     }
   };
 
-  const [localStream, setLocalStream] = useState<MediaStream>(
-    new MediaStream()
-  );
   const [messageGot, setMessageGot] = useState<string>("");
-
-  const [remoteStream, setRemoteStream] = useState<MediaStream>(
-    new MediaStream()
-  );
   const [callInput, setCallInput] = useState<string>("");
-
-  // const webCamOnClick = async () => {
-  //   const localStream = await navigator.mediaDevices.getUserMedia({
-  //     video: true,
-  //     audio: true,
-  //   });
-  //   const remoteStream = new MediaStream();
-  //   pc.current.ontrack = (event) => {
-  //     console.log("adding track for remote");
-  //     console.dir(remoteStream);
-  //     event.streams[0].getTracks().forEach((track) => {
-  //       remoteStream.addTrack(track);
-  //     });
-  //     setRemoteStream(remoteStream.clone());
-  //   };
-
-  //   // Push tracks from local stream to peer connection
-  //   localStream.getTracks().forEach((track) => {
-  //     console.log("adding track for local");
-  //     pc.current.addTrack(track, localStream);
-  //   });
-  //   setLocalStream(localStream);
-  //   setRemoteStream(remoteStream);
-  // };
+  const [connected, setConnected] = useState<boolean>(false);
 
   const createOffer = async () => {
     pc.current = new RTCPeerConnection(servers);
+
     const callDoc = doc(collection(firestore, "calls"));
+    await deleteSubcollection(callDoc.path, "offerCandidates");
     const offerCandidates = collection(callDoc, "offerCandidates");
     const answerCandidates = collection(callDoc, "answerCandidates");
     setCallInput(callDoc.id);
@@ -151,9 +119,9 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
 
     // Listen for remote answer
     onSnapshot(callDoc, (snapshot) => {
-      console.dir(snapshot.data());
+      console.log("Answer added");
       const data = snapshot.data();
-      if (!pc.current.currentRemoteDescription && data?.answer) {
+      if (pc.current && data?.answer) {
         const answerDescription = new RTCSessionDescription(data.answer);
         pc.current.setRemoteDescription(answerDescription);
       }
@@ -162,7 +130,7 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
     // When answered, add candidate to peer connection
     onSnapshot(answerCandidates, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
+        if (change.type === "added" && pc.current) {
           const candidate = new RTCIceCandidate(change.doc.data());
           pc.current.addIceCandidate(candidate);
         }
@@ -170,16 +138,15 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
     });
   };
   const answerOffer = async () => {
-    console.log("answering Calls");
-    console.dir(remoteStream);
+    pc.current = new RTCPeerConnection(servers);
     const callId = callInput;
     const callDoc = doc(firestore, "calls", callId);
 
+    await deleteSubcollection(callDoc.path, "answerCandidates");
+
     const answerCandidates = collection(callDoc, "answerCandidates");
     const offerCandidates = collection(callDoc, "offerCandidates");
-
     pc.current.ondatachannel = function (event) {
-      console.log("data channel is created");
       dataChannel.current = event.channel;
       dataChannel.current.onerror = onerror;
       dataChannel.current.onmessage = onmessage;
@@ -214,7 +181,7 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
 
     onSnapshot(offerCandidates, (snapshot) => {
       snapshot.docChanges().forEach((change) => {
-        if (change.type === "added") {
+        if (change.type === "added" && pc.current) {
           const data = change.doc.data();
           pc.current.addIceCandidate(new RTCIceCandidate(data));
         }
@@ -223,18 +190,16 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const closeCall = async () => {
-    pc.current.getSenders().forEach((sender) => {
-      if (sender.track) {
-        sender.track.enabled = false;
-      }
-    });
+    if (pc.current) {
+      pc.current.close();
+      dataChannel.current?.close();
+      pc.current = null;
+    }
   };
   return (
     <RTCContext.Provider
       value={{
-        // webCamOnClick,
-        // localStream: localStream,
-        // remoteStream: remoteStream,
+        connected,
         callInput,
         setCallInput,
         createOffer,
@@ -250,3 +215,43 @@ const RTCProvider = ({ children }: { children: ReactNode }) => {
 };
 
 export default RTCProvider;
+
+async function deleteSubcollection(
+  parentDocPath: string,
+  subcollectionName: string
+) {
+  const subCollection = collection(
+    firestore,
+    `${parentDocPath}/${subcollectionName}`
+  );
+  const snapshot = await getDocs(subCollection);
+  const batch = writeBatch(firestore);
+  snapshot.docs.forEach((doc) => {
+    batch.delete(doc.ref);
+  });
+
+  await batch.commit();
+}
+// const webCamOnClick = async () => {
+//   const localStream = await navigator.mediaDevices.getUserMedia({
+//     video: true,
+//     audio: true,
+//   });
+//   const remoteStream = new MediaStream();
+//   pc.current.ontrack = (event) => {
+//     console.log("adding track for remote");
+//     console.dir(remoteStream);
+//     event.streams[0].getTracks().forEach((track) => {
+//       remoteStream.addTrack(track);
+//     });
+//     setRemoteStream(remoteStream.clone());
+//   };
+
+//   // Push tracks from local stream to peer connection
+//   localStream.getTracks().forEach((track) => {
+//     console.log("adding track for local");
+//     pc.current.addTrack(track, localStream);
+//   });
+//   setLocalStream(localStream);
+//   setRemoteStream(remoteStream);
+// };
