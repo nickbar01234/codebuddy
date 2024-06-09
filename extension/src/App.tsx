@@ -4,6 +4,7 @@ import UserProvider from "./context/UserProvider";
 import { useOnMount } from "./hooks";
 import { sendMessage } from "./services";
 import { Status } from "./types";
+import RTCProvider from "@cb/context/RTCProvider";
 
 const App = () => {
   const [status, setStatus] = React.useState<Status>({
@@ -17,7 +18,9 @@ const App = () => {
   if (status.status === "AUTHENTICATED") {
     return (
       <UserProvider user={status.user}>
-        <AppPanel />
+        <RTCProvider>
+          <AppPanel />
+        </RTCProvider>
       </UserProvider>
     );
   } else {

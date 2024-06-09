@@ -14,6 +14,8 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { userContext } from "./UserProvider";
+import { set, update } from "firebase/database";
+import { v4 as uuidv4 } from "uuid";
 
 const firebaseConfig = {
   // your config
@@ -40,10 +42,11 @@ const servers = {
 };
 
 interface RTCContext {
-  createOffer: () => Promise<void>;
-  answerOffer: () => Promise<void>;
-  closeCall: () => Promise<void>;
-  sendMessage: (message: string) => void;
+  createRoom: () => void;
+  joinRoom: (id: string) => void;
+  leaveRoom: () => void;
+  roomId: string | null;
+  setRoomId: (id: string) => void;
 }
 
 interface RTCProviderProps {
@@ -61,58 +64,95 @@ interface Connection {
 
 const RTCProvider = (props: RTCProviderProps) => {
   const { username } = React.useContext(userContext);
+
   const pcs = React.useRef<Record<string, Connection>>({});
   const [roomId, setRoomId] = React.useState<null | string>(null);
 
   const createRoom = async () => {
     const roomRef = doc(collection(firestore, "rooms"));
     setRoomId(roomRef.id);
+    await setDoc(
+      roomRef,
+      { usernames: [username] },
+      {
+        merge: true,
+      }
+    );
+
     const usersRef = collection(roomRef, "users");
-    await addDoc(usersRef, { username });
+    onSnapshot(usersRef, (snapshot) => {
+      snapshot.docChanges().forEach(async (change) => {
+        if (change.type === "added") {
+          if (change.doc.data().username !== username) {
+            console.log("New user added" + change.doc.data().username);
+            const newUserRef = doc(roomRef, "users", change.doc.id);
+            const myConnectionRef = doc(newUserRef, "connections", username);
+            await setDoc(myConnectionRef, {
+              username,
+              answer: "",
+              offer: "",
+            });
+          }
+        }
+      });
+    });
   };
 
   const joinRoom = async (roomId: string) => {
-    const roomRef = doc(firestore, "rooms", roomId);
-    const usersRef = collection(roomRef, "users");
-    await addDoc(usersRef, { username });
+    if (roomId === null) {
+      return;
+    }
     setRoomId(roomId);
-  };
+    console.log("Joining room   " + roomId);
+    const roomRef = doc(firestore, "rooms", roomId);
+    const previousUser = (await getDoc(roomRef))?.data()?.usernames;
+    await updateDoc(roomRef, { usernames: arrayUnion(username) });
+    const newUserRef = doc(roomRef, "users", username);
+    await setDoc(newUserRef, { username });
 
-  React.useEffect(() => {
-    if (roomId != null) {
+    if (roomId !== null) {
       const roomRef = doc(firestore, "rooms", roomId);
       const usersRef = collection(roomRef, "users");
-      return onSnapshot(usersRef, (snapshot) => {
-        snapshot.docChanges().forEach((change) => {
+      onSnapshot(usersRef, (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          console.log("receving something new");
           if (change.type === "added") {
-            console.log("User joined room");
-            const data = change.doc.data();
-            console.log(data);
+            if (
+              change.doc.data().username !== username &&
+              !previousUser.includes(change.doc.data().username)
+            ) {
+              console.log("New user added" + change.doc.data().username);
+              const newUserRef = doc(roomRef, "users", change.doc.id);
+              const myConnectionRef = doc(newUserRef, "connections", username);
+              await setDoc(myConnectionRef, {
+                username,
+                answer: "",
+                offer: "",
+              });
+            }
           }
         });
       });
     }
-  }, [roomId]);
-
-  //   const roomRef = doc(firestore, "rooms", roomId);
-  //   const roomDoc = await getDoc(roomRef);
-  //   const roomData = roomDoc.data();
-  //   if (!roomData) {
-  //     console.log("Room not found");
-  //     return;
-  //   }
-  //   const users = roomData.users;
-  //   if (users.includes(username)) {
-  //     console.log("User already in room");
-  //     return;
-  //   }
-  //   users.push(username);
-  //   updateDoc(roomRef, { users });
-
-  // };
+  };
 
   const leaveRoom = () => {};
+
+  return (
+    <RTCContext.Provider
+      value={{
+        createRoom,
+        joinRoom,
+        leaveRoom,
+        roomId,
+        setRoomId,
+      }}
+    >
+      {props.children}
+    </RTCContext.Provider>
+  );
 };
+export default RTCProvider;
 
 // const RTCProvider = ({ children }: { children: ReactNode }) => {
 //   const pcs = useRef<Record<string, Connection>>({});

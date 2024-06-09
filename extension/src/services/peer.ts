@@ -1,29 +1,31 @@
-// interface Connection {
-//     setDescription: (description: RTCSessionDescription) => void;
-// }
+//Collections Rooms
+//Doc
+//roomId:
+// usernames: [...]
+//Collections:  Users n-1 documents
+// Doc
+//name: Of new person
+//Collections Offers: current number of users - 1
+//Doc
+//name: Hung
+//description:
+//Collection Answer
+//Doc
+//sdp
+//type
+//Collection Offer
+//Doc
+//sdp
+//type
 
-// Room
-// room-id
-// current-user: username[hung, nick, khoa];
-// connections n* n-1
-// connection-pair
-// local-description
-// remote-description
-// offer-candidates
-// answer-candidates
-
-// nick-hung
-
-// khoa - nick
-
-// khoa - hung
-// export class Me implements Connection {
-//     pc: RTCPeerConnection;
-
-//     constructor() {
-//         this.pc = new RTCPeerConnection();
-//     }
-
-// }
-
-export { }
+//Doc
+//name: Nick
+//description:
+//Collection Answer
+//Doc
+//sdp
+//type
+//Collection Offer
+//Doc
+//sdp
+//type
