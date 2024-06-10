@@ -3,7 +3,6 @@ import {
   DocumentData,
   DocumentReference,
   Unsubscribe,
-  addDoc,
   arrayUnion,
   collection,
   doc,
@@ -80,10 +79,6 @@ const RTCProvider = (props: RTCProviderProps) => {
     }
   };
 
-  const onerror = function (error: Event) {
-    console.log("Error:", error);
-  };
-
   const onmessage = (username: string) =>
     function (event: MessageEvent) {
       console.log("Message from " + username);
@@ -92,14 +87,6 @@ const RTCProvider = (props: RTCProviderProps) => {
         [username]: event.data,
       }));
     };
-
-  const onopen = function () {
-    console.log("data channel is open and ready to be used.");
-  };
-
-  const onclose = function () {
-    console.log("data channel is closed.");
-  };
 
   const sendMessage = (username: string) => (message: string) => {
     if (pcs.current[username].channel !== undefined) {

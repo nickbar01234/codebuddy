@@ -33,12 +33,6 @@ chrome.runtime.onInstalled.addListener((details) => {
  *
  * @docs https://stackoverflow.com/a/61056192
  */
-const waitiingToLoad = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  while ((window as any).monaco) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-  }
-}
 
 const getValue = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
