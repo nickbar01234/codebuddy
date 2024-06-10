@@ -27,7 +27,8 @@
       "@cb/utils": ["./utils/index.ts"],
       "@cb/types": ["./types/index.ts"],
       "@cb/services": ["./services/index.ts"],
-      "@cb/context/*": ["./context/*"]
+      "@cb/context/*": ["./context/*"],
+      "@cb/db": ["./db/index.ts"]
     }
   },
   "include": ["src"],
