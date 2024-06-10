@@ -48,6 +48,7 @@ interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, string>;
   sendMessages: (value: string) => void;
+  connected: boolean;
 }
 
 interface RTCProviderProps {
@@ -71,6 +72,7 @@ const RTCProvider = (props: RTCProviderProps) => {
     Record<string, string>
   >({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
+  const [connected, setConnected] = React.useState<boolean>(false);
 
   const sendMessages = (value: string) => {
     for (const username of Object.keys(pcs.current)) {
@@ -181,6 +183,10 @@ const RTCProvider = (props: RTCProviderProps) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
         });
       });
+
+      pc.addEventListener("connectionstatechange", () => {
+        setConnected(pc.iceConnectionState === "connected");
+      });
     },
     [username]
   );
@@ -254,6 +260,15 @@ const RTCProvider = (props: RTCProviderProps) => {
             new RTCIceCandidate(candidate)
           );
         });
+
+        pcs.current[data.username].pc.addEventListener(
+          "connectionstatechange",
+          () => {
+            setConnected(
+              pcs.current[data.username].pc.iceConnectionState === "connected"
+            );
+          }
+        );
       });
     });
   };
@@ -301,6 +316,7 @@ const RTCProvider = (props: RTCProviderProps) => {
         setRoomId,
         informations,
         sendMessages,
+        connected,
       }}
     >
       {props.children}

@@ -30,3 +30,11 @@ export type ServiceResponse = {
   getValue: string;
   setValue: void;
 };
+
+interface EditorPreference {
+  width: number;
+}
+
+export interface ExtensionStorage {
+  editorPreference: EditorPreference;
+}

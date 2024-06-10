@@ -1,12 +1,24 @@
-import { ResizableBox } from "react-resizable";
-import { VerticalHandle } from "./Handle";
-import EditorProvider, { Tab } from "./editor";
-import React, { useEffect } from "react";
 import { useRTC } from "@cb/hooks";
 import { sendMessage as sendServiceMessage } from "@cb/services";
 import { waitForElement } from "@cb/utils";
+import { useOnMount } from "@cb/hooks";
+import { getStorage, setStorage } from "@cb/services";
+import { ExtensionStorage } from "@cb/types";
+import React from "react";
+import { ResizableBox } from "react-resizable";
+import { VerticalHandle } from "./Handle";
+import EditorProvider, { Tab } from "./editor";
 
 const AppPanel = () => {
+  const [editorPreference, setEditorPreference] = React.useState<
+    ExtensionStorage["editorPreference"] | null
+  >(null);
+
+  useOnMount(() => {
+    getStorage("editorPreference").then(setEditorPreference);
+  });
+
+  // TODO(nickbar01234) - Handle loading indicator
   const {
     createRoom,
     joinRoom,
@@ -14,14 +26,14 @@ const AppPanel = () => {
     roomId: hostId,
     sendMessages,
     informations,
+    connected,
   } = useRTC();
+  React.useEffect(() => {
+    if (connected) {
+      sendCode();
+    }
+  }, [connected]);
   const [roomId, setRoomId] = React.useState<string | null>(null);
-
-  const editor = {
-    getValue: () => sendServiceMessage({ action: "getValue" }),
-    setValue: (code: string) =>
-      sendServiceMessage({ action: "setValue", value: code }),
-  };
 
   const sendCode = async () => {
     const MONACO_ROOT_ID = "#editor";
@@ -47,7 +59,7 @@ const AppPanel = () => {
 
     sendMessages(
       JSON.stringify({
-        code: await editor?.getValue(),
+        code: await sendServiceMessage({ action: "getValue" }),
         codeHTML: leetCodeNode.outerHTML,
       })
     );
@@ -65,18 +77,31 @@ const AppPanel = () => {
       observer.disconnect();
     };
   }, []);
-
-  const pasteCode = async (code: string) => {
-    await editor?.setValue(code);
-  };
+  if (editorPreference == null) {
+    return null;
+  }
 
   return (
     <ResizableBox
-      width={200}
+      width={editorPreference.width}
       axis="x"
       resizeHandles={["w"]}
       className="h-full flex relative"
       handle={VerticalHandle}
+      onResize={(_e, data) =>
+        setEditorPreference({
+          ...editorPreference,
+          width: data.size.width,
+        })
+      }
+      onResizeStop={(_e, data) =>
+        setStorage({
+          editorPreference: {
+            ...editorPreference,
+            width: data.size.width,
+          },
+        })
+      }
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
         <div className="flex flex-col">

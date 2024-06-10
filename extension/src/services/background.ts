@@ -1,3 +1,4 @@
+import { setStorage } from "@cb/services";
 import { ServiceRequest, Status } from "@cb/types";
 
 const handleCookieRequest = async (): Promise<Status> => {
@@ -17,6 +18,15 @@ const handleCookieRequest = async (): Promise<Status> => {
     user: { id: session.identity, username: session.username },
   };
 };
+
+/**
+ * Initialize default settings
+ */
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
+    setStorage({ editorPreference: { width: 300 /* px */ } });
+  }
+});
 
 /**
  * TODO(nickbar01234) - Redesign authentication flow
