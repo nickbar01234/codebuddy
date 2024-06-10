@@ -1,4 +1,3 @@
-import { set } from 'mongoose';
 export interface User {
   id: string;
   username: string;
@@ -6,17 +5,17 @@ export interface User {
 
 export type Status =
   | {
-    status: "AUTHENTICATED";
-    user: User;
-  }
+      status: "AUTHENTICATED";
+      user: User;
+    }
   | { status: "LOADING" }
   | { status: "UNAUTHENTICATED" };
 
 interface CookieRequest {
-  action: "cookie"
+  action: "cookie";
 }
 interface GetValueRequest {
-  action: "getValue"
+  action: "getValue";
 }
 
 interface SetValueRequest {
