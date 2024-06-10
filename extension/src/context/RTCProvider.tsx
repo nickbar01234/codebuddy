@@ -84,7 +84,7 @@ const RTCProvider = (props: RTCProviderProps) => {
 
   const onmessage = (username: string) =>
     function (event: MessageEvent) {
-      console.log("Message from " + username + ": " + event.data);
+      console.log("Message from " + username);
       setInformations((prev) => ({
         ...prev,
         [username]: event.data,
@@ -101,7 +101,7 @@ const RTCProvider = (props: RTCProviderProps) => {
 
   const sendMessage = (username: string) => (message: string) => {
     if (pcs.current[username].channel !== undefined) {
-      console.log("Sending message to " + username + ": " + message);
+      console.log("Sending message to " + username);
       pcs.current[username].channel.send(message);
     } else {
       console.log("Data Channel not created yet");
@@ -110,7 +110,6 @@ const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async () => {
     const roomRef = doc(collection(firestore, "rooms"));
-    setRoomId(roomRef.id);
     await setDoc(
       roomRef,
       { usernames: [username] },
@@ -118,6 +117,7 @@ const RTCProvider = (props: RTCProviderProps) => {
         merge: true,
       }
     );
+    setRoomId(roomRef.id);
   };
 
   const createOffer = React.useCallback(
@@ -268,7 +268,11 @@ const RTCProvider = (props: RTCProviderProps) => {
         const maybeData = doc.data();
         if (maybeData == undefined) return;
         maybeData.usernames.forEach(async (user: string) => {
-          if (user !== username && !usernames.includes(user))
+          if (
+            user !== username &&
+            !usernames.includes(user) &&
+            pcs.current[user] == undefined
+          )
             await createOffer(user, roomRef);
         });
       });

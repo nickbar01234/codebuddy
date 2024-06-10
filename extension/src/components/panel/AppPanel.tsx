@@ -33,7 +33,7 @@ const AppPanel = () => {
 
     const originNode = document.querySelector(MONACO_ROOT_ID) as HTMLElement;
     const leetCodeNode = originNode.cloneNode(true) as HTMLElement;
-    // leetCodeNode.style.width = "100%";
+    // leetCodeNode.style.wid= "100%";
     // leetCodeNode.style.height = "100%";
     // // const insideDiv2 = leetCodeNode.querySelector(
     // //   "#CodeBuddy > div > div.w-full.box-border.ml-2.rounded-lg.bg-layer-1.dark\:bg-dark-layer-1.h-full > div.h-full.flex.flex-col > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac"
