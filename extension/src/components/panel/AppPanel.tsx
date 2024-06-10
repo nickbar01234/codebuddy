@@ -24,26 +24,26 @@ const AppPanel = () => {
   };
 
   const sendCode = async () => {
-    const MONACO_ROOT_ID =
-      "#editor > div.flex.flex-1.flex-col.overflow-hidden.pb-2 > div.flex-1.overflow-hidden > div > div";
-    await waitForElement(
-      "div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text",
-      2000
-    );
+    const MONACO_ROOT_ID = "#editor";
+    await waitForElement(MONACO_ROOT_ID, 2000);
+    // await waitForElement(
+    //   "div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text",
+    //   2000
+    // );
 
     const originNode = document.querySelector(MONACO_ROOT_ID) as HTMLElement;
     const leetCodeNode = originNode.cloneNode(true) as HTMLElement;
-    leetCodeNode.style.width = "100%";
-    leetCodeNode.style.height = "100%";
-    // const insideDiv2 = leetCodeNode.querySelector(
-    //   "#CodeBuddy > div > div.w-full.box-border.ml-2.rounded-lg.bg-layer-1.dark\:bg-dark-layer-1.h-full > div.h-full.flex.flex-col > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac"
-    // ) as HTMLElement;
+    // leetCodeNode.style.width = "100%";
+    // leetCodeNode.style.height = "100%";
+    // // const insideDiv2 = leetCodeNode.querySelector(
+    // //   "#CodeBuddy > div > div.w-full.box-border.ml-2.rounded-lg.bg-layer-1.dark\:bg-dark-layer-1.h-full > div.h-full.flex.flex-col > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac"
+    // // ) as HTMLElement;
 
-    const insideDiv = leetCodeNode.querySelector(
-      "div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text"
-    ) as HTMLElement;
-    insideDiv.style.width = "100%";
-    insideDiv.style.height = "100%";
+    // const insideDiv = leetCodeNode.querySelector(
+    //   "div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text"
+    // ) as HTMLElement;
+    // insideDiv.style.width = "100%";
+    // insideDiv.style.height = "100%";
 
     sendMessages(
       JSON.stringify({
