@@ -16,7 +16,6 @@ const AppPanel = () => {
     informations,
   } = useRTC();
   const [roomId, setRoomId] = React.useState<string | null>(null);
-  const codeRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
 
   const editor = {
     getValue: () => sendServiceMessage({ action: "getValue" }),
@@ -27,13 +26,29 @@ const AppPanel = () => {
   const sendCode = async () => {
     const MONACO_ROOT_ID =
       "#editor > div.flex.flex-1.flex-col.overflow-hidden.pb-2 > div.flex-1.overflow-hidden > div > div";
-    const leetCodeNode = await waitForElement(MONACO_ROOT_ID, 2000);
-    const outerHTML = leetCodeNode.outerHTML;
-    const code = await editor?.getValue();
+    await waitForElement(
+      "div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text",
+      2000
+    );
+
+    const originNode = document.querySelector(MONACO_ROOT_ID) as HTMLElement;
+    const leetCodeNode = originNode.cloneNode(true) as HTMLElement;
+    leetCodeNode.style.width = "100%";
+    leetCodeNode.style.height = "100%";
+    // const insideDiv2 = leetCodeNode.querySelector(
+    //   "#CodeBuddy > div > div.w-full.box-border.ml-2.rounded-lg.bg-layer-1.dark\:bg-dark-layer-1.h-full > div.h-full.flex.flex-col > div > div > div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac"
+    // ) as HTMLElement;
+
+    const insideDiv = leetCodeNode.querySelector(
+      "div.overflow-guard > div.monaco-scrollable-element.editor-scrollable.vs-dark.mac > div.lines-content.monaco-editor-background > div.view-lines.monaco-mouse-cursor-text"
+    ) as HTMLElement;
+    insideDiv.style.width = "100%";
+    insideDiv.style.height = "100%";
+
     sendMessages(
       JSON.stringify({
-        code: code,
-        outerHTML: outerHTML,
+        code: await editor?.getValue(),
+        codeHTML: leetCodeNode.outerHTML,
       })
     );
   };
@@ -54,6 +69,7 @@ const AppPanel = () => {
   const pasteCode = async (code: string) => {
     await editor?.setValue(code);
   };
+
   return (
     <ResizableBox
       width={200}
@@ -63,54 +79,38 @@ const AppPanel = () => {
       handle={VerticalHandle}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
-        <EditorProvider defaultActiveId="Nick">
-          <Tab id="Nick" displayHeader="Nick">
-            <div className="flex flex-col">
-              <button onClick={createRoom}>Create Room</button>
-              <div> Host Id: {hostId}</div>
-              <input
-                value={roomId ?? ""}
-                onChange={(e) => {
-                  setRoomId(e.target.value);
-                }}
-              ></input>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(hostId ?? "");
-                }}
-              >
-                Copy Host Id
-              </button>
-              <button
-                onClick={() => {
-                  joinRoom(roomId ?? "");
-                }}
-              >
-                Join Room
-              </button>
-              <button onClick={() => sendMessages("Hello")}>Say HI</button>
-              <button onClick={leaveRoom}>Leave Room</button>
-              <div className="flex flex-col">
-                {Object.keys(informations).map((username, index) => (
-                  <div key={username}>
-                    {username}: {JSON.parse(informations[username]).code}
-                    <div className="relative mx-auto  dark:border-gray-800 bg-gray-800 border-[14px] rounded-[2.5rem] w-3/4  border-sky-500">
-                      <div
-                        ref={(el) => (codeRefs.current[username] = el)}
-                        className="text-gray-900"
-                      ></div>
-                      <button onClick={() => pasteCode(informations[username])}>
-                        {" "}
-                        Paste Code
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Tab>
-          <Tab id="Hung" displayHeader="Hung"></Tab>
-        </EditorProvider>
+        <div className="flex flex-col">
+          <button onClick={createRoom}>Create Room</button>
+          <div> Host Id: {hostId}</div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(hostId ?? "");
+            }}
+          >
+            Copy Host Id
+          </button>
+          <input
+            value={roomId ?? ""}
+            onChange={(e) => {
+              setRoomId(e.target.value);
+            }}
+          ></input>
+          <button
+            onClick={() => {
+              joinRoom(roomId ?? "");
+            }}
+          >
+            Join Room
+          </button>
+          <button onClick={leaveRoom}>Leave Room</button>
+        </div>
+        {Object.keys(informations).length > 0 && (
+          <EditorProvider defaultActiveId={Object.keys(informations)[0]}>
+            {Object.entries(informations).map(([id, info]) => (
+              <Tab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
+            ))}
+          </EditorProvider>
+        )}
       </div>
     </ResizableBox>
   );

@@ -10,21 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@types/chrome": "^0.0.268",
-    "@types/react-resizable": "^3.0.7",
     "dotenv": "^16.4.5",
     "firebase": "^10.12.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-resizable": "^3.0.5",
-    "uuid": "^9.0.1"
+    "react-resizable": "^3.0.5"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.13.0",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
-    "@types/uuid": "^9.0.8",
+    "@types/react-resizable": "^3.0.7",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
     "@vitejs/plugin-react": "^4.2.1",
