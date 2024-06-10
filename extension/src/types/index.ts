@@ -14,11 +14,21 @@ export type Status =
 interface CookieRequest {
   action: "cookie";
 }
+interface GetValueRequest {
+  action: "getValue";
+}
 
-export type ServiceRequest = CookieRequest;
+interface SetValueRequest {
+  action: "setValue";
+  value: string;
+}
+
+export type ServiceRequest = CookieRequest | GetValueRequest | SetValueRequest;
 
 export type ServiceResponse = {
   cookie: Status;
+  getValue: string;
+  setValue: void;
 };
 
 interface EditorPreference {

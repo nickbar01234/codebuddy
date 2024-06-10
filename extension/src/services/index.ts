@@ -1,4 +1,4 @@
-import { ExtensionStorage, ServiceRequest, ServiceResponse } from "@types";
+import { ExtensionStorage, ServiceRequest, ServiceResponse } from "@cb/types";
 
 export const sendMessage = <T extends ServiceRequest>(
   request: T
