@@ -28,6 +28,7 @@ const Tab = (props: TabProps) => {
   }, []);
 
   React.useEffect(() => {
+    console.log(props.code.value);
     if (activeId === id) {
       updateCode();
     }

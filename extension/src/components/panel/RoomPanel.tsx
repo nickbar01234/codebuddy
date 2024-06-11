@@ -23,21 +23,24 @@ const RoomPanel = () => {
   };
 
   React.useEffect(() => {
-    const observer = new MutationObserver(async (_mutations) => {
-      await sendCode();
-    });
-    observer.observe(document, {
-      childList: true,
-      subtree: true,
-    });
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  React.useEffect(() => {
     if (connected) {
       sendCode();
+      sendMessage({
+        action: "createModel",
+        id: "CodeBuddyEditor",
+        code: "",
+        language: "plaintext",
+      });
+      const observer = new MutationObserver(async () => {
+        await sendCode();
+      });
+      observer.observe(document, {
+        childList: true,
+        subtree: true,
+      });
+      return () => {
+        observer.disconnect();
+      };
     }
   }, [connected]);
 
