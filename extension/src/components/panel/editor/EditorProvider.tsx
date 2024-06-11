@@ -29,7 +29,10 @@ const EditorProvider = (props: EditorProviderProps) => {
     <Provider value={{ activeId: activeId, registerTab: registerTab }}>
       <div className="flex flex-col h-full justify-between">
         <div>
-          <div id="CodeBuddyEditor" className="h-[40vh] w-full" />
+          <div
+            id="CodeBuddyEditor"
+            className="h-[40vh] w-full overflow-x-hidden overflow-y-hidden"
+          />
           {children}
         </div>
         <div
