@@ -17,8 +17,11 @@ const AppPanel = (props: AppPanelProps) => {
   useOnMount(() => {
     getStorage("editorPreference").then(setEditorPreference);
   });
+  // TODO(nickbar01234) - Handle loading indicator
 
-  if (editorPreference == null) return null;
+  if (editorPreference == null) {
+    return null;
+  }
 
   return (
     <ResizableBox

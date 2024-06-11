@@ -5,7 +5,7 @@ import { waitForElement } from "./utils";
 import "./style/index.css";
 import "react-resizable/css/styles.css";
 
-const TIME_OUT = 2000; // ms
+const TIME_OUT = 5000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
 const EXTENSION_ID = "CodeBuddy";
 
