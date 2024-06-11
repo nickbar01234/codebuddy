@@ -34,14 +34,6 @@ chrome.runtime.onInstalled.addListener((details) => {
  * @docs https://stackoverflow.com/a/61056192
  */
 
-const trackMyEditor = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const monaco = (window as any).monaco;
-  monaco.editor.getModels()[0].onDidChangeContent((event: Event) => {
-    console.dir(event);
-  })
-}
-
 const getValue = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
