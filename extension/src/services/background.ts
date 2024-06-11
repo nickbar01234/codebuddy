@@ -34,10 +34,24 @@ chrome.runtime.onInstalled.addListener((details) => {
  * @docs https://stackoverflow.com/a/61056192
  */
 
+const trackMyEditor = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const monaco = (window as any).monaco;
+  monaco.editor.getModels()[0].onDidChangeContent((event: Event) => {
+    console.dir(event);
+  })
+}
+
 const getValue = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userEditor = (window as any).monaco.editor.getModels()[0];
-  return userEditor.getValue();
+  const monaco = (window as any).monaco;
+  const userEditor = monaco.editor.getModels()[0];
+  const language = userEditor.getLanguageId();
+  return {
+    value: userEditor.getValue(),
+    language,
+  };
+
 }
 
 const setValue = async (value: string) => {
@@ -46,22 +60,48 @@ const setValue = async (value: string) => {
   userEditor.setValue(value);
 }
 
+const createModel = async (id: string, code: string, language: string) => {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const monaco = (window as any).monaco;
+  if (monaco.editor.getModels().length === 3) {
+    return;
+  }
+  await monaco.editor.create(document.getElementById(id), {
+    value: code,
+    language: language,
+    readOnly: true,
+  });
+}
+
+const setValueModel = async (code: string, language: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const monaco = (window as any).monaco;
+  const myEditor = await monaco.editor.getModels()[2];
+  myEditor.setValue(code);
+  const myLanguage = await myEditor.getLanguageId();
+  if (myLanguage !== language) {
+    await monaco.editor.setModelLanguage(myEditor, language);
+  }
+}
+
+console.dir(chrome.webNavigation)
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
-    console.dir(chrome.webNavigation)
+    setTimeout(() => {
+      chrome.scripting.executeScript({
+        target: { tabId: _sender.tab?.id ?? 0 },
+        func: () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).monaco.editor.getModels()[0].onDidChangeContent((event: any) => {
+            console.dir(event);
+          })
+        },
+        world: "MAIN",
+      })
+    }, 1000);
+
     console.debug("Receiving", request);
-    // setTimeout(() => {
-    //   chrome.scripting.executeScript({
-    //     target: { tabId: _sender.tab?.id ?? 0 },
-    //     func: () => {
-    //       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    //       (window as any).monaco.editor.getModels()[0].onDidChangeContent((event: any) => {
-    //         console.dir(event);
-    //       })
-    //     },
-    //     world: "MAIN",
-    //   })
-    // }, 1000);
     switch (request.action) {
       case "cookie": {
         handleCookieRequest().then((res) => {
@@ -90,6 +130,29 @@ chrome.runtime.onMessage.addListener(
         })
         break;
       }
+      case "createModel": {
+        chrome.scripting.executeScript({
+          target: { tabId: _sender.tab?.id ?? 0 },
+          func: createModel,
+          args: [request.id, request.code, request.language],
+          world: "MAIN",
+        }).then(() => {
+          sendResponse();
+        })
+        break;
+      }
+      case "setValueOtherEditor": {
+        chrome.scripting.executeScript({
+          target: { tabId: _sender.tab?.id ?? 0 },
+          func: setValueModel,
+          args: [request.code, request.language],
+          world: "MAIN",
+        }).then(() => {
+          sendResponse();
+        })
+        break;
+      }
+
       default:
         console.error(`Unhandled request ${request}`);
         break;

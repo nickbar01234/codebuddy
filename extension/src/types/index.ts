@@ -5,9 +5,9 @@ export interface User {
 
 export type Status =
   | {
-      status: "AUTHENTICATED";
-      user: User;
-    }
+    status: "AUTHENTICATED";
+    user: User;
+  }
   | { status: "LOADING" }
   | { status: "UNAUTHENTICATED" };
 
@@ -23,12 +23,29 @@ interface SetValueRequest {
   value: string;
 }
 
-export type ServiceRequest = CookieRequest | GetValueRequest | SetValueRequest;
+interface createMonacoModelRequest {
+  action: "createModel";
+  id: string;
+  code: string;
+  language: string;
+}
+
+interface SetOtherEditorRequest {
+  action: "setValueOtherEditor";
+  code: string;
+  language: string;
+}
+export type ServiceRequest = CookieRequest | GetValueRequest | SetValueRequest | createMonacoModelRequest | SetOtherEditorRequest;
 
 export type ServiceResponse = {
   cookie: Status;
-  getValue: string;
+  getValue: {
+    value: string;
+    language: string;
+  };
   setValue: void;
+  createModel: void;
+  setValueOtherEditor: void;
 };
 
 interface EditorPreference {
