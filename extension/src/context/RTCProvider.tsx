@@ -6,8 +6,8 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
-import { userContext } from "./UserProvider";
 import db from "@cb/db";
+import { useState } from "@cb/hooks";
 
 const servers = {
   iceServers: [
@@ -42,7 +42,9 @@ interface Connection {
 }
 
 const RTCProvider = (props: RTCProviderProps) => {
-  const { username } = React.useContext(userContext);
+  const {
+    user: { username },
+  } = useState();
 
   const pcs = React.useRef<Record<string, Connection>>({});
   const [roomId, setRoomId] = React.useState<null | string>(null);
