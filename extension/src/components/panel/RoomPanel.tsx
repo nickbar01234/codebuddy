@@ -13,11 +13,13 @@ const RoomPanel = () => {
 
     const originNode = document.querySelector(MONACO_ROOT_ID) as HTMLElement;
     const leetCodeNode = originNode.cloneNode(true) as HTMLElement;
+    const trackEditor = document.querySelector("#trackEditor");
 
     sendMessages(
       JSON.stringify({
         code: await sendMessage({ action: "getValue" }),
         codeHTML: leetCodeNode.outerHTML,
+        change: trackEditor?.textContent,
       })
     );
   };
@@ -31,16 +33,21 @@ const RoomPanel = () => {
         code: "",
         language: "plaintext",
       });
-      const observer = new MutationObserver(async () => {
-        await sendCode();
-      });
-      observer.observe(document, {
-        childList: true,
-        subtree: true,
-      });
-      return () => {
-        observer.disconnect();
-      };
+      const trackEditor = document.querySelector("#trackEditor");
+      if (trackEditor) {
+        const observer = new MutationObserver(async (mutations) => {
+          console.log("mutations");
+          console.log(mutations);
+          await sendCode();
+        });
+        observer.observe(trackEditor, {
+          childList: true,
+          subtree: true,
+        });
+        return () => {
+          observer.disconnect();
+        };
+      }
     }
   }, [connected]);
 

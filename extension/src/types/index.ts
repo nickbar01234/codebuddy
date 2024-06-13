@@ -34,6 +34,18 @@ interface SetOtherEditorRequest {
   action: "setValueOtherEditor";
   code: string;
   language: string;
+  changes: {
+    range: {
+      startLineNumber: number;
+      startColumn: number;
+      endLineNumber: number;
+      endColumn: number;
+    };
+    rangeLength: number;
+    text: string;
+    rangeOffset: number;
+    forceMoveMarkers: boolean;
+  }
 }
 export type ServiceRequest = CookieRequest | GetValueRequest | SetValueRequest | createMonacoModelRequest | SetOtherEditorRequest;
 

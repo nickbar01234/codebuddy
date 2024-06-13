@@ -8,6 +8,7 @@ interface TabProps extends TabMetadata {
     value: string;
     language: string;
   };
+  change: string;
 }
 
 const Tab = (props: TabProps) => {
@@ -19,6 +20,7 @@ const Tab = (props: TabProps) => {
       action: "setValueOtherEditor",
       code: props.code.value,
       language: props.code.language,
+      changes: JSON.parse(props.change),
     });
   useOnMount(() => {
     registerTab({ id: id, displayHeader: displayHeader });
@@ -28,7 +30,6 @@ const Tab = (props: TabProps) => {
   }, []);
 
   React.useEffect(() => {
-    console.log(props.code.value);
     if (activeId === id) {
       updateCode();
     }

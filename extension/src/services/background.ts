@@ -66,33 +66,70 @@ const createModel = async (id: string, code: string, language: string) => {
   });
 }
 
-const setValueModel = async (code: string, language: string) => {
+const setValueModel = async (code: string, language: string, changes: {
+  range: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
+  rangeLength: number;
+  text: string;
+  rangeOffset: number;
+  forceMoveMarkers: boolean;
+}) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   const myEditor = await monaco.editor.getModels()[2];
-  myEditor.setValue(code);
   const myLanguage = await myEditor.getLanguageId();
+  const editOperations = {
+    identifier: { major: 1, minor: 1 },
+    range: {
+      startLineNumber: changes.range.startLineNumber,
+      startColumn: changes.range.startColumn,
+      endLineNumber: changes.range.endLineNumber,
+      endColumn: changes.range.endColumn
+    },
+    text: changes.text,
+    forceMoveMarkers: false
+  }
+  await myEditor.executeEdits("", [editOperations]);
+  console.log("apply changes", changes)
   if (myLanguage !== language) {
     await monaco.editor.setModelLanguage(myEditor, language);
+    myEditor.setValue(code);
   }
 }
 
-console.dir(chrome.webNavigation)
+chrome.webNavigation.onCompleted.addListener(
+  function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      setTimeout(() => {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id ?? 0 },
+          func: () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window as any).monaco.editor.getModels()[0].onDidChangeContent(async (event: any) => {
+
+              const trackEditor = document.getElementById("trackEditor")
+              console.log(event.changes[0]);
+              if (trackEditor != null) {
+                console.log("trackEditor");
+                trackEditor.textContent = JSON.stringify(event.changes[0]);
+                console.dir(trackEditor)
+              }
+            })
+          },
+          world: "MAIN",
+        })
+      }, 1000);
+    });
+  },
+  { url: [{ schemes: ["http", "https"] }] }
+);
+
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
-    setTimeout(() => {
-      chrome.scripting.executeScript({
-        target: { tabId: _sender.tab?.id ?? 0 },
-        func: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).monaco.editor.getModels()[0].onDidChangeContent((event: any) => {
-            console.dir(event);
-          })
-        },
-        world: "MAIN",
-      })
-    }, 1000);
-
     console.debug("Receiving", request);
     switch (request.action) {
       case "cookie": {
@@ -137,7 +174,7 @@ chrome.runtime.onMessage.addListener(
         chrome.scripting.executeScript({
           target: { tabId: _sender.tab?.id ?? 0 },
           func: setValueModel,
-          args: [request.code, request.language],
+          args: [request.code, request.language, request.changes],
           world: "MAIN",
         }).then(() => {
           sendResponse();
