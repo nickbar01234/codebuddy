@@ -26,7 +26,7 @@ interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, string>;
   sendMessages: (value: string) => void;
-  connected: boolean;
+  connected: Record<string, boolean>;
 }
 
 interface RTCProviderProps {
@@ -52,12 +52,19 @@ const RTCProvider = (props: RTCProviderProps) => {
     Record<string, string>
   >({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
-  const [connected, setConnected] = React.useState<boolean>(false);
+  const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
   const sendMessages = (value: string) => {
     for (const username of Object.keys(pcs.current)) {
       sendMessage(username)(value);
     }
+  };
+  const onOpen = (username: string) => () => {
+    console.log("Data Channel is open for " + username);
+    setConnected((prev) => ({
+      ...prev,
+      [username]: true,
+    }));
   };
 
   const onmessage = (username: string) =>
@@ -103,6 +110,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       };
 
       channel.onmessage = onmessage(peer);
+      channel.onopen = onOpen(peer);
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
@@ -146,10 +154,6 @@ const RTCProvider = (props: RTCProviderProps) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
         });
       });
-
-      pc.addEventListener("connectionstatechange", () => {
-        setConnected(pc.iceConnectionState === "connected");
-      });
     },
     [username]
   );
@@ -186,6 +190,7 @@ const RTCProvider = (props: RTCProviderProps) => {
           pc.ondatachannel = (event) => {
             pcs.current[peer].channel = event.channel;
             pcs.current[peer].channel.onmessage = onmessage(peer);
+            pcs.current[peer].channel.onopen = onOpen(peer);
           };
           pc.onicecandidate = async (event) => {
             if (event.candidate) {
@@ -206,10 +211,6 @@ const RTCProvider = (props: RTCProviderProps) => {
 
         data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-
-        pc.addEventListener("connectionstatechange", () => {
-          setConnected(pc.iceConnectionState === "connected");
         });
       });
     });

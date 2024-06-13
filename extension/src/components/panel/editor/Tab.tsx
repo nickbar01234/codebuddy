@@ -15,22 +15,25 @@ const Tab = (props: TabProps) => {
   const { id, displayHeader } = props;
   const { activeId, registerTab } = React.useContext(editorProviderContext);
 
-  const updateCode = () =>
-    sendMessage({
-      action: "setValueOtherEditor",
-      code: props.code.value,
-      language: props.code.language,
-      changes: props.changes !== "" ? JSON.parse(props.changes) : {},
-    });
   useOnMount(() => {
     registerTab({ id: id, displayHeader: displayHeader });
-    updateCode();
+    sendMessage({
+      action: "createModel",
+      id: "CodeBuddyEditor",
+      code: props.code.value,
+      language: props.code.language,
+    });
     console.log("register");
   });
 
   React.useEffect(() => {
     if (activeId === id) {
-      updateCode();
+      sendMessage({
+        action: "setValueOtherEditor",
+        code: props.code.value,
+        language: props.code.language,
+        changes: props.changes !== "" ? JSON.parse(props.changes) : {},
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, id, props.code.value, props.code.language]);

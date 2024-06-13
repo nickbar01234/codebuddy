@@ -57,7 +57,18 @@ const createModel = async (id: string, code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (monaco.editor.getModels().length === 3) {
-    return;
+    setValueModel(code, language, {
+      range: {
+        startLineNumber: 1,
+        startColumn: 1,
+        endLineNumber: 1,
+        endColumn: 1
+      },
+      rangeLength: 0,
+      text: code,
+      rangeOffset: 0,
+      forceMoveMarkers: false
+    });
   }
   await monaco.editor.create(document.getElementById(id), {
     value: code,
@@ -82,6 +93,11 @@ const setValueModel = async (code: string, language: string, changes: {
   const monaco = (window as any).monaco;
   const myEditor = await monaco.editor.getEditors()[2];
   const myLanguage = await myEditor.getModel().getLanguageId();
+  if (myLanguage !== language) {
+    await monaco.editor.setModelLanguage(myEditor.getModel(), language);
+    myEditor.setValue(code);
+    return;
+  }
   const editOperations = {
     identifier: { major: 1, minor: 1 },
     range: new monaco.Range(
@@ -96,10 +112,6 @@ const setValueModel = async (code: string, language: string, changes: {
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-  if (myLanguage !== language) {
-    await monaco.editor.setModelLanguage(myEditor.getModel(), language);
-    myEditor.setValue(code);
-  }
 }
 
 chrome.webNavigation.onCompleted.addListener(
