@@ -67,7 +67,11 @@ const createModel = async (id: string, code: string, language: string) => {
       rangeLength: 0,
       text: code,
       rangeOffset: 0,
-      forceMoveMarkers: false
+      forceMoveMarkers: false,
+      cursorPosition: {
+        lineNumber: 1,
+        column: 1
+      }
     });
   }
   await monaco.editor.create(document.getElementById(id), {
@@ -88,11 +92,34 @@ const setValueModel = async (code: string, language: string, changes: {
   text: string;
   rangeOffset: number;
   forceMoveMarkers: boolean;
+  cursorPosition: {
+    lineNumber: number;
+    column: number;
+  }
 }) => {
+  console.dir(changes)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   const myEditor = await monaco.editor.getEditors()[2];
   const myLanguage = await myEditor.getModel().getLanguageId();
+  await myEditor.updateOptions({ readOnly: false });
+  const { lineNumber, column } = changes.cursorPosition;
+  const trackCursor = document.getElementById("trackCursor");
+  if (trackCursor == null) {
+    return;
+  }
+  const idDecorations = trackCursor?.textContent;
+  if (idDecorations != "" && idDecorations != null) {
+    const decorations = JSON.parse(idDecorations);
+    myEditor.deltaDecorations([decorations], []);
+  }
+  const newCursor = myEditor.deltaDecorations([], [{
+    range: new monaco.Range(lineNumber, column, lineNumber, column),
+    options: {
+      className: 'codeBuddy-cursor'
+    }
+  }]);
+  trackCursor.textContent = JSON.stringify(newCursor[0]);
   if (myLanguage !== language) {
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
@@ -107,7 +134,7 @@ const setValueModel = async (code: string, language: string, changes: {
       changes.range.endColumn
     ),
     text: changes.text,
-    forceMoveMarkers: false
+    forceMoveMarkers: true
   }
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
@@ -122,12 +149,17 @@ chrome.webNavigation.onCompleted.addListener(
           target: { tabId: tabs[0].id ?? 0 },
           func: () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window as any).monaco.editor.getModels()[0].onDidChangeContent(async (event: any) => {
-              const trackEditor = document.getElementById("trackEditor")
+            const myEditor = (window as any).monaco.editor.getEditors()[0]
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            myEditor.onDidChangeModelContent(async (event: any) => {
+              const trackEditor = document.getElementById("trackEditor");
               if (trackEditor != null) {
-                trackEditor.textContent = JSON.stringify(event.changes[0]);
+                trackEditor.textContent = JSON.stringify({
+                  ...event.changes[0],
+                  cursorPosition: myEditor.getPosition(),
+                });
               }
-            })
+            });
           },
           world: "MAIN",
         })

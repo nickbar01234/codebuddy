@@ -45,6 +45,10 @@ interface SetOtherEditorRequest {
     text: string;
     rangeOffset: number;
     forceMoveMarkers: boolean;
+    cursorPosition: {
+      lineNumber: number;
+      column: number;
+    }
   }
 }
 export type ServiceRequest = CookieRequest | GetValueRequest | SetValueRequest | createMonacoModelRequest | SetOtherEditorRequest;

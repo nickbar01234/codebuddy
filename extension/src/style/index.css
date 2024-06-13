@@ -30,3 +30,12 @@
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
 }
+
+
+.codeBuddy-cursor {
+  position: absolute;
+  background-color: blue;
+  width: 2px;
+  height: 100%;
+  z-index: 1000;
+}

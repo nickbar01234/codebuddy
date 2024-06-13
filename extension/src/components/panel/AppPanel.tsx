@@ -46,7 +46,8 @@ const AppPanel = (props: AppPanelProps) => {
       }
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
-        <div id="trackEditor" className="hidden"></div>
+        <div id="trackEditor" className="hidden" />
+        <div id="trackCursor" className="hidden" />
         {props.children}
       </div>
     </ResizableBox>
