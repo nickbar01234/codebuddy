@@ -80,23 +80,24 @@ const setValueModel = async (code: string, language: string, changes: {
 }) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  const myEditor = await monaco.editor.getModels()[2];
-  const myLanguage = await myEditor.getLanguageId();
+  const myEditor = await monaco.editor.getEditors()[2];
+  const myLanguage = await myEditor.getModel().getLanguageId();
   const editOperations = {
     identifier: { major: 1, minor: 1 },
-    range: {
-      startLineNumber: changes.range.startLineNumber,
-      startColumn: changes.range.startColumn,
-      endLineNumber: changes.range.endLineNumber,
-      endColumn: changes.range.endColumn
-    },
+    range: new monaco.Range(
+      changes.range.startLineNumber,
+      changes.range.startColumn,
+      changes.range.endLineNumber,
+      changes.range.endColumn
+    ),
     text: changes.text,
     forceMoveMarkers: false
   }
-  await myEditor.executeEdits("", [editOperations]);
-  console.log("apply changes", changes)
+  await myEditor.updateOptions({ readOnly: false });
+  await myEditor.executeEdits("apply changes", [editOperations]);
+  await myEditor.updateOptions({ readOnly: true });
   if (myLanguage !== language) {
-    await monaco.editor.setModelLanguage(myEditor, language);
+    await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
   }
 }
@@ -110,13 +111,9 @@ chrome.webNavigation.onCompleted.addListener(
           func: () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (window as any).monaco.editor.getModels()[0].onDidChangeContent(async (event: any) => {
-
               const trackEditor = document.getElementById("trackEditor")
-              console.log(event.changes[0]);
               if (trackEditor != null) {
-                console.log("trackEditor");
                 trackEditor.textContent = JSON.stringify(event.changes[0]);
-                console.dir(trackEditor)
               }
             })
           },
@@ -130,7 +127,6 @@ chrome.webNavigation.onCompleted.addListener(
 
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
-    console.debug("Receiving", request);
     switch (request.action) {
       case "cookie": {
         handleCookieRequest().then((res) => {

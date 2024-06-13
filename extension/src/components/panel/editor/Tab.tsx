@@ -8,7 +8,7 @@ interface TabProps extends TabMetadata {
     value: string;
     language: string;
   };
-  change: string;
+  changes: string;
 }
 
 const Tab = (props: TabProps) => {
@@ -20,14 +20,13 @@ const Tab = (props: TabProps) => {
       action: "setValueOtherEditor",
       code: props.code.value,
       language: props.code.language,
-      changes: JSON.parse(props.change),
+      changes: props.changes !== "" ? JSON.parse(props.changes) : {},
     });
   useOnMount(() => {
     registerTab({ id: id, displayHeader: displayHeader });
-  });
-  React.useEffect(() => {
     updateCode();
-  }, []);
+    console.log("register");
+  });
 
   React.useEffect(() => {
     if (activeId === id) {

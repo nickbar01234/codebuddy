@@ -19,7 +19,7 @@ const RoomPanel = () => {
       JSON.stringify({
         code: await sendMessage({ action: "getValue" }),
         codeHTML: leetCodeNode.outerHTML,
-        change: trackEditor?.textContent,
+        changes: trackEditor?.textContent,
       })
     );
   };
@@ -35,9 +35,7 @@ const RoomPanel = () => {
       });
       const trackEditor = document.querySelector("#trackEditor");
       if (trackEditor) {
-        const observer = new MutationObserver(async (mutations) => {
-          console.log("mutations");
-          console.log(mutations);
+        const observer = new MutationObserver(async () => {
           await sendCode();
         });
         observer.observe(trackEditor, {
@@ -55,9 +53,12 @@ const RoomPanel = () => {
 
   return (
     <EditorProvider defaultActiveId={Object.keys(informations)[0]}>
-      {Object.entries(informations).map(([id, info]) => (
-        <Tab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
-      ))}
+      <div className="flex flex-col">
+        <div id="CodeBuddyEditor" className="h-[40vh] w-full"></div>
+        {Object.entries(informations).map(([id, info]) => (
+          <Tab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
+        ))}{" "}
+      </div>
     </EditorProvider>
   );
 };
