@@ -97,7 +97,6 @@ const setValueModel = async (code: string, language: string, changes: {
     column: number;
   }
 }) => {
-  console.dir(changes)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   const myEditor = await monaco.editor.getEditors()[2];
