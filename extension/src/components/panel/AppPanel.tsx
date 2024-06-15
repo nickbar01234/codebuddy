@@ -52,13 +52,12 @@ const AppPanel = (props: AppPanelProps) => {
         })
       }
     >
-      {editorPreference.isCollapsed ? (
-        <CollapsedPanel />
-      ) : (
-        <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
+      <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
+        {editorPreference.isCollapsed && <CollapsedPanel />}
+        <div className={`${editorPreference.isCollapsed ? "hidden" : ""}`}>
           {props.children}
         </div>
-      )}
+      </div>
     </ResizableBox>
   );
 };

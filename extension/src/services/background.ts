@@ -27,7 +27,7 @@ chrome.runtime.onInstalled.addListener((details) => {
     setStorage({
       editorPreference: {
         width: 300 /* px */,
-        isCollapsed: true,
+        isCollapsed: false,
       },
     });
   }
