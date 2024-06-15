@@ -15,7 +15,7 @@ const AppPanel = (props: AppPanelProps) => {
     ExtensionStorage["editorPreference"] | null
   >(null);
 
-  const minWidth = 35; // Set the minimum width threshold
+  const minWidth = 40; // Set the minimum width threshold
 
   useOnMount(() => {
     getStorage("editorPreference").then(setEditorPreference);
