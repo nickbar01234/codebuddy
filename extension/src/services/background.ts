@@ -24,7 +24,12 @@ const handleCookieRequest = async (): Promise<Status> => {
  */
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    setStorage({ editorPreference: { width: 300 /* px */ } });
+    setStorage({
+      editorPreference: {
+        width: 300 /* px */,
+        isCollapsed: false,
+      },
+    });
   }
 });
 
@@ -43,14 +48,13 @@ const getValue = async () => {
     value: userEditor.getValue(),
     language,
   };
-
-}
+};
 
 const setValue = async (value: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userEditor = (window as any).monaco.editor.getModels()[0];
   userEditor.setValue(value);
-}
+};
 
 const createModel = async (id: string, code: string, language: string) => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -64,7 +68,7 @@ const createModel = async (id: string, code: string, language: string) => {
     language: language,
     readOnly: true,
   });
-}
+};
 
 const setValueModel = async (code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,9 +79,9 @@ const setValueModel = async (code: string, language: string) => {
   if (myLanguage !== language) {
     await monaco.editor.setModelLanguage(myEditor, language);
   }
-}
+};
 
-console.dir(chrome.webNavigation)
+console.dir(chrome.webNavigation);
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, _sender, sendResponse) => {
     setTimeout(() => {
@@ -85,12 +89,14 @@ chrome.runtime.onMessage.addListener(
         target: { tabId: _sender.tab?.id ?? 0 },
         func: () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).monaco.editor.getModels()[0].onDidChangeContent((event: any) => {
-            console.dir(event);
-          })
+          (window as any).monaco.editor
+            .getModels()[0]
+            .onDidChangeContent((event: any) => {
+              console.dir(event);
+            });
         },
         world: "MAIN",
-      })
+      });
     }, 1000);
 
     console.debug("Receiving", request);
@@ -102,46 +108,54 @@ chrome.runtime.onMessage.addListener(
         break;
       }
       case "getValue": {
-        chrome.scripting.executeScript({
-          target: { tabId: _sender.tab?.id ?? 0 },
-          func: getValue,
-          world: "MAIN",
-        }).then((result) => {
-          sendResponse(result[0].result);
-        })
+        chrome.scripting
+          .executeScript({
+            target: { tabId: _sender.tab?.id ?? 0 },
+            func: getValue,
+            world: "MAIN",
+          })
+          .then((result) => {
+            sendResponse(result[0].result);
+          });
         break;
       }
       case "setValue": {
-        chrome.scripting.executeScript({
-          target: { tabId: _sender.tab?.id ?? 0 },
-          func: setValue,
-          args: [request.value],
-          world: "MAIN",
-        }).then(() => {
-          sendResponse();
-        })
+        chrome.scripting
+          .executeScript({
+            target: { tabId: _sender.tab?.id ?? 0 },
+            func: setValue,
+            args: [request.value],
+            world: "MAIN",
+          })
+          .then(() => {
+            sendResponse();
+          });
         break;
       }
       case "createModel": {
-        chrome.scripting.executeScript({
-          target: { tabId: _sender.tab?.id ?? 0 },
-          func: createModel,
-          args: [request.id, request.code, request.language],
-          world: "MAIN",
-        }).then(() => {
-          sendResponse();
-        })
+        chrome.scripting
+          .executeScript({
+            target: { tabId: _sender.tab?.id ?? 0 },
+            func: createModel,
+            args: [request.id, request.code, request.language],
+            world: "MAIN",
+          })
+          .then(() => {
+            sendResponse();
+          });
         break;
       }
       case "setValueOtherEditor": {
-        chrome.scripting.executeScript({
-          target: { tabId: _sender.tab?.id ?? 0 },
-          func: setValueModel,
-          args: [request.code, request.language],
-          world: "MAIN",
-        }).then(() => {
-          sendResponse();
-        })
+        chrome.scripting
+          .executeScript({
+            target: { tabId: _sender.tab?.id ?? 0 },
+            func: setValueModel,
+            args: [request.code, request.language],
+            world: "MAIN",
+          })
+          .then(() => {
+            sendResponse();
+          });
         break;
       }
 
@@ -153,4 +167,3 @@ chrome.runtime.onMessage.addListener(
     return true;
   }
 );
-
