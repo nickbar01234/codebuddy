@@ -34,14 +34,13 @@ const AppPanel = (props: AppPanelProps) => {
       className="h-full flex relative"
       handle={VerticalHandle}
       minConstraints={[minWidth, 0]}
-      onResize={(_e, data) => {
+      onResize={(_e, data) =>
         setEditorPreference({
           ...editorPreference,
           width: data.size.width,
           isCollapsed: data.size.width == minWidth,
-        });
-        console.log(editorPreference);
-      }}
+        })
+      }
       onResizeStop={(_e, data) =>
         setStorage({
           editorPreference: {
