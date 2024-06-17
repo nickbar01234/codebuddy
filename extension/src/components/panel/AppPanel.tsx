@@ -33,7 +33,7 @@ const AppPanel = (props: AppPanelProps) => {
       resizeHandles={["w"]}
       className="h-full flex relative"
       handle={VerticalHandle}
-      minConstraints={[minWidth, 500]}
+      minConstraints={[minWidth, 0]}
       onResize={(_e, data) => {
         setEditorPreference({
           ...editorPreference,
