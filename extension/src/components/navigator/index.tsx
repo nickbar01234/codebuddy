@@ -8,7 +8,7 @@ const RootNavigator = () => {
   const [displayPopup, setDisplayPopup] = React.useState(false);
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative flex flex-col">
       <div
         className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto`}
       >
@@ -38,7 +38,7 @@ const RootNavigator = () => {
           </svg>
         </button>
       </div>
-      <div className="p-2 relative h-full w-full">
+      <div className="pt-2 h-full w-full">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
         {state === State.HOME ? null : <RoomPanel />}
       </div>
