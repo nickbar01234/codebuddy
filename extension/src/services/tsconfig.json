@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "module": "ES2020",
+    "lib": ["WebWorker", "ES2015", "DOM"],
+
+    /* Bundler mode */
+    "moduleResolution": "Node",
+
+    "paths": {
+      "@cb/types": ["./types/index.ts"],
+      "@cb/services": ["./services/index.ts"]
+    }
+  },
+  "include": ["./**/*.ts"],
+  "extends": ["../../tsconfig.json"]
+}
