@@ -1,5 +1,4 @@
 export const getQuestionIdFromUrl = (url: string) => {
-  const parts = url.split("/");
   const pattern = /(?<=problems\/)[^/]+/;
   const match = url.match(pattern);
 

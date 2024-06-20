@@ -160,6 +160,11 @@ const RTCProvider = (props: RTCProviderProps) => {
     roomId: string,
     questionId: string
   ): Promise<boolean> => {
+    if (!roomId) {
+      toast.error("Please enter room ID");
+      return false;
+    }
+
     const roomDoc = await db.room(roomId).doc();
     if (!roomDoc.exists()) {
       toast.error("Room does not exist");
