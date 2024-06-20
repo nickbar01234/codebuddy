@@ -25,6 +25,7 @@
       "@cb/hooks/*": ["./hooks/*"],
       "@cb/components/*": ["./components/*"],
       "@cb/utils": ["./utils/index.ts"],
+      "@cb/utils/*": ["./utils/*"],
       "@cb/types": ["./types/index.ts"],
       "@cb/services": ["./services/index.ts"],
       "@cb/context/*": ["./context/*"],

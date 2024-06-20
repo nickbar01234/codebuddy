@@ -8,6 +8,8 @@ import {
 import React from "react";
 import db from "@cb/db";
 import { useState } from "@cb/hooks";
+import { toast } from "sonner";
+import { constructUrlFromQuestionId } from "@cb/utils/url";
 
 const servers = {
   iceServers: [
@@ -19,8 +21,8 @@ const servers = {
 };
 
 interface RTCContext {
-  createRoom: () => void;
-  joinRoom: (id: string) => void;
+  createRoom: (questionId: string) => void;
+  joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
   leaveRoom: () => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
@@ -78,11 +80,11 @@ const RTCProvider = (props: RTCProviderProps) => {
     }
   };
 
-  const createRoom = async () => {
+  const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
     await setDoc(
       roomRef,
-      { usernames: [username] },
+      { usernames: [username], questionId },
       {
         merge: true,
       }
@@ -154,7 +156,24 @@ const RTCProvider = (props: RTCProviderProps) => {
     [username]
   );
 
-  const joinRoom = async (roomId: string) => {
+  const joinRoom = async (
+    roomId: string,
+    questionId: string
+  ): Promise<boolean> => {
+    const roomDoc = await db.room(roomId).doc();
+    if (!roomDoc.exists()) {
+      toast.error("Room does not exist");
+      return false;
+    }
+    const roomQuestionId = roomDoc.data().questionId;
+    if (questionId !== roomQuestionId) {
+      const questionUrl = constructUrlFromQuestionId(roomQuestionId);
+      toast.error("The room you join is on this question:", {
+        description: questionUrl,
+      });
+      return false;
+    }
+
     setRoomId(roomId);
 
     await updateDoc(db.rooms().doc(roomId).ref(), {
@@ -213,6 +232,9 @@ const RTCProvider = (props: RTCProviderProps) => {
         });
       });
     });
+
+    toast.success(`You have successfully joined the room with ID ${roomId}.`);
+    return true;
   };
 
   React.useEffect(() => {
