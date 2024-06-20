@@ -3,8 +3,8 @@ import { getStorage, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { VerticalHandle } from "./Handle";
-import CollapsedPanel from "./CollapsedPanel";
+import { VerticalHandle } from "@cb/components/panel/Handle";
+import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 
 interface AppPanelProps {
   children?: React.ReactNode;

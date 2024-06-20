@@ -3,9 +3,9 @@ import AppPanel from "./components/panel";
 import { useOnMount } from "./hooks";
 import { sendMessage } from "./services";
 import { Status } from "./types";
-import StateProvider from "@cb/context/StateProvider";
-import RootNavigator from "./components/navigator";
-import RTCProvider from "./context/RTCProvider";
+import { StateProvider } from "@cb/context/StateProvider";
+import { RootNavigator } from "@cb/components/navigator/Navigator";
+import { RTCProvider } from "./context/RTCProvider";
 
 const App = () => {
   const [status, setStatus] = React.useState<Status>({

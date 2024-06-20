@@ -9,7 +9,7 @@ import React from "react";
 import db from "@cb/db";
 import { useState } from "@cb/hooks";
 import { toast } from "sonner";
-import { constructUrlFromQuestionId } from "@cb/utils/url";
+import { constructUrlFromQuestionId } from "@cb/utils";
 
 const servers = {
   iceServers: [
@@ -43,7 +43,7 @@ interface Connection {
   channel: RTCDataChannel;
 }
 
-const RTCProvider = (props: RTCProviderProps) => {
+export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
   } = useState();
@@ -294,4 +294,3 @@ const RTCProvider = (props: RTCProviderProps) => {
     </RTCContext.Provider>
   );
 };
-export default RTCProvider;

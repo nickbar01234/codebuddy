@@ -1,10 +1,10 @@
-import { State, stateContext } from "@cb/context/StateProvider";
 import React from "react";
-import Menu from "./menu";
-import RoomPanel from "@cb/components/panel/RoomPanel";
 import { Toaster } from "sonner";
+import { Menu } from "@cb/components/navigator/menu/Menu";
+import { RoomPanel } from "@cb/components/panel/RoomPanel";
+import { State, stateContext } from "@cb/context/StateProvider";
 
-const RootNavigator = () => {
+export const RootNavigator = () => {
   const { state } = React.useContext(stateContext);
   const [displayPopup, setDisplayPopup] = React.useState(false);
 
@@ -55,5 +55,3 @@ const RootNavigator = () => {
     </div>
   );
 };
-
-export default RootNavigator;

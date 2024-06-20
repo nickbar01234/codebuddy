@@ -2,9 +2,9 @@ import { useRTC } from "@cb/hooks/index";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { sendMessage } from "@cb/services";
-import EditorProvider, { Tab } from "./editor";
+import EditorProvider, { Tab } from "@cb/components/panel/editor";
 
-const RoomPanel = () => {
+export const RoomPanel = () => {
   const { informations, sendMessages, connected } = useRTC();
 
   const sendCode = async () => {
@@ -54,5 +54,3 @@ const RoomPanel = () => {
     </EditorProvider>
   );
 };
-
-export default RoomPanel;
