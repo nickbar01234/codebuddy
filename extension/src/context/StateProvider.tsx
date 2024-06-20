@@ -1,4 +1,4 @@
-import { User } from "../types";
+import { User } from "@cb/types";
 import React from "react";
 
 enum State {

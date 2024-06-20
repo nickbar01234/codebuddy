@@ -2,7 +2,7 @@ import { useRTC } from "@cb/hooks/index";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { sendMessage } from "@cb/services";
-import EditorProvider, { Tab } from "@cb/components/panel/editor";
+import { EditorProvider, EditorTab } from "@cb/components/panel/editor";
 
 export const RoomPanel = () => {
   const { informations, sendMessages, connected } = useRTC();
@@ -49,7 +49,7 @@ export const RoomPanel = () => {
   return (
     <EditorProvider defaultActiveId={Object.keys(informations)[0]}>
       {Object.entries(informations).map(([id, info]) => (
-        <Tab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
+        <EditorTab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
       ))}
     </EditorProvider>
   );

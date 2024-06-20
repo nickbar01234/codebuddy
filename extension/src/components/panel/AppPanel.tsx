@@ -1,8 +1,8 @@
+import React from "react";
+import { ResizableBox } from "react-resizable";
 import { useOnMount } from "@cb/hooks";
 import { getStorage, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
-import React from "react";
-import { ResizableBox } from "react-resizable";
 import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 

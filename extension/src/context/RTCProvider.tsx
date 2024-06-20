@@ -6,9 +6,9 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
+import { toast } from "sonner";
 import db from "@cb/db";
 import { useState } from "@cb/hooks";
-import { toast } from "sonner";
 import { constructUrlFromQuestionId } from "@cb/utils";
 
 const servers = {

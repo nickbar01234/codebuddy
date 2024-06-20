@@ -1,17 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { collection, doc, getDoc, getFirestore } from "firebase/firestore";
-import { peerConnectionConverter, roomConverter } from "./converter";
-
-const config = {
-  // TODO(nickbar01234) - Remove API key
-  apiKey: "AIzaSyBDu1Q1vQVi1x6U0GfWXIFmohb32jIhKjY",
-  authDomain: "codebuddy-1b0dc.firebaseapp.com",
-  projectId: "codebuddy-1b0dc",
-  storageBucket: "codebuddy-1b0dc.appspot.com",
-  messagingSenderId: "871987263347",
-  appId: "1:871987263347:web:cb21306ac3d48eb4e5b706",
-  measurementId: "G-64K0SVBGFK",
-};
+import { config } from "@cb/db/config";
+import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
 
 const app = initializeApp(config);
 const firestore = getFirestore(app);

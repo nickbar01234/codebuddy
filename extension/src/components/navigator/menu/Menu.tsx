@@ -1,8 +1,5 @@
 import React from "react";
-import { PlusIcon } from "@cb/components/icons/PlusIcon";
-import { CodeIcon } from "@cb/components/icons/CodeIcon";
-import { CopyIcon } from "@cb/components/icons/CopyIcon";
-import { BackIcon } from "@cb/components/icons/BackIcon";
+import { BackIcon, CodeIcon, CopyIcon, PlusIcon } from "@cb/components/icons";
 import { State, stateContext } from "@cb/context/StateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { getQuestionIdFromUrl } from "@cb/utils";

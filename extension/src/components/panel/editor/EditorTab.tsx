@@ -10,7 +10,7 @@ interface TabProps extends TabMetadata {
   };
 }
 
-const Tab = (props: TabProps) => {
+export const EditorTab = (props: TabProps) => {
   const { id, displayHeader } = props;
   const { activeId, registerTab } = React.useContext(editorProviderContext);
 
@@ -50,5 +50,3 @@ const Tab = (props: TabProps) => {
     </div>
   );
 };
-
-export default Tab;
