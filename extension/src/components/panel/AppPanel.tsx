@@ -53,7 +53,11 @@ const AppPanel = (props: AppPanelProps) => {
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
         {editorPreference.isCollapsed && <CollapsedPanel />}
-        <div className={`${editorPreference.isCollapsed ? "hidden" : ""}`}>
+        <div
+          className={`h-full w-full ${
+            editorPreference.isCollapsed ? "hidden" : ""
+          }`}
+        >
           {props.children}
         </div>
       </div>
