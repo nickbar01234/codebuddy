@@ -10,7 +10,7 @@ interface AppPanelProps {
   children?: React.ReactNode;
 }
 
-const AppPanel = (props: AppPanelProps) => {
+export const AppPanel = (props: AppPanelProps) => {
   const [editorPreference, setEditorPreference] = React.useState<
     ExtensionStorage["editorPreference"] | null
   >(null);
@@ -60,5 +60,3 @@ const AppPanel = (props: AppPanelProps) => {
     </ResizableBox>
   );
 };
-
-export default AppPanel;
