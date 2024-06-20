@@ -35,6 +35,7 @@ interface SetOtherEditorRequest {
   code: string;
   language: string;
 }
+
 export type ServiceRequest =
   | CookieRequest
   | GetValueRequest

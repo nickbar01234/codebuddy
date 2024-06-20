@@ -3,6 +3,7 @@ import {
   arrayUnion,
   onSnapshot,
   setDoc,
+  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
@@ -42,6 +43,8 @@ interface Connection {
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
 }
+
+const MAX_CAPACITY = 4;
 
 const RTCProvider = (props: RTCProviderProps) => {
   const {
@@ -176,6 +179,12 @@ const RTCProvider = (props: RTCProviderProps) => {
       toast.error("The room you join is on this question:", {
         description: questionUrl,
       });
+      return false;
+    }
+
+    if (roomDoc.data().usernames.length >= MAX_CAPACITY) {
+      console.log("The room is at max capacity");
+      toast.error("This room is already at max capacity.");
       return false;
     }
 
