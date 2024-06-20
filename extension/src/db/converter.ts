@@ -6,6 +6,7 @@ import {
 
 export interface Room {
   usernames: string[];
+  questionId: string;
 }
 
 export interface PeerConnection {
@@ -29,6 +30,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     return {
       ...data,
       usernames: data.usernames ?? [],
+      questionId: data.questionId ?? "",
     };
   },
 };
