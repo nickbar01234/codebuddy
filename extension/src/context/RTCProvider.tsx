@@ -45,7 +45,7 @@ interface Connection {
   channel: RTCDataChannel;
 }
 
-const MAX_CAPACITY = 1;
+const MAX_CAPACITY = 2;
 
 const RTCProvider = (props: RTCProviderProps) => {
   const {
