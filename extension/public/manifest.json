@@ -11,8 +11,7 @@
     "cookies",
     "scripting",
     "tabs",
-    "activeTab",
-    "notifications"
+    "activeTab"
   ],
   "content_scripts": [
     {

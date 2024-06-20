@@ -158,6 +158,7 @@ chrome.runtime.onMessage.addListener(
           });
         break;
       }
+
       default:
         console.error(`Unhandled request ${request}`);
         break;
