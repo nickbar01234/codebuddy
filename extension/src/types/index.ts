@@ -36,20 +36,12 @@ interface SetOtherEditorRequest {
   language: string;
 }
 
-interface CreateNotificationRequest {
-  action: "createNotification";
-  title: string;
-  message: string;
-  icon: string;
-}
-
 export type ServiceRequest =
   | CookieRequest
   | GetValueRequest
   | SetValueRequest
   | createMonacoModelRequest
-  | SetOtherEditorRequest
-  | CreateNotificationRequest;
+  | SetOtherEditorRequest;
 
 export type ServiceResponse = {
   cookie: Status;
@@ -60,7 +52,6 @@ export type ServiceResponse = {
   setValue: void;
   createModel: void;
   setValueOtherEditor: void;
-  createNotification: void;
 };
 
 interface EditorPreference {

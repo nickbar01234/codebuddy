@@ -11,7 +11,6 @@ import db from "@cb/db";
 import { useState } from "@cb/hooks";
 import { toast } from "sonner";
 import { constructUrlFromQuestionId } from "@cb/utils/url";
-import { sendMessage as sendCbMessage } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -188,12 +187,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       roomDoc.data().usernames.length >= MAX_CAPACITY
     ) {
       console.log("The room is at max capacity");
-      sendCbMessage({
-        action: "createNotification",
-        title: "Error Joining Room",
-        message: "This room is at max capacity",
-        icon: "./images/error-svgrepo-com.png",
-      });
+      toast.error("This room is already at max capacity.");
       return false;
     }
 

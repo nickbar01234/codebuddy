@@ -158,28 +158,6 @@ chrome.runtime.onMessage.addListener(
           });
         break;
       }
-      case "createNotification": {
-        console.log("calling createNotification");
-        chrome.notifications.create(
-          {
-            type: "basic",
-            title: request.title,
-            message: request.message,
-            iconUrl: chrome.runtime.getURL(request.icon),
-          },
-          function (notificationId) {
-            console.log("Notification created with ID:", notificationId);
-            setTimeout(() => {
-              // chrome.notifications.clear(
-              //   notificationId,
-              // )
-              sendResponse();
-            }, 10000);
-          }
-        );
-        break;
-      }
-
       default:
         console.error(`Unhandled request ${request}`);
         break;
