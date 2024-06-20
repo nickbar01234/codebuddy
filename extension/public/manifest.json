@@ -5,7 +5,15 @@
   "version": "1.0.0",
   "action": {},
   "host_permissions": ["https://leetcode.com/problems/*"],
-  "permissions": ["storage","webNavigation", "cookies", "scripting", "tabs", "activeTab"],
+  "permissions": [
+    "storage",
+    "webNavigation",
+    "cookies",
+    "scripting",
+    "tabs",
+    "activeTab",
+    "notifications"
+  ],
   "content_scripts": [
     {
       "js": ["assets/index.js"],
@@ -16,10 +24,9 @@
   ],
   "background": {
     "service_worker": "assets/background.js",
-        "type": "module"
+    "type": "module"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self';"
-
   }
 }

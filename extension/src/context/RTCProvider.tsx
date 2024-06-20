@@ -3,6 +3,7 @@ import {
   arrayUnion,
   onSnapshot,
   setDoc,
+  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
@@ -10,6 +11,7 @@ import db from "@cb/db";
 import { useState } from "@cb/hooks";
 import { toast } from "sonner";
 import { constructUrlFromQuestionId } from "@cb/utils/url";
+import { sendMessage as sendCbMessage } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -42,6 +44,8 @@ interface Connection {
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
 }
+
+const MAX_CAPACITY = 1;
 
 const RTCProvider = (props: RTCProviderProps) => {
   const {
@@ -175,6 +179,20 @@ const RTCProvider = (props: RTCProviderProps) => {
       const questionUrl = constructUrlFromQuestionId(roomQuestionId);
       toast.error("The room you join is on this question:", {
         description: questionUrl,
+      });
+      return false;
+    }
+
+    if (
+      roomDoc.data().usernames &&
+      roomDoc.data().usernames.length >= MAX_CAPACITY
+    ) {
+      console.log("The room is at max capacity");
+      sendCbMessage({
+        action: "createNotification",
+        title: "Error Joining Room",
+        message: "This room is at max capacity",
+        icon: "./images/error-svgrepo-com.png",
       });
       return false;
     }
