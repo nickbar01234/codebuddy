@@ -40,20 +40,25 @@ chrome.runtime.onInstalled.addListener((details) => {
  */
 
 const getValue = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  const userEditor = monaco.editor.getModels()[0];
-  const language = userEditor.getLanguageId();
+  const codeEditor = monaco.editor
+    .getModels()
+    .slice(0, 2)
+    .find((e: any) => e.getLanguageId() !== "plaintext");
+
   return {
-    value: userEditor.getValue(),
-    language,
+    value: codeEditor.getValue(),
+    language: codeEditor.getLanguageId(),
   };
 };
 
 const setValue = async (value: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userEditor = (window as any).monaco.editor.getModels()[0];
-  userEditor.setValue(value);
+  const monaco = (window as any).monaco;
+  const codeEditor = monaco.editor
+    .getModels()
+    .slice(0, 2)
+    .find((e: any) => e.getLanguageId() !== "plaintext");
+  codeEditor.setValue(value);
 };
 
 const createModel = async (id: string, code: string, language: string) => {
@@ -89,11 +94,14 @@ chrome.runtime.onMessage.addListener(
         target: { tabId: _sender.tab?.id ?? 0 },
         func: () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).monaco.editor
-            .getModels()[0]
-            .onDidChangeContent((event: any) => {
-              console.dir(event);
-            });
+          const monaco = (window as any).monaco;
+          const codeEditor = monaco.editor
+            .getModels()
+            .slice(0, 2)
+            .find((e: any) => e.getLanguageId() !== "plaintext");
+          codeEditor.onDidChangeContent((event: any) => {
+            console.dir(event);
+          });
         },
         world: "MAIN",
       });
