@@ -1,6 +1,6 @@
 import React from "react";
 import { RootNavigator } from "@cb/components/navigator/Navigator";
-import { AppPanel } from "@cb/components/panel/AppPanel";
+import { AppPanel } from "@cb/components/panel";
 import { RTCProvider } from "@cb/context/RTCProvider";
 import { StateProvider } from "@cb/context/StateProvider";
 import { useOnMount } from "@cb/hooks";
