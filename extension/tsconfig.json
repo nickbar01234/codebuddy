@@ -31,6 +31,7 @@
       "@cb/db": ["./db/index.ts"]
     }
   },
-  "include": ["src"],
+  "include": ["./src", "./src/services/index.ts"],
+  "exclude": ["./src/services/**/*.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
