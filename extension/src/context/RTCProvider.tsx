@@ -44,7 +44,7 @@ interface Connection {
   channel: RTCDataChannel;
 }
 
-const MAX_CAPACITY = 2;
+const MAX_CAPACITY = 4;
 
 const RTCProvider = (props: RTCProviderProps) => {
   const {
@@ -182,10 +182,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       return false;
     }
 
-    if (
-      roomDoc.data().usernames &&
-      roomDoc.data().usernames.length >= MAX_CAPACITY
-    ) {
+    if (roomDoc.data().usernames.length >= MAX_CAPACITY) {
       console.log("The room is at max capacity");
       toast.error("This room is already at max capacity.");
       return false;
