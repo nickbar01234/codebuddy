@@ -39,23 +39,6 @@ chrome.runtime.onInstalled.addListener((details) => {
  * @docs https://stackoverflow.com/a/61056192
  */
 
-const getLCCodeEditor = (editorObj: any) => {
-  const editors = editorObj.getEditors();
-  const editorsWithIndex = editors.map((e: any, index: number) => {
-    return {
-      id: e.id,
-      index: index,
-    };
-  });
-  const lcEditors = editorsWithIndex.filter((e: any) => e.id !== "CodeBuddy");
-  const lcEditorIndexes = lcEditors.map((e: any) => e.index);
-  const lcCodeEditor = editorObj
-    .getModels()
-    .filter((m: any, index: number) => lcEditorIndexes.includes(index))
-    .find((e: any) => e.getLanguageId() !== "plaintext");
-  return lcCodeEditor;
-};
-
 const getValue = async () => {
   const monaco = (window as any).monaco;
   const editors = monaco.editor.getEditors();
