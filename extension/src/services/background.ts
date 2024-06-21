@@ -41,19 +41,11 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 const getValue = async () => {
   const monaco = (window as any).monaco;
-  const editors = monaco.editor.getEditors();
-  const editorsWithIndex = editors.map((e: any, index: number) => {
-    return {
-      id: e.id,
-      index: index,
-    };
-  });
-  const lcEditors = editorsWithIndex.filter((e: any) => e.id !== "CodeBuddy");
-  const lcEditorIndexes = lcEditors.map((e: any) => e.index);
   const lcCodeEditor = monaco.editor
-    .getModels()
-    .filter((m: any, index: number) => lcEditorIndexes.includes(index))
-    .find((e: any) => e.getLanguageId() !== "plaintext");
+    .getEditors()
+    .filter((e: any) => e.id !== "CodeBuddy")
+    .map((e: any) => e.getModel())
+    .find((m: any) => m.getLanguageId() !== "plaintext");
 
   return {
     value: lcCodeEditor.getValue(),
@@ -63,19 +55,11 @@ const getValue = async () => {
 
 const setValue = async (value: string) => {
   const monaco = (window as any).monaco;
-  const editors = monaco.editor.getEditors();
-  const editorsWithIndex = editors.map((e: any, index: number) => {
-    return {
-      id: e.id,
-      index: index,
-    };
-  });
-  const lcEditors = editorsWithIndex.filter((e: any) => e.id !== "CodeBuddy");
-  const lcEditorIndexes = lcEditors.map((e: any) => e.index);
   const lcCodeEditor = monaco.editor
-    .getModels()
-    .filter((m: any, index: number) => lcEditorIndexes.includes(index))
-    .find((e: any) => e.getLanguageId() !== "plaintext");
+    .getEditors()
+    .filter((e: any) => e.id !== "CodeBuddy")
+    .map((e: any) => e.getModel())
+    .find((m: any) => m.getLanguageId() !== "plaintext");
   lcCodeEditor.setValue(value);
 };
 
@@ -113,21 +97,11 @@ chrome.runtime.onMessage.addListener(
         target: { tabId: _sender.tab?.id ?? 0 },
         func: () => {
           const monaco = (window as any).monaco;
-          const editors = monaco.editor.getEditors();
-          const editorsWithIndex = editors.map((e: any, index: number) => {
-            return {
-              id: e.id,
-              index: index,
-            };
-          });
-          const lcEditors = editorsWithIndex.filter(
-            (e: any) => e.id !== "CodeBuddy"
-          );
-          const lcEditorIndexes = lcEditors.map((e: any) => e.index);
           const lcCodeEditor = monaco.editor
-            .getModels()
-            .filter((m: any, index: number) => lcEditorIndexes.includes(index))
-            .find((e: any) => e.getLanguageId() !== "plaintext");
+            .getEditors()
+            .filter((e: any) => e.id !== "CodeBuddy")
+            .map((e: any) => e.getModel())
+            .find((m: any) => m.getLanguageId() !== "plaintext");
           lcCodeEditor.onDidChangeContent((event: any) => {
             console.dir(event);
           });
