@@ -33,10 +33,11 @@ const EditorProvider = (props: EditorProviderProps) => {
         <div className="relative">
           <div
             id="CodeBuddyEditor"
-            className={`${
-              canViewCode ? "" : "blur "
-            }h-[40vh] w-full overflow-x-hidden overflow-y-hidden`}
-          />
+            data-view-code={canViewCode}
+            className="data-[view-code=false]:blur h-[40vh] w-full overflow-x-hidden overflow-y-hidden"
+          >
+            ...
+          </div>
           {!canViewCode && (
             <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
