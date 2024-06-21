@@ -39,26 +39,61 @@ chrome.runtime.onInstalled.addListener((details) => {
  * @docs https://stackoverflow.com/a/61056192
  */
 
+const getLCCodeEditor = (editorObj: any) => {
+  const editors = editorObj.getEditors();
+  const editorsWithIndex = editors.map((e: any, index: number) => {
+    return {
+      id: e.id,
+      index: index,
+    };
+  });
+  const lcEditors = editorsWithIndex.filter((e: any) => e.id !== "CodeBuddy");
+  const lcEditorIndexes = lcEditors.map((e: any) => e.index);
+  const lcCodeEditor = editorObj
+    .getModels()
+    .filter((m: any, index: number) => lcEditorIndexes.includes(index))
+    .find((e: any) => e.getLanguageId() !== "plaintext");
+  return lcCodeEditor;
+};
+
 const getValue = async () => {
   const monaco = (window as any).monaco;
-  const codeEditor = monaco.editor
+  const editors = monaco.editor.getEditors();
+  const editorsWithIndex = editors.map((e: any, index: number) => {
+    return {
+      id: e.id,
+      index: index,
+    };
+  });
+  const lcEditors = editorsWithIndex.filter((e: any) => e.id !== "CodeBuddy");
+  const lcEditorIndexes = lcEditors.map((e: any) => e.index);
+  const lcCodeEditor = monaco.editor
     .getModels()
-    .slice(0, 2)
+    .filter((m: any, index: number) => lcEditorIndexes.includes(index))
     .find((e: any) => e.getLanguageId() !== "plaintext");
 
   return {
-    value: codeEditor.getValue(),
-    language: codeEditor.getLanguageId(),
+    value: lcCodeEditor.getValue(),
+    language: lcCodeEditor.getLanguageId(),
   };
 };
 
 const setValue = async (value: string) => {
   const monaco = (window as any).monaco;
-  const codeEditor = monaco.editor
+  const editors = monaco.editor.getEditors();
+  const editorsWithIndex = editors.map((e: any, index: number) => {
+    return {
+      id: e.id,
+      index: index,
+    };
+  });
+  const lcEditors = editorsWithIndex.filter((e: any) => e.id !== "CodeBuddy");
+  const lcEditorIndexes = lcEditors.map((e: any) => e.index);
+  const lcCodeEditor = monaco.editor
     .getModels()
-    .slice(0, 2)
+    .filter((m: any, index: number) => lcEditorIndexes.includes(index))
     .find((e: any) => e.getLanguageId() !== "plaintext");
-  codeEditor.setValue(value);
+  lcCodeEditor.setValue(value);
 };
 
 const createModel = async (id: string, code: string, language: string) => {
@@ -68,11 +103,12 @@ const createModel = async (id: string, code: string, language: string) => {
   if (monaco.editor.getModels().length === 3) {
     return;
   }
-  await monaco.editor.create(document.getElementById(id), {
+  const buddyEditor = await monaco.editor.create(document.getElementById(id), {
     value: code,
     language: language,
     readOnly: true,
   });
+  buddyEditor.id = "CodeBuddy";
 };
 
 const setValueModel = async (code: string, language: string) => {
@@ -93,13 +129,23 @@ chrome.runtime.onMessage.addListener(
       chrome.scripting.executeScript({
         target: { tabId: _sender.tab?.id ?? 0 },
         func: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const monaco = (window as any).monaco;
-          const codeEditor = monaco.editor
+          const editors = monaco.editor.getEditors();
+          const editorsWithIndex = editors.map((e: any, index: number) => {
+            return {
+              id: e.id,
+              index: index,
+            };
+          });
+          const lcEditors = editorsWithIndex.filter(
+            (e: any) => e.id !== "CodeBuddy"
+          );
+          const lcEditorIndexes = lcEditors.map((e: any) => e.index);
+          const lcCodeEditor = monaco.editor
             .getModels()
-            .slice(0, 2)
+            .filter((m: any, index: number) => lcEditorIndexes.includes(index))
             .find((e: any) => e.getLanguageId() !== "plaintext");
-          codeEditor.onDidChangeContent((event: any) => {
+          lcCodeEditor.onDidChangeContent((event: any) => {
             console.dir(event);
           });
         },
