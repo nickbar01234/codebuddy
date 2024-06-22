@@ -8,7 +8,6 @@ const RoomPanel = () => {
   const { informations, sendMessages, connected } = useRTC();
 
   const sendCode = async () => {
-    await waitForElement("#editor", 2000);
     sendMessages(
       JSON.stringify({
         code: await sendMessage({ action: "getValue" }),

@@ -61,6 +61,8 @@ const RTCProvider = (props: RTCProviderProps) => {
   };
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
+    console.log("hello")
+    console.dir(pcs.current[username].pc);
     setConnected((prev) => ({
       ...prev,
       [username]: true,
@@ -102,6 +104,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
+      
       const channel = pc.createDataChannel("channel");
       pcs.current[peer] = {
         username: peer,

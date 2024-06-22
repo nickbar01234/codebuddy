@@ -70,11 +70,13 @@ const createModel = async (id: string, code: string, language: string) => {
       forceMoveMarkers: false
     });
   }
-  await monaco.editor.create(document.getElementById(id), {
-    value: code,
-    language: language,
-    readOnly: true,
-  });
+  else {
+    await monaco.editor.create(document.getElementById(id), {
+      value: code,
+      language: language,
+      readOnly: true,
+    });
+  }
 }
 
 const setValueModel = async (code: string, language: string, changes: {
