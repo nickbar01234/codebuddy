@@ -1,18 +1,18 @@
 import { useRTC } from "@cb/hooks/index";
-import { waitForElement } from "@cb/utils";
-import React from "react";
 import { sendMessage } from "@cb/services";
+import React from "react";
 import EditorProvider, { Tab } from "./editor";
 
 const RoomPanel = () => {
   const { informations, sendMessages, connected } = useRTC();
 
   const sendCode = async () => {
+    console.log("sendCode");
     sendMessages(
       JSON.stringify({
-        code: await sendMessage({ action: "getValue" }),
-        changes: document.querySelector("#trackEditor")?.textContent,
-      })
+      code: await sendMessage({ action: "getValue" }),
+      changes:document.querySelector("#trackEditor")?.textContent ?? "{}",
+      }) || "{}"
     );
   };
 
