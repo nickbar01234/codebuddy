@@ -83,6 +83,9 @@ const RTCProvider = (props: RTCProviderProps) => {
       console.log("Sending message to " + username);
       pcs.current[username].channel.send(message);
     } else {
+      if (connected[username] == undefined) {
+        console.log("Not connected to " + username);
+      } else
       console.log("Data Channel not created yet");
     }
   };
