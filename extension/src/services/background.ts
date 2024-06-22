@@ -40,20 +40,27 @@ chrome.runtime.onInstalled.addListener((details) => {
  */
 
 const getValue = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  const userEditor = monaco.editor.getModels()[0];
-  const language = userEditor.getLanguageId();
+  const lcCodeEditor = monaco.editor
+    .getEditors()
+    .filter((e: any) => e.id !== "CodeBuddy")
+    .map((e: any) => e.getModel())
+    .find((m: any) => m.getLanguageId() !== "plaintext");
+
   return {
-    value: userEditor.getValue(),
-    language,
+    value: lcCodeEditor.getValue(),
+    language: lcCodeEditor.getLanguageId(),
   };
 };
 
 const setValue = async (value: string) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userEditor = (window as any).monaco.editor.getModels()[0];
-  userEditor.setValue(value);
+  const monaco = (window as any).monaco;
+  const lcCodeEditor = monaco.editor
+    .getEditors()
+    .filter((e: any) => e.id !== "CodeBuddy")
+    .map((e: any) => e.getModel())
+    .find((m: any) => m.getLanguageId() !== "plaintext");
+  lcCodeEditor.setValue(value);
 };
 
 const createModel = async (id: string, code: string, language: string) => {
@@ -63,11 +70,12 @@ const createModel = async (id: string, code: string, language: string) => {
   if (monaco.editor.getModels().length === 3) {
     return;
   }
-  await monaco.editor.create(document.getElementById(id), {
+  const buddyEditor = await monaco.editor.create(document.getElementById(id), {
     value: code,
     language: language,
     readOnly: true,
   });
+  buddyEditor.id = "CodeBuddy";
 };
 
 const setValueModel = async (code: string, language: string) => {
@@ -88,12 +96,15 @@ chrome.runtime.onMessage.addListener(
       chrome.scripting.executeScript({
         target: { tabId: _sender.tab?.id ?? 0 },
         func: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window as any).monaco.editor
-            .getModels()[0]
-            .onDidChangeContent((event: any) => {
-              console.dir(event);
-            });
+          const monaco = (window as any).monaco;
+          const lcCodeEditor = monaco.editor
+            .getEditors()
+            .filter((e: any) => e.id !== "CodeBuddy")
+            .map((e: any) => e.getModel())
+            .find((m: any) => m.getLanguageId() !== "plaintext");
+          lcCodeEditor.onDidChangeContent((event: any) => {
+            console.dir(event);
+          });
         },
         world: "MAIN",
       });
