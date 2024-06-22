@@ -1,5 +1,5 @@
 import { setStorage } from "@cb/services";
-import { ServiceRequest, Status } from "@cb/types";
+import { ServiceRequest, Status , SetOtherEditorRequest} from "@cb/types";
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
@@ -57,7 +57,7 @@ const createModel = async (id: string, code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (monaco.editor.getModels().length === 3) {
-    setValueModel(code, language, {
+    setValueModel({code, language, changes:{
       range: {
         startLineNumber: 1,
         startColumn: 1,
@@ -68,7 +68,7 @@ const createModel = async (id: string, code: string, language: string) => {
       text: code,
       rangeOffset: 0,
       forceMoveMarkers: false
-    });
+    }});
   }
   else {
     await monaco.editor.create(document.getElementById(id), {
@@ -79,18 +79,8 @@ const createModel = async (id: string, code: string, language: string) => {
   }
 }
 
-const setValueModel = async (code: string, language: string, changes: {
-  range: {
-    startLineNumber: number;
-    startColumn: number;
-    endLineNumber: number;
-    endColumn: number;
-  };
-  rangeLength: number;
-  text: string;
-  rangeOffset: number;
-  forceMoveMarkers: boolean;
-}) => {
+const setValueModel = async (args: Pick<SetOtherEditorRequest, "code" | "language" | "changes">) => {
+  const { code, language, changes } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   const myEditor = await monaco.editor.getEditors()[2];
@@ -184,7 +174,7 @@ chrome.runtime.onMessage.addListener(
         chrome.scripting.executeScript({
           target: { tabId: _sender.tab?.id ?? 0 },
           func: setValueModel,
-          args: [request.code, request.language, request.changes],
+          args: [{code: request.code, language: request.language, changes: request.changes}],
           world: "MAIN",
         }).then(() => {
           sendResponse();
