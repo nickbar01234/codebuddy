@@ -30,7 +30,7 @@ interface createMonacoModelRequest {
   language: string;
 }
 
-interface SetOtherEditorRequest {
+export interface SetOtherEditorRequest {
   action: "setValueOtherEditor";
   code: string;
   language: string;
