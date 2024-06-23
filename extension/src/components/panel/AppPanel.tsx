@@ -5,7 +5,6 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import { VerticalHandle } from "./Handle";
 import CollapsedPanel from "./CollapsedPanel";
-
 interface AppPanelProps {
   children?: React.ReactNode;
 }
@@ -16,6 +15,7 @@ const AppPanel = (props: AppPanelProps) => {
   >(null);
 
   const minWidth = 40; // Set the minimum width threshold
+
 
   useOnMount(() => {
     getStorage("editorPreference").then(setEditorPreference);
@@ -58,6 +58,7 @@ const AppPanel = (props: AppPanelProps) => {
             editorPreference.isCollapsed ? "hidden" : ""
           }`}
         >
+          <div id = "trackEditor" className="hidden"></div>
           {props.children}
         </div>
       </div>

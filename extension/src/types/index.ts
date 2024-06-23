@@ -30,10 +30,23 @@ interface createMonacoModelRequest {
   language: string;
 }
 
-interface SetOtherEditorRequest {
+export interface SetOtherEditorRequest {
   action: "setValueOtherEditor";
   code: string;
   language: string;
+  changes: {
+    range: {
+      startLineNumber: number;
+      startColumn: number;
+      endLineNumber: number;
+      endColumn: number;
+    };
+    rangeLength: number;
+    text: string;
+    rangeOffset: number;
+    forceMoveMarkers: boolean;
+  }
+  changeUser: boolean;
 }
 
 export type ServiceRequest =

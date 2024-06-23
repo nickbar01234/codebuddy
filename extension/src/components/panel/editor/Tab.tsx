@@ -1,36 +1,45 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
 import { useOnMount } from "@cb/hooks";
 import { sendMessage } from "@cb/services";
+import { set } from "mongoose";
 
 interface TabProps extends TabMetadata {
   code: {
     value: string;
     language: string;
   };
+  changes: string;
 }
 
 const Tab = (props: TabProps) => {
   const { id, displayHeader } = props;
   const { activeId, registerTab } = React.useContext(editorProviderContext);
+  const [changeUser, setChangeUser] = React.useState(false);
 
-  const updateCode = () =>
+  useOnMount(() => {
+    registerTab({ id: id, displayHeader: displayHeader });
     sendMessage({
-      action: "setValueOtherEditor",
+      action: "createModel",
+      id: "CodeBuddyEditor",
       code: props.code.value,
       language: props.code.language,
     });
-  useOnMount(() => {
-    registerTab({ id: id, displayHeader: displayHeader });
+    console.log("register");
   });
   React.useEffect(() => {
-    updateCode();
-  }, []);
-
+    setChangeUser(true);
+  }, [activeId]);
   React.useEffect(() => {
-    console.log(props.code.value);
     if (activeId === id) {
-      updateCode();
+      sendMessage({
+        action: "setValueOtherEditor",
+        code: props.code.value,
+        language: props.code.language,
+        changes: props.changes !== "" ? JSON.parse(props.changes) : {},
+        changeUser: changeUser,
+      });
+      setChangeUser(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, id, props.code.value, props.code.language]);

@@ -29,7 +29,7 @@ interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, string>;
   sendMessages: (value: string) => void;
-  connected: boolean;
+  connected: Record<string, boolean>;
 }
 
 interface RTCProviderProps {
@@ -57,12 +57,22 @@ const RTCProvider = (props: RTCProviderProps) => {
     Record<string, string>
   >({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
-  const [connected, setConnected] = React.useState<boolean>(false);
+  const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
   const sendMessages = (value: string) => {
+    if (connected == undefined) return;
     for (const username of Object.keys(pcs.current)) {
       sendMessage(username)(value);
     }
+  };
+  const onOpen = (username: string) => () => {
+    console.log("Data Channel is open for " + username);
+    console.log("hello")
+    console.dir(pcs.current[username].pc);
+    setConnected((prev) => ({
+      ...prev,
+      [username]: true,
+    }));
   };
 
   const onmessage = (username: string) =>
@@ -79,6 +89,9 @@ const RTCProvider = (props: RTCProviderProps) => {
       console.log("Sending message to " + username);
       pcs.current[username].channel.send(message);
     } else {
+      if (connected[username] == undefined) {
+        console.log("Not connected to " + username);
+      } else
       console.log("Data Channel not created yet");
     }
   };
@@ -100,6 +113,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
+      
       const channel = pc.createDataChannel("channel");
       pcs.current[peer] = {
         username: peer,
@@ -108,6 +122,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       };
 
       channel.onmessage = onmessage(peer);
+      channel.onopen = onOpen(peer);
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
@@ -150,10 +165,6 @@ const RTCProvider = (props: RTCProviderProps) => {
         maybeData.answerCandidates.forEach((candidate: RTCIceCandidateInit) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
         });
-      });
-
-      pc.addEventListener("connectionstatechange", () => {
-        setConnected(pc.iceConnectionState === "connected");
       });
     },
     [username]
@@ -219,6 +230,7 @@ const RTCProvider = (props: RTCProviderProps) => {
           pc.ondatachannel = (event) => {
             pcs.current[peer].channel = event.channel;
             pcs.current[peer].channel.onmessage = onmessage(peer);
+            pcs.current[peer].channel.onopen = onOpen(peer);
           };
           pc.onicecandidate = async (event) => {
             if (event.candidate) {
@@ -239,10 +251,6 @@ const RTCProvider = (props: RTCProviderProps) => {
 
         data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-
-        pc.addEventListener("connectionstatechange", () => {
-          setConnected(pc.iceConnectionState === "connected");
         });
       });
     });
