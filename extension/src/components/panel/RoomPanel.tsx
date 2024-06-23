@@ -12,7 +12,7 @@ const RoomPanel = () => {
       JSON.stringify({
       code: await sendMessage({ action: "getValue" }),
       changes:document.querySelector("#trackEditor")?.textContent ?? "{}",
-      }) || "{}"
+      })
     );
   };
 

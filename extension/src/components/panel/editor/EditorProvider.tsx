@@ -27,10 +27,16 @@ const EditorProvider = (props: EditorProviderProps) => {
 
   return (
     <Provider value={{ activeId: activeId, registerTab: registerTab }}>
-      <div className="flex flex-col">
-        <div id="CodeBuddyEditor" className="h-[40vh] w-full" />
+      <div className="flex flex-col h-full justify-between">
+        <div>
+          <div
+            id="CodeBuddyEditor"
+            className="h-[40vh] w-full overflow-x-hidden overflow-y-hidden"
+          />
+          {children}
+        </div>
         <div
-          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto text-sm`}
+          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto text-sm`}
         >
           {tabs.map((tab) => (
             <React.Fragment key={tab.id}>
@@ -50,8 +56,6 @@ const EditorProvider = (props: EditorProviderProps) => {
             </React.Fragment>
           ))}
         </div>
-
-        {children}
       </div>
     </Provider>
   );

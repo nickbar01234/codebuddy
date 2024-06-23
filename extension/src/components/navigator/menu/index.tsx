@@ -1,6 +1,8 @@
 import { State, stateContext } from "@cb/context/StateProvider";
 import { useRTC } from "@cb/hooks/index";
 import React from "react";
+import { toast } from "sonner";
+import { getQuestionIdFromUrl } from "@cb/utils/url";
 
 interface MenuItem {
   display: string;
@@ -43,7 +45,8 @@ const Menu = (props: MenuProps) => {
           ),
           onClick: () => {
             setState(State.ROOM);
-            createRoom();
+            const questionId = getQuestionIdFromUrl(window.location.href);
+            createRoom(questionId);
             setDisplayMenu(false);
           },
         },
@@ -148,11 +151,14 @@ const Menu = (props: MenuProps) => {
               height="1em"
               fill="currentColor"
               className="h-4 w-4 cursor-pointer hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
-              onClick={() => {
-                joinRoom(inputRoomId);
+              onClick={async () => {
+                const questionId = getQuestionIdFromUrl(window.location.href);
+                const haveJoined = await joinRoom(inputRoomId, questionId);
+                if (haveJoined) {
+                  setState(State.ROOM);
+                }
                 setDisplayInputRoomId(false);
                 setDisplayMenu(false);
-                setState(State.ROOM);
               }}
             >
               <path

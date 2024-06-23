@@ -50,6 +50,7 @@ const entry = () => {
 
   return {
     rooms: rooms,
+    room: room,
     connections: connections,
   };
 };
