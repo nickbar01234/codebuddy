@@ -3,11 +3,14 @@ import {
   arrayUnion,
   onSnapshot,
   setDoc,
+  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
 import db from "@cb/db";
 import { useState } from "@cb/hooks";
+import { toast } from "sonner";
+import { constructUrlFromQuestionId } from "@cb/utils/url";
 
 const servers = {
   iceServers: [
@@ -19,14 +22,14 @@ const servers = {
 };
 
 interface RTCContext {
-  createRoom: () => void;
-  joinRoom: (id: string) => void;
+  createRoom: (questionId: string) => void;
+  joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
   leaveRoom: () => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, string>;
   sendMessages: (value: string) => void;
-  connected: boolean;
+  connected: Record<string, boolean>;
 }
 
 interface RTCProviderProps {
@@ -41,6 +44,8 @@ interface Connection {
   channel: RTCDataChannel;
 }
 
+const MAX_CAPACITY = 4;
+
 const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
@@ -52,12 +57,22 @@ const RTCProvider = (props: RTCProviderProps) => {
     Record<string, string>
   >({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
-  const [connected, setConnected] = React.useState<boolean>(false);
+  const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
   const sendMessages = (value: string) => {
+    if (connected == undefined) return;
     for (const username of Object.keys(pcs.current)) {
       sendMessage(username)(value);
     }
+  };
+  const onOpen = (username: string) => () => {
+    console.log("Data Channel is open for " + username);
+    console.log("hello")
+    console.dir(pcs.current[username].pc);
+    setConnected((prev) => ({
+      ...prev,
+      [username]: true,
+    }));
   };
 
   const onmessage = (username: string) =>
@@ -74,15 +89,18 @@ const RTCProvider = (props: RTCProviderProps) => {
       console.log("Sending message to " + username);
       pcs.current[username].channel.send(message);
     } else {
+      if (connected[username] == undefined) {
+        console.log("Not connected to " + username);
+      } else
       console.log("Data Channel not created yet");
     }
   };
 
-  const createRoom = async () => {
+  const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
     await setDoc(
       roomRef,
-      { usernames: [username] },
+      { usernames: [username], questionId },
       {
         merge: true,
       }
@@ -95,6 +113,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
+      
       const channel = pc.createDataChannel("channel");
       pcs.current[peer] = {
         username: peer,
@@ -103,6 +122,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       };
 
       channel.onmessage = onmessage(peer);
+      channel.onopen = onOpen(peer);
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
@@ -146,15 +166,39 @@ const RTCProvider = (props: RTCProviderProps) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
         });
       });
-
-      pc.addEventListener("connectionstatechange", () => {
-        setConnected(pc.iceConnectionState === "connected");
-      });
     },
     [username]
   );
 
-  const joinRoom = async (roomId: string) => {
+  const joinRoom = async (
+    roomId: string,
+    questionId: string
+  ): Promise<boolean> => {
+    if (!roomId) {
+      toast.error("Please enter room ID");
+      return false;
+    }
+
+    const roomDoc = await db.room(roomId).doc();
+    if (!roomDoc.exists()) {
+      toast.error("Room does not exist");
+      return false;
+    }
+    const roomQuestionId = roomDoc.data().questionId;
+    if (questionId !== roomQuestionId) {
+      const questionUrl = constructUrlFromQuestionId(roomQuestionId);
+      toast.error("The room you join is on this question:", {
+        description: questionUrl,
+      });
+      return false;
+    }
+
+    if (roomDoc.data().usernames.length >= MAX_CAPACITY) {
+      console.log("The room is at max capacity");
+      toast.error("This room is already at max capacity.");
+      return false;
+    }
+
     setRoomId(roomId);
 
     await updateDoc(db.rooms().doc(roomId).ref(), {
@@ -186,6 +230,7 @@ const RTCProvider = (props: RTCProviderProps) => {
           pc.ondatachannel = (event) => {
             pcs.current[peer].channel = event.channel;
             pcs.current[peer].channel.onmessage = onmessage(peer);
+            pcs.current[peer].channel.onopen = onOpen(peer);
           };
           pc.onicecandidate = async (event) => {
             if (event.candidate) {
@@ -207,12 +252,11 @@ const RTCProvider = (props: RTCProviderProps) => {
         data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
         });
-
-        pc.addEventListener("connectionstatechange", () => {
-          setConnected(pc.iceConnectionState === "connected");
-        });
       });
     });
+
+    toast.success(`You have successfully joined the room with ID ${roomId}.`);
+    return true;
   };
 
   React.useEffect(() => {

@@ -2,13 +2,23 @@ import { State, stateContext } from "@cb/context/StateProvider";
 import React from "react";
 import Menu from "./menu";
 import RoomPanel from "@cb/components/panel/RoomPanel";
+import { Toaster } from "sonner";
 
 const RootNavigator = () => {
   const { state } = React.useContext(stateContext);
   const [displayPopup, setDisplayPopup] = React.useState(false);
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative flex flex-col">
+      <Toaster
+        richColors
+        expand
+        closeButton
+        visibleToasts={5}
+        toastOptions={{
+          duration: 10 * 1000,
+        }}
+      />
       <div
         className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto`}
       >
@@ -38,7 +48,7 @@ const RootNavigator = () => {
           </svg>
         </button>
       </div>
-      <div className="p-2 relative h-full w-full">
+      <div className="pt-2 h-full w-full">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
         {state === State.HOME ? null : <RoomPanel />}
       </div>

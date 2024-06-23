@@ -4,6 +4,7 @@ import { ExtensionStorage } from "@cb/types";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { VerticalHandle } from "./Handle";
+import CollapsedPanel from "./CollapsedPanel";
 
 interface AppPanelProps {
   children?: React.ReactNode;
@@ -13,6 +14,8 @@ const AppPanel = (props: AppPanelProps) => {
   const [editorPreference, setEditorPreference] = React.useState<
     ExtensionStorage["editorPreference"] | null
   >(null);
+
+  const minWidth = 40; // Set the minimum width threshold
 
   useOnMount(() => {
     getStorage("editorPreference").then(setEditorPreference);
@@ -30,10 +33,12 @@ const AppPanel = (props: AppPanelProps) => {
       resizeHandles={["w"]}
       className="h-full flex relative"
       handle={VerticalHandle}
+      minConstraints={[minWidth, 0]}
       onResize={(_e, data) =>
         setEditorPreference({
           ...editorPreference,
           width: data.size.width,
+          isCollapsed: data.size.width == minWidth,
         })
       }
       onResizeStop={(_e, data) =>
@@ -41,13 +46,21 @@ const AppPanel = (props: AppPanelProps) => {
           editorPreference: {
             ...editorPreference,
             width: data.size.width,
+            isCollapsed: data.size.width == minWidth,
           },
         })
       }
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
-        <div id="trackEditor" className="hidden"></div>
-        {props.children}
+        {editorPreference.isCollapsed && <CollapsedPanel />}
+        <div
+          className={`h-full w-full ${
+            editorPreference.isCollapsed ? "hidden" : ""
+          }`}
+        >
+          <div id = "trackEditor" className="hidden"></div>
+          {props.children}
+        </div>
       </div>
     </ResizableBox>
   );
