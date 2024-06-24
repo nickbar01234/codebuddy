@@ -1,1 +1,1 @@
-export * from "@cb/services/handlers/editor";
+export * from "@cb/services/handlers/editor/layout";
