@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
 import { useOnMount } from "@cb/hooks";
 import { sendMessage } from "@cb/services";
-import { set } from "mongoose";
 
 interface TabProps extends TabMetadata {
   code: {
