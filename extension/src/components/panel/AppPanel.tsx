@@ -5,6 +5,7 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import { VerticalHandle } from "./Handle";
 import CollapsedPanel from "./CollapsedPanel";
+
 interface AppPanelProps {
   children?: React.ReactNode;
 }
@@ -37,7 +38,7 @@ const AppPanel = (props: AppPanelProps) => {
         setEditorPreference({
           ...editorPreference,
           width: data.size.width,
-          isCollapsed: data.size.width == minWidth,
+          isCollapsed: data.size.width === minWidth,
         })
       }
       onResizeStop={(_e, data) => {
@@ -45,7 +46,7 @@ const AppPanel = (props: AppPanelProps) => {
           editorPreference: {
             ...editorPreference,
             width: data.size.width,
-            isCollapsed: data.size.width == minWidth,
+            isCollapsed: data.size.width === minWidth,
           },
         });
         sendMessage({
