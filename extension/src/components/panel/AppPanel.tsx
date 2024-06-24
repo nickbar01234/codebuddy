@@ -38,7 +38,7 @@ export const AppPanel = (props: AppPanelProps) => {
         setEditorPreference({
           ...editorPreference,
           width: data.size.width,
-          isCollapsed: data.size.width == minWidth,
+          isCollapsed: data.size.width === minWidth,
         })
       }
       onResizeStop={(_e, data) => {
@@ -46,7 +46,7 @@ export const AppPanel = (props: AppPanelProps) => {
           editorPreference: {
             ...editorPreference,
             width: data.size.width,
-            isCollapsed: data.size.width == minWidth,
+            isCollapsed: data.size.width === minWidth,
           },
         });
         sendMessage({

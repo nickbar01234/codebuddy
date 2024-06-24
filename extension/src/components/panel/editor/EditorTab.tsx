@@ -48,7 +48,7 @@ export const EditorTab = (props: TabProps) => {
   return (
     <div
       data-active={activeId === id}
-      className="flex h-8 w-full items-center gap-x-2 data-[active=false]:hidden border-b p-1 border-[#0000000f]"
+      className="flex h-8 w-full items-center gap-x-2 data-[active=false]:hidden border-b p-1 border-[#0000000f] overflow-x-auto whitespace-nowrap"
     >
       <h1>{props.code.language}</h1>
       <button
