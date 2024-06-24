@@ -1,7 +1,7 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { useOnMount } from "@cb/hooks";
-import { getStorage, setStorage } from "@cb/services";
+import { getStorage, sendMessage, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
@@ -41,15 +41,19 @@ export const AppPanel = (props: AppPanelProps) => {
           isCollapsed: data.size.width == minWidth,
         })
       }
-      onResizeStop={(_e, data) =>
+      onResizeStop={(_e, data) => {
         setStorage({
           editorPreference: {
             ...editorPreference,
             width: data.size.width,
             isCollapsed: data.size.width == minWidth,
           },
-        })
-      }
+        });
+        sendMessage({
+          action: "updateEditorLayout",
+          monacoEditorId: "CodeBuddy",
+        });
+      }}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
         {editorPreference.isCollapsed && <CollapsedPanel />}

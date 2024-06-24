@@ -61,7 +61,7 @@ export const Menu = (props: MenuProps) => {
 
   return (
     <div
-      className="bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 absolute right-2 top-2 w-[200px] rounded-lg p-2 outline-none transform opacity-100 scale-100 z-50"
+      className="bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 absolute right-2 top-8 w-[200px] rounded-lg p-2 outline-none transform opacity-100 scale-100 z-50"
       role="menu"
       data-headlessui-state="open"
     >

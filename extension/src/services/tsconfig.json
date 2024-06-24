@@ -8,7 +8,8 @@
 
     "paths": {
       "@cb/types": ["./types/index.ts"],
-      "@cb/services": ["./services/index.ts"]
+      "@cb/services": ["./services/index.ts"],
+      "@cb/services/*": ["./services/*"]
     }
   },
   "include": ["./**/*.ts"],
