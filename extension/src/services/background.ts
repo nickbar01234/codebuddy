@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { setStorage } from "@cb/services";
-import { ServiceRequest, Status , SetOtherEditorRequest} from "@cb/types";
+import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
+import { updateEditorLayout } from "@cb/services/handlers/editor";
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
@@ -76,35 +77,48 @@ const createModel = async (id: string, code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (monaco.editor.getModels().length === 3) {
-    setValueModel({code, language, changes:{
-      range: {
-        startLineNumber: 1,
-        startColumn: 1,
-        endLineNumber: 1,
-        endColumn: 1
+    setValueModel({
+      code,
+      language,
+      changes: {
+        range: {
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: 1,
+          endColumn: 1,
+        },
+        rangeLength: 0,
+        text: code,
+        rangeOffset: 0,
+        forceMoveMarkers: false,
       },
-      rangeLength: 0,
-      text: code,
-      rangeOffset: 0,
-      forceMoveMarkers: false
-    },
-    changeUser: true});
-  }
-  else {
-    const buddyEditor = await monaco.editor.create(document.getElementById(id), {
-      value: code,
-      language: language,
-      readOnly: true,
+      changeUser: true,
     });
+  } else {
+    const buddyEditor = await monaco.editor.create(
+      document.getElementById(id),
+      {
+        value: code,
+        language: language,
+        readOnly: true,
+      }
+    );
     buddyEditor.id = "CodeBuddy";
   }
 };
 
-const setValueModel = async (args: Pick<SetOtherEditorRequest, "code" | "language" | "changes" | "changeUser">) => {
+const setValueModel = async (
+  args: Pick<
+    SetOtherEditorRequest,
+    "code" | "language" | "changes" | "changeUser"
+  >
+) => {
   const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  const myEditor = await monaco.editor.getEditors().find((e: any) => e.id === "CodeBuddy");
+  const myEditor = await monaco.editor
+    .getEditors()
+    .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
   if (myLanguage !== language || changeUser) {
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
@@ -120,12 +134,12 @@ const setValueModel = async (args: Pick<SetOtherEditorRequest, "code" | "languag
       changes.range.endColumn
     ),
     text: changes.text,
-    forceMoveMarkers: false
-  }
+    forceMoveMarkers: false,
+  };
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-}
+};
 
 chrome.webNavigation.onCompleted.addListener(
   function () {
@@ -142,14 +156,14 @@ chrome.webNavigation.onCompleted.addListener(
               .map((e: any) => e.getModel())
               .find((m: any) => m.getLanguageId() !== "plaintext");
             lcCodeEditor.onDidChangeContent((event: any) => {
-              const trackEditor = document.getElementById("trackEditor")
+              const trackEditor = document.getElementById("trackEditor");
               if (trackEditor != null) {
                 trackEditor.textContent = JSON.stringify(event.changes[0]);
               }
-            })
+            });
           },
           world: "MAIN",
-        })
+        });
       }, 1000);
     });
   },
@@ -157,7 +171,7 @@ chrome.webNavigation.onCompleted.addListener(
 );
 
 chrome.runtime.onMessage.addListener(
-  (request: ServiceRequest, _sender, sendResponse) => {
+  (request: ServiceRequest, sender, sendResponse) => {
     switch (request.action) {
       case "cookie": {
         handleCookieRequest().then((res) => {
@@ -168,7 +182,7 @@ chrome.runtime.onMessage.addListener(
       case "getValue": {
         chrome.scripting
           .executeScript({
-            target: { tabId: _sender.tab?.id ?? 0 },
+            target: { tabId: sender.tab?.id ?? 0 },
             func: getValue,
             world: "MAIN",
           })
@@ -177,7 +191,7 @@ chrome.runtime.onMessage.addListener(
           });
         chrome.scripting
           .executeScript({
-            target: { tabId: _sender.tab?.id ?? 0 },
+            target: { tabId: sender.tab?.id ?? 0 },
             func: getValue,
             world: "MAIN",
           })
@@ -189,7 +203,7 @@ chrome.runtime.onMessage.addListener(
       case "setValue": {
         chrome.scripting
           .executeScript({
-            target: { tabId: _sender.tab?.id ?? 0 },
+            target: { tabId: sender.tab?.id ?? 0 },
             func: setValue,
             args: [request.value],
             world: "MAIN",
@@ -199,7 +213,7 @@ chrome.runtime.onMessage.addListener(
           });
         chrome.scripting
           .executeScript({
-            target: { tabId: _sender.tab?.id ?? 0 },
+            target: { tabId: sender.tab?.id ?? 0 },
             func: setValue,
             args: [request.value],
             world: "MAIN",
@@ -212,7 +226,7 @@ chrome.runtime.onMessage.addListener(
       case "createModel": {
         chrome.scripting
           .executeScript({
-            target: { tabId: _sender.tab?.id ?? 0 },
+            target: { tabId: sender.tab?.id ?? 0 },
             func: createModel,
             args: [request.id, request.code, request.language],
             world: "MAIN",
@@ -225,14 +239,31 @@ chrome.runtime.onMessage.addListener(
       case "setValueOtherEditor": {
         chrome.scripting
           .executeScript({
-            target: { tabId: _sender.tab?.id ?? 0 },
+            target: { tabId: sender.tab?.id ?? 0 },
             func: setValueModel,
-            args: [{code: request.code, language: request.language, changes: request.changes, changeUser: request.changeUser}],
+            args: [
+              {
+                code: request.code,
+                language: request.language,
+                changes: request.changes,
+                changeUser: request.changeUser,
+              },
+            ],
             world: "MAIN",
           })
           .then(() => {
             sendResponse();
           });
+        break;
+      }
+
+      case "updateEditorLayout": {
+        chrome.scripting.executeScript({
+          target: { tabId: sender.tab?.id ?? 0 },
+          func: updateEditorLayout,
+          args: [{ id: request.monacoEditorId }],
+          world: "MAIN",
+        });
         break;
       }
 

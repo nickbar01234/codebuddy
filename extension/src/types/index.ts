@@ -45,8 +45,13 @@ export interface SetOtherEditorRequest {
     text: string;
     rangeOffset: number;
     forceMoveMarkers: boolean;
-  }
+  };
   changeUser: boolean;
+}
+
+interface UpdateEditorLayoutRequest {
+  action: "updateEditorLayout";
+  monacoEditorId: string;
 }
 
 export type ServiceRequest =
@@ -54,7 +59,8 @@ export type ServiceRequest =
   | GetValueRequest
   | SetValueRequest
   | createMonacoModelRequest
-  | SetOtherEditorRequest;
+  | SetOtherEditorRequest
+  | UpdateEditorLayoutRequest;
 
 export type ServiceResponse = {
   cookie: Status;
@@ -65,6 +71,7 @@ export type ServiceResponse = {
   setValue: void;
   createModel: void;
   setValueOtherEditor: void;
+  updateEditorLayout: void;
 };
 
 interface EditorPreference {

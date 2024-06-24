@@ -1,5 +1,5 @@
 import { useOnMount } from "@cb/hooks";
-import { getStorage, setStorage } from "@cb/services";
+import { getStorage, sendMessage, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import React from "react";
 import { ResizableBox } from "react-resizable";
@@ -15,7 +15,6 @@ const AppPanel = (props: AppPanelProps) => {
   >(null);
 
   const minWidth = 40; // Set the minimum width threshold
-
 
   useOnMount(() => {
     getStorage("editorPreference").then(setEditorPreference);
@@ -41,15 +40,19 @@ const AppPanel = (props: AppPanelProps) => {
           isCollapsed: data.size.width == minWidth,
         })
       }
-      onResizeStop={(_e, data) =>
+      onResizeStop={(_e, data) => {
         setStorage({
           editorPreference: {
             ...editorPreference,
             width: data.size.width,
             isCollapsed: data.size.width == minWidth,
           },
-        })
-      }
+        });
+        sendMessage({
+          action: "updateEditorLayout",
+          monacoEditorId: "CodeBuddy",
+        });
+      }}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
         {editorPreference.isCollapsed && <CollapsedPanel />}
@@ -58,7 +61,7 @@ const AppPanel = (props: AppPanelProps) => {
             editorPreference.isCollapsed ? "hidden" : ""
           }`}
         >
-          <div id = "trackEditor" className="hidden"></div>
+          <div id="trackEditor" className="hidden"></div>
           {props.children}
         </div>
       </div>

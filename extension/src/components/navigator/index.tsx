@@ -48,7 +48,7 @@ const RootNavigator = () => {
           </svg>
         </button>
       </div>
-      <div className="pt-2 h-full w-full">
+      <div className="h-full w-full">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
         {state === State.HOME ? null : <RoomPanel />}
       </div>
