@@ -86,10 +86,10 @@ export const Menu = (props: MenuProps) => {
                 const questionId = getQuestionIdFromUrl(window.location.href);
                 const haveJoined = await joinRoom(inputRoomId, questionId);
                 if (haveJoined) {
-                  setDisplayInputRoomId(false);
-                  setDisplayMenu(false);
                   setState(State.ROOM);
                 }
+                setDisplayInputRoomId(false);
+                setDisplayMenu(false);
               }}
             />
             <input
