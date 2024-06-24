@@ -30,12 +30,14 @@ export const EditorProvider = (props: EditorProviderProps) => {
   return (
     <Provider value={{ activeId: activeId, registerTab: registerTab }}>
       <div className="flex flex-col h-full justify-between">
-        <div>
-          <div
-            id="CodeBuddyEditor"
-            className="h-[40vh] w-full overflow-x-hidden overflow-y-hidden"
-          />
+        <div className="flex flex-col grow gap-y-2">
           {children}
+          <div className="grow relative">
+            <div
+              id="CodeBuddyEditor"
+              className="absolute top-0 left-0 w-full overflow-auto h-full"
+            />
+          </div>
         </div>
         <div
           className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto text-sm`}
