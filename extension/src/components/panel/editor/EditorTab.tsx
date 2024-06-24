@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
 import { useOnMount } from "@cb/hooks";
 import { sendMessage } from "@cb/services";
-import { set } from "mongoose";
 
 interface TabProps extends TabMetadata {
   code: {
@@ -12,7 +11,7 @@ interface TabProps extends TabMetadata {
   changes: string;
 }
 
-const Tab = (props: TabProps) => {
+export const EditorTab = (props: TabProps) => {
   const { id, displayHeader } = props;
   const { activeId, registerTab } = React.useContext(editorProviderContext);
   const [changeUser, setChangeUser] = React.useState(false);
@@ -59,5 +58,3 @@ const Tab = (props: TabProps) => {
     </div>
   );
 };
-
-export default Tab;

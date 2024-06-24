@@ -1,1 +1,1 @@
-export { default } from "./AppPanel";
+export { AppPanel } from "@cb/components/panel/AppPanel";

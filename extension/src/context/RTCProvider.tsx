@@ -7,10 +7,10 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
+import { toast } from "sonner";
 import db from "@cb/db";
 import { useState } from "@cb/hooks";
-import { toast } from "sonner";
-import { constructUrlFromQuestionId } from "@cb/utils/url";
+import { constructUrlFromQuestionId } from "@cb/utils";
 
 const servers = {
   iceServers: [
@@ -46,7 +46,7 @@ interface Connection {
 
 const MAX_CAPACITY = 4;
 
-const RTCProvider = (props: RTCProviderProps) => {
+export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
   } = useState();
@@ -67,7 +67,7 @@ const RTCProvider = (props: RTCProviderProps) => {
   };
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
-    console.log("hello")
+    console.log("hello");
     console.dir(pcs.current[username].pc);
     setConnected((prev) => ({
       ...prev,
@@ -91,8 +91,7 @@ const RTCProvider = (props: RTCProviderProps) => {
     } else {
       if (connected[username] == undefined) {
         console.log("Not connected to " + username);
-      } else
-      console.log("Data Channel not created yet");
+      } else console.log("Data Channel not created yet");
     }
   };
 
@@ -113,7 +112,7 @@ const RTCProvider = (props: RTCProviderProps) => {
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
-      
+
       const channel = pc.createDataChannel("channel");
       pcs.current[peer] = {
         username: peer,
@@ -311,4 +310,3 @@ const RTCProvider = (props: RTCProviderProps) => {
     </RTCContext.Provider>
   );
 };
-export default RTCProvider;

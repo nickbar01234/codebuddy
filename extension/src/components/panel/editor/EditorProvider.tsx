@@ -5,7 +5,7 @@ interface EditorProviderProps {
   defaultActiveId: string;
 }
 
-interface TabMetadata {
+export interface TabMetadata {
   id: string;
   displayHeader: string;
 }
@@ -15,10 +15,12 @@ interface EditorProviderContext {
   registerTab: (tab: TabMetadata) => void;
 }
 
-const editorProviderContext = React.createContext({} as EditorProviderContext);
+export const editorProviderContext = React.createContext(
+  {} as EditorProviderContext
+);
 const Provider = editorProviderContext.Provider;
 
-const EditorProvider = (props: EditorProviderProps) => {
+export const EditorProvider = (props: EditorProviderProps) => {
   const { children, defaultActiveId } = props;
   const [activeId, setActiveId] = React.useState(defaultActiveId);
   const [tabs, setTabs] = React.useState<TabMetadata[]>([]);
@@ -60,6 +62,3 @@ const EditorProvider = (props: EditorProviderProps) => {
     </Provider>
   );
 };
-
-export default EditorProvider;
-export { editorProviderContext, type TabMetadata };

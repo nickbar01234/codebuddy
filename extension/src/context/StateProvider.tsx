@@ -1,4 +1,4 @@
-import { User } from "../types";
+import { User } from "@cb/types";
 import React from "react";
 
 enum State {
@@ -21,7 +21,7 @@ const stateContext = React.createContext({} as StateContext);
 
 const Provider = stateContext.Provider;
 
-const StateProvider = (props: StateProviderProps) => {
+export const StateProvider = (props: StateProviderProps) => {
   const { children, user } = props;
   const [state, setState] = React.useState(State.HOME);
 
@@ -32,5 +32,4 @@ const StateProvider = (props: StateProviderProps) => {
   );
 };
 
-export default StateProvider;
 export { stateContext, State };

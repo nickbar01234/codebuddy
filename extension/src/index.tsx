@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
-import { waitForElement } from "./utils";
+import { waitForElement } from "@cb/utils";
 import "./style/index.css";
 import "react-resizable/css/styles.css";
 
