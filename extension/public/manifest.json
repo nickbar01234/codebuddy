@@ -4,7 +4,7 @@
   "description": "Leetcode together",
   "version": "1.0.0",
   "action": {},
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": ["https://leetcode.com/problems/*"],
   "permissions": [
     "storage",
     "webNavigation",
