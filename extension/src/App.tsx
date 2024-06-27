@@ -1,6 +1,6 @@
 import React from "react";
 import { RootNavigator } from "@cb/components/navigator/Navigator";
-import { AppPanel } from "@cb/components/panel";
+import { AppPanel, SignInPanel } from "@cb/components/panel";
 import { RTCProvider } from "@cb/context/RTCProvider";
 import { StateProvider } from "@cb/context/StateProvider";
 import { useOnMount } from "@cb/hooks";
@@ -28,7 +28,11 @@ const App = () => {
     );
   } else {
     // TODO(nickbar01234) - Handle unauthenticated
-    return null;
+    return (
+      <AppPanel>
+        <SignInPanel />
+      </AppPanel>
+    );
   }
 };
 

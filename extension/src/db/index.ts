@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import { config } from "@cb/db/config";
 import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
+import { getAuth } from "firebase/auth";
 
 const app = initializeApp(config);
 const firestore = getFirestore(app);
@@ -76,3 +77,4 @@ const entry = () => {
 const db = entry();
 
 export default db;
+export const auth = getAuth(app);

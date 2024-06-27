@@ -1,7 +1,7 @@
 import React from "react";
 import { Toaster } from "sonner";
 import { Menu } from "@cb/components/navigator/menu/Menu";
-import { RoomPanel } from "@cb/components/panel/RoomPanel";
+import { RoomPanel } from "@cb/components/panel";
 import { State, stateContext } from "@cb/context/StateProvider";
 
 export const RootNavigator = () => {
