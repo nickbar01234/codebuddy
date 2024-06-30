@@ -3,7 +3,6 @@ import {
   arrayUnion,
   onSnapshot,
   setDoc,
-  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
@@ -97,13 +96,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
-    await setDoc(
-      roomRef,
-      { usernames: [username], questionId },
-      {
-        merge: true,
-      }
-    );
+    await setDoc(roomRef, { questionId }, { merge: true });
+    await db.usernamesCollection(roomRef.id).addUser(username);
     setRoomId(roomRef.id);
   };
 
@@ -192,7 +186,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       return false;
     }
 
-    if (roomDoc.data().usernames.length >= MAX_CAPACITY) {
+    const usernamesCollection = await db.usernamesCollection(roomId).doc();
+    if (usernamesCollection.size >= MAX_CAPACITY) {
       console.log("The room is at max capacity");
       toast.error("This room is already at max capacity.");
       return false;
@@ -200,9 +195,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     setRoomId(roomId);
 
-    await updateDoc(db.rooms().doc(roomId).ref(), {
-      usernames: arrayUnion(username),
-    });
+    await db.usernamesCollection(roomId).addUser(username);
 
     onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
       snapshot.docChanges().forEach(async (change) => {
@@ -262,22 +255,28 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const connection = async () => {
       if (roomId == null) return;
 
-      const roomRef = db.rooms().doc(roomId);
-      const usernames = (await roomRef.doc()).data()?.usernames ?? [];
-      const unsubscribe = onSnapshot(roomRef.ref(), (doc) => {
-        const maybeData = doc.data();
-        if (maybeData == undefined) return;
-        maybeData.usernames
-          .filter(
-            (user) =>
-              user !== username &&
-              !usernames.includes(user) &&
-              pcs.current[user] == undefined
-          )
-          .forEach(async (user: string) => {
-            await createOffer(roomId, user);
+      const existingUsers = await db.usernamesCollection(roomId).doc();
+      console.log("Existing users", existingUsers);
+      const unsubscribe = onSnapshot(
+        db.usernamesCollection(roomId).ref(),
+        (snapshot) => {
+          snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "removed") {
+              return;
+            }
+            if (change.type === "added") {
+              const peer = change.doc.id;
+              if (existingUsers.has(peer)) {
+                return; // Ignore documents that were already present
+              }
+              if (peer == undefined || peer === username) {
+                return;
+              }
+              await createOffer(roomId, peer);
+            }
           });
-      });
+        }
+      );
       unsubscribeRef.current = unsubscribe;
     };
 
