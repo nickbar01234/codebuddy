@@ -1,5 +1,12 @@
 import { initializeApp } from "firebase/app";
-import { collection, doc, getDoc, getFirestore } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  setDoc,
+} from "firebase/firestore";
 import { config } from "@cb/db/config";
 import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
 
@@ -22,7 +29,31 @@ const entry = () => {
     return {
       ref: () => ref,
       doc: () => getDoc(ref),
+      getUsers: () => usernamesCollection(id),
     };
+  };
+
+  const usernamesCollection = (roomId: string) => {
+    const roomRef = room(roomId).ref();
+    const usernamesCollection = collection(
+      firestore,
+      roomRef.path,
+      "usernames"
+    );
+    return {
+      ref: () => usernamesCollection,
+      doc: async () => {
+        const snapshot = await getDocs(usernamesCollection);
+        return new Set(snapshot.docs.map((doc) => doc.id));
+      },
+      addUser: (username: string) => addUsername(roomId, username),
+    };
+  };
+
+  const addUsername = async (roomId: string, username: string) => {
+    const usernamesCollectionRef = usernamesCollection(roomId).ref();
+    const userDocRef = doc(usernamesCollectionRef, username);
+    await setDoc(userDocRef, {});
   };
 
   const connections = (roomId: string, username: string) => {
@@ -41,6 +72,7 @@ const entry = () => {
   return {
     rooms: rooms,
     room: room,
+    usernamesCollection: usernamesCollection,
     connections: connections,
   };
 };
