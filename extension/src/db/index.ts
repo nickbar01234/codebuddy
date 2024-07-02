@@ -41,10 +41,7 @@ const entry = () => {
     );
     return {
       ref: () => usernamesCollection,
-      docs: async () => {
-        const snapshot = await getDocs(usernamesCollection);
-        return new Set(snapshot.docs.map((doc) => doc.data().username));
-      },
+      doc: async () => await getDocs(usernamesCollection),
       addUser: (username: string) => addUsername(roomId, username),
     };
   };
@@ -52,7 +49,7 @@ const entry = () => {
   const addUsername = async (roomId: string, username: string) => {
     const usernamesCollectionRef = usernamesCollection(roomId).ref();
     const userDocRef = doc(usernamesCollectionRef, username);
-    await setDoc(userDocRef, { username });
+    await setDoc(userDocRef, {});
   };
 
   const connections = (roomId: string, username: string) => {
