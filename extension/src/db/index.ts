@@ -29,7 +29,6 @@ const entry = () => {
     return {
       ref: () => ref,
       doc: () => getDoc(ref),
-      getUsers: () => usernamesCollection(id),
     };
   };
 
@@ -42,9 +41,9 @@ const entry = () => {
     );
     return {
       ref: () => usernamesCollection,
-      doc: async () => {
+      docs: async () => {
         const snapshot = await getDocs(usernamesCollection);
-        return new Set(snapshot.docs.map((doc) => doc.id));
+        return new Set(snapshot.docs.map((doc) => doc.data().username));
       },
       addUser: (username: string) => addUsername(roomId, username),
     };
@@ -53,7 +52,7 @@ const entry = () => {
   const addUsername = async (roomId: string, username: string) => {
     const usernamesCollectionRef = usernamesCollection(roomId).ref();
     const userDocRef = doc(usernamesCollectionRef, username);
-    await setDoc(userDocRef, {});
+    await setDoc(userDocRef, { username });
   };
 
   const connections = (roomId: string, username: string) => {
