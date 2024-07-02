@@ -186,7 +186,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       return false;
     }
 
-    const usernamesCollection = await db.usernamesCollection(roomId).doc();
+    const usernamesCollection = await db.usernamesCollection(roomId).docs();
     if (usernamesCollection.size >= MAX_CAPACITY) {
       console.log("The room is at max capacity");
       toast.error("This room is already at max capacity.");
@@ -255,7 +255,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const connection = async () => {
       if (roomId == null) return;
 
-      const existingUsers = await db.usernamesCollection(roomId).doc();
+      const existingUsers = await db.usernamesCollection(roomId).docs();
       console.log("Existing users", existingUsers);
       const unsubscribe = onSnapshot(
         db.usernamesCollection(roomId).ref(),
