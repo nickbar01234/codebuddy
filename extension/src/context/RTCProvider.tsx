@@ -4,6 +4,8 @@ import { constructUrlFromQuestionId } from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
+  deleteDoc,
+  getDocs,
   onSnapshot,
   setDoc,
   updateDoc,
@@ -212,7 +214,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
         const themRef = db.connections(roomId, username).doc(peer);
         const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
-
+        // const pc = new RTCPeerConnection(servers);
         if (pcs.current[peer] == undefined) {
           pcs.current[peer] = {
             username: peer,
@@ -250,8 +252,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
     toast.success(`You have successfully joined the room with ID ${roomId}.`);
     return true;
   };
-
+  // window.addEventListener("beforeunload", async () => {
+  //   console.log("ROOMID beforeunload", roomId);
+  //   localStorage.setItem("roomId", JSON.stringify(roomId ?? ""));
+  //   if (roomId != null) {
+  //     console.log("Cleaning up");
+  //     await leaveRoom();
+  //     localStorage.setItem("roomId", roomId);
+  //   }
+  //   console.log("beforeunload");
+  // });
+  console.log(pcs.current);
+  console.log(connected);
+  // React.useEffect(() => {
+  //   const roomId = localStorage.getItem("roomId");
+  //   if (roomId != null) {
+  //     setRoomId(JSON.parse(roomId));
+  //   }
+  // }, []);
   React.useEffect(() => {
+    console.log("roomId", roomId);
     const connection = async () => {
       if (roomId == null) return;
 
@@ -260,11 +280,30 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernamesSnapshot.docs.map((doc) => doc.id)
       );
       console.log("Existing users", existingUsers);
+
       const unsubscribe = onSnapshot(
         db.usernamesCollection(roomId).ref(),
         (snapshot) => {
           snapshot.docChanges().forEach(async (change) => {
             if (change.type === "removed") {
+              const peer = change.doc.id;
+              if (peer == undefined) return;
+              if (pcs.current[peer] == undefined) return;
+              // pcs.current[peer].pc.close();
+              // pcs.current[peer].channel.close();
+              const { peer: _, ...rest } = pcs.current;
+              pcs.current = rest;
+              console.log("Removed peer", peer);
+              setInformations((prev) => {
+                const newInfos = { ...prev };
+                delete newInfos[peer];
+                return newInfos;
+              });
+              setConnected((prev) => {
+                const newConnected = { ...prev };
+                delete newConnected[peer];
+                return newConnected;
+              });
               return;
             }
             if (change.type === "added") {
@@ -293,7 +332,28 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username, createOffer]);
 
-  const leaveRoom = () => {};
+  const leaveRoom = async () => {
+    if (roomId == null) {
+      return;
+    }
+    const roomDoc = await db.room(roomId).doc();
+    if (!roomDoc.exists()) {
+      toast.error("Room does not exist");
+      return false;
+    }
+    await db.usernamesCollection(roomId).deleteUser(username);
+    for (const peer of Object.keys(pcs.current)) {
+      if (pcs.current[peer].pc.localDescription?.type == "offer") {
+        await deleteDoc(db.connections(roomId, peer).doc(username));
+      }
+      pcs.current[peer].pc.close();
+      pcs.current[peer].channel.close();
+    }
+    const myAnswers = await getDocs(db.connections(roomId, username).ref());
+    myAnswers.docs.forEach(async (doc) => {
+      await deleteDoc(doc.ref);
+    });
+  };
 
   return (
     <RTCContext.Provider
