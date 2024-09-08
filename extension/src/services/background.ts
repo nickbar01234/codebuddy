@@ -32,12 +32,6 @@ chrome.runtime.onInstalled.addListener((details) => {
         isCollapsed: false,
       },
     });
-    setStorage({
-      editorPreference: {
-        width: 300 /* px */,
-        isCollapsed: false,
-      },
-    });
   }
 });
 
@@ -189,28 +183,10 @@ chrome.runtime.onMessage.addListener(
           .then((result) => {
             sendResponse(result[0].result);
           });
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: getValue,
-            world: "MAIN",
-          })
-          .then((result) => {
-            sendResponse(result[0].result);
-          });
+
         break;
       }
       case "setValue": {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: setValue,
-            args: [request.value],
-            world: "MAIN",
-          })
-          .then(() => {
-            sendResponse();
-          });
         chrome.scripting
           .executeScript({
             target: { tabId: sender.tab?.id ?? 0 },

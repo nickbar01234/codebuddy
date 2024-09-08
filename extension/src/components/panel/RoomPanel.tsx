@@ -8,6 +8,7 @@ export const RoomPanel = () => {
 
   const sendCode = async () => {
     console.log("sendCode");
+    console.log("sendCode");
     sendMessages(
       JSON.stringify({
         code: await sendMessage({ action: "getValue" }),

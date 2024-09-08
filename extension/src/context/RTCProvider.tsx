@@ -1,16 +1,15 @@
+import db from "@cb/db";
+import { useState } from "@cb/hooks";
+import { constructUrlFromQuestionId } from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
   onSnapshot,
   setDoc,
-  getDoc,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import db from "@cb/db";
-import { useState } from "@cb/hooks";
-import { constructUrlFromQuestionId } from "@cb/utils";
 
 const servers = {
   iceServers: [
