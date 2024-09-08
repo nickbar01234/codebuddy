@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -43,6 +44,7 @@ const entry = () => {
       ref: () => usernamesCollection,
       doc: async () => await getDocs(usernamesCollection),
       addUser: (username: string) => addUsername(roomId, username),
+      deleteUser: (username: string) => deleteUsername(roomId, username),
     };
   };
 
@@ -50,6 +52,12 @@ const entry = () => {
     const usernamesCollectionRef = usernamesCollection(roomId).ref();
     const userDocRef = doc(usernamesCollectionRef, username);
     await setDoc(userDocRef, {});
+  };
+
+  const deleteUsername = async (roomId: string, username: string) => {
+    const usernamesCollectionRef = usernamesCollection(roomId).ref();
+    const userDocRef = doc(usernamesCollectionRef, username);
+    await deleteDoc(userDocRef);
   };
 
   const connections = (roomId: string, username: string) => {
