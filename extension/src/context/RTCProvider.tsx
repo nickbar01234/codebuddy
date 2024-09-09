@@ -1,10 +1,12 @@
-import db from "@cb/db";
+import db, { firestore } from "@cb/db";
 import { useState } from "@cb/hooks";
 import { constructUrlFromQuestionId } from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
+  collection,
   deleteDoc,
+  doc,
   getDocs,
   onSnapshot,
   setDoc,
@@ -25,7 +27,7 @@ const servers = {
 interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
-  leaveRoom: () => void;
+  leaveRoom: (roomId: string) => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, string>;
@@ -194,7 +196,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       toast.error("This room is already at max capacity.");
       return false;
     }
-
+    console.log("Joining room", roomId);
     setRoomId(roomId);
 
     await db.usernamesCollection(roomId).addUser(username);
@@ -255,14 +257,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
   window.addEventListener("beforeunload", async () => {
     localStorage.setItem("roomId", JSON.stringify(roomId ?? ""));
     if (roomId != null) {
-      console.log("Cleaning up");
-      await leaveRoom();
-      localStorage.setItem("roomId", roomId);
+      localStorage.setItem("reloading", roomId);
+      await db.usernamesCollection(roomId).deleteUser(username);
     }
   });
-  console.log("PC current", pcs.current);
-  console.log("Connected", connected);
-  console.log("Informations", informations);
+
+  React.useEffect(() => {
+    const reloading = localStorage.getItem("reloading");
+    if (reloading) {
+      console.log("Reloading", reloading);
+      localStorage.removeItem("reloading");
+      leaveRoom(reloading);
+    }
+  }, []);
+  // console.log("PC current", pcs.current);
+  // console.log("Connected", connected);
+  // console.log("Informations", informations);
 
   // React.useEffect(() => {
   //   const roomId = localStorage.getItem("roomId");
@@ -271,16 +281,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
   //   }
   // }, []);
   React.useEffect(() => {
-    console.log("roomId", roomId);
     const connection = async () => {
       if (roomId == null) return;
-
-      const usernamesSnapshot = await db.usernamesCollection(roomId).doc();
-      const existingUsers = new Set(
-        usernamesSnapshot.docs.map((doc) => doc.id)
-      );
-      console.log("Existing users", existingUsers);
-
       const unsubscribe = onSnapshot(
         db.usernamesCollection(roomId).ref(),
         (snapshot) => {
@@ -289,12 +291,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
               const peer = change.doc.id;
               if (peer == undefined) return;
               if (pcs.current[peer] == undefined) return;
-              // pcs.current[peer].pc.close();
-              // pcs.current[peer].channel.close();
-              console.log(peer);
               const { [peer]: _, ...rest } = pcs.current;
               pcs.current = rest;
               console.log("Removed peer", peer);
+              await deleteDoc(db.connections(roomId, username).doc(peer));
               setInformations((prev) => {
                 const { [peer]: _, ...rest } = prev;
                 return rest;
@@ -307,12 +307,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
             }
             if (change.type === "added") {
               const peer = change.doc.id;
-              if (existingUsers.has(peer)) {
-                return; // Ignore documents that were already present
-              }
+              const usernamesSnapshot = await db
+                .usernamesCollection(roomId)
+                .doc();
+              const myTimeStamp = usernamesSnapshot.docs
+                .find((doc) => doc.id === username)
+                ?.data().createdAt;
+              console.log(myTimeStamp);
               if (peer == undefined || peer === username) {
                 return;
               }
+              if (myTimeStamp.seconds >= change.doc.data().createdAt.seconds) {
+                return;
+              }
+
+              console.log("Create Offer to", change.doc.id);
               await createOffer(roomId, peer);
             }
           });
@@ -331,26 +340,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username, createOffer]);
 
-  const leaveRoom = async () => {
+  const leaveRoom = async (roomId: string) => {
     if (roomId == null) {
       return;
     }
-    const roomDoc = await db.room(roomId).doc();
-    if (!roomDoc.exists()) {
-      toast.error("Room does not exist");
-      return false;
-    }
     await db.usernamesCollection(roomId).deleteUser(username);
-    for (const peer of Object.keys(pcs.current)) {
-      if (pcs.current[peer].pc.localDescription?.type == "offer") {
-        await deleteDoc(db.connections(roomId, peer).doc(username));
-      }
-      pcs.current[peer].pc.close();
-      pcs.current[peer].channel.close();
-    }
     const myAnswers = await getDocs(db.connections(roomId, username).ref());
     myAnswers.docs.forEach(async (doc) => {
-      await deleteDoc(doc.ref);
+      deleteDoc(doc.ref);
     });
   };
 

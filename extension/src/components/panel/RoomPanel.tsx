@@ -32,7 +32,7 @@ export const RoomPanel = () => {
     }
   }, [connected]);
 
-  if (Object.keys(informations).length === 0) return null;
+  // if (Object.keys(informations).length === 0) return null;
 
   return (
     <EditorProvider

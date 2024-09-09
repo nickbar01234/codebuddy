@@ -62,13 +62,6 @@ export const AppPanel = (props: AppPanelProps) => {
             editorPreference.isCollapsed ? "hidden" : ""
           }`}
         >
-          <button
-            onClick={async () => {
-              console.log(await sendMessage({ action: "test" }));
-            }}
-          >
-            hi
-          </button>
           <div id="trackEditor" className="hidden"></div>
           {props.children}
         </div>

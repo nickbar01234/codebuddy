@@ -7,12 +7,14 @@ import {
   getDocs,
   getFirestore,
   setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
+
 import { config } from "@cb/db/config";
 import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
 
 const app = initializeApp(config);
-const firestore = getFirestore(app);
+export const firestore = getFirestore(app);
 
 const entry = () => {
   const rooms = () => {
@@ -51,7 +53,9 @@ const entry = () => {
   const addUsername = async (roomId: string, username: string) => {
     const usernamesCollectionRef = usernamesCollection(roomId).ref();
     const userDocRef = doc(usernamesCollectionRef, username);
-    await setDoc(userDocRef, {});
+    await setDoc(userDocRef, {
+      createdAt: serverTimestamp(),
+    });
   };
 
   const deleteUsername = async (roomId: string, username: string) => {

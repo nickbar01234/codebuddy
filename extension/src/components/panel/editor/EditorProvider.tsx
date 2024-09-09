@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import { sendMessage } from "@cb/services";
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
@@ -28,9 +28,24 @@ export const EditorProvider = (props: EditorProviderProps) => {
   const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
   const unBlur = () => setCanViewCode(true);
+  console.log("activeId", activeId);
+  React.useEffect(() => {
+    if (tabs.length != 0) {
+      console.log("Creating Model");
+      setActiveId(tabs[0].id);
+    } else {
+      sendMessage({
+        action: "createModel",
+        id: "CodeBuddyEditor",
+        code: "",
+        language: "",
+      });
+    }
+  }, [informations]);
 
   return (
     <Provider value={{ activeId: activeId }}>
+      {/* <div>Hihi</div> */}
       <div className="flex flex-col h-full justify-between">
         <div className="flex flex-col grow gap-y-2">
           {children}
@@ -40,13 +55,13 @@ export const EditorProvider = (props: EditorProviderProps) => {
               data-view-code={canViewCode}
               className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-auto h-full"
             />
-            {!canViewCode && (
+            {!canViewCode && tabs.length != 0 && (
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg
   "
                 onClick={unBlur}
               >
-                View code
+                View Code
               </button>
             )}
           </div>

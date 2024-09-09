@@ -71,6 +71,7 @@ const createModel = async (id: string, code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (monaco.editor.getModels().length === 3) {
+    console.log("Using Existing Model");
     setValueModel({
       code,
       language,
@@ -89,6 +90,7 @@ const createModel = async (id: string, code: string, language: string) => {
       changeUser: true,
     });
   } else {
+    console.log("Creating New Model");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -114,11 +116,13 @@ const setValueModel = async (
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
+  console.log("Setting Value Model");
   if (myLanguage !== language || changeUser) {
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
     return;
   }
+
   const editOperations = {
     identifier: { major: 1, minor: 1 },
     range: new monaco.Range(
@@ -133,6 +137,7 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
+  console.log("Applied Changes", changes);
 };
 
 chrome.webNavigation.onCompleted.addListener(
@@ -158,7 +163,7 @@ chrome.webNavigation.onCompleted.addListener(
           },
           world: "MAIN",
         });
-      }, 1000);
+      }, 2000);
     });
   },
   { url: [{ schemes: ["http", "https"] }] }
