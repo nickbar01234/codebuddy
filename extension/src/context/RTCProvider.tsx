@@ -252,18 +252,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
     toast.success(`You have successfully joined the room with ID ${roomId}.`);
     return true;
   };
-  // window.addEventListener("beforeunload", async () => {
-  //   console.log("ROOMID beforeunload", roomId);
-  //   localStorage.setItem("roomId", JSON.stringify(roomId ?? ""));
-  //   if (roomId != null) {
-  //     console.log("Cleaning up");
-  //     await leaveRoom();
-  //     localStorage.setItem("roomId", roomId);
-  //   }
-  //   console.log("beforeunload");
-  // });
-  console.log(pcs.current);
-  console.log(connected);
+  window.addEventListener("beforeunload", async () => {
+    localStorage.setItem("roomId", JSON.stringify(roomId ?? ""));
+    if (roomId != null) {
+      console.log("Cleaning up");
+      await leaveRoom();
+      localStorage.setItem("roomId", roomId);
+    }
+  });
+  console.log("PC current", pcs.current);
+  console.log("Connected", connected);
+  console.log("Informations", informations);
+
   // React.useEffect(() => {
   //   const roomId = localStorage.getItem("roomId");
   //   if (roomId != null) {
@@ -291,18 +291,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
               if (pcs.current[peer] == undefined) return;
               // pcs.current[peer].pc.close();
               // pcs.current[peer].channel.close();
-              const { peer: _, ...rest } = pcs.current;
+              console.log(peer);
+              const { [peer]: _, ...rest } = pcs.current;
               pcs.current = rest;
               console.log("Removed peer", peer);
               setInformations((prev) => {
-                const newInfos = { ...prev };
-                delete newInfos[peer];
-                return newInfos;
+                const { [peer]: _, ...rest } = prev;
+                return rest;
               });
               setConnected((prev) => {
-                const newConnected = { ...prev };
-                delete newConnected[peer];
-                return newConnected;
+                const { [peer]: _, ...rest } = prev;
+                return rest;
               });
               return;
             }

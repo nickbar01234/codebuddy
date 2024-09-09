@@ -7,8 +7,6 @@ export const RoomPanel = () => {
   const { informations, sendMessages, connected } = useRTC();
 
   const sendCode = async () => {
-    console.log("sendCode");
-    console.log("sendCode");
     sendMessages(
       JSON.stringify({
         code: await sendMessage({ action: "getValue" }),
@@ -37,7 +35,10 @@ export const RoomPanel = () => {
   if (Object.keys(informations).length === 0) return null;
 
   return (
-    <EditorProvider defaultActiveId={Object.keys(informations)[0]}>
+    <EditorProvider
+      defaultActiveId={Object.keys(informations)[0]}
+      informations={Object.keys(informations)}
+    >
       {Object.entries(informations).map(([id, info]) => (
         <EditorTab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
       ))}

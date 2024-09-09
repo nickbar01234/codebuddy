@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
-import { TabMetadata, editorProviderContext } from "./EditorProvider";
 import { useOnMount } from "@cb/hooks";
 import { sendMessage } from "@cb/services";
-import { set } from "mongoose";
+import React from "react";
+import { TabMetadata, editorProviderContext } from "./EditorProvider";
 
 interface TabProps extends TabMetadata {
   code: {
@@ -13,12 +12,11 @@ interface TabProps extends TabMetadata {
 }
 
 export const EditorTab = (props: TabProps) => {
-  const { id, displayHeader } = props;
-  const { activeId, registerTab } = React.useContext(editorProviderContext);
+  const { id } = props;
+  const { activeId } = React.useContext(editorProviderContext);
   const [changeUser, setChangeUser] = React.useState(false);
 
   useOnMount(() => {
-    registerTab({ id: id, displayHeader: displayHeader });
     sendMessage({
       action: "createModel",
       id: "CodeBuddyEditor",

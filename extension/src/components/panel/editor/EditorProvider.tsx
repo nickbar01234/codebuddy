@@ -3,6 +3,7 @@ import React, { useState } from "react";
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
+  informations: string[];
 }
 
 export interface TabMetadata {
@@ -12,7 +13,7 @@ export interface TabMetadata {
 
 interface EditorProviderContext {
   activeId: string;
-  registerTab: (tab: TabMetadata) => void;
+  // registerTab: (tab: TabMetadata) => void;
 }
 
 export const editorProviderContext = React.createContext(
@@ -21,16 +22,15 @@ export const editorProviderContext = React.createContext(
 const Provider = editorProviderContext.Provider;
 
 export const EditorProvider = (props: EditorProviderProps) => {
-  const { children, defaultActiveId } = props;
+  const { children, defaultActiveId, informations } = props;
   const [activeId, setActiveId] = useState(defaultActiveId);
   const [canViewCode, setCanViewCode] = useState(false);
-  const [tabs, setTabs] = useState<TabMetadata[]>([]);
+  const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
-  const registerTab = (tab: TabMetadata) => setTabs((prev) => [...prev, tab]);
   const unBlur = () => setCanViewCode(true);
 
   return (
-    <Provider value={{ activeId: activeId, registerTab: registerTab }}>
+    <Provider value={{ activeId: activeId }}>
       <div className="flex flex-col h-full justify-between">
         <div className="flex flex-col grow gap-y-2">
           {children}

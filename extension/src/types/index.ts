@@ -54,13 +54,17 @@ interface UpdateEditorLayoutRequest {
   monacoEditorId: string;
 }
 
+export interface TestRequest {
+  action: "test";
+}
 export type ServiceRequest =
   | CookieRequest
   | GetValueRequest
   | SetValueRequest
   | createMonacoModelRequest
   | SetOtherEditorRequest
-  | UpdateEditorLayoutRequest;
+  | UpdateEditorLayoutRequest
+  | TestRequest;
 
 export type ServiceResponse = {
   cookie: Status;
@@ -72,6 +76,9 @@ export type ServiceResponse = {
   createModel: void;
   setValueOtherEditor: void;
   updateEditorLayout: void;
+  test: {
+    [key: number]: string;
+  };
 };
 
 interface EditorPreference {
