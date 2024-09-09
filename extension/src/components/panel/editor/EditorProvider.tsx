@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { sendMessage } from "@cb/services";
+import { useRTC } from "@cb/hooks/index";
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
@@ -25,35 +25,31 @@ export const EditorProvider = (props: EditorProviderProps) => {
   const { children, defaultActiveId, informations } = props;
   const [activeId, setActiveId] = useState(defaultActiveId);
   const [canViewCode, setCanViewCode] = useState(false);
+  const { roomId } = useRTC();
   const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
   const unBlur = () => setCanViewCode(true);
-  console.log("activeId", activeId);
   React.useEffect(() => {
-    if (tabs.length != 0) {
+    if (tabs.length != 0 || roomId != null) {
       console.log("Creating Model");
       setActiveId(tabs[0].id);
-    } else {
-      sendMessage({
-        action: "createModel",
-        id: "CodeBuddyEditor",
-        code: "",
-        language: "",
-      });
     }
   }, [informations]);
 
   return (
     <Provider value={{ activeId: activeId }}>
       {/* <div>Hihi</div> */}
-      <div className="flex flex-col h-full justify-between">
+      <div
+        className="flex flex-col h-full justify-between"
+        style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }}
+      >
         <div className="flex flex-col grow gap-y-2">
           {children}
           <div className="grow relative">
             <div
               id="CodeBuddyEditor"
               data-view-code={canViewCode}
-              className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-auto h-full"
+              className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-auto h-full "
             />
             {!canViewCode && tabs.length != 0 && (
               <button

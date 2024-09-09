@@ -1,6 +1,6 @@
 import db, { firestore } from "@cb/db";
 import { useState } from "@cb/hooks";
-import { constructUrlFromQuestionId } from "@cb/utils";
+import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
@@ -12,6 +12,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
+import { set } from "mongoose";
 import React from "react";
 import { toast } from "sonner";
 
@@ -70,7 +71,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   };
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
-    console.log("hello");
+    // console.log("hello");
     console.dir(pcs.current[username].pc);
     setConnected((prev) => ({
       ...prev,
@@ -196,7 +197,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       toast.error("This room is already at max capacity.");
       return false;
     }
-    console.log("Joining room", roomId);
+    // console.log("Joining room", roomId);
     setRoomId(roomId);
 
     await db.usernamesCollection(roomId).addUser(username);
@@ -255,7 +256,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     return true;
   };
   window.addEventListener("beforeunload", async () => {
-    localStorage.setItem("roomId", JSON.stringify(roomId ?? ""));
     if (roomId != null) {
       localStorage.setItem("reloading", roomId);
       await db.usernamesCollection(roomId).deleteUser(username);
@@ -267,12 +267,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (reloading) {
       console.log("Reloading", reloading);
       localStorage.removeItem("reloading");
-      leaveRoom(reloading);
+      const reloadJob = async () => {
+        await leaveRoom(reloading);
+        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+      };
+      reloadJob();
     }
   }, []);
   // console.log("PC current", pcs.current);
   // console.log("Connected", connected);
   // console.log("Informations", informations);
+  console.log("Room ID", roomId);
 
   // React.useEffect(() => {
   //   const roomId = localStorage.getItem("roomId");
@@ -313,7 +318,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
               const myTimeStamp = usernamesSnapshot.docs
                 .find((doc) => doc.id === username)
                 ?.data().createdAt;
-              console.log(myTimeStamp);
+              // console.log(myTimeStamp);
               if (peer == undefined || peer === username) {
                 return;
               }
@@ -349,6 +354,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     myAnswers.docs.forEach(async (doc) => {
       deleteDoc(doc.ref);
     });
+    setRoomId(null);
+    setInformations({});
+    setConnected({});
+    pcs.current = {};
   };
 
   return (

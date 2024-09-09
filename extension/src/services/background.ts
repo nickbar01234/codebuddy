@@ -137,7 +137,7 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-  console.log("Applied Changes", changes);
+  // console.log("Applied Changes", changes);
 };
 
 chrome.webNavigation.onCompleted.addListener(
