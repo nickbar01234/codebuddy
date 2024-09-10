@@ -1,20 +1,18 @@
-import db, { firestore } from "@cb/db";
+import db from "@cb/db";
 import { useState } from "@cb/hooks";
 import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
-  collection,
   deleteDoc,
-  doc,
   getDocs,
   onSnapshot,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { set } from "mongoose";
 import React from "react";
 import { toast } from "sonner";
+import { sendMessage as serviceSendMessage } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -256,13 +254,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
     toast.success(`You have successfully joined the room with ID ${roomId}.`);
     return true;
   };
-  window.addEventListener("beforeunload", async () => {
-    if (roomId) {
-      console.log("Before Reloading", roomId);
-      localStorage.setItem("reloading", roomId);
-      await db.usernamesCollection(roomId).deleteUser(username);
-    }
-  });
+  React.useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (roomId) {
+        console.log("Before Reloading", roomId);
+        localStorage.setItem("reloading", roomId);
+        await db.usernamesCollection(roomId).deleteUser(username);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [roomId, username]);
 
   React.useEffect(() => {
     const reloading = localStorage.getItem("reloading");
@@ -270,8 +276,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       console.log("Reloading", reloading);
       localStorage.removeItem("reloading");
       const reloadJob = async () => {
-        await leaveRoom(reloading);
-        // await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+        await leaveRoom(reloading, true);
+        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
       };
       reloadJob();
     }
@@ -348,7 +354,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username, createOffer]);
 
-  const leaveRoom = async (roomId: string) => {
+  const leaveRoom = async (roomId: string, reload = false) => {
     if (roomId == null) {
       return;
     }
@@ -361,6 +367,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     setInformations({});
     setConnected({});
     pcs.current = {};
+    if (!reload) {
+      serviceSendMessage({
+        action: "cleanEditor",
+      });
+    }
   };
 
   return (

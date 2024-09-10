@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { useRTC } from "@cb/hooks/index";
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
@@ -25,12 +24,11 @@ export const EditorProvider = (props: EditorProviderProps) => {
   const { children, defaultActiveId, informations } = props;
   const [activeId, setActiveId] = useState(defaultActiveId);
   const [canViewCode, setCanViewCode] = useState(false);
-  const { roomId } = useRTC();
   const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
   const unBlur = () => setCanViewCode(true);
   React.useEffect(() => {
-    if (tabs.length != 0 || roomId != null) {
+    if (tabs.length != 0) {
       setActiveId(tabs[0].id);
     }
   }, [informations]);

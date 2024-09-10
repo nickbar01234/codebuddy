@@ -140,6 +140,16 @@ const setValueModel = async (
   // console.log("Applied Changes", changes);
 };
 
+const cleanEditor = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const monaco = (window as any).monaco;
+  await monaco.editor
+    .getEditors()
+    .find((e: any) => e.id === "CodeBuddy")
+    .dispose();
+  console.log("Cleaned Editor");
+};
+
 chrome.webNavigation.onCompleted.addListener(
   function () {
     chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -249,6 +259,15 @@ chrome.runtime.onMessage.addListener(
           target: { tabId: sender.tab?.id ?? 0 },
           func: updateEditorLayout,
           args: [{ id: request.monacoEditorId }],
+          world: "MAIN",
+        });
+        break;
+      }
+
+      case "cleanEditor": {
+        chrome.scripting.executeScript({
+          target: { tabId: sender.tab?.id ?? 0 },
+          func: cleanEditor,
           world: "MAIN",
         });
         break;
