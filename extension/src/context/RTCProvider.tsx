@@ -285,7 +285,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   // console.log("PC current", pcs.current);
   // console.log("Connected", connected);
   // console.log("Informations", informations);
-  console.log("Room ID", roomId);
+  // console.log("Room ID", roomId);
 
   // React.useEffect(() => {
   //   const roomId = localStorage.getItem("roomId");

@@ -20,7 +20,7 @@ export const RootNavigator = () => {
         }}
       />
       <div
-        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto`}
+        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto overflow-y-hidden`}
       >
         <h2 className="text-lg font-medium">Code Buddy</h2>
         <button

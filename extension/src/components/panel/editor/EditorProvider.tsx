@@ -27,11 +27,11 @@ export const EditorProvider = (props: EditorProviderProps) => {
   const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
   const unBlur = () => setCanViewCode(true);
-  React.useEffect(() => {
-    if (tabs.length != 0) {
-      setActiveId(tabs[0].id);
-    }
-  }, [informations]);
+  // React.useEffect(() => {
+  //   if (tabs.length != 0) {
+  //     setActiveId(tabs[0].id);
+  //   }
+  // }, [informations]);
 
   return (
     <Provider value={{ activeId: activeId }}>
@@ -60,7 +60,7 @@ export const EditorProvider = (props: EditorProviderProps) => {
           </div>
         </div>
         <div
-          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto text-sm`}
+          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm`}
         >
           {tabs.map((tab) => (
             <React.Fragment key={tab.id}>

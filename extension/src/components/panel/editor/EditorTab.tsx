@@ -42,7 +42,7 @@ export const EditorTab = (props: TabProps) => {
   return (
     <div
       data-active={activeId === id}
-      className="flex h-10 w-full items-center gap-x-2 data-[active=false]:hidden border-b p-1 border-[#0000000f] overflow-x-auto whitespace-nowrap justify-between"
+      className="flex h-10 w-full items-center gap-x-2 data-[active=false]:hidden border-b p-1 border-[#0000000f] overflow-x-auto overflow-y-hidden whitespace-nowrap justify-between"
     >
       <h1 className=" text-xl font-extrabold text-gray-900 dark:text-white ">
         Language:{" "}
@@ -52,18 +52,19 @@ export const EditorTab = (props: TabProps) => {
       </h1>
       <button
         type="button"
+        data-tooltip-target="tooltip-default"
         onClick={() => {
           sendMessage({
             action: "setValue",
             value: props.code.value,
           });
         }}
-        className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        className="text-white  justify-between bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
+          width="15"
+          height="15"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -78,7 +79,7 @@ export const EditorTab = (props: TabProps) => {
           <path d="M21 14H11" />
           <path d="m15 10-4 4 4 4" />
         </svg>
-        Paste Code
+        <span className=" ml-2"> Paste Code</span>
       </button>
     </div>
   );
