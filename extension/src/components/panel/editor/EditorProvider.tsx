@@ -31,7 +31,6 @@ export const EditorProvider = (props: EditorProviderProps) => {
   const unBlur = () => setCanViewCode(true);
   React.useEffect(() => {
     if (tabs.length != 0 || roomId != null) {
-      console.log("Creating Model");
       setActiveId(tabs[0].id);
     }
   }, [informations]);

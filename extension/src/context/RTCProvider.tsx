@@ -103,6 +103,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const roomRef = db.rooms().ref();
     await setDoc(roomRef, { questionId }, { merge: true });
     await db.usernamesCollection(roomRef.id).addUser(username);
+    console.log("Created room");
     setRoomId(roomRef.id);
   };
 
@@ -256,7 +257,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     return true;
   };
   window.addEventListener("beforeunload", async () => {
-    if (roomId != null) {
+    if (roomId) {
+      console.log("Before Reloading", roomId);
       localStorage.setItem("reloading", roomId);
       await db.usernamesCollection(roomId).deleteUser(username);
     }
@@ -269,7 +271,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       localStorage.removeItem("reloading");
       const reloadJob = async () => {
         await leaveRoom(reloading);
-        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+        // await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
       };
       reloadJob();
     }
@@ -311,6 +313,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
               return;
             }
             if (change.type === "added") {
+              console.log("Added peer");
               const peer = change.doc.id;
               const usernamesSnapshot = await db
                 .usernamesCollection(roomId)
