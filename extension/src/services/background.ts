@@ -116,8 +116,8 @@ const setValueModel = async (
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
-  console.log("Setting Value Model");
   if (myLanguage !== language || changeUser) {
+    console.log("Setting Value Model");
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
     return;
@@ -137,16 +137,21 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-  // console.log("Applied Changes", changes);
+  console.log("Applied Changes");
 };
 
 const cleanEditor = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  await monaco.editor
-    .getEditors()
-    .find((e: any) => e.id === "CodeBuddy")
-    .dispose();
+  console.log("Cleaned Editor");
+  try {
+    await monaco.editor
+      .getEditors()
+      .find((e: any) => e.id === "CodeBuddy")
+      .dispose();
+  } catch (e) {
+    console.error(e);
+  }
   console.log("Cleaned Editor");
 };
 
