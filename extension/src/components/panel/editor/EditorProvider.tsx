@@ -66,13 +66,13 @@ export const EditorProvider = (props: EditorProviderProps) => {
           </div>
         </div>
         <div
-          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm`}
+          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm`}
         >
           {tabs.map((tab) => (
             <React.Fragment key={tab.id}>
               {/* Leetcode className flexlayout__tab_button_* */}
               <div
-                className={`relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50 ${
+                className={`relative text-2xl flexlayout__tab_button flexlayout__tab_button_top hover:z-50 ${
                   tab.id === activeId
                     ? "flexlayout__tab_button-selected medium"
                     : "flexlayout__tab_button--unselected normal"
