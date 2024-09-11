@@ -54,7 +54,7 @@ export const EditorProvider = (props: EditorProviderProps) => {
   "
                 onClick={unBlur}
               >
-                View Code
+                View
               </button>
             )}
           </div>
