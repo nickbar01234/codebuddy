@@ -1,11 +1,9 @@
-import React from "react";
-import { Toaster } from "sonner";
 import { Menu } from "@cb/components/navigator/menu/Menu";
 import { RoomPanel } from "@cb/components/panel/RoomPanel";
-import { State, stateContext } from "@cb/context/StateProvider";
+import React from "react";
+import { Toaster } from "sonner";
 
 export const RootNavigator = () => {
-  const { state } = React.useContext(stateContext);
   const [displayPopup, setDisplayPopup] = React.useState(false);
 
   return (
@@ -48,9 +46,10 @@ export const RootNavigator = () => {
           </svg>
         </button>
       </div>
-      <div className="h-full w-full">
+      <div className="h-full w-full overflow-hidden">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
-        {state === State.HOME ? null : <RoomPanel />}
+
+        {<RoomPanel />}
       </div>
     </div>
   );
