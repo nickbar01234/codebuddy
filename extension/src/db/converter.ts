@@ -5,7 +5,6 @@ import {
 } from "firebase/firestore";
 
 export interface Room {
-  usernames: string[];
   questionId: string;
 }
 
@@ -29,7 +28,6 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     const data = snapshot.data(options)! ?? {};
     return {
       ...data,
-      usernames: data.usernames ?? [],
       questionId: data.questionId ?? "",
     };
   },
