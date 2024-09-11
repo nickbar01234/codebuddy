@@ -103,6 +103,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
+    localStorage.setItem(
+      "curRoomId",
+      JSON.stringify({
+        roomId: roomRef.id,
+        numberOfUsers: 1,
+      })
+    );
   };
 
   const createOffer = React.useCallback(
@@ -250,8 +257,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
       });
     });
-
-    toast.success(`You have successfully joined the room with ID ${roomId}.`);
+    if (
+      JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
+      roomId.toString()
+    ) {
+      toast.success(`You have successfully joined the room with ID ${roomId}.`);
+    }
+    localStorage.setItem(
+      "curRoomId",
+      JSON.stringify({
+        roomId: roomId,
+        numberOfUsers: usernamesCollection.size,
+      })
+    );
     return true;
   };
   React.useEffect(() => {
@@ -262,7 +280,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         await db.usernamesCollection(roomId).deleteUser(username);
       }
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
@@ -372,6 +389,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         action: "cleanEditor",
       });
       localStorage.removeItem("reloading");
+      localStorage.removeItem("curRoomId");
       localStorage.removeItem("ViewCode");
     }
   };
