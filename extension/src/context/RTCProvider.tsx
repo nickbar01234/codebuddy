@@ -139,7 +139,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       "curRoomId",
       JSON.stringify({
         roomId: roomRef.id,
-        numberOfUsers: 1,
+        numberOfUsers: 0,
       })
     );
   };

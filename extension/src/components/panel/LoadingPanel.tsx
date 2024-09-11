@@ -30,7 +30,6 @@ export function LoadingPanel({
   const div6Ref = useRef<HTMLDivElement>(null);
   const div7Ref = useRef<HTMLDivElement>(null);
   console.log("LoadingPanel -> numberOfUsers", numberOfUsers);
-
   return (
     <div
       className={
@@ -50,9 +49,11 @@ export function LoadingPanel({
           </Circle>
         </div>
         <div className="flex flex-col justify-center gap-10">
-          <Circle ref={div1Ref}>
-            <Icons.user />
-          </Circle>
+          {numberOfUsers == 1 && (
+            <Circle ref={div1Ref}>
+              <Icons.user />
+            </Circle>
+          )}
           {numberOfUsers == 2 && (
             <Circle ref={div2Ref}>
               <Icons.user />
@@ -66,13 +67,14 @@ export function LoadingPanel({
         </div>
       </div>
 
-      {/* AnimatedBeams */}
-      <AnimatedBeam
-        containerRef={containerRef}
-        fromRef={div1Ref}
-        toRef={div6Ref}
-        duration={3}
-      />
+      {numberOfUsers == 1 && (
+        <AnimatedBeam
+          containerRef={containerRef}
+          fromRef={div1Ref}
+          toRef={div6Ref}
+          duration={3}
+        />
+      )}
       {numberOfUsers == 2 && (
         <AnimatedBeam
           containerRef={containerRef}

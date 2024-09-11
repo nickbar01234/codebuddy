@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Ripple } from "@cb/components/ui/Ripple";
+import { State, stateContext } from "@cb/context/StateProvider";
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
@@ -23,6 +25,7 @@ const Provider = editorProviderContext.Provider;
 export const EditorProvider = (props: EditorProviderProps) => {
   const { children, defaultActiveId, informations } = props;
   const [activeId, setActiveId] = useState(defaultActiveId);
+  const { state } = React.useContext(stateContext);
   const [canViewCode, setCanViewCode] = useState(
     localStorage.getItem("ViewCode") === "true"
   );
@@ -42,6 +45,34 @@ export const EditorProvider = (props: EditorProviderProps) => {
   return (
     <Provider value={{ activeId: activeId }}>
       {/* <div>Hihi</div> */}
+      {tabs.length === 0 &&
+        state === State.ROOM &&
+        JSON.parse(localStorage.getItem("curRoomId") || "{}").numberOfUsers ==
+          0 && (
+          <div className="flex flex-col items-center justify-center h-full w-full">
+            <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg md:shadow-xl">
+              <div
+                className={
+                  "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
+                }
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#000000"
+                  strokeWidth="2"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+              </div>
+              <Ripple />
+            </div>
+          </div>
+        )}
       <div
         className="flex flex-col h-full justify-between"
         style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }}
