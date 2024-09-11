@@ -1,6 +1,7 @@
 import { sendMessage } from "@cb/services";
 import React from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
+import { set } from "mongoose";
 
 interface TabProps extends TabMetadata {
   code: {
@@ -13,7 +14,7 @@ interface TabProps extends TabMetadata {
 export const EditorTab = (props: TabProps) => {
   const { id } = props;
   const { activeId } = React.useContext(editorProviderContext);
-  // const [changeUser, setChangeUser] = React.useState(false);
+  const [changeUser, setChangeUser] = React.useState(false);
 
   React.useEffect(() => {
     sendMessage({
@@ -25,6 +26,10 @@ export const EditorTab = (props: TabProps) => {
   }, [activeId]);
 
   React.useEffect(() => {
+    setChangeUser(true);
+  }, [activeId]);
+
+  React.useEffect(() => {
     if (activeId === id) {
       // console.log("Changing Editor value");
       // console.log("Change User", changeUser);
@@ -33,8 +38,9 @@ export const EditorTab = (props: TabProps) => {
         code: props.code.value,
         language: props.code.language,
         changes: props.changes !== "" ? JSON.parse(props.changes) : {},
-        changeUser: false,
+        changeUser: changeUser,
       });
+      setChangeUser(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId, id, props.code.value, props.code.language]);

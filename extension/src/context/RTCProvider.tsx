@@ -365,6 +365,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 const { [peer]: _, ...rest } = prev;
                 return rest;
               });
+              localStorage.setItem(
+                "curRoomId",
+                JSON.stringify({
+                  roomId: roomId,
+                  numberOfUsers:
+                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
+                      .numberOfUsers - 1,
+                })
+              );
               return;
             }
             if (change.type === "added") {
@@ -386,6 +395,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
               console.log("Create Offer to", change.doc.id);
               await createOffer(roomId, peer);
+              localStorage.setItem(
+                "curRoomId",
+                JSON.stringify({
+                  roomId: roomId,
+                  numberOfUsers:
+                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
+                      .numberOfUsers + 1,
+                })
+              );
             }
           });
         }
