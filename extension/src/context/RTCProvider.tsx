@@ -375,6 +375,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (roomId == null) {
       return;
     }
+    if (!reload) {
+      localStorage.removeItem("reloading");
+      localStorage.removeItem("curRoomId");
+      localStorage.removeItem("ViewCode");
+    }
     await db.usernamesCollection(roomId).deleteUser(username);
     const myAnswers = await getDocs(db.connections(roomId, username).ref());
     myAnswers.docs.forEach(async (doc) => {
@@ -384,14 +389,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     setInformations({});
     setConnected({});
     pcs.current = {};
-    if (!reload) {
-      serviceSendMessage({
-        action: "cleanEditor",
-      });
-      localStorage.removeItem("reloading");
-      localStorage.removeItem("curRoomId");
-      localStorage.removeItem("ViewCode");
-    }
   };
 
   return (
