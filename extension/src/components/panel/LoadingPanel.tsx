@@ -49,17 +49,17 @@ export function LoadingPanel({
           </Circle>
         </div>
         <div className="flex flex-col justify-center gap-10">
-          {numberOfUsers == 1 && (
+          {numberOfUsers >= 1 && (
             <Circle ref={div1Ref}>
               <Icons.user />
             </Circle>
           )}
-          {numberOfUsers == 2 && (
+          {numberOfUsers >= 2 && (
             <Circle ref={div2Ref}>
               <Icons.user />
             </Circle>
           )}
-          {numberOfUsers == 3 && (
+          {numberOfUsers >= 3 && (
             <Circle ref={div3Ref}>
               <Icons.user />
             </Circle>
@@ -67,7 +67,7 @@ export function LoadingPanel({
         </div>
       </div>
 
-      {numberOfUsers == 1 && (
+      {numberOfUsers >= 1 && (
         <AnimatedBeam
           containerRef={containerRef}
           fromRef={div1Ref}
@@ -75,7 +75,7 @@ export function LoadingPanel({
           duration={3}
         />
       )}
-      {numberOfUsers == 2 && (
+      {numberOfUsers >= 2 && (
         <AnimatedBeam
           containerRef={containerRef}
           fromRef={div2Ref}
@@ -83,7 +83,7 @@ export function LoadingPanel({
           duration={3}
         />
       )}
-      {numberOfUsers == 3 && (
+      {numberOfUsers >= 3 && (
         <AnimatedBeam
           containerRef={containerRef}
           fromRef={div3Ref}

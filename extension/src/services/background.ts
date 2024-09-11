@@ -71,7 +71,7 @@ const createModel = async (id: string, code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (monaco.editor.getModels().length === 3) {
-    console.log("Using Existing Model");
+    // console.log("Using Existing Model");
     setValueModel({
       code,
       language,
@@ -90,7 +90,7 @@ const createModel = async (id: string, code: string, language: string) => {
       changeUser: true,
     });
   } else {
-    console.log("Creating New Model");
+    // console.log("Creating New Model");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -117,7 +117,7 @@ const setValueModel = async (
     .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
   if (myLanguage !== language || changeUser) {
-    console.log("Setting Value Model");
+    // console.log("Setting Value Model");
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
     return;
@@ -137,22 +137,22 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-  console.log("Applied Changes");
+  // console.log("Applied Changes");
 };
 
 const cleanEditor = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  console.log("Cleaned Editor");
+  // console.log("Cleaned Editor");
   try {
     await monaco.editor
       .getEditors()
       .find((e: any) => e.id === "CodeBuddy")
       .dispose();
   } catch (e) {
-    console.error(e);
+    // console.error(e);
   }
-  console.log("Cleaned Editor");
+  // console.log("Cleaned Editor");
 };
 
 chrome.webNavigation.onCompleted.addListener(
@@ -279,14 +279,14 @@ chrome.runtime.onMessage.addListener(
       }
 
       case "test": {
-        console.log("TestRequest");
+        // console.log("TestRequest");
         a[i++] = "a";
         sendResponse({ a });
         break;
       }
 
       default:
-        console.error(`Unhandled request ${request}`);
+        // console.error(`Unhandled request ${request}`);
         break;
     }
 
