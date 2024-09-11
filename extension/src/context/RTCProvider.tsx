@@ -12,12 +12,44 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import { sendMessage as serviceSendMessage } from "@cb/services";
 
 const servers = {
   iceServers: [
     {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+    },
+    {
+      urls: "turn:relay1.expressturn.com:3478",
+      credential: "n249CgDuYqr0b4Sc",
+      username: "efBOWWM4SVBB1JE5CO",
+    },
+    {
+      urls: "turn:13.250.13.83:3478?transport=udp",
+      username: "YzYNCouZM1mhqhmseWk6",
+      credential: "YzYNCouZM1mhqhmseWk6",
+    },
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
     },
   ],
   iceCandidatePoolSize: 10,
