@@ -371,6 +371,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       serviceSendMessage({
         action: "cleanEditor",
       });
+      localStorage.removeItem("reloading");
+      localStorage.removeItem("ViewCode");
     }
   };
 

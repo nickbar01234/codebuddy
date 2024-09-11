@@ -23,7 +23,9 @@ const Provider = editorProviderContext.Provider;
 export const EditorProvider = (props: EditorProviderProps) => {
   const { children, defaultActiveId, informations } = props;
   const [activeId, setActiveId] = useState(defaultActiveId);
-  const [canViewCode, setCanViewCode] = useState(false);
+  const [canViewCode, setCanViewCode] = useState(
+    localStorage.getItem("ViewCode") === "true"
+  );
   const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
   const unBlur = () => setCanViewCode(true);
@@ -32,6 +34,10 @@ export const EditorProvider = (props: EditorProviderProps) => {
       setActiveId(tabs[0].id);
     }
   }, [tabs.length]);
+
+  React.useEffect(() => {
+    localStorage.setItem("ViewCode", canViewCode.toString());
+  }, [canViewCode]);
 
   return (
     <Provider value={{ activeId: activeId }}>
