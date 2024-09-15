@@ -68,8 +68,7 @@ export type ServiceRequest =
   | createMonacoModelRequest
   | SetOtherEditorRequest
   | UpdateEditorLayoutRequest
-  | CleanEditorRequest
-  | TestRequest;
+  | CleanEditorRequest;
 
 export type ServiceResponse = {
   cookie: Status;
@@ -81,9 +80,6 @@ export type ServiceResponse = {
   createModel: void;
   setValueOtherEditor: void;
   updateEditorLayout: void;
-  test: {
-    [key: number]: string;
-  };
   cleanEditor: void;
 };
 

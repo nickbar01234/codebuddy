@@ -184,12 +184,6 @@ chrome.webNavigation.onCompleted.addListener(
   { url: [{ schemes: ["http", "https"] }] }
 );
 
-const a: {
-  [key: number]: string;
-} = {};
-
-let i = 0;
-
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
     switch (request.action) {
@@ -277,14 +271,6 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
-
-      case "test": {
-        // console.log("TestRequest");
-        a[i++] = "a";
-        sendResponse({ a });
-        break;
-      }
-
       default:
         // console.error(`Unhandled request ${request}`);
         break;
