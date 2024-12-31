@@ -16,3 +16,5 @@ lerna-debug.log*
 # Misc
 .DS_Store
 draft.ts
+*.sh
+*.bat
