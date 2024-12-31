@@ -19,10 +19,8 @@ export const RootNavigator = () => {
           duration: 10 * 1000,
         }}
       />
-      <div
-        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto`}
-      >
-        <h2 className="text-lg font-medium">Code Buddy</h2>
+      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-[4px] overflow-x-auto overflow-y-hidden space-x-3 hide-scrollbar">
+        <h2 className="text-lg font-medium text-nowrap">Code Buddy</h2>
         <button
           className="hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
           id="headlessui-menu-button-:r3q:"
