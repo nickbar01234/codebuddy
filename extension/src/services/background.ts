@@ -3,6 +3,14 @@ import { setStorage } from "@cb/services";
 import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
 
+const FILTER = {
+  url: [
+    {
+      urlMatches: "https://leetcode.com",
+    },
+  ],
+};
+
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
     name: "LEETCODE_SESSION",
@@ -141,34 +149,31 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: true });
 };
 
-chrome.webNavigation.onCompleted.addListener(
-  function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      setTimeout(() => {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id ?? 0 },
-          func: () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const monaco = (window as any).monaco;
-            const lcCodeEditor = monaco.editor
-              .getEditors()
-              .filter((e: any) => e.id !== "CodeBuddy")
-              .map((e: any) => e.getModel())
-              .find((m: any) => m.getLanguageId() !== "plaintext");
-            lcCodeEditor.onDidChangeContent((event: any) => {
-              const trackEditor = document.getElementById("trackEditor");
-              if (trackEditor != null) {
-                trackEditor.textContent = JSON.stringify(event.changes[0]);
-              }
-            });
-          },
-          world: "MAIN",
-        });
-      }, 1000);
-    });
-  },
-  { url: [{ schemes: ["http", "https"] }] }
-);
+chrome.webNavigation.onCompleted.addListener(function () {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    setTimeout(() => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id ?? 0 },
+        func: () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const monaco = (window as any).monaco;
+          const lcCodeEditor = monaco.editor
+            .getEditors()
+            .filter((e: any) => e.id !== "CodeBuddy")
+            .map((e: any) => e.getModel())
+            .find((m: any) => m.getLanguageId() !== "plaintext");
+          lcCodeEditor.onDidChangeContent((event: any) => {
+            const trackEditor = document.getElementById("trackEditor");
+            if (trackEditor != null) {
+              trackEditor.textContent = JSON.stringify(event.changes[0]);
+            }
+          });
+        },
+        world: "MAIN",
+      });
+    }, 1000);
+  });
+}, FILTER);
 
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
