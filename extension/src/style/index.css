@@ -30,3 +30,10 @@
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
 }
+
+/* add the code bellow */
+@layer utilities {
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}

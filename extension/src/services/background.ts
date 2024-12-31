@@ -3,6 +3,14 @@ import { setStorage } from "@cb/services";
 import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
 
+const FILTER = {
+  url: [
+    {
+      urlMatches: "https://leetcode.com",
+    },
+  ],
+};
+
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
     name: "LEETCODE_SESSION",
@@ -206,6 +214,7 @@ chrome.runtime.onMessage.addListener(
 
         break;
       }
+
       case "setValue": {
         chrome.scripting
           .executeScript({
@@ -219,6 +228,7 @@ chrome.runtime.onMessage.addListener(
           });
         break;
       }
+
       case "createModel": {
         chrome.scripting
           .executeScript({
@@ -232,6 +242,7 @@ chrome.runtime.onMessage.addListener(
           });
         break;
       }
+
       case "setValueOtherEditor": {
         chrome.scripting
           .executeScript({
