@@ -40,12 +40,6 @@ chrome.runtime.onInstalled.addListener((details) => {
         isCollapsed: false,
       },
     });
-    setStorage({
-      editorPreference: {
-        width: 300 /* px */,
-        isCollapsed: false,
-      },
-    });
   }
 });
 
@@ -85,6 +79,7 @@ const createModel = async (id: string, code: string, language: string) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (monaco.editor.getModels().length === 3) {
+    console.log("Using Existing Model");
     setValueModel({
       code,
       language,
@@ -103,6 +98,7 @@ const createModel = async (id: string, code: string, language: string) => {
       changeUser: true,
     });
   } else {
+    console.log("Creating New Model");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -129,10 +125,12 @@ const setValueModel = async (
     .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
   if (myLanguage !== language || changeUser) {
+    console.log("Setting Value Model");
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
     return;
   }
+
   const editOperations = {
     identifier: { major: 1, minor: 1 },
     range: new monaco.Range(
@@ -147,33 +145,52 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
+  console.log("Applied Changes");
 };
 
-chrome.webNavigation.onCompleted.addListener(function () {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    setTimeout(() => {
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id ?? 0 },
-        func: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const monaco = (window as any).monaco;
-          const lcCodeEditor = monaco.editor
-            .getEditors()
-            .filter((e: any) => e.id !== "CodeBuddy")
-            .map((e: any) => e.getModel())
-            .find((m: any) => m.getLanguageId() !== "plaintext");
-          lcCodeEditor.onDidChangeContent((event: any) => {
-            const trackEditor = document.getElementById("trackEditor");
-            if (trackEditor != null) {
-              trackEditor.textContent = JSON.stringify(event.changes[0]);
-            }
-          });
-        },
-        world: "MAIN",
-      });
-    }, 1000);
-  });
-}, FILTER);
+const cleanEditor = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const monaco = (window as any).monaco;
+  console.log("Cleaned Editor");
+  try {
+    await monaco.editor
+      .getEditors()
+      .find((e: any) => e.id === "CodeBuddy")
+      .dispose();
+  } catch (e) {
+    console.error(e);
+  }
+  console.log("Cleaned Editor");
+};
+
+chrome.webNavigation.onCompleted.addListener(
+  function () {
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      setTimeout(() => {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id ?? 0 },
+          func: () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const monaco = (window as any).monaco;
+            const lcCodeEditor = monaco.editor
+              .getEditors()
+              .filter((e: any) => e.id !== "CodeBuddy")
+              .map((e: any) => e.getModel())
+              .find((m: any) => m.getLanguageId() !== "plaintext");
+            lcCodeEditor.onDidChangeContent((event: any) => {
+              const trackEditor = document.getElementById("trackEditor");
+              if (trackEditor != null) {
+                trackEditor.textContent = JSON.stringify(event.changes[0]);
+              }
+            });
+          },
+          world: "MAIN",
+        });
+      }, 2000);
+    });
+  },
+  { url: [{ schemes: ["http", "https"] }] }
+);
 
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
@@ -194,6 +211,7 @@ chrome.runtime.onMessage.addListener(
           .then((result) => {
             sendResponse(result[0].result);
           });
+
         break;
       }
 
@@ -251,6 +269,15 @@ chrome.runtime.onMessage.addListener(
           target: { tabId: sender.tab?.id ?? 0 },
           func: updateEditorLayout,
           args: [{ id: request.monacoEditorId }],
+          world: "MAIN",
+        });
+        break;
+      }
+
+      case "cleanEditor": {
+        chrome.scripting.executeScript({
+          target: { tabId: sender.tab?.id ?? 0 },
+          func: cleanEditor,
           world: "MAIN",
         });
         break;

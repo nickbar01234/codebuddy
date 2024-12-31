@@ -54,13 +54,18 @@ interface UpdateEditorLayoutRequest {
   monacoEditorId: string;
 }
 
+interface CleanEditorRequest {
+  action: "cleanEditor";
+}
+
 export type ServiceRequest =
   | CookieRequest
   | GetValueRequest
   | SetValueRequest
   | createMonacoModelRequest
   | SetOtherEditorRequest
-  | UpdateEditorLayoutRequest;
+  | UpdateEditorLayoutRequest
+  | CleanEditorRequest;
 
 export type ServiceResponse = {
   cookie: Status;
@@ -72,6 +77,7 @@ export type ServiceResponse = {
   createModel: void;
   setValueOtherEditor: void;
   updateEditorLayout: void;
+  cleanEditor: void;
 };
 
 interface EditorPreference {

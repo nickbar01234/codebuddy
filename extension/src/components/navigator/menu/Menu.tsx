@@ -1,5 +1,11 @@
 import React from "react";
-import { BackIcon, CodeIcon, CopyIcon, PlusIcon } from "@cb/components/icons";
+import {
+  BackIcon,
+  CodeIcon,
+  CopyIcon,
+  PlusIcon,
+  LeaveIcon,
+} from "@cb/components/icons";
 import { State, stateContext } from "@cb/context/StateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { getQuestionIdFromUrl } from "@cb/utils";
@@ -18,7 +24,7 @@ interface MenuProps {
 export const Menu = (props: MenuProps) => {
   const { displayMenu, setDisplayMenu } = props;
   const { state, setState } = React.useContext(stateContext);
-  const { createRoom, joinRoom, roomId } = useRTC();
+  const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const [displayInputRoomId, setDisplayInputRoomId] = React.useState(false);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
@@ -51,11 +57,28 @@ export const Menu = (props: MenuProps) => {
             setDisplayMenu(false);
           },
         },
+        {
+          display: "Leave Room",
+          icon: <LeaveIcon />,
+          onClick: () => {
+            setState(State.HOME);
+            setDisplayMenu(false);
+            if (roomId) leaveRoom(roomId);
+          },
+        },
       ];
     }
 
     return [];
-  }, [state, createRoom, setDisplayMenu, setState, roomId]);
+  }, [state, createRoom, setDisplayMenu, setState, roomId, leaveRoom]);
+
+  React.useEffect(() => {
+    if (roomId != null) {
+      setState(State.ROOM);
+    } else {
+      setState(State.HOME);
+    }
+  }, [roomId, setState]);
 
   if (!displayMenu) return null;
 

@@ -1,11 +1,9 @@
-import React from "react";
-import { Toaster } from "sonner";
 import { Menu } from "@cb/components/navigator/menu/Menu";
 import { RoomPanel } from "@cb/components/panel/RoomPanel";
-import { State, stateContext } from "@cb/context/StateProvider";
+import React from "react";
+import { Toaster } from "sonner";
 
 export const RootNavigator = () => {
-  const { state } = React.useContext(stateContext);
   const [displayPopup, setDisplayPopup] = React.useState(false);
 
   return (
@@ -19,8 +17,10 @@ export const RootNavigator = () => {
           duration: 10 * 1000,
         }}
       />
-      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-[4px] overflow-x-auto overflow-y-hidden space-x-3 hide-scrollbar">
-        <h2 className="text-lg font-medium text-nowrap">Code Buddy</h2>
+      <div
+        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto overflow-y-hidden`}
+      >
+        <h2 className="text-lg font-medium">Code Buddy</h2>
         <button
           className="hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
           id="headlessui-menu-button-:r3q:"
@@ -46,9 +46,9 @@ export const RootNavigator = () => {
           </svg>
         </button>
       </div>
-      <div className="h-full w-full">
+      <div className="h-full w-full overflow-hidden">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
-        {state === State.HOME ? null : <RoomPanel />}
+        <RoomPanel />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
+  informations: string[];
 }
 
 export interface TabMetadata {
@@ -12,7 +13,7 @@ export interface TabMetadata {
 
 interface EditorProviderContext {
   activeId: string;
-  registerTab: (tab: TabMetadata) => void;
+  // registerTab: (tab: TabMetadata) => void;
 }
 
 export const editorProviderContext = React.createContext(
@@ -21,38 +22,47 @@ export const editorProviderContext = React.createContext(
 const Provider = editorProviderContext.Provider;
 
 export const EditorProvider = (props: EditorProviderProps) => {
-  const { children, defaultActiveId } = props;
+  const { children, defaultActiveId, informations } = props;
   const [activeId, setActiveId] = useState(defaultActiveId);
   const [canViewCode, setCanViewCode] = useState(false);
-  const [tabs, setTabs] = useState<TabMetadata[]>([]);
+  const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
-  const registerTab = (tab: TabMetadata) => setTabs((prev) => [...prev, tab]);
   const unBlur = () => setCanViewCode(true);
 
+  React.useEffect(() => {
+    if (tabs.length != 0) {
+      setActiveId(tabs[0].id);
+    }
+  }, [tabs]);
+
   return (
-    <Provider value={{ activeId: activeId, registerTab: registerTab }}>
-      <div className="flex flex-col h-full justify-between">
+    <Provider value={{ activeId: activeId }}>
+      {/* <div>Hihi</div> */}
+      <div
+        className="flex flex-col h-full justify-between"
+        style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }}
+      >
         <div className="flex flex-col grow gap-y-2">
           {children}
           <div className="grow relative">
             <div
               id="CodeBuddyEditor"
               data-view-code={canViewCode}
-              className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-auto h-full"
+              className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-hidden h-full "
             />
-            {!canViewCode && (
+            {!canViewCode && tabs.length != 0 && (
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg
   "
                 onClick={unBlur}
               >
-                View code
+                View
               </button>
             )}
           </div>
         </div>
         <div
-          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto text-sm`}
+          className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm`}
         >
           {tabs.map((tab) => (
             <React.Fragment key={tab.id}>

@@ -1,17 +1,20 @@
 import { initializeApp } from "firebase/app";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
   getFirestore,
   setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
+
 import { config } from "@cb/db/config";
 import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
 
 const app = initializeApp(config);
-const firestore = getFirestore(app);
+export const firestore = getFirestore(app);
 
 const entry = () => {
   const rooms = () => {
@@ -43,13 +46,22 @@ const entry = () => {
       ref: () => usernamesCollection,
       doc: async () => await getDocs(usernamesCollection),
       addUser: (username: string) => addUsername(roomId, username),
+      deleteUser: (username: string) => deleteUsername(roomId, username),
     };
   };
 
   const addUsername = async (roomId: string, username: string) => {
     const usernamesCollectionRef = usernamesCollection(roomId).ref();
     const userDocRef = doc(usernamesCollectionRef, username);
-    await setDoc(userDocRef, {});
+    await setDoc(userDocRef, {
+      createdAt: serverTimestamp(),
+    });
+  };
+
+  const deleteUsername = async (roomId: string, username: string) => {
+    const usernamesCollectionRef = usernamesCollection(roomId).ref();
+    const userDocRef = doc(usernamesCollectionRef, username);
+    await deleteDoc(userDocRef);
   };
 
   const connections = (roomId: string, username: string) => {

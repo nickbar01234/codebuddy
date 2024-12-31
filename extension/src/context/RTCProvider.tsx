@@ -1,15 +1,18 @@
+import db from "@cb/db";
+import { useState } from "@cb/hooks";
+import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
+  deleteDoc,
+  getDocs,
   onSnapshot,
   setDoc,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import db from "@cb/db";
-import { useState } from "@cb/hooks";
-import { constructUrlFromQuestionId } from "@cb/utils";
+import { sendMessage as serviceSendMessage } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -23,7 +26,7 @@ const servers = {
 interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
-  leaveRoom: () => void;
+  leaveRoom: (roomId: string) => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, string>;
@@ -66,7 +69,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   };
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
-    console.log("hello");
+    // console.log("hello");
     console.dir(pcs.current[username].pc);
     setConnected((prev) => ({
       ...prev,
@@ -98,6 +101,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const roomRef = db.rooms().ref();
     await setDoc(roomRef, { questionId }, { merge: true });
     await db.usernamesCollection(roomRef.id).addUser(username);
+    console.log("Created room");
     setRoomId(roomRef.id);
   };
 
@@ -163,118 +167,191 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [username]
   );
 
-  const joinRoom = async (
-    roomId: string,
-    questionId: string
-  ): Promise<boolean> => {
-    if (!roomId) {
-      toast.error("Please enter room ID");
-      return false;
-    }
+  const joinRoom = React.useCallback(
+    async (roomId: string, questionId: string): Promise<boolean> => {
+      if (!roomId) {
+        toast.error("Please enter room ID");
+        return false;
+      }
 
-    const roomDoc = await db.room(roomId).doc();
-    if (!roomDoc.exists()) {
-      toast.error("Room does not exist");
-      return false;
-    }
-    const roomQuestionId = roomDoc.data().questionId;
-    if (questionId !== roomQuestionId) {
-      const questionUrl = constructUrlFromQuestionId(roomQuestionId);
-      toast.error("The room you join is on this question:", {
-        description: questionUrl,
-      });
-      return false;
-    }
+      const roomDoc = await db.room(roomId).doc();
+      if (!roomDoc.exists()) {
+        toast.error("Room does not exist");
+        return false;
+      }
+      const roomQuestionId = roomDoc.data().questionId;
+      if (questionId !== roomQuestionId) {
+        const questionUrl = constructUrlFromQuestionId(roomQuestionId);
+        toast.error("The room you join is on this question:", {
+          description: questionUrl,
+        });
+        return false;
+      }
 
-    const usernamesCollection = await db.usernamesCollection(roomId).doc();
-    if (usernamesCollection.size >= MAX_CAPACITY) {
-      console.log("The room is at max capacity");
-      toast.error("This room is already at max capacity.");
-      return false;
-    }
+      const usernamesCollection = await db.usernamesCollection(roomId).doc();
+      if (usernamesCollection.size >= MAX_CAPACITY) {
+        console.log("The room is at max capacity");
+        toast.error("This room is already at max capacity.");
+        return false;
+      }
+      // console.log("Joining room", roomId);
+      setRoomId(roomId);
 
-    setRoomId(roomId);
+      await db.usernamesCollection(roomId).addUser(username);
 
-    await db.usernamesCollection(roomId).addUser(username);
+      onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === "removed") {
+            return;
+          }
 
-    onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
-      snapshot.docChanges().forEach(async (change) => {
-        if (change.type === "removed") {
-          return;
-        }
+          const data = change.doc.data();
+          const peer = data.username;
 
-        const data = change.doc.data();
-        const peer = data.username;
+          if (peer == undefined) {
+            return;
+          }
 
-        if (peer == undefined) {
-          return;
-        }
+          const themRef = db.connections(roomId, username).doc(peer);
+          const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
+          // const pc = new RTCPeerConnection(servers);
+          if (pcs.current[peer] == undefined) {
+            pcs.current[peer] = {
+              username: peer,
+              pc: pc,
+              channel: pc.createDataChannel("channel"),
+            };
+            pc.ondatachannel = (event) => {
+              pcs.current[peer].channel = event.channel;
+              pcs.current[peer].channel.onmessage = onmessage(peer);
+              pcs.current[peer].channel.onopen = onOpen(peer);
+            };
+            pc.onicecandidate = async (event) => {
+              if (event.candidate) {
+                await updateDoc(themRef, {
+                  answerCandidates: arrayUnion(event.candidate.toJSON()),
+                });
+              }
+            };
+          }
 
-        const themRef = db.connections(roomId, username).doc(peer);
-        const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
+          if (data.offer != undefined && pc.remoteDescription == null) {
+            await pc.setRemoteDescription(
+              new RTCSessionDescription(data.offer)
+            );
 
-        if (pcs.current[peer] == undefined) {
-          pcs.current[peer] = {
-            username: peer,
-            pc: pc,
-            channel: pc.createDataChannel("channel"),
-          };
-          pc.ondatachannel = (event) => {
-            pcs.current[peer].channel = event.channel;
-            pcs.current[peer].channel.onmessage = onmessage(peer);
-            pcs.current[peer].channel.onopen = onOpen(peer);
-          };
-          pc.onicecandidate = async (event) => {
-            if (event.candidate) {
-              await updateDoc(themRef, {
-                answerCandidates: arrayUnion(event.candidate.toJSON()),
-              });
-            }
-          };
-        }
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await updateDoc(themRef, { answer: answer });
+          }
 
-        if (data.offer != undefined && pc.remoteDescription == null) {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
-
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          await updateDoc(themRef, { answer: answer });
-        }
-
-        data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
-          pc.addIceCandidate(new RTCIceCandidate(candidate));
+          data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
+            pc.addIceCandidate(new RTCIceCandidate(candidate));
+          });
         });
       });
-    });
 
-    toast.success(`You have successfully joined the room with ID ${roomId}.`);
-    return true;
-  };
+      toast.success(`You have successfully joined the room with ID ${roomId}.`);
+      return true;
+    },
+    [username]
+  );
+
+  const leaveRoom = React.useCallback(
+    async (roomId: string, reload = false) => {
+      if (roomId == null) {
+        return;
+      }
+      await db.usernamesCollection(roomId).deleteUser(username);
+      const myAnswers = await getDocs(db.connections(roomId, username).ref());
+      myAnswers.docs.forEach(async (doc) => {
+        deleteDoc(doc.ref);
+      });
+      setRoomId(null);
+      setInformations({});
+      setConnected({});
+      pcs.current = {};
+      if (!reload) {
+        serviceSendMessage({
+          action: "cleanEditor",
+        });
+      }
+    },
+    [username]
+  );
+
+  React.useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (roomId) {
+        console.log("Before Reloading", roomId);
+        localStorage.setItem("reloading", roomId);
+        await db.usernamesCollection(roomId).deleteUser(username);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [roomId, username]);
+
+  React.useEffect(() => {
+    const reloading = localStorage.getItem("reloading");
+    if (reloading) {
+      console.log("Reloading", reloading);
+      localStorage.removeItem("reloading");
+      const reloadJob = async () => {
+        await leaveRoom(reloading, true);
+        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+      };
+      reloadJob();
+    }
+  }, [joinRoom, leaveRoom]);
 
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
-
-      const usernamesSnapshot = await db.usernamesCollection(roomId).doc();
-      const existingUsers = new Set(
-        usernamesSnapshot.docs.map((doc) => doc.id)
-      );
-      console.log("Existing users", existingUsers);
       const unsubscribe = onSnapshot(
         db.usernamesCollection(roomId).ref(),
         (snapshot) => {
           snapshot.docChanges().forEach(async (change) => {
             if (change.type === "removed") {
+              const peer = change.doc.id;
+              if (peer == undefined) return;
+              if (pcs.current[peer] == undefined) return;
+              const { [peer]: _, ...rest } = pcs.current;
+              pcs.current = rest;
+              console.log("Removed peer", peer);
+              await deleteDoc(db.connections(roomId, username).doc(peer));
+              setInformations((prev) => {
+                const { [peer]: _, ...rest } = prev;
+                return rest;
+              });
+              setConnected((prev) => {
+                const { [peer]: _, ...rest } = prev;
+                return rest;
+              });
               return;
             }
             if (change.type === "added") {
+              console.log("Added peer");
               const peer = change.doc.id;
-              if (existingUsers.has(peer)) {
-                return; // Ignore documents that were already present
-              }
+              const usernamesSnapshot = await db
+                .usernamesCollection(roomId)
+                .doc();
+              const myTimeStamp = usernamesSnapshot.docs
+                .find((doc) => doc.id === username)
+                ?.data().createdAt;
+              // console.log(myTimeStamp);
               if (peer == undefined || peer === username) {
                 return;
               }
+              if (myTimeStamp.seconds >= change.doc.data().createdAt.seconds) {
+                return;
+              }
+
+              console.log("Create Offer to", change.doc.id);
               await createOffer(roomId, peer);
             }
           });
@@ -292,8 +369,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
     }
   }, [roomId, username, createOffer]);
-
-  const leaveRoom = () => {};
 
   return (
     <RTCContext.Provider
