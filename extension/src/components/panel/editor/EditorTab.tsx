@@ -11,23 +11,23 @@ interface TabProps extends TabMetadata {
 }
 
 export const EditorTab = (props: TabProps) => {
-  const { id } = props;
+  const {
+    id,
+    code: { value, language },
+  } = props;
   const { activeId } = React.useContext(editorProviderContext);
-  // const [changeUser, setChangeUser] = React.useState(false);
 
   React.useEffect(() => {
     sendMessage({
       action: "createModel",
       id: "CodeBuddyEditor",
-      code: props.code.value,
-      language: props.code.language,
+      code: value,
+      language: language,
     });
-  }, [activeId]);
+  }, [value, language]);
 
   React.useEffect(() => {
     if (activeId === id) {
-      // console.log("Changing Editor value");
-      // console.log("Change User", changeUser);
       sendMessage({
         action: "setValueOtherEditor",
         code: props.code.value,

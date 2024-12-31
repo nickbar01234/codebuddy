@@ -70,7 +70,7 @@ export const Menu = (props: MenuProps) => {
     }
 
     return [];
-  }, [state, createRoom, setDisplayMenu, setState, roomId]);
+  }, [state, createRoom, setDisplayMenu, setState, roomId, leaveRoom]);
 
   React.useEffect(() => {
     if (roomId != null) {
@@ -78,7 +78,7 @@ export const Menu = (props: MenuProps) => {
     } else {
       setState(State.HOME);
     }
-  }, [roomId]);
+  }, [roomId, setState]);
 
   if (!displayMenu) return null;
 

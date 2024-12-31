@@ -167,93 +167,119 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [username]
   );
 
-  const joinRoom = async (
-    roomId: string,
-    questionId: string
-  ): Promise<boolean> => {
-    if (!roomId) {
-      toast.error("Please enter room ID");
-      return false;
-    }
+  const joinRoom = React.useCallback(
+    async (roomId: string, questionId: string): Promise<boolean> => {
+      if (!roomId) {
+        toast.error("Please enter room ID");
+        return false;
+      }
 
-    const roomDoc = await db.room(roomId).doc();
-    if (!roomDoc.exists()) {
-      toast.error("Room does not exist");
-      return false;
-    }
-    const roomQuestionId = roomDoc.data().questionId;
-    if (questionId !== roomQuestionId) {
-      const questionUrl = constructUrlFromQuestionId(roomQuestionId);
-      toast.error("The room you join is on this question:", {
-        description: questionUrl,
-      });
-      return false;
-    }
+      const roomDoc = await db.room(roomId).doc();
+      if (!roomDoc.exists()) {
+        toast.error("Room does not exist");
+        return false;
+      }
+      const roomQuestionId = roomDoc.data().questionId;
+      if (questionId !== roomQuestionId) {
+        const questionUrl = constructUrlFromQuestionId(roomQuestionId);
+        toast.error("The room you join is on this question:", {
+          description: questionUrl,
+        });
+        return false;
+      }
 
-    const usernamesCollection = await db.usernamesCollection(roomId).doc();
-    if (usernamesCollection.size >= MAX_CAPACITY) {
-      console.log("The room is at max capacity");
-      toast.error("This room is already at max capacity.");
-      return false;
-    }
-    // console.log("Joining room", roomId);
-    setRoomId(roomId);
+      const usernamesCollection = await db.usernamesCollection(roomId).doc();
+      if (usernamesCollection.size >= MAX_CAPACITY) {
+        console.log("The room is at max capacity");
+        toast.error("This room is already at max capacity.");
+        return false;
+      }
+      // console.log("Joining room", roomId);
+      setRoomId(roomId);
 
-    await db.usernamesCollection(roomId).addUser(username);
+      await db.usernamesCollection(roomId).addUser(username);
 
-    onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
-      snapshot.docChanges().forEach(async (change) => {
-        if (change.type === "removed") {
-          return;
-        }
+      onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === "removed") {
+            return;
+          }
 
-        const data = change.doc.data();
-        const peer = data.username;
+          const data = change.doc.data();
+          const peer = data.username;
 
-        if (peer == undefined) {
-          return;
-        }
+          if (peer == undefined) {
+            return;
+          }
 
-        const themRef = db.connections(roomId, username).doc(peer);
-        const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
-        // const pc = new RTCPeerConnection(servers);
-        if (pcs.current[peer] == undefined) {
-          pcs.current[peer] = {
-            username: peer,
-            pc: pc,
-            channel: pc.createDataChannel("channel"),
-          };
-          pc.ondatachannel = (event) => {
-            pcs.current[peer].channel = event.channel;
-            pcs.current[peer].channel.onmessage = onmessage(peer);
-            pcs.current[peer].channel.onopen = onOpen(peer);
-          };
-          pc.onicecandidate = async (event) => {
-            if (event.candidate) {
-              await updateDoc(themRef, {
-                answerCandidates: arrayUnion(event.candidate.toJSON()),
-              });
-            }
-          };
-        }
+          const themRef = db.connections(roomId, username).doc(peer);
+          const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
+          // const pc = new RTCPeerConnection(servers);
+          if (pcs.current[peer] == undefined) {
+            pcs.current[peer] = {
+              username: peer,
+              pc: pc,
+              channel: pc.createDataChannel("channel"),
+            };
+            pc.ondatachannel = (event) => {
+              pcs.current[peer].channel = event.channel;
+              pcs.current[peer].channel.onmessage = onmessage(peer);
+              pcs.current[peer].channel.onopen = onOpen(peer);
+            };
+            pc.onicecandidate = async (event) => {
+              if (event.candidate) {
+                await updateDoc(themRef, {
+                  answerCandidates: arrayUnion(event.candidate.toJSON()),
+                });
+              }
+            };
+          }
 
-        if (data.offer != undefined && pc.remoteDescription == null) {
-          await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+          if (data.offer != undefined && pc.remoteDescription == null) {
+            await pc.setRemoteDescription(
+              new RTCSessionDescription(data.offer)
+            );
 
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          await updateDoc(themRef, { answer: answer });
-        }
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await updateDoc(themRef, { answer: answer });
+          }
 
-        data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
-          pc.addIceCandidate(new RTCIceCandidate(candidate));
+          data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
+            pc.addIceCandidate(new RTCIceCandidate(candidate));
+          });
         });
       });
-    });
 
-    toast.success(`You have successfully joined the room with ID ${roomId}.`);
-    return true;
-  };
+      toast.success(`You have successfully joined the room with ID ${roomId}.`);
+      return true;
+    },
+    [username]
+  );
+
+  const leaveRoom = React.useCallback(
+    async (roomId: string, reload = false) => {
+      if (roomId == null) {
+        return;
+      }
+      await db.usernamesCollection(roomId).deleteUser(username);
+      const myAnswers = await getDocs(db.connections(roomId, username).ref());
+      myAnswers.docs.forEach(async (doc) => {
+        deleteDoc(doc.ref);
+      });
+      setRoomId(null);
+      setInformations({});
+      setConnected({});
+      pcs.current = {};
+      if (!reload) {
+        serviceSendMessage({
+          action: "cleanEditor",
+        });
+      }
+    },
+    [username]
+  );
+
   React.useEffect(() => {
     const handleBeforeUnload = async () => {
       if (roomId) {
@@ -281,18 +307,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
       reloadJob();
     }
-  }, []);
-  // console.log("PC current", pcs.current);
-  // console.log("Connected", connected);
-  // console.log("Informations", informations);
-  // console.log("Room ID", roomId);
+  }, [joinRoom, leaveRoom]);
 
-  // React.useEffect(() => {
-  //   const roomId = localStorage.getItem("roomId");
-  //   if (roomId != null) {
-  //     setRoomId(JSON.parse(roomId));
-  //   }
-  // }, []);
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
@@ -353,26 +369,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
     }
   }, [roomId, username, createOffer]);
-
-  const leaveRoom = async (roomId: string, reload = false) => {
-    if (roomId == null) {
-      return;
-    }
-    await db.usernamesCollection(roomId).deleteUser(username);
-    const myAnswers = await getDocs(db.connections(roomId, username).ref());
-    myAnswers.docs.forEach(async (doc) => {
-      deleteDoc(doc.ref);
-    });
-    setRoomId(null);
-    setInformations({});
-    setConnected({});
-    pcs.current = {};
-    if (!reload) {
-      serviceSendMessage({
-        action: "cleanEditor",
-      });
-    }
-  };
 
   return (
     <RTCContext.Provider

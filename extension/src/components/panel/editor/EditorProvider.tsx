@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+
 interface EditorProviderProps {
   children?: React.ReactNode;
   defaultActiveId: string;
@@ -27,11 +28,12 @@ export const EditorProvider = (props: EditorProviderProps) => {
   const tabs = informations.map((id) => ({ id, displayHeader: id }));
 
   const unBlur = () => setCanViewCode(true);
+
   React.useEffect(() => {
     if (tabs.length != 0) {
       setActiveId(tabs[0].id);
     }
-  }, [tabs.length]);
+  }, [tabs]);
 
   return (
     <Provider value={{ activeId: activeId }}>

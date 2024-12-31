@@ -48,8 +48,7 @@ export const RootNavigator = () => {
       </div>
       <div className="h-full w-full overflow-hidden">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
-
-        {<RoomPanel />}
+        <RoomPanel />
       </div>
     </div>
   );

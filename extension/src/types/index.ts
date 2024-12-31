@@ -57,9 +57,6 @@ interface UpdateEditorLayoutRequest {
 interface CleanEditorRequest {
   action: "cleanEditor";
 }
-export interface TestRequest {
-  action: "test";
-}
 
 export type ServiceRequest =
   | CookieRequest
@@ -68,8 +65,7 @@ export type ServiceRequest =
   | createMonacoModelRequest
   | SetOtherEditorRequest
   | UpdateEditorLayoutRequest
-  | CleanEditorRequest
-  | TestRequest;
+  | CleanEditorRequest;
 
 export type ServiceResponse = {
   cookie: Status;
@@ -81,9 +77,6 @@ export type ServiceResponse = {
   createModel: void;
   setValueOtherEditor: void;
   updateEditorLayout: void;
-  test: {
-    [key: number]: string;
-  };
   cleanEditor: void;
 };
 
