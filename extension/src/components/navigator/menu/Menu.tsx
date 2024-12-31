@@ -1,8 +1,16 @@
 import React from "react";
-import { BackIcon, CodeIcon, CopyIcon, PlusIcon } from "@cb/components/icons";
+import {
+  BackIcon,
+  CodeIcon,
+  CopyIcon,
+  PlusIcon,
+  SignOutIcon,
+} from "@cb/components/icons";
 import { State, stateContext } from "@cb/context/StateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { getQuestionIdFromUrl } from "@cb/utils";
+import { signOut } from "firebase/auth/web-extension";
+import { auth } from "@cb/db";
 
 interface MenuItem {
   display: string;
@@ -39,6 +47,11 @@ export const Menu = (props: MenuProps) => {
           display: "Join Room",
           icon: <CodeIcon />,
           onClick: () => setDisplayInputRoomId(true),
+        },
+        {
+          display: "Sign Out",
+          icon: <SignOutIcon />,
+          onClick: () => signOut(auth),
         },
       ];
     } else if (state === State.ROOM) {

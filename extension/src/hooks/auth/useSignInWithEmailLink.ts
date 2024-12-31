@@ -1,14 +1,19 @@
 import {
   constructUrlFromQuestionId,
+  getLocalStorage,
   getQuestionIdFromUrl,
+  removeLocalStorage,
   setLocalStorage,
 } from "@cb/utils";
 import React from "react";
 import {
   ActionCodeSettings,
+  isSignInWithEmailLink,
   sendSignInLinkToEmail,
+  signInWithEmailLink,
 } from "firebase/auth/web-extension";
 import { auth } from "@cb/db";
+import { useOnMount } from "..";
 
 interface SignInInit {
   status: "INIT";
@@ -62,6 +67,18 @@ export const useSignInWithEmailLink = () => {
       });
 
   const resetStatus = () => setStatus({ status: "INIT" });
+
+  useOnMount(() => {
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+      const email = getLocalStorage("email");
+      // todo(nickbar01234): Handle signin from different device
+      // todo(nickbar01234): Handle error code
+      if (email != null)
+        signInWithEmailLink(auth, email, window.location.href).then(() =>
+          removeLocalStorage("email")
+        );
+    }
+  });
 
   return {
     email: email,

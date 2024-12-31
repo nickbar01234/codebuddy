@@ -1,14 +1,14 @@
-export interface User {
-  id: string;
+import { User } from "firebase/auth";
+
+export interface AppUser extends User {
   username: string;
 }
 
 export type Status =
   | {
       status: "AUTHENTICATED";
-      user: User;
+      user: AppUser;
     }
-  | { status: "LOADING" }
   | { status: "UNAUTHENTICATED" };
 
 interface CookieRequest {
