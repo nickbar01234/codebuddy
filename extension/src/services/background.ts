@@ -105,6 +105,7 @@ const createModel = async (id: string, code: string, language: string) => {
         value: code,
         language: language,
         readOnly: true,
+        scrollBeyondLastLine: false,
       }
     );
     buddyEditor.id = "CodeBuddy";
@@ -163,34 +164,31 @@ const cleanEditor = async () => {
   console.log("Cleaned Editor");
 };
 
-chrome.webNavigation.onCompleted.addListener(
-  function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      setTimeout(() => {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id ?? 0 },
-          func: () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const monaco = (window as any).monaco;
-            const lcCodeEditor = monaco.editor
-              .getEditors()
-              .filter((e: any) => e.id !== "CodeBuddy")
-              .map((e: any) => e.getModel())
-              .find((m: any) => m.getLanguageId() !== "plaintext");
-            lcCodeEditor.onDidChangeContent((event: any) => {
-              const trackEditor = document.getElementById("trackEditor");
-              if (trackEditor != null) {
-                trackEditor.textContent = JSON.stringify(event.changes[0]);
-              }
-            });
-          },
-          world: "MAIN",
-        });
-      }, 2000);
-    });
-  },
-  { url: [{ schemes: ["http", "https"] }] }
-);
+chrome.webNavigation.onCompleted.addListener(function () {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    setTimeout(() => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id ?? 0 },
+        func: () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const monaco = (window as any).monaco;
+          const lcCodeEditor = monaco.editor
+            .getEditors()
+            .filter((e: any) => e.id !== "CodeBuddy")
+            .map((e: any) => e.getModel())
+            .find((m: any) => m.getLanguageId() !== "plaintext");
+          lcCodeEditor.onDidChangeContent((event: any) => {
+            const trackEditor = document.getElementById("trackEditor");
+            if (trackEditor != null) {
+              trackEditor.textContent = JSON.stringify(event.changes[0]);
+            }
+          });
+        },
+        world: "MAIN",
+      });
+    }, 2000);
+  });
+}, FILTER);
 
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
