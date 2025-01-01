@@ -17,6 +17,7 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { sendServiceRequest } from "@cb/services";
+import { PeerCodeMessage, PeerMessage } from "@cb/types";
 
 const servers = {
   iceServers: [
@@ -27,14 +28,18 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
+interface PeerInformation {
+  code: Omit<PeerCodeMessage, "action">;
+}
+
 interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
   leaveRoom: (roomId: string) => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
-  informations: Record<string, string>;
-  sendMessages: (value: string) => void;
+  informations: Record<string, PeerInformation>;
+  sendMessages: (value: PeerMessage) => void;
   connected: Record<string, boolean>;
 }
 
@@ -60,16 +65,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const pcs = React.useRef<Record<string, Connection>>({});
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const [informations, setInformations] = React.useState<
-    Record<string, string>
+    Record<string, PeerInformation>
   >({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
   const sendMessage = React.useCallback(
-    (username: string) => (message: string) => {
+    (username: string) => (payload: PeerMessage) => {
       if (pcs.current[username].channel !== undefined) {
         console.log("Sending message to " + username);
-        pcs.current[username].channel.send(message);
+        pcs.current[username].channel.send(JSON.stringify(payload));
       } else {
         if (connected[username] == undefined) {
           console.log("Not connected to " + username);
@@ -80,21 +85,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const sendMessages = React.useCallback(
-    (value: string) => {
+    (payload: PeerMessage) => {
       for (const username of Object.keys(pcs.current)) {
-        sendMessage(username)(value);
+        sendMessage(username)(payload);
       }
     },
     [sendMessage]
   );
 
   const sendCode = React.useCallback(async () => {
-    sendMessages(
-      JSON.stringify({
-        code: await sendServiceRequest({ action: "getValue" }),
-        changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
-      })
-    );
+    sendMessages({
+      action: "code",
+      code: await sendServiceRequest({ action: "getValue" }),
+      changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
+    });
   }, [sendMessages]);
 
   const sendCodeRef = React.useRef(sendCode);
@@ -112,10 +116,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const onmessage = (username: string) =>
     function (event: MessageEvent) {
       console.log("Message from " + username);
-      setInformations((prev) => ({
-        ...prev,
-        [username]: event.data,
-      }));
+      const payload: PeerMessage = JSON.parse(event.data ?? {});
+      const { action, ...rest } = payload;
+      switch (action) {
+        case "code":
+          setInformations((prev) => ({
+            ...prev,
+            [username]: {
+              ...prev[username],
+              code: rest,
+            },
+          }));
+          break;
+        default:
+          console.error("Unknown payload", payload);
+      }
     };
 
   const createRoom = async (questionId: string) => {

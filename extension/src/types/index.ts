@@ -88,3 +88,11 @@ interface EditorPreference {
 export interface ExtensionStorage {
   editorPreference: EditorPreference;
 }
+
+export interface PeerCodeMessage {
+  action: "code";
+  code: ServiceResponse["getValue"];
+  changes: string;
+}
+
+export type PeerMessage = PeerCodeMessage;
