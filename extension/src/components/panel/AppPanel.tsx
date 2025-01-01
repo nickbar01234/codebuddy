@@ -1,7 +1,7 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { useOnMount } from "@cb/hooks";
-import { getStorage, sendMessage, setStorage } from "@cb/services";
+import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
@@ -49,7 +49,7 @@ export const AppPanel = (props: AppPanelProps) => {
             isCollapsed: data.size.width === minWidth,
           },
         });
-        sendMessage({
+        sendServiceRequest({
           action: "updateEditorLayout",
           monacoEditorId: "CodeBuddy",
         });

@@ -1,6 +1,10 @@
 import db from "@cb/db";
-import { useState } from "@cb/hooks";
-import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
+import { useOnMount, useState } from "@cb/hooks";
+import {
+  constructUrlFromQuestionId,
+  getQuestionIdFromUrl,
+  waitForElement,
+} from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
@@ -12,7 +16,7 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import { sendMessage as serviceSendMessage } from "@cb/services";
+import { sendServiceRequest } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -61,12 +65,40 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
-  const sendMessages = (value: string) => {
-    if (connected == undefined) return;
-    for (const username of Object.keys(pcs.current)) {
-      sendMessage(username)(value);
-    }
-  };
+  const sendMessage = React.useCallback(
+    (username: string) => (message: string) => {
+      if (pcs.current[username].channel !== undefined) {
+        console.log("Sending message to " + username);
+        pcs.current[username].channel.send(message);
+      } else {
+        if (connected[username] == undefined) {
+          console.log("Not connected to " + username);
+        } else console.log("Data Channel not created yet");
+      }
+    },
+    [connected]
+  );
+
+  const sendMessages = React.useCallback(
+    (value: string) => {
+      for (const username of Object.keys(pcs.current)) {
+        sendMessage(username)(value);
+      }
+    },
+    [sendMessage]
+  );
+
+  const sendCode = React.useCallback(async () => {
+    sendMessages(
+      JSON.stringify({
+        code: await sendServiceRequest({ action: "getValue" }),
+        changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
+      })
+    );
+  }, [sendMessages]);
+
+  const sendCodeRef = React.useRef(sendCode);
+
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
     // console.log("hello");
@@ -85,17 +117,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         [username]: event.data,
       }));
     };
-
-  const sendMessage = (username: string) => (message: string) => {
-    if (pcs.current[username].channel !== undefined) {
-      console.log("Sending message to " + username);
-      pcs.current[username].channel.send(message);
-    } else {
-      if (connected[username] == undefined) {
-        console.log("Not connected to " + username);
-      } else console.log("Data Channel not created yet");
-    }
-  };
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
@@ -272,7 +293,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setConnected({});
       pcs.current = {};
       if (!reload) {
-        serviceSendMessage({
+        sendServiceRequest({
           action: "cleanEditor",
         });
       }
@@ -369,6 +390,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
     }
   }, [roomId, username, createOffer]);
+
+  React.useEffect(() => {
+    sendCode();
+    sendCodeRef.current = sendCode;
+  }, [sendCode]);
+
+  useOnMount(() => {
+    const observer = new MutationObserver(async () => {
+      await sendCodeRef.current();
+    });
+    waitForElement("#trackEditor", 2000).then((editor) => {
+      observer.observe(editor, {
+        childList: true,
+        subtree: true,
+      });
+    });
+    return () => {
+      observer.disconnect();
+    };
+  });
 
   return (
     <RTCContext.Provider
