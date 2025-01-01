@@ -1,5 +1,6 @@
 import React from "react";
 import { useRTC } from "@cb/hooks/index";
+<<<<<<< Updated upstream
 import { sendMessage } from "@cb/services";
 import { EditorProvider, EditorTab } from "@cb/components/panel/editor";
 
@@ -31,6 +32,12 @@ export const RoomPanel = () => {
       };
     }
   }, [connected, sendCode]);
+=======
+import { EditorProvider, EditorTab } from "@cb/components/panel/editor";
+
+export const RoomPanel = () => {
+  const { informations } = useRTC();
+>>>>>>> Stashed changes
 
   return (
     <EditorProvider
