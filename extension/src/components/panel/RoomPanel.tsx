@@ -11,7 +11,7 @@ export const RoomPanel = () => {
       informations={Object.keys(informations)}
     >
       {Object.entries(informations).map(([id, info]) => (
-        <EditorTab key={id} id={id} displayHeader={id} {...JSON.parse(info)} />
+        <EditorTab key={id} id={id} displayHeader={id} {...info.code} />
       ))}
     </EditorProvider>
   );
