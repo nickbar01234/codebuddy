@@ -74,36 +74,18 @@ const setValue = async (value: string) => {
   lcCodeEditor.setValue(value);
 };
 
-const createModel = async (id: string, code: string, language: string) => {
+const createModel = async (id: string) => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  if (monaco.editor.getModels().length === 3) {
-    console.log("Using Existing Model");
-    setValueModel({
-      code,
-      language,
-      changes: {
-        range: {
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: 1,
-          endColumn: 1,
-        },
-        rangeLength: 0,
-        text: code,
-        rangeOffset: 0,
-        forceMoveMarkers: false,
-      },
-      changeUser: true,
-    });
-  } else {
-    console.log("Creating New Model");
+  if (
+    monaco.editor
+      .getEditors()
+      .find((editor: any) => editor.id === "CodeBuddy") == undefined
+  ) {
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
-        value: code,
-        language: language,
         readOnly: true,
         scrollBeyondLastLine: false,
       }
@@ -232,7 +214,7 @@ chrome.runtime.onMessage.addListener(
           .executeScript({
             target: { tabId: sender.tab?.id ?? 0 },
             func: createModel,
-            args: [request.id, request.code, request.language],
+            args: [request.id],
             world: "MAIN",
           })
           .then(() => {

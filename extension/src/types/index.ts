@@ -23,11 +23,9 @@ interface SetValueRequest {
   value: string;
 }
 
-interface createMonacoModelRequest {
+interface CreateMonacoModelRequest {
   action: "createModel";
   id: string;
-  code: string;
-  language: string;
 }
 
 export interface SetOtherEditorRequest {
@@ -62,7 +60,7 @@ export type ServiceRequest =
   | CookieRequest
   | GetValueRequest
   | SetValueRequest
-  | createMonacoModelRequest
+  | CreateMonacoModelRequest
   | SetOtherEditorRequest
   | UpdateEditorLayoutRequest
   | CleanEditorRequest;

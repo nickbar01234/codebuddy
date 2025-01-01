@@ -1,6 +1,7 @@
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
+import { SetOtherEditorRequest } from "@cb/types";
 
 interface TabProps extends TabMetadata {
   code: {
@@ -11,20 +12,8 @@ interface TabProps extends TabMetadata {
 }
 
 export const EditorTab = (props: TabProps) => {
-  const {
-    id,
-    code: { value, language },
-  } = props;
+  const { id } = props;
   const { activeId } = React.useContext(editorProviderContext);
-
-  React.useEffect(() => {
-    sendServiceRequest({
-      action: "createModel",
-      id: "CodeBuddyEditor",
-      code: value,
-      language: language,
-    });
-  }, [value, language]);
 
   React.useEffect(() => {
     if (activeId === id) {
