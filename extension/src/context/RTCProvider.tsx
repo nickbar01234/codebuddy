@@ -16,14 +16,7 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-<<<<<<< Updated upstream
-import { sendMessage as serviceSendMessage } from "@cb/services";
-=======
-import {
-  sendServiceRequest,
-  sendServiceRequest as serviceSendMessage,
-} from "@cb/services";
->>>>>>> Stashed changes
+import { sendServiceRequest } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -72,14 +65,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
-<<<<<<< Updated upstream
-  const sendMessages = (value: string) => {
-    if (connected == undefined) return;
-    for (const username of Object.keys(pcs.current)) {
-      sendMessage(username)(value);
-    }
-  };
-=======
   const sendMessage = React.useCallback(
     (username: string) => (message: string) => {
       if (pcs.current[username].channel !== undefined) {
@@ -114,7 +99,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const sendCodeRef = React.useRef(sendCode);
 
->>>>>>> Stashed changes
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
     // console.log("hello");
@@ -133,17 +117,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         [username]: event.data,
       }));
     };
-
-  const sendMessage = (username: string) => (message: string) => {
-    if (pcs.current[username].channel !== undefined) {
-      console.log("Sending message to " + username);
-      pcs.current[username].channel.send(message);
-    } else {
-      if (connected[username] == undefined) {
-        console.log("Not connected to " + username);
-      } else console.log("Data Channel not created yet");
-    }
-  };
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
@@ -320,7 +293,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setConnected({});
       pcs.current = {};
       if (!reload) {
-        serviceSendMessage({
+        sendServiceRequest({
           action: "cleanEditor",
         });
       }

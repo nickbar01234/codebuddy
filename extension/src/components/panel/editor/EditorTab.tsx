@@ -1,4 +1,4 @@
-import { sendMessage } from "@cb/services";
+import { sendServiceRequest } from "@cb/services";
 import React from "react";
 import { TabMetadata, editorProviderContext } from "./EditorProvider";
 
@@ -18,7 +18,7 @@ export const EditorTab = (props: TabProps) => {
   const { activeId } = React.useContext(editorProviderContext);
 
   React.useEffect(() => {
-    sendMessage({
+    sendServiceRequest({
       action: "createModel",
       id: "CodeBuddyEditor",
       code: value,
@@ -28,7 +28,7 @@ export const EditorTab = (props: TabProps) => {
 
   React.useEffect(() => {
     if (activeId === id) {
-      sendMessage({
+      sendServiceRequest({
         action: "setValueOtherEditor",
         code: props.code.value,
         language: props.code.language,
@@ -54,7 +54,7 @@ export const EditorTab = (props: TabProps) => {
         type="button"
         data-tooltip-target="tooltip-default"
         onClick={() => {
-          sendMessage({
+          sendServiceRequest({
             action: "setValue",
             value: props.code.value,
           });
