@@ -9,3 +9,5 @@ export const useState = () => React.useContext(stateContext);
 export const useOnMount = (effect: React.EffectCallback) =>
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(effect, []);
+
+export * from "@cb/hooks/useActiveTab";

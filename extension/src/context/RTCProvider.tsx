@@ -32,7 +32,7 @@ interface PeerInformation {
   code: Omit<PeerCodeMessage, "action">;
 }
 
-interface RTCContext {
+export interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
   leaveRoom: (roomId: string) => void;
