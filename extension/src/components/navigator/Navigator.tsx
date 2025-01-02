@@ -1,7 +1,7 @@
 import { Menu } from "@cb/components/navigator/menu/Menu";
-import { RoomPanel } from "@cb/components/panel/RoomPanel";
 import React from "react";
 import { Toaster } from "sonner";
+import EditorPanel from "@cb/components/panel/editor";
 
 export const RootNavigator = () => {
   const [displayPopup, setDisplayPopup] = React.useState(false);
@@ -48,7 +48,7 @@ export const RootNavigator = () => {
       </div>
       <div className="h-full w-full overflow-hidden">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
-        <RoomPanel />
+        <EditorPanel />
       </div>
     </div>
   );
