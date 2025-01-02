@@ -78,13 +78,18 @@ export type ServiceResponse = {
   cleanEditor: void;
 };
 
-interface EditorPreference {
+interface AppPreference {
   width: number;
   isCollapsed: boolean;
 }
 
+interface CodePreference {
+  height: number;
+}
+
 export interface ExtensionStorage {
-  editorPreference: EditorPreference;
+  appPreference: AppPreference;
+  codePreference: CodePreference;
 }
 
 export interface PeerCodeMessage {

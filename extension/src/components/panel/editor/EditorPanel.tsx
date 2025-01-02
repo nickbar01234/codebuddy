@@ -1,6 +1,9 @@
 import React from "react";
 import { useOnMount, useRTC, useTab } from "@cb/hooks/index";
-import { sendServiceRequest } from "@cb/services";
+import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
+import { ResizableBox } from "react-resizable";
+import { ExtensionStorage } from "@cb/types";
+import { CodeBuddyPreference } from "@cb/constants";
 
 export interface TabMetadata {
   id: string;
@@ -12,6 +15,9 @@ const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { informations } = useRTC();
   const { tabs, activeTab, unblur, setActive } = useTab({ informations });
+  const [codePreference, setCodePreference] = React.useState<
+    ExtensionStorage["codePreference"]
+  >(CodeBuddyPreference.codePreference);
 
   const canViewCode = activeTab?.viewable ?? false;
 
@@ -19,30 +25,62 @@ const EditorPanel = () => {
     sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID });
   });
 
+  useOnMount(() => {
+    getStorage("codePreference").then(setCodePreference);
+  });
+
   return (
     <div
       data-tabs={tabs.length}
-      className="flex flex-col h-full justify-between data-[tabs=0]:blur"
+      className="flex flex-col h-full data-[tabs=0]:hidden"
     >
-      <div className="flex flex-col grow gap-y-2">
-        {/* todo(nickbar01234): Language + paste code */}
-        <div
-          id={EDITOR_NODE_ID}
-          data-view-code={canViewCode}
-          className="data-[view-code=false]:blur w-full overflow-hidden h-full"
-        />
-        {!canViewCode && tabs.length != 0 && (
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg"
-            onClick={unblur}
-          >
-            View
-          </button>
-        )}
-      </div>
+      {!canViewCode && tabs.length != 0 && (
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg z-50"
+          onClick={unblur}
+        >
+          View
+        </button>
+      )}
       <div
-        className={`flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm`}
+        data-view-code={canViewCode}
+        className="data-[view-code=false]:blur h-full w-full"
       >
+        <ResizableBox
+          height={codePreference.height}
+          axis="y"
+          resizeHandles={canViewCode ? ["s"] : undefined}
+          className="h-full flex relative w-full"
+          maxConstraints={[Infinity, 600]}
+          handle={
+            <div className="absolute bottom-0 h-2 bg-layer-bg-gray dark:bg-layer-bg-gray w-full">
+              <div className="relative top-1/2 -translate-y-1/2 flexlayout__splitter flexlayout__splitter_horz w-full h-[2px] hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[2px] after:bg-[--color-splitter] cursor-ns-resize" />
+            </div>
+          }
+          onResize={(_e, data) =>
+            setCodePreference({ ...codePreference, height: data.size.height })
+          }
+          onResizeStop={(_e, data) => {
+            setStorage({
+              codePreference: { ...codePreference, height: data.size.height },
+            });
+            sendServiceRequest({
+              action: "updateEditorLayout",
+              monacoEditorId: "CodeBuddy",
+            });
+          }}
+        >
+          <div className="relative h-full flex flex-col grow gap-y-2">
+            {/* todo(nickbar01234): Language + paste code */}
+            <div
+              id={EDITOR_NODE_ID}
+              className="w-full overflow-hidden h-full"
+            />
+          </div>
+        </ResizableBox>
+        <div className="w-full h-full">Test cases here</div>
+      </div>
+      <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
         {tabs.map(({ id, active }) => (
           <React.Fragment key={id}>
             {/* Leetcode className flexlayout__tab_button_* */}

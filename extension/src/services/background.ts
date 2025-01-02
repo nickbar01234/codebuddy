@@ -2,6 +2,7 @@
 import { setStorage } from "@cb/services";
 import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
+import { CodeBuddyPreference } from "@cb/constants";
 
 const FILTER = {
   url: [
@@ -34,12 +35,7 @@ const handleCookieRequest = async (): Promise<Status> => {
  */
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    setStorage({
-      editorPreference: {
-        width: 300 /* px */,
-        isCollapsed: false,
-      },
-    });
+    setStorage({ ...CodeBuddyPreference });
   }
 });
 
@@ -88,6 +84,7 @@ const createModel = async (id: string) => {
       {
         readOnly: true,
         scrollBeyondLastLine: false,
+        automaticLayout: true,
       }
     );
     buddyEditor.id = "CodeBuddy";
