@@ -1,3 +1,5 @@
+import { useOnMount } from "@cb/hooks/index";
+import { sendServiceRequest } from "@cb/services";
 import React, { useState } from "react";
 
 interface EditorProviderProps {
@@ -19,7 +21,10 @@ interface EditorProviderContext {
 export const editorProviderContext = React.createContext(
   {} as EditorProviderContext
 );
+
 const Provider = editorProviderContext.Provider;
+
+const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 export const EditorProvider = (props: EditorProviderProps) => {
   const { children, defaultActiveId, informations } = props;
@@ -35,6 +40,10 @@ export const EditorProvider = (props: EditorProviderProps) => {
     }
   }, [tabs]);
 
+  useOnMount(() => {
+    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID });
+  });
+
   return (
     <Provider value={{ activeId: activeId }}>
       {/* <div>Hihi</div> */}
@@ -46,14 +55,13 @@ export const EditorProvider = (props: EditorProviderProps) => {
           {children}
           <div className="grow relative">
             <div
-              id="CodeBuddyEditor"
+              id={EDITOR_NODE_ID}
               data-view-code={canViewCode}
-              className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-hidden h-full "
+              className="data-[view-code=false]:blur absolute top-0 left-0 w-full overflow-hidden h-full"
             />
             {!canViewCode && tabs.length != 0 && (
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg
-  "
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4  absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg"
                 onClick={unBlur}
               >
                 View

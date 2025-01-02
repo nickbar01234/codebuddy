@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "chokidar 'src/**/*' -c 'pnpm run build'",
+    "dev": "pnpm run build && chokidar 'src/**/*' -c 'pnpm run build'",
     "build:service-worker": "tsc -p ./src/services/tsconfig.json && TYPE=service_worker vite build",
     "build:content_script": "tsc && TYPE=content_script vite build",
     "build": "pnpm run \"/^build:.*/\"",
