@@ -9,7 +9,8 @@
     "paths": {
       "@cb/types": ["./types/index.ts"],
       "@cb/services": ["./services/index.ts"],
-      "@cb/services/*": ["./services/*"]
+      "@cb/services/*": ["./services/*"],
+      "@cb/constants": ["./constants/index.ts"]
     }
   },
   "include": ["./**/*.ts"],
