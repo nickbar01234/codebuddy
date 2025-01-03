@@ -98,4 +98,11 @@ export interface PeerCodeMessage {
   changes: string;
 }
 
-export type PeerMessage = PeerCodeMessage;
+export interface PeerTestMessage {
+  action: "tests";
+  tests: string[];
+}
+
+export type Payload<T> = Omit<T, "action">;
+
+export type PeerMessage = PeerCodeMessage | PeerTestMessage;
