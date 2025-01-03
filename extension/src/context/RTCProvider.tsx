@@ -36,7 +36,6 @@ export interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
   leaveRoom: (roomId: string) => void;
-  leaveRoom: (roomId: string) => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
@@ -210,26 +209,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Please enter room ID");
         return false;
       }
-  const joinRoom = React.useCallback(
-    async (roomId: string, questionId: string): Promise<boolean> => {
-      if (!roomId) {
-        toast.error("Please enter room ID");
-        return false;
-      }
 
-      const roomDoc = await db.room(roomId).doc();
-      if (!roomDoc.exists()) {
-        toast.error("Room does not exist");
-        return false;
-      }
-      const roomQuestionId = roomDoc.data().questionId;
-      if (questionId !== roomQuestionId) {
-        const questionUrl = constructUrlFromQuestionId(roomQuestionId);
-        toast.error("The room you join is on this question:", {
-          description: questionUrl,
-        });
-        return false;
-      }
       const roomDoc = await db.room(roomId).doc();
       if (!roomDoc.exists()) {
         toast.error("Room does not exist");
@@ -252,23 +232,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-      const usernamesCollection = await db.usernamesCollection(roomId).doc();
-      if (usernamesCollection.size >= MAX_CAPACITY) {
-        console.log("The room is at max capacity");
-        toast.error("This room is already at max capacity.");
-        return false;
-      }
-      // console.log("Joining room", roomId);
-      setRoomId(roomId);
 
       await db.usernamesCollection(roomId).addUser(username);
-      await db.usernamesCollection(roomId).addUser(username);
 
-      onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
-        snapshot.docChanges().forEach(async (change) => {
-          if (change.type === "removed") {
-            return;
-          }
       onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
           if (change.type === "removed") {
@@ -281,32 +247,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           if (peer == undefined) {
             return;
           }
-          if (peer == undefined) {
-            return;
-          }
 
-          const themRef = db.connections(roomId, username).doc(peer);
-          const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
-          // const pc = new RTCPeerConnection(servers);
-          if (pcs.current[peer] == undefined) {
-            pcs.current[peer] = {
-              username: peer,
-              pc: pc,
-              channel: pc.createDataChannel("channel"),
-            };
-            pc.ondatachannel = (event) => {
-              pcs.current[peer].channel = event.channel;
-              pcs.current[peer].channel.onmessage = onmessage(peer);
-              pcs.current[peer].channel.onopen = onOpen(peer);
-            };
-            pc.onicecandidate = async (event) => {
-              if (event.candidate) {
-                await updateDoc(themRef, {
-                  answerCandidates: arrayUnion(event.candidate.toJSON()),
-                });
-              }
-            };
-          }
           const themRef = db.connections(roomId, username).doc(peer);
           const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
           // const pc = new RTCPeerConnection(servers);
@@ -334,25 +275,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
             await pc.setRemoteDescription(
               new RTCSessionDescription(data.offer)
             );
-          if (data.offer != undefined && pc.remoteDescription == null) {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(data.offer)
-            );
 
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             await updateDoc(themRef, { answer: answer });
           }
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            await updateDoc(themRef, { answer: answer });
-          }
-
-          data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
-            pc.addIceCandidate(new RTCIceCandidate(candidate));
-          });
-        });
-      });
           data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
             pc.addIceCandidate(new RTCIceCandidate(candidate));
           });
@@ -428,10 +355,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
               const peer = change.doc.id;
               if (peer == undefined) return;
               if (pcs.current[peer] == undefined) return;
+
               const { [peer]: _, ...rest } = pcs.current;
               pcs.current = rest;
               console.log("Removed peer", peer);
               await deleteDoc(db.connections(roomId, username).doc(peer));
+
               setInformations((prev) => {
                 const { [peer]: _, ...rest } = prev;
                 return rest;
@@ -444,22 +373,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
             }
             if (change.type === "added") {
               console.log("Added peer");
-              console.log("Added peer");
               const peer = change.doc.id;
               const usernamesSnapshot = await db
                 .usernamesCollection(roomId)
                 .doc();
+
               const myTimeStamp = usernamesSnapshot.docs
                 .find((doc) => doc.id === username)
                 ?.data().createdAt;
-              // console.log(myTimeStamp);
-              const usernamesSnapshot = await db
-                .usernamesCollection(roomId)
-                .doc();
-              const myTimeStamp = usernamesSnapshot.docs
-                .find((doc) => doc.id === username)
-                ?.data().createdAt;
-              // console.log(myTimeStamp);
+
               if (peer == undefined || peer === username) {
                 return;
               }

@@ -135,18 +135,6 @@ const setValueModel = async (
 const cleanEditor = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  const editor = monaco.editor
-    .getEditors()
-    .find((e: any) => e.id === "CodeBuddy");
-  if (editor != undefined) {
-    await editor.dispose().catch(console.error);
-  }
-  console.log("Cleaned Editor");
-};
-
-const cleanEditor = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const monaco = (window as any).monaco;
   console.log("Cleaned Editor");
   try {
     await monaco.editor
@@ -262,15 +250,6 @@ chrome.runtime.onMessage.addListener(
           target: { tabId: sender.tab?.id ?? 0 },
           func: updateEditorLayout,
           args: [{ id: request.monacoEditorId }],
-          world: "MAIN",
-        });
-        break;
-      }
-
-      case "cleanEditor": {
-        chrome.scripting.executeScript({
-          target: { tabId: sender.tab?.id ?? 0 },
-          func: cleanEditor,
           world: "MAIN",
         });
         break;
