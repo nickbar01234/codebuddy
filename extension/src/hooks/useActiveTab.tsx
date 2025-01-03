@@ -1,5 +1,7 @@
 import type { RTCContext } from "@cb/context/RTCProvider";
 import { sendServiceRequest } from "@cb/services";
+import { pre } from "framer-motion/client";
+import { set } from "mongoose";
 import React from "react";
 
 interface UseActiveTabProps {
@@ -14,7 +16,9 @@ interface Tab {
 
 export const useTab = (props: UseActiveTabProps) => {
   const { informations } = props;
-  const [tabs, setTabs] = React.useState<Tab[]>([]);
+  const [tabs, setTabs] = React.useState<Tab[]>(
+    JSON.parse(localStorage.getItem("tabs") || "[]")
+  );
   const [activeTab, setActiveTab] = React.useState<Tab>();
 
   const activeUserInformation = React.useMemo(
@@ -43,10 +47,9 @@ export const useTab = (props: UseActiveTabProps) => {
     [tabs]
   );
 
-  const unblur = React.useCallback(
-    () => replaceTab(activeTab?.id, { viewable: true }),
-    [activeTab, replaceTab]
-  );
+  const unblur = React.useCallback(() => {
+    replaceTab(activeTab?.id, { viewable: true });
+  }, [activeTab, replaceTab]);
 
   const setActive = React.useCallback(
     (peer: string) => {
@@ -56,14 +59,46 @@ export const useTab = (props: UseActiveTabProps) => {
     [activeTab, replaceTab]
   );
 
+  const pasteCode = React.useCallback(() => {
+    if (activeUserInformation != undefined) {
+      sendServiceRequest({
+        action: "setValue",
+        value: activeUserInformation.code.code.value,
+      });
+    }
+  }, [activeUserInformation]);
+
+  const setCode = React.useCallback(
+    (changeUser: boolean) => {
+      if (activeUserInformation != undefined) {
+        const {
+          code: { value, language },
+          changes,
+        } = activeUserInformation.code;
+        sendServiceRequest({
+          action: "setValueOtherEditor",
+          code: value,
+          language: language,
+          changes: changes !== "" ? JSON.parse(changes) : {},
+          changeUser: changeUser,
+        });
+      }
+    },
+    [activeUserInformation]
+  );
+
   React.useEffect(() => {
+    const prevTabs: Tab[] = JSON.parse(localStorage.getItem("tabs") || "[]");
     setTabs((prev) =>
       Object.keys(informations).map(
         (peer) =>
           prev.find((tab) => tab.id === peer) ?? {
             id: peer,
             active: false,
-            viewable: false,
+            viewable:
+              prevTabs && prevTabs.some((obj) => obj.id === peer)
+                ? prevTabs.find((obj) => obj.id === peer)?.viewable ?? false
+                : false,
           }
       )
     );
@@ -76,27 +111,28 @@ export const useTab = (props: UseActiveTabProps) => {
   }, [tabs, activeTab, setActive]);
 
   React.useEffect(() => {
-    if (tabs.length === 0) sendServiceRequest({ action: "cleanEditor" });
+    // if (tabs.length === 0) sendServiceRequest({ action: "cleanEditor" }); This line makes the code editor not persist throughout the session. I have added when the user clicks leave room that is when the editor get deleted.
+    if (tabs.length === 0) {
+      return;
+    }
+    localStorage.setItem("tabs", JSON.stringify(tabs));
   }, [tabs]);
 
   React.useEffect(() => setActiveTab(findActiveTab()), [findActiveTab]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
-      console.log("Triggering effect", activeUserInformation);
-      const {
-        code: { value, language },
-        changes,
-      } = activeUserInformation.code;
-      sendServiceRequest({
-        action: "setValueOtherEditor",
-        code: value,
-        language: language,
-        changes: changes !== "" ? JSON.parse(changes) : {},
-        changeUser: false,
-      });
+      setCode(false);
     }
   }, [activeUserInformation]);
 
-  return { tabs, activeTab, unblur, setActive };
+  return {
+    tabs,
+    activeTab,
+    unblur,
+    setActive,
+    activeUserInformation,
+    pasteCode,
+    setCode,
+  };
 };

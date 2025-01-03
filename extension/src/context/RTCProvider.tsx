@@ -326,19 +326,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
           });
         });
       });
-    if (
-      JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
-      roomId.toString()
-    ) {
-        toast.success(`You have successfully joined the room with ID ${roomId}.`);
-    }
-    localStorage.setItem(
-      "curRoomId",
-      JSON.stringify({
-        roomId: roomId,
-        numberOfUsers: usernamesCollection.size,
-      })
-    );
+      if (
+        JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
+        roomId.toString()
+      ) {
+        toast.success(
+          `You have successfully joined the room with ID ${roomId}.`
+        );
+      }
+      localStorage.setItem(
+        "curRoomId",
+        JSON.stringify({
+          roomId: roomId,
+          numberOfUsers: usernamesCollection.size,
+        })
+      );
       return true;
     },
     [username]
@@ -348,6 +350,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     async (roomId: string, reload = false) => {
       if (roomId == null) {
         return;
+      }
+      if (!reload) {
+        localStorage.removeItem("reloading");
+        localStorage.removeItem("curRoomId");
+        localStorage.removeItem("tabs");
       }
       await db.usernamesCollection(roomId).deleteUser(username);
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
@@ -422,17 +429,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       reloadJob();
     }
   }, []);
-  // console.log("PC current", pcs.current);
-  // console.log("Connected", connected);
-  // console.log("Informations", informations);
-  // console.log("Room ID", roomId);
 
-  // React.useEffect(() => {
-  //   const roomId = localStorage.getItem("roomId");
-  //   if (roomId != null) {
-  //     setRoomId(JSON.parse(roomId));
-  //   }
-  // }, []);
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
@@ -499,8 +496,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           });
         }
       );
-        }
-      );
+
       unsubscribeRef.current = unsubscribe;
     };
 
@@ -533,25 +529,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       observer.disconnect();
     };
   });
-  const leaveRoom = async (roomId: string, reload = false) => {
-    if (roomId == null) {
-      return;
-    }
-    if (!reload) {
-      localStorage.removeItem("reloading");
-      localStorage.removeItem("curRoomId");
-      localStorage.removeItem("ViewCode");
-    }
-    await db.usernamesCollection(roomId).deleteUser(username);
-    const myAnswers = await getDocs(db.connections(roomId, username).ref());
-    myAnswers.docs.forEach(async (doc) => {
-      deleteDoc(doc.ref);
-    });
-    setRoomId(null);
-    setInformations({});
-    setConnected({});
-    pcs.current = {};
-  };
 
   return (
     <RTCContext.Provider

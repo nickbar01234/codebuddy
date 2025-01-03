@@ -112,6 +112,7 @@ const setValueModel = async (
     console.log("Setting Value Model");
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
+    console.log(code);
     return;
   }
 
