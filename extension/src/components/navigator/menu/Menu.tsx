@@ -70,7 +70,15 @@ export const Menu = (props: MenuProps) => {
     }
 
     return [];
-  }, [state, createRoom, setDisplayMenu, setState, roomId]);
+  }, [state, createRoom, setDisplayMenu, setState, roomId, leaveRoom]);
+
+  React.useEffect(() => {
+    if (roomId != null) {
+      setState(State.ROOM);
+    } else {
+      setState(State.HOME);
+    }
+  }, [roomId, setState]);
 
   React.useEffect(() => {
     if (roomId != null) {

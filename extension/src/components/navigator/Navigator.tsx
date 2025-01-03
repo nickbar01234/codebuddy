@@ -1,13 +1,11 @@
+import { Menu } from "@cb/components/navigator/menu/Menu";
 import React from "react";
 import { Toaster } from "sonner";
-import { Menu } from "@cb/components/navigator/menu/Menu";
-import { RoomPanel } from "@cb/components/panel/RoomPanel";
-import { State, stateContext } from "@cb/context/StateProvider";
+import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { HomePanel } from "@cb/components/panel/HomePanel";
 
 export const RootNavigator = () => {
-  const { state } = React.useContext(stateContext);
   const [displayPopup, setDisplayPopup] = React.useState(false);
 
   return (
@@ -50,7 +48,7 @@ export const RootNavigator = () => {
           </svg>
         </button>
       </div>
-      <div className="h-full w-full relative overflow-hidden">
+      <div className="h-full w-full relative overflow-hidden overflow-hidden">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
         {state === State.HOME &&
           (localStorage.getItem("curRoomId") ? (
@@ -68,6 +66,7 @@ export const RootNavigator = () => {
             </div>
           ))}
         {<RoomPanel />}
+        <EditorPanel />
       </div>
     </div>
   );

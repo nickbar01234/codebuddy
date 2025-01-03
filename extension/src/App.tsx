@@ -4,7 +4,7 @@ import { AppPanel } from "@cb/components/panel";
 import { RTCProvider } from "@cb/context/RTCProvider";
 import { StateProvider } from "@cb/context/StateProvider";
 import { useOnMount } from "@cb/hooks";
-import { sendMessage } from "@cb/services";
+import { sendServiceRequest } from "@cb/services";
 import { Status } from "@cb/types";
 
 const App = () => {
@@ -13,7 +13,7 @@ const App = () => {
   });
 
   useOnMount(() => {
-    sendMessage({ action: "cookie" }).then(setStatus);
+    sendServiceRequest({ action: "cookie" }).then(setStatus);
   });
 
   if (status.status === "AUTHENTICATED") {

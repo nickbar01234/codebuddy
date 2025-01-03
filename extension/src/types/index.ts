@@ -23,11 +23,9 @@ interface SetValueRequest {
   value: string;
 }
 
-interface createMonacoModelRequest {
+interface CreateMonacoModelRequest {
   action: "createModel";
   id: string;
-  code: string;
-  language: string;
 }
 
 export interface SetOtherEditorRequest {
@@ -57,15 +55,12 @@ interface UpdateEditorLayoutRequest {
 interface CleanEditorRequest {
   action: "cleanEditor";
 }
-export interface TestRequest {
-  action: "test";
-}
 
 export type ServiceRequest =
   | CookieRequest
   | GetValueRequest
   | SetValueRequest
-  | createMonacoModelRequest
+  | CreateMonacoModelRequest
   | SetOtherEditorRequest
   | UpdateEditorLayoutRequest
   | CleanEditorRequest;
@@ -83,11 +78,24 @@ export type ServiceResponse = {
   cleanEditor: void;
 };
 
-interface EditorPreference {
+interface AppPreference {
   width: number;
   isCollapsed: boolean;
 }
 
-export interface ExtensionStorage {
-  editorPreference: EditorPreference;
+interface CodePreference {
+  height: number;
 }
+
+export interface ExtensionStorage {
+  appPreference: AppPreference;
+  codePreference: CodePreference;
+}
+
+export interface PeerCodeMessage {
+  action: "code";
+  code: ServiceResponse["getValue"];
+  changes: string;
+}
+
+export type PeerMessage = PeerCodeMessage;

@@ -2,6 +2,15 @@
 import { setStorage } from "@cb/services";
 import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
+import { CodeBuddyPreference } from "@cb/constants";
+
+const FILTER = {
+  url: [
+    {
+      urlMatches: "https://leetcode.com",
+    },
+  ],
+};
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
@@ -26,12 +35,7 @@ const handleCookieRequest = async (): Promise<Status> => {
  */
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    setStorage({
-      editorPreference: {
-        width: 300 /* px */,
-        isCollapsed: false,
-      },
-    });
+    setStorage({ ...CodeBuddyPreference });
   }
 });
 
@@ -66,37 +70,21 @@ const setValue = async (value: string) => {
   lcCodeEditor.setValue(value);
 };
 
-const createModel = async (id: string, code: string, language: string) => {
+const createModel = async (id: string) => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  if (monaco.editor.getModels().length === 3) {
-    // console.log("Using Existing Model");
-    setValueModel({
-      code,
-      language,
-      changes: {
-        range: {
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: 1,
-          endColumn: 1,
-        },
-        rangeLength: 0,
-        text: code,
-        rangeOffset: 0,
-        forceMoveMarkers: false,
-      },
-      changeUser: true,
-    });
-  } else {
-    // console.log("Creating New Model");
+  if (
+    monaco.editor
+      .getEditors()
+      .find((editor: any) => editor.id === "CodeBuddy") == undefined
+  ) {
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
-        value: code,
-        language: language,
         readOnly: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
       }
     );
     buddyEditor.id = "CodeBuddy";
@@ -116,8 +104,12 @@ const setValueModel = async (
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
-  if (myLanguage !== language || changeUser) {
-    // console.log("Setting Value Model");
+  if (
+    myLanguage !== language ||
+    changeUser ||
+    Object.keys(changes).length === 0
+  ) {
+    console.log("Setting Value Model");
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
     return;
@@ -137,52 +129,46 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-  // console.log("Applied Changes");
+  console.log("Applied Changes");
 };
 
 const cleanEditor = async () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  // console.log("Cleaned Editor");
-  try {
-    await monaco.editor
-      .getEditors()
-      .find((e: any) => e.id === "CodeBuddy")
-      .dispose();
-  } catch (e) {
-    // console.error(e);
+  const editor = monaco.editor
+    .getEditors()
+    .find((e: any) => e.id === "CodeBuddy");
+  if (editor != undefined) {
+    await editor.dispose().catch(console.error);
   }
-  // console.log("Cleaned Editor");
+  console.log("Cleaned Editor");
 };
 
-chrome.webNavigation.onCompleted.addListener(
-  function () {
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-      setTimeout(() => {
-        chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id ?? 0 },
-          func: () => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const monaco = (window as any).monaco;
-            const lcCodeEditor = monaco.editor
-              .getEditors()
-              .filter((e: any) => e.id !== "CodeBuddy")
-              .map((e: any) => e.getModel())
-              .find((m: any) => m.getLanguageId() !== "plaintext");
-            lcCodeEditor.onDidChangeContent((event: any) => {
-              const trackEditor = document.getElementById("trackEditor");
-              if (trackEditor != null) {
-                trackEditor.textContent = JSON.stringify(event.changes[0]);
-              }
-            });
-          },
-          world: "MAIN",
-        });
-      }, 2000);
-    });
-  },
-  { url: [{ schemes: ["http", "https"] }] }
-);
+chrome.webNavigation.onCompleted.addListener(function () {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    setTimeout(() => {
+      chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id ?? 0 },
+        func: () => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const monaco = (window as any).monaco;
+          const lcCodeEditor = monaco.editor
+            .getEditors()
+            .filter((e: any) => e.id !== "CodeBuddy")
+            .map((e: any) => e.getModel())
+            .find((m: any) => m.getLanguageId() !== "plaintext");
+          lcCodeEditor.onDidChangeContent((event: any) => {
+            const trackEditor = document.getElementById("trackEditor");
+            if (trackEditor != null) {
+              trackEditor.textContent = JSON.stringify(event.changes[0]);
+            }
+          });
+        },
+        world: "MAIN",
+      });
+    }, 2000);
+  });
+}, FILTER);
 
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
@@ -206,6 +192,7 @@ chrome.runtime.onMessage.addListener(
 
         break;
       }
+
       case "setValue": {
         chrome.scripting
           .executeScript({
@@ -219,12 +206,13 @@ chrome.runtime.onMessage.addListener(
           });
         break;
       }
+
       case "createModel": {
         chrome.scripting
           .executeScript({
             target: { tabId: sender.tab?.id ?? 0 },
             func: createModel,
-            args: [request.id, request.code, request.language],
+            args: [request.id],
             world: "MAIN",
           })
           .then(() => {
@@ -232,6 +220,7 @@ chrome.runtime.onMessage.addListener(
           });
         break;
       }
+
       case "setValueOtherEditor": {
         chrome.scripting
           .executeScript({
@@ -271,6 +260,7 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+
       default:
         // console.error(`Unhandled request ${request}`);
         break;
