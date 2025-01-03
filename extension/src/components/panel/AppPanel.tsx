@@ -1,68 +1,63 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { useOnMount } from "@cb/hooks";
-import { getStorage, sendMessage, setStorage } from "@cb/services";
+import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
+import { CodeBuddyPreference } from "@cb/constants";
 
 interface AppPanelProps {
   children?: React.ReactNode;
 }
 
 export const AppPanel = (props: AppPanelProps) => {
-  const [editorPreference, setEditorPreference] = React.useState<
-    ExtensionStorage["editorPreference"] | null
-  >(null);
+  const [appPreference, setAppPreference] = React.useState<
+    ExtensionStorage["appPreference"]
+  >(CodeBuddyPreference.appPreference);
 
   const minWidth = 40; // Set the minimum width threshold
 
   useOnMount(() => {
-    getStorage("editorPreference").then(setEditorPreference);
+    getStorage("appPreference").then(setAppPreference);
   });
-  // TODO(nickbar01234) - Handle loading indicator
-
-  if (editorPreference == null) {
-    return null;
-  }
 
   return (
     <ResizableBox
-      width={editorPreference.width}
+      width={appPreference.width}
       axis="x"
       resizeHandles={["w"]}
       className="h-full flex relative"
       handle={VerticalHandle}
       minConstraints={[minWidth, 0]}
       onResize={(_e, data) =>
-        setEditorPreference({
-          ...editorPreference,
+        setAppPreference({
+          ...appPreference,
           width: data.size.width,
           isCollapsed: data.size.width === minWidth,
         })
       }
       onResizeStop={(_e, data) => {
         setStorage({
-          editorPreference: {
-            ...editorPreference,
+          appPreference: {
+            ...appPreference,
             width: data.size.width,
             isCollapsed: data.size.width === minWidth,
           },
         });
-        sendMessage({
+        sendServiceRequest({
           action: "updateEditorLayout",
           monacoEditorId: "CodeBuddy",
         });
       }}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
-        {editorPreference.isCollapsed && <CollapsedPanel />}
+        {appPreference.isCollapsed && <CollapsedPanel />}
         <div
-          className={`h-full w-full ${
-            editorPreference.isCollapsed ? "hidden" : ""
-          }`}
+          data-collapsed={appPreference.isCollapsed}
+          className="h-full w-full data-[collapsed=true]:hidden"
         >
-          <div id="trackEditor" className="hidden"></div>
+          <div id="trackEditor" className="hidden" />
           {props.children}
         </div>
       </div>

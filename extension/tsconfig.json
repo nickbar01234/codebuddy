@@ -30,7 +30,8 @@
       "@cb/services": ["./services/index.ts"],
       "@cb/context/*": ["./context/*"],
       "@cb/db": ["./db/index.ts"],
-      "@cb/db/*": ["./db/*"]
+      "@cb/db/*": ["./db/*"],
+      "@cb/constants": ["./constants/index.ts"]
     }
   },
   "include": ["./src", "./src/services/index.ts"],

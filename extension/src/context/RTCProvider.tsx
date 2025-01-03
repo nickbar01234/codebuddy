@@ -1,6 +1,10 @@
 import db from "@cb/db";
-import { useState } from "@cb/hooks";
-import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
+import { useOnMount, useState } from "@cb/hooks";
+import {
+  constructUrlFromQuestionId,
+  getQuestionIdFromUrl,
+  waitForElement,
+} from "@cb/utils";
 import {
   Unsubscribe,
   arrayUnion,
@@ -12,7 +16,8 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import { sendMessage as serviceSendMessage } from "@cb/services";
+import { sendServiceRequest } from "@cb/services";
+import { PeerCodeMessage, PeerMessage } from "@cb/types";
 
 const servers = {
   iceServers: [
@@ -23,14 +28,19 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
-interface RTCContext {
+interface PeerInformation {
+  code: Omit<PeerCodeMessage, "action">;
+}
+
+export interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
   leaveRoom: (roomId: string) => void;
+  leaveRoom: (roomId: string) => void;
   roomId: string | null;
   setRoomId: (id: string) => void;
-  informations: Record<string, string>;
-  sendMessages: (value: string) => void;
+  informations: Record<string, PeerInformation>;
+  sendMessages: (value: PeerMessage) => void;
   connected: Record<string, boolean>;
 }
 
@@ -56,17 +66,44 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const pcs = React.useRef<Record<string, Connection>>({});
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const [informations, setInformations] = React.useState<
-    Record<string, string>
+    Record<string, PeerInformation>
   >({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
-  const sendMessages = (value: string) => {
-    if (connected == undefined) return;
-    for (const username of Object.keys(pcs.current)) {
-      sendMessage(username)(value);
-    }
-  };
+  const sendMessage = React.useCallback(
+    (username: string) => (payload: PeerMessage) => {
+      if (pcs.current[username].channel !== undefined) {
+        console.log("Sending message to " + username);
+        pcs.current[username].channel.send(JSON.stringify(payload));
+      } else {
+        if (connected[username] == undefined) {
+          console.log("Not connected to " + username);
+        } else console.log("Data Channel not created yet");
+      }
+    },
+    [connected]
+  );
+
+  const sendMessages = React.useCallback(
+    (payload: PeerMessage) => {
+      for (const username of Object.keys(pcs.current)) {
+        sendMessage(username)(payload);
+      }
+    },
+    [sendMessage]
+  );
+
+  const sendCode = React.useCallback(async () => {
+    sendMessages({
+      action: "code",
+      code: await sendServiceRequest({ action: "getValue" }),
+      changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
+    });
+  }, [sendMessages]);
+
+  const sendCodeRef = React.useRef(sendCode);
+
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
     // console.log("hello");
@@ -80,22 +117,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const onmessage = (username: string) =>
     function (event: MessageEvent) {
       console.log("Message from " + username);
-      setInformations((prev) => ({
-        ...prev,
-        [username]: event.data,
-      }));
+      const payload: PeerMessage = JSON.parse(event.data ?? {});
+      const { action, ...rest } = payload;
+      switch (action) {
+        case "code":
+          setInformations((prev) => ({
+            ...prev,
+            [username]: {
+              ...prev[username],
+              code: rest,
+            },
+          }));
+          break;
+        default:
+          console.error("Unknown payload", payload);
+      }
     };
-
-  const sendMessage = (username: string) => (message: string) => {
-    if (pcs.current[username].channel !== undefined) {
-      console.log("Sending message to " + username);
-      pcs.current[username].channel.send(message);
-    } else {
-      if (connected[username] == undefined) {
-        console.log("Not connected to " + username);
-      } else console.log("Data Channel not created yet");
-    }
-  };
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
@@ -173,7 +210,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Please enter room ID");
         return false;
       }
+  const joinRoom = React.useCallback(
+    async (roomId: string, questionId: string): Promise<boolean> => {
+      if (!roomId) {
+        toast.error("Please enter room ID");
+        return false;
+      }
 
+      const roomDoc = await db.room(roomId).doc();
+      if (!roomDoc.exists()) {
+        toast.error("Room does not exist");
+        return false;
+      }
+      const roomQuestionId = roomDoc.data().questionId;
+      if (questionId !== roomQuestionId) {
+        const questionUrl = constructUrlFromQuestionId(roomQuestionId);
+        toast.error("The room you join is on this question:", {
+          description: questionUrl,
+        });
+        return false;
+      }
       const roomDoc = await db.room(roomId).doc();
       if (!roomDoc.exists()) {
         toast.error("Room does not exist");
@@ -196,9 +252,23 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
+      const usernamesCollection = await db.usernamesCollection(roomId).doc();
+      if (usernamesCollection.size >= MAX_CAPACITY) {
+        console.log("The room is at max capacity");
+        toast.error("This room is already at max capacity.");
+        return false;
+      }
+      // console.log("Joining room", roomId);
+      setRoomId(roomId);
 
       await db.usernamesCollection(roomId).addUser(username);
+      await db.usernamesCollection(roomId).addUser(username);
 
+      onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
+        snapshot.docChanges().forEach(async (change) => {
+          if (change.type === "removed") {
+            return;
+          }
       onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
           if (change.type === "removed") {
@@ -211,7 +281,32 @@ export const RTCProvider = (props: RTCProviderProps) => {
           if (peer == undefined) {
             return;
           }
+          if (peer == undefined) {
+            return;
+          }
 
+          const themRef = db.connections(roomId, username).doc(peer);
+          const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
+          // const pc = new RTCPeerConnection(servers);
+          if (pcs.current[peer] == undefined) {
+            pcs.current[peer] = {
+              username: peer,
+              pc: pc,
+              channel: pc.createDataChannel("channel"),
+            };
+            pc.ondatachannel = (event) => {
+              pcs.current[peer].channel = event.channel;
+              pcs.current[peer].channel.onmessage = onmessage(peer);
+              pcs.current[peer].channel.onopen = onOpen(peer);
+            };
+            pc.onicecandidate = async (event) => {
+              if (event.candidate) {
+                await updateDoc(themRef, {
+                  answerCandidates: arrayUnion(event.candidate.toJSON()),
+                });
+              }
+            };
+          }
           const themRef = db.connections(roomId, username).doc(peer);
           const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
           // const pc = new RTCPeerConnection(servers);
@@ -239,12 +334,25 @@ export const RTCProvider = (props: RTCProviderProps) => {
             await pc.setRemoteDescription(
               new RTCSessionDescription(data.offer)
             );
+          if (data.offer != undefined && pc.remoteDescription == null) {
+            await pc.setRemoteDescription(
+              new RTCSessionDescription(data.offer)
+            );
 
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             await updateDoc(themRef, { answer: answer });
           }
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            await updateDoc(themRef, { answer: answer });
+          }
 
+          data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
+            pc.addIceCandidate(new RTCIceCandidate(candidate));
+          });
+        });
+      });
           data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
             pc.addIceCandidate(new RTCIceCandidate(candidate));
           });
@@ -272,7 +380,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setConnected({});
       pcs.current = {};
       if (!reload) {
-        serviceSendMessage({
+        sendServiceRequest({
           action: "cleanEditor",
         });
       }
@@ -336,7 +444,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
             }
             if (change.type === "added") {
               console.log("Added peer");
+              console.log("Added peer");
               const peer = change.doc.id;
+              const usernamesSnapshot = await db
+                .usernamesCollection(roomId)
+                .doc();
+              const myTimeStamp = usernamesSnapshot.docs
+                .find((doc) => doc.id === username)
+                ?.data().createdAt;
+              // console.log(myTimeStamp);
               const usernamesSnapshot = await db
                 .usernamesCollection(roomId)
                 .doc();
@@ -347,6 +463,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
               if (peer == undefined || peer === username) {
                 return;
               }
+              if (myTimeStamp.seconds >= change.doc.data().createdAt.seconds) {
+                return;
+              }
+
+              console.log("Create Offer to", change.doc.id);
               if (myTimeStamp.seconds >= change.doc.data().createdAt.seconds) {
                 return;
               }
@@ -369,6 +490,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
     }
   }, [roomId, username, createOffer]);
+
+  React.useEffect(() => {
+    sendCode();
+    sendCodeRef.current = sendCode;
+  }, [sendCode]);
+
+  useOnMount(() => {
+    const observer = new MutationObserver(async () => {
+      await sendCodeRef.current();
+    });
+    waitForElement("#trackEditor", 2000).then((editor) => {
+      observer.observe(editor, {
+        childList: true,
+        subtree: true,
+      });
+    });
+    return () => {
+      observer.disconnect();
+    };
+  });
 
   return (
     <RTCContext.Provider
