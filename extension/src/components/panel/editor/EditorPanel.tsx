@@ -14,12 +14,15 @@ const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
   const { informations } = useRTC();
-  const { tabs, activeTab, unblur, setActive } = useTab({ informations });
+  const { tabs, activeTab, unblur, setActive, selectTest } = useTab({
+    informations,
+  });
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
   >(CodeBuddyPreference.codePreference);
 
   const canViewCode = activeTab?.viewable ?? false;
+  const activeTest = activeTab?.tests.find((test) => test.selected);
 
   useOnMount(() => {
     sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID });
@@ -78,7 +81,48 @@ const EditorPanel = () => {
             />
           </div>
         </ResizableBox>
-        <div className="w-full h-full">Test cases here</div>
+        <div className="w-full h-full overflow-auto">
+          <div className="mx-5 my-4 flex flex-col space-y-4">
+            <div className="flex w-full flex-row items-start justify-between gap-4">
+              <div className="flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll hide-scrollbar">
+                {activeTab?.tests.map((test, idx) => (
+                  <div key={idx} onClick={() => selectTest(idx)}>
+                    {test.selected ? (
+                      <button className="font-medium items-center whitespace-nowrap focus:outline-none inline-flex bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1">
+                        Case {idx + 1}
+                      </button>
+                    ) : (
+                      <button className="font-medium items-center whitespace-nowrap focus:outline-none inline-flex hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 relative rounded-lg px-4 py-1 hover:text-label-1 dark:hover:text-dark-label-1 bg-transparent dark:bg-dark-transparent">
+                        Case {idx + 1}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <div className="flex h-full w-full flex-col space-y-2">
+                  {activeTest?.test.map((assignment, idx) => (
+                    <React.Fragment key={idx}>
+                      <div className="text-xs font-medium text-label-3 dark:text-dark-label-3">
+                        {assignment.variable} =
+                      </div>
+                      <div className="font-menlo w-full cursor-text rounded-lg border px-3 py-[10px] bg-fill-3 dark:bg-dark-fill-3 border-transparent">
+                        <div
+                          className="font-menlo w-full resize-none whitespace-pre-wrap break-words outline-none placeholder:text-label-4 dark:placeholder:text-dark-label-4 sentry-unmask"
+                          contentEditable="true"
+                        >
+                          {assignment.value}
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  )) ?? null}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
         {tabs.map(({ id, active }) => (
