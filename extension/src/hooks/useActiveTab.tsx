@@ -1,6 +1,5 @@
 import type { RTCContext } from "@cb/context/RTCProvider";
 import { sendServiceRequest } from "@cb/services";
-import { pre } from "framer-motion/client";
 import { set } from "mongoose";
 import React from "react";
 
@@ -20,6 +19,7 @@ export const useTab = (props: UseActiveTabProps) => {
     JSON.parse(localStorage.getItem("tabs") || "[]")
   );
   const [activeTab, setActiveTab] = React.useState<Tab>();
+  const [changeUser, setChangeUser] = React.useState<boolean>(false);
 
   const activeUserInformation = React.useMemo(
     () => (activeTab == undefined ? undefined : informations[activeTab?.id]),
@@ -34,9 +34,12 @@ export const useTab = (props: UseActiveTabProps) => {
             ? override(tab)
             : { ...tab, ...override };
         };
-        setTabs((prev) =>
-          prev.map((tab) => (tab.id === id ? delegate(tab) : { ...tab }))
-        );
+        setTabs((prev) => {
+          const newTabs = prev.map((tab) =>
+            tab.id === id ? delegate(tab) : { ...tab }
+          );
+          return newTabs;
+        });
       }
     },
     []
@@ -55,6 +58,7 @@ export const useTab = (props: UseActiveTabProps) => {
     (peer: string) => {
       replaceTab(activeTab?.id, { active: false });
       replaceTab(peer, { active: true });
+      setChangeUser(true);
     },
     [activeTab, replaceTab]
   );
@@ -96,9 +100,9 @@ export const useTab = (props: UseActiveTabProps) => {
             id: peer,
             active: false,
             viewable:
-              prevTabs && prevTabs.some((obj) => obj.id === peer)
-                ? prevTabs.find((obj) => obj.id === peer)?.viewable ?? false
-                : false,
+              prevTabs &&
+              prevTabs.some((obj) => obj.id === peer) &&
+              (prevTabs.find((obj) => obj.id === peer)?.viewable ?? false),
           }
       )
     );
@@ -110,21 +114,30 @@ export const useTab = (props: UseActiveTabProps) => {
     }
   }, [tabs, activeTab, setActive]);
 
+  // React.useEffect(() => {
+  //   if (tabs.length === 0) sendServiceRequest({ action: "cleanEditor" }); This line makes the code editor not persist throughout the session. I have added when the user clicks leave room that is when the editor get deleted.
+  // }, [tabs]);
+
   React.useEffect(() => {
-    // if (tabs.length === 0) sendServiceRequest({ action: "cleanEditor" }); This line makes the code editor not persist throughout the session. I have added when the user clicks leave room that is when the editor get deleted.
-    if (tabs.length === 0) {
-      return;
-    }
-    localStorage.setItem("tabs", JSON.stringify(tabs));
+    const handleBeforeUnload = async () => {
+      localStorage.setItem("tabs", JSON.stringify(tabs));
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, [tabs]);
 
   React.useEffect(() => setActiveTab(findActiveTab()), [findActiveTab]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
-      setCode(false);
+      setCode(changeUser);
+      setChangeUser(false);
     }
-  }, [activeUserInformation]);
+  }, [activeTab?.id]);
 
   return {
     tabs,
