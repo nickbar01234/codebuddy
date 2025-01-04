@@ -1,6 +1,6 @@
 import type { RTCContext } from "@cb/context/RTCProvider";
 import { sendServiceRequest } from "@cb/services";
-import { set } from "mongoose";
+import { pre } from "framer-motion/client";
 import React from "react";
 
 interface UseActiveTabProps {
@@ -122,9 +122,7 @@ export const useTab = (props: UseActiveTabProps) => {
     const handleBeforeUnload = async () => {
       localStorage.setItem("tabs", JSON.stringify(tabs));
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
@@ -137,7 +135,7 @@ export const useTab = (props: UseActiveTabProps) => {
       setCode(changeUser);
       setChangeUser(false);
     }
-  }, [activeTab?.id]);
+  }, [activeTab?.id, activeUserInformation, changeUser]);
 
   return {
     tabs,

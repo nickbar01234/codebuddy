@@ -36,6 +36,9 @@ const EditorPanel = () => {
 
   useOnMount(() => {
     sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID });
+    // setTimeout(() => {
+    //   setCode(true);
+    // }, 3000);
   });
 
   useOnMount(() => {
@@ -73,7 +76,7 @@ const EditorPanel = () => {
         )}
       <div
         className="flex flex-col h-full justify-between"
-        style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }}
+        style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time
       >
         {!canViewCode && tabs.length != 0 && (
           <button
