@@ -22,7 +22,7 @@ const EditorPanel = () => {
     setActive,
     activeUserInformation,
     pasteCode,
-    setCode,
+    setChangeUser,
   } = useTab({
     informations,
   });
@@ -35,10 +35,11 @@ const EditorPanel = () => {
   const canViewCode = activeTab?.viewable ?? false;
 
   useOnMount(() => {
-    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID });
-    // setTimeout(() => {
-    //   setCode(true);
-    // }, 3000);
+    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(
+      async () => {
+        setChangeUser(true);
+      }
+    );
   });
 
   useOnMount(() => {
