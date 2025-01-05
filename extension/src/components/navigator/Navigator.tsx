@@ -23,13 +23,6 @@ export const RootNavigator = () => {
   };
 
   const [displayMenu, setDisplayMenu] = React.useState(false);
-  const wrapperSetDisplayMenu = (
-    e: React.MouseEvent<Element, MouseEvent>,
-    value: boolean
-  ) => {
-    e.stopPropagation();
-    setDisplayMenu(value);
-  };
 
   const onPanelClick = () => {
     setUserDropdownOpen(false);
@@ -67,7 +60,7 @@ export const RootNavigator = () => {
         </div>
         <RoomControlMenu
           displayMenu={displayMenu}
-          setDisplayMenu={wrapperSetDisplayMenu}
+          setDisplayMenu={setDisplayMenu}
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
