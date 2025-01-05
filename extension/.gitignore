@@ -1,3 +1,5 @@
 .env
 *.bat
 *.sh
+
+src/context/additionalServers.ts
