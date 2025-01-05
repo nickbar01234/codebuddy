@@ -5,7 +5,7 @@ export const CodeIcon = () => {
       focusable="false"
       data-prefix="far"
       data-icon="code"
-      className="h-4 w-4 svg-inline--fa fa-code"
+      className="svg-inline--fa fa-code"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 640 512"
       width="1em"
