@@ -2,6 +2,8 @@ import type { PeerInformation, RTCContext } from "@cb/context/RTCProvider";
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
 import useInferTests from "./useInferTests";
+import { useOnMount } from ".";
+import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 
 interface UseActiveTabProps {
   informations: RTCContext["informations"];
@@ -31,7 +33,6 @@ export const useTab = (props: UseActiveTabProps) => {
   );
   const [activeTab, setActiveTab] = React.useState<Tab>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
-  const [editorMount, setEditorMount] = React.useState<boolean>(false);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -100,6 +101,7 @@ export const useTab = (props: UseActiveTabProps) => {
     },
     [activeTab, replaceTab]
   );
+
   const pasteCode = React.useCallback(() => {
     if (activeUserInformation != undefined) {
       sendServiceRequest({
@@ -111,8 +113,9 @@ export const useTab = (props: UseActiveTabProps) => {
 
   const setCode = React.useCallback(
     (changeUser: boolean) => {
+      console.log("Attempting to set code", activeUserInformation);
       if (activeUserInformation != undefined) {
-        console.log("Changeuser in setcode ", changeUser);
+        console.log("Code", activeUserInformation);
         const {
           code: { value, language },
           changes,
@@ -134,6 +137,8 @@ export const useTab = (props: UseActiveTabProps) => {
     },
     [activeUserInformation]
   );
+
+  const setCodeRef = React.useRef(setCode);
 
   const selectTest = React.useCallback(
     (idx: number) => {
@@ -212,8 +217,14 @@ export const useTab = (props: UseActiveTabProps) => {
   }, [activeTab?.id, activeUserInformation, setCode]);
 
   React.useEffect(() => {
-    setCode(true);
-  }, [editorMount]);
+    setCodeRef.current = setCode;
+  }, [setCode]);
+
+  useOnMount(() => {
+    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(() =>
+      setCodeRef.current(true)
+    );
+  });
 
   return {
     tabs,
@@ -223,6 +234,6 @@ export const useTab = (props: UseActiveTabProps) => {
     selectTest,
     activeUserInformation,
     pasteCode,
-    setEditorMount,
+    setCode,
   };
 };

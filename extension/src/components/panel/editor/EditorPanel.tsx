@@ -11,7 +11,7 @@ export interface TabMetadata {
   displayHeader: string;
 }
 
-const EDITOR_NODE_ID = "CodeBuddyEditor";
+export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
   const { informations } = useRTC();
@@ -22,7 +22,6 @@ const EditorPanel = () => {
     setActive,
     activeUserInformation,
     pasteCode,
-    setEditorMount,
     selectTest,
   } = useTab({
     informations,
@@ -37,17 +36,9 @@ const EditorPanel = () => {
   const activeTest = activeTab?.tests.find((test) => test.selected);
 
   useOnMount(() => {
-    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(
-      async () => {
-        setEditorMount(true);
-        console.log("Editor mounted");
-      }
-    );
-  });
-
-  useOnMount(() => {
     getStorage("codePreference").then(setCodePreference);
   });
+
   return (
     <>
       {tabs.length === 0 &&
@@ -160,7 +151,7 @@ const EditorPanel = () => {
                     <path d="M21 14H11" />
                     <path d="m15 10-4 4 4 4" />
                   </svg>
-                  <span className=" ml-2"> Paste Code</span>
+                  <span className=" ml-2">Paste Code</span>
                 </button>
               </div>
 
