@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import React from "react";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 
 interface HyperTextProps {
@@ -24,17 +24,17 @@ export function HyperText({
   className,
   animateOnLoad = true,
 }: HyperTextProps) {
-  const [displayText, setDisplayText] = useState(text.split(""));
-  const [trigger, setTrigger] = useState(false);
-  const interations = useRef(0);
-  const isFirstRender = useRef(true);
+  const [displayText, setDisplayText] = React.useState(text.split(""));
+  const [trigger, setTrigger] = React.useState(false);
+  const interations = React.useRef(0);
+  const isFirstRender = React.useRef(true);
 
   const triggerAnimation = () => {
     interations.current = 0;
     setTrigger(true);
   };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       if (!animateOnLoad && isFirstRender.current) {
         clearInterval(interval);

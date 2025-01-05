@@ -1,3 +1,4 @@
+import { CaretDownIcon } from "@cb/components/icons";
 import { useRTC, useTab } from "@cb/hooks/index";
 import React from "react";
 
@@ -20,22 +21,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           type="button"
           onClick={toggle}
         >
-          {activeTab.id}{" "}
-          <svg
-            className="w-2.5 h-2.5 ms-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 10 6"
-          >
-            <path
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="m1 1 4 4 4-4"
-            />
-          </svg>
+          {activeTab.id} <CaretDownIcon />
         </button>
         <div
           className={`absolute z-10 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 ${

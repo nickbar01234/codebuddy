@@ -1,7 +1,7 @@
 export const CaretDownIcon = () => {
   return (
     <svg
-      className="w-2.5 h-2.5 ms-3 text-gray-400"
+      className="w-2.5 h-2.5 ms-2 text-gray-400"
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       fill="none"

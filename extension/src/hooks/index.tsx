@@ -1,10 +1,10 @@
 import React from "react";
 import { RTCContext } from "@cb/context/RTCProvider";
-import { stateContext } from "@cb/context/StateProvider";
+import { appStateContext } from "@cb/context/AppStateProvider";
 
 export const useRTC = () => React.useContext(RTCContext);
 
-export const useState = () => React.useContext(stateContext);
+export const useAppState = () => React.useContext(appStateContext);
 
 export const useOnMount = (effect: React.EffectCallback) =>
   // eslint-disable-next-line react-hooks/exhaustive-deps

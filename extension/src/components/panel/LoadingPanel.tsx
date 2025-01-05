@@ -1,6 +1,6 @@
-import React, { forwardRef, useRef } from "react";
+import React from "react";
 import { AnimatedBeam } from "@cb/components/ui/AnimatedBeam";
-const Circle = forwardRef<
+const Circle = React.forwardRef<
   HTMLDivElement,
   { className?: string; children?: React.ReactNode }
 >(({ children }, ref) => {
@@ -23,12 +23,12 @@ export function LoadingPanel({
 }: {
   numberOfUsers?: number;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const div1Ref = useRef<HTMLDivElement>(null);
-  const div2Ref = useRef<HTMLDivElement>(null);
-  const div3Ref = useRef<HTMLDivElement>(null);
-  const div6Ref = useRef<HTMLDivElement>(null);
-  const div7Ref = useRef<HTMLDivElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const div1Ref = React.useRef<HTMLDivElement>(null);
+  const div2Ref = React.useRef<HTMLDivElement>(null);
+  const div3Ref = React.useRef<HTMLDivElement>(null);
+  const div6Ref = React.useRef<HTMLDivElement>(null);
+  const div7Ref = React.useRef<HTMLDivElement>(null);
   console.log("LoadingPanel -> numberOfUsers", numberOfUsers);
   return (
     <div

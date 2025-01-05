@@ -3,14 +3,14 @@ import React from "react";
 import { Toaster } from "sonner";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { stateContext } from "@cb/context/StateProvider";
-import { State } from "@cb/context/StateProvider";
+import { appStateContext } from "@cb/context/AppStateProvider";
+import { AppState } from "@cb/context/AppStateProvider";
 import { useRTC, useTab } from "@cb/hooks/index";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { CaretRightIcon } from "@cb/components/icons";
 
 export const RootNavigator = () => {
-  const { state } = React.useContext(stateContext);
+  const { state } = React.useContext(appStateContext);
   const { informations } = useRTC();
   const { activeTab } = useTab({
     informations,
@@ -64,7 +64,7 @@ export const RootNavigator = () => {
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
-        {state === State.HOME && localStorage.getItem("curRoomId") && (
+        {state === AppState.HOME && localStorage.getItem("curRoomId") && (
           <div className="absolute inset-0 h-full w-full flex justify-center items-center">
             <LoadingPanel
               numberOfUsers={

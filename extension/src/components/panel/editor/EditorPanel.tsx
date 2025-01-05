@@ -5,7 +5,7 @@ import { ResizableBox } from "react-resizable";
 import { ExtensionStorage } from "@cb/types";
 import { CodeBuddyPreference } from "@cb/constants";
 import { Ripple } from "@cb/components/ui/Ripple";
-import { State, stateContext } from "@cb/context/StateProvider";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { capitalize } from "@cb/utils/string";
 import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
 export interface TabMetadata {
@@ -28,7 +28,7 @@ const EditorPanel = () => {
   } = useTab({
     informations,
   });
-  const { state } = React.useContext(stateContext);
+  const { state } = React.useContext(appStateContext);
 
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
@@ -44,7 +44,7 @@ const EditorPanel = () => {
   return (
     <>
       {tabs.length === 0 &&
-        state === State.ROOM &&
+        state === AppState.ROOM &&
         JSON.parse(localStorage.getItem("curRoomId") || "{}").numberOfUsers ==
           0 && (
           <div className="flex flex-col items-center justify-center h-full w-full">

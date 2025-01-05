@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import React from "react";
 interface RippleProps {
   mainCircleSize?: number;
   mainCircleOpacity?: number;
@@ -40,7 +40,7 @@ export const Ripple = React.memo(function Ripple({
                 top: "50%",
                 left: "50%",
                 transform: "translate(-50%, -50%) scale(1)",
-              } as CSSProperties
+              } as React.CSSProperties
             }
           />
         );
