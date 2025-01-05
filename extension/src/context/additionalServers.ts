@@ -33,5 +33,6 @@ const remoteServers = [
     credential: "1RgQIEt3W2JcGbLL",
   },
 ];
+// TODO: Set to true to use the additional servers
 const useAdditionalServers = false;
 export const additionalServers = useAdditionalServers ? remoteServers : [];
