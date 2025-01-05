@@ -6,7 +6,8 @@ import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { stateContext } from "@cb/context/StateProvider";
 import { State } from "@cb/context/StateProvider";
 import { useRTC, useTab } from "@cb/hooks/index";
-import UserDropdown from "./dropdown/UserDropdown";
+import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { CaretRightIcon } from "@cb/components/icons";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(stateContext);
@@ -56,21 +57,7 @@ export const RootNavigator = () => {
           <h2 className="font-medium">CodeBuddy</h2>
           {activeTab?.id && (
             <React.Fragment>
-              <svg
-                className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-3"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 6 10"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m1 9 4-4-4-4"
-                />
-              </svg>{" "}
+              <CaretRightIcon />{" "}
               <UserDropdown
                 isOpen={isUserDropdownOpen}
                 toggle={toggleUserDropdown}

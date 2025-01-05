@@ -5,6 +5,8 @@ import {
   CopyIcon,
   PlusIcon,
   LeaveIcon,
+  MenuIcon,
+  ResetIcon,
 } from "@cb/components/icons";
 import { State, stateContext } from "@cb/context/StateProvider";
 import { useRTC } from "@cb/hooks/index";
@@ -36,6 +38,13 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   const items: MenuItem[] = React.useMemo(() => {
     if (state === State.HOME) {
       return [
+        {
+          display: "Reset Extension",
+          icon: <ResetIcon />,
+          onClick: () => {
+            localStorage.clear();
+          },
+        },
         {
           display: "Create Room",
           icon: <PlusIcon />,
@@ -107,20 +116,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         data-headlessui-state=""
         onClick={toggleDisplayMenu}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="1em"
-          height="1em"
-          fill="currentColor"
-          className="hover:text-gray-7 dark:hover:text-dark-gray-7 text-text-secondary dark:text-text-secondary w-4 h-4"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M4.4 14a2 2 0 100-4 2 2 0 000 4zm9.6-2a2 2 0 11-4 0 2 2 0 014 0zm7.6 0a2 2 0 11-4 0 2 2 0 014 0z"
-            clip-rule="evenodd"
-          />
-        </svg>
+        <MenuIcon />
       </button>
 
       <div

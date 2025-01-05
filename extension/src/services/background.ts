@@ -109,6 +109,7 @@ const setValueModel = async (
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");
   const myLanguage = await myEditor.getModel().getLanguageId();
+
   if (
     myLanguage !== language ||
     changeUser ||
@@ -133,6 +134,10 @@ const setValueModel = async (
   };
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
+  const myCode = await myEditor.getValue();
+  if (myCode !== code) {
+    await myEditor.setValue(code);
+  }
   await myEditor.updateOptions({ readOnly: true });
   console.log("Applied Changes");
 };

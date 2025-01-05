@@ -1,5 +1,11 @@
 export { BackIcon } from "@cb/components/icons/BackIcon";
+export { CaretDownIcon } from "@cb/components/icons/CaretDownIcon";
+export { CaretRightIcon } from "@cb/components/icons/CaretRightIcon";
 export { CodeIcon } from "@cb/components/icons/CodeIcon";
 export { CopyIcon } from "@cb/components/icons/CopyIcon";
 export { PlusIcon } from "@cb/components/icons/PlusIcon";
 export { LeaveIcon } from "@cb/components/icons/LeaveIcon";
+export { MenuIcon } from "@cb/components/icons/MenuIcon";
+export { PasteCodeIcon } from "@cb/components/icons/PasteCodeIcon";
+export { ResetIcon } from "@cb/components/icons/ResetIcon";
+export { UserIcon } from "@cb/components/icons/UserIcon";
