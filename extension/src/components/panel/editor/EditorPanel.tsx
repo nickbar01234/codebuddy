@@ -131,7 +131,7 @@ const EditorPanel = () => {
                   type="button"
                   data-tooltip-target="tooltip-default"
                   onClick={pasteCode}
-                  className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2 text-center inline-flex items-center me-2"
+                  className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-xs px-2 py-2 text-center inline-flex items-center mt-1 me-1"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

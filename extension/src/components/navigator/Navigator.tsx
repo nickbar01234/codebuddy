@@ -57,7 +57,7 @@ export const RootNavigator = () => {
           {activeTab?.id && (
             <React.Fragment>
               <svg
-                className="rtl:rotate-180 w-3 h-3 text-gray-400 ml-3 mr-1"
+                className="rtl:rotate-180 w-3 h-3 text-gray-400 mx-3"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
