@@ -167,9 +167,7 @@ export const useTab = (props: UseActiveTabProps) => {
           id: peer,
           active: false,
           viewable:
-            prevTabs &&
-            prevTabs.some((obj) => obj.id === peer) &&
-            (prevTabs.find((obj) => obj.id === peer)?.viewable ?? false),
+            prevTabs.some((tab) => tab.id === peer && tab.viewable) ?? false,
           tests: [],
         };
         const tests = groupTestCases(informations[peer]);
@@ -191,10 +189,6 @@ export const useTab = (props: UseActiveTabProps) => {
       setActive(tabs[0].id);
     }
   }, [tabs, activeTab, setActive]);
-
-  // React.useEffect(() => {
-  //   if (tabs.length === 0) sendServiceRequest({ action: "cleanEditor" }); This line makes the code editor not persist throughout the session. I have added when the user clicks leave room that is when the editor get deleted.
-  // }, [tabs]);
 
   React.useEffect(() => {
     const handleBeforeUnload = async () => {
