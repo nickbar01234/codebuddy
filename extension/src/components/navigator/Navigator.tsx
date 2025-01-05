@@ -1,18 +1,39 @@
-import { Menu } from "@cb/components/navigator/menu/Menu";
+import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import React from "react";
 import { Toaster } from "sonner";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { stateContext } from "@cb/context/StateProvider";
 import { State } from "@cb/context/StateProvider";
-import { MenuIcon } from "@cb/components/icons";
+import { useRTC, useTab } from "@cb/hooks/index";
+import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { CaretRightIcon } from "@cb/components/icons";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(stateContext);
-  const [displayPopup, setDisplayPopup] = React.useState(false);
+  const { informations } = useRTC();
+  const { activeTab } = useTab({
+    informations,
+  });
+
+  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
+  const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.stopPropagation();
+    setUserDropdownOpen(!isUserDropdownOpen);
+  };
+
+  const [displayMenu, setDisplayMenu] = React.useState(false);
+
+  const onPanelClick = () => {
+    setUserDropdownOpen(false);
+    setDisplayMenu(false);
+  };
 
   return (
-    <div className="h-full w-full relative flex flex-col">
+    <div
+      className="h-full w-full relative flex flex-col"
+      onClick={onPanelClick}
+    >
       <Toaster
         richColors
         expand
@@ -23,39 +44,36 @@ export const RootNavigator = () => {
         }}
       />
       <div
-        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-x-auto overflow-y-hidden`}
+        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2`}
       >
-        <h2 className="text-lg font-medium">Code Buddy</h2>
-        <button onClick={() => localStorage.clear()} className="text-sm">
-          Clear local storage
-        </button>
-        <button
-          className="hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
-          id="headlessui-menu-button-:r3q:"
-          type="button"
-          aria-haspopup="true"
-          aria-expanded="false"
-          data-headlessui-state=""
-          onClick={() => setDisplayPopup((displayPopup) => !displayPopup)}
-        >
-          <MenuIcon />
-        </button>
-      </div>
-      <div className="h-full w-full relative overflow-hidden ">
-        <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
-        {state === State.HOME &&
-          (localStorage.getItem("curRoomId") ? (
-            <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-              <LoadingPanel
-                numberOfUsers={
-                  JSON.parse(localStorage.getItem("curRoomId") || "{}")
-                    .numberOfUsers
-                }
+        <div className="flex items-center">
+          <h2 className="font-medium">CodeBuddy</h2>
+          {activeTab?.id && (
+            <React.Fragment>
+              <CaretRightIcon />{" "}
+              <UserDropdown
+                isOpen={isUserDropdownOpen}
+                toggle={toggleUserDropdown}
               />
-            </div>
-          ) : (
-            <div className="text-5xl">HOME PANEL</div>
-          ))}
+            </React.Fragment>
+          )}
+        </div>
+        <RoomControlMenu
+          displayMenu={displayMenu}
+          setDisplayMenu={setDisplayMenu}
+        />
+      </div>
+      <div className="h-full w-full relative overflow-hidden">
+        {state === State.HOME && localStorage.getItem("curRoomId") && (
+          <div className="absolute inset-0 h-full w-full flex justify-center items-center">
+            <LoadingPanel
+              numberOfUsers={
+                JSON.parse(localStorage.getItem("curRoomId") || "{}")
+                  .numberOfUsers
+              }
+            />
+          </div>
+        )}
         <EditorPanel />
       </div>
     </div>
