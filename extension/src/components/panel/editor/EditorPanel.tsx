@@ -6,6 +6,7 @@ import { ExtensionStorage } from "@cb/types";
 import { CodeBuddyPreference } from "@cb/constants";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { State, stateContext } from "@cb/context/StateProvider";
+import { capitalize } from "@cb/utils/string";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -118,20 +119,19 @@ const EditorPanel = () => {
             }}
           >
             <div className="relative h-full flex flex-col grow gap-y-2">
-              {/* todo(nickbar01234): Language + paste code */}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 {" "}
-                <h1 className=" text-xl font-extrabold text-gray-900 dark:text-white ">
+                <h1 className="font-medium text-gray-900 dark:text-white ml-3">
                   Language:{" "}
                   <span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-                    {activeUserInformation?.code?.code.language}
+                    {capitalize(activeUserInformation?.code?.code.language)}
                   </span>
                 </h1>
                 <button
                   type="button"
                   data-tooltip-target="tooltip-default"
                   onClick={pasteCode}
-                  className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2"
+                  className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2 text-center inline-flex items-center me-2"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -151,7 +151,7 @@ const EditorPanel = () => {
                     <path d="M21 14H11" />
                     <path d="m15 10-4 4 4 4" />
                   </svg>
-                  <span className=" ml-2">Paste Code</span>
+                  <span className="ml-2">Paste Code</span>
                 </button>
               </div>
 

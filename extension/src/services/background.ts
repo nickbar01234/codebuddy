@@ -87,6 +87,7 @@ const createModel = async (id: string) => {
         readOnly: true,
         scrollBeyondLastLine: false,
         automaticLayout: true,
+        minimap: { enabled: false },
       }
     );
     buddyEditor.id = "CodeBuddy";
