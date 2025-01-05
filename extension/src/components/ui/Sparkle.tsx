@@ -18,7 +18,6 @@ type ParticlesProps = {
 export const SparklesCore = (props: ParticlesProps) => {
   const {
     id,
-    className,
     background,
     minSize,
     maxSize,
