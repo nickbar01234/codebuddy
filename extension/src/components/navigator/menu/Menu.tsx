@@ -86,7 +86,7 @@ export const Menu = (props: MenuProps) => {
     } else {
       setState(State.HOME);
     }
-  }, [roomId]);
+  }, [roomId, setState]);
 
   if (!displayMenu) return null;
 

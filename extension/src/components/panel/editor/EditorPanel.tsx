@@ -82,9 +82,10 @@ const EditorPanel = () => {
         className="flex flex-col h-full justify-between"
         style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time
       >
+        {/* todo(nickbar01234): Fix styling */}
         {!canViewCode && tabs.length != 0 && (
           <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg z-50"
+            className="bg-blue-500 hover:bg-blue-700 text-label-1 dark:text-dark-label-1 font-bold py-2 px-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg z-50"
             onClick={unblur}
             type="button"
           >
@@ -217,7 +218,7 @@ const EditorPanel = () => {
             <React.Fragment key={id}>
               {/* Leetcode className flexlayout__tab_button_* */}
               <div
-                className={`relative text-2xl flexlayout__tab_button flexlayout__tab_button_top hover:z-50 ${
+                className={`relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50 ${
                   active
                     ? "flexlayout__tab_button-selected medium"
                     : "flexlayout__tab_button--unselected normal"

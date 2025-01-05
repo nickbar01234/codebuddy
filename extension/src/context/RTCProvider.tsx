@@ -96,7 +96,7 @@ interface Connection {
   channel: RTCDataChannel;
 }
 
-const MAX_CAPACITY = 4;
+export const MAX_CAPACITY = 4;
 
 export const RTCProvider = (props: RTCProviderProps) => {
   const {
