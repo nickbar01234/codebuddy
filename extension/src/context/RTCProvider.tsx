@@ -29,6 +29,39 @@ const servers = {
     {
       urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
     },
+    {
+      urls: "turn:relay1.expressturn.com:3478",
+      credential: "n249CgDuYqr0b4Sc",
+      username: "efBOWWM4SVBB1JE5CO",
+    },
+    {
+      urls: "turn:13.250.13.83:3478?transport=udp",
+      username: "YzYNCouZM1mhqhmseWk6",
+      credential: "YzYNCouZM1mhqhmseWk6",
+    },
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:80?transport=tcp",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
+    {
+      urls: "turn:global.relay.metered.ca:443",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
+    {
+      urls: "turns:global.relay.metered.ca:443?transport=tcp",
+      username: "fe645f487d27702ca414216a",
+      credential: "1RgQIEt3W2JcGbLL",
+    },
   ],
   iceCandidatePoolSize: 10,
 };
@@ -63,7 +96,7 @@ interface Connection {
   channel: RTCDataChannel;
 }
 
-const MAX_CAPACITY = 4;
+export const MAX_CAPACITY = 4;
 
 export const RTCProvider = (props: RTCProviderProps) => {
   const {
@@ -171,6 +204,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
+    localStorage.setItem(
+      "curRoomId",
+      JSON.stringify({
+        roomId: roomRef.id,
+        numberOfUsers: 0,
+      })
+    );
   };
 
   const createOffer = React.useCallback(
@@ -318,8 +358,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
           });
         });
       });
-
-      toast.success(`You have successfully joined the room with ID ${roomId}.`);
+      if (
+        JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
+        roomId.toString()
+      ) {
+        toast.success(
+          `You have successfully joined the room with ID ${roomId}.`
+        );
+      }
+      localStorage.setItem(
+        "curRoomId",
+        JSON.stringify({
+          roomId: roomId,
+          numberOfUsers: usernamesCollection.size,
+        })
+      );
       return true;
     },
     [username]
@@ -329,6 +382,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     async (roomId: string, reload = false) => {
       if (roomId == null) {
         return;
+      }
+      if (!reload) {
+        localStorage.removeItem("reloading");
+        localStorage.removeItem("curRoomId");
+        localStorage.removeItem("tabs");
       }
       await db.usernamesCollection(roomId).deleteUser(username);
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
@@ -376,6 +434,33 @@ export const RTCProvider = (props: RTCProviderProps) => {
       reloadJob();
     }
   }, [joinRoom, leaveRoom]);
+  React.useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (roomId) {
+        console.log("Before Reloading", roomId);
+        localStorage.setItem("reloading", roomId);
+        await db.usernamesCollection(roomId).deleteUser(username);
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [roomId, username]);
+
+  React.useEffect(() => {
+    const reloading = localStorage.getItem("reloading");
+    if (reloading) {
+      console.log("Reloading", reloading);
+      localStorage.removeItem("reloading");
+      const reloadJob = async () => {
+        await leaveRoom(reloading, true);
+        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+      };
+      reloadJob();
+    }
+  }, []);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -400,6 +485,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 const { [peer]: _, ...rest } = prev;
                 return rest;
               });
+              localStorage.setItem(
+                "curRoomId",
+                JSON.stringify({
+                  roomId: roomId,
+                  numberOfUsers:
+                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
+                      .numberOfUsers - 1,
+                })
+              );
               return;
             }
             if (change.type === "added") {
@@ -421,10 +515,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
               console.log("Create Offer to", change.doc.id);
               await createOffer(roomId, peer);
+              localStorage.setItem(
+                "curRoomId",
+                JSON.stringify({
+                  roomId: roomId,
+                  numberOfUsers:
+                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
+                      .numberOfUsers + 1,
+                })
+              );
             }
           });
         }
       );
+
       unsubscribeRef.current = unsubscribe;
     };
 

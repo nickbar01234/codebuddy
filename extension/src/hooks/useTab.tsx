@@ -2,6 +2,8 @@ import type { PeerInformation, RTCContext } from "@cb/context/RTCProvider";
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
 import useInferTests from "./useInferTests";
+import { useOnMount } from ".";
+import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 
 interface UseActiveTabProps {
   informations: RTCContext["informations"];
@@ -26,8 +28,11 @@ interface Tab {
 
 export const useTab = (props: UseActiveTabProps) => {
   const { informations } = props;
-  const [tabs, setTabs] = React.useState<Tab[]>([]);
+  const [tabs, setTabs] = React.useState<Tab[]>(
+    JSON.parse(localStorage.getItem("tabs") || "[]")
+  );
   const [activeTab, setActiveTab] = React.useState<Tab>();
+  const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -89,11 +94,51 @@ export const useTab = (props: UseActiveTabProps) => {
 
   const setActive = React.useCallback(
     (peer: string) => {
+      console.log("Change tab");
       replaceTab(activeTab?.id, { active: false });
       replaceTab(peer, { active: true });
+      setChangeUser(true);
     },
     [activeTab, replaceTab]
   );
+
+  const pasteCode = React.useCallback(() => {
+    if (activeUserInformation != undefined) {
+      sendServiceRequest({
+        action: "setValue",
+        value: activeUserInformation.code?.code.value ?? "",
+      });
+    }
+  }, [activeUserInformation]);
+
+  const setCode = React.useCallback(
+    (changeUser: boolean) => {
+      console.log("Attempting to set code", activeUserInformation);
+      if (activeUserInformation != undefined) {
+        console.log("Code", activeUserInformation);
+        const {
+          code: { value, language },
+          changes,
+        } = activeUserInformation.code ?? {
+          code: {
+            value: "",
+            language: "",
+          },
+          changes: "",
+        };
+        sendServiceRequest({
+          action: "setValueOtherEditor",
+          code: value,
+          language: language,
+          changes: changes !== "" ? JSON.parse(changes) : {},
+          changeUser: changeUser,
+        });
+      }
+    },
+    [activeUserInformation]
+  );
+
+  const setCodeRef = React.useRef(setCode);
 
   const selectTest = React.useCallback(
     (idx: number) => {
@@ -115,12 +160,14 @@ export const useTab = (props: UseActiveTabProps) => {
   );
 
   React.useEffect(() => {
+    const prevTabs: Tab[] = JSON.parse(localStorage.getItem("tabs") || "[]");
     setTabs((prev) =>
       Object.keys(informations).map((peer) => {
         const peerTab = prev.find((tab) => tab.id === peer) ?? {
           id: peer,
           active: false,
-          viewable: false,
+          viewable:
+            prevTabs.some((tab) => tab.id === peer && tab.viewable) ?? false,
           tests: [],
         };
         const tests = groupTestCases(informations[peer]);
@@ -144,26 +191,43 @@ export const useTab = (props: UseActiveTabProps) => {
   }, [tabs, activeTab, setActive]);
 
   React.useEffect(() => {
-    if (tabs.length === 0) sendServiceRequest({ action: "cleanEditor" });
+    const handleBeforeUnload = async () => {
+      localStorage.setItem("tabs", JSON.stringify(tabs));
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, [tabs]);
 
   React.useEffect(() => setActiveTab(findActiveTab()), [findActiveTab]);
 
   React.useEffect(() => {
-    if (activeUserInformation?.code != undefined) {
-      const {
-        code: { value, language },
-        changes,
-      } = activeUserInformation.code;
-      sendServiceRequest({
-        action: "setValueOtherEditor",
-        code: value,
-        language: language,
-        changes: changes !== "" ? JSON.parse(changes) : {},
-        changeUser: false,
-      });
+    if (activeUserInformation != undefined) {
+      console.log("Changeuser", changeUser, activeUserInformation);
+      setCode(changeUser);
+      setChangeUser(false);
     }
-  }, [activeUserInformation]);
+  }, [activeTab?.id, activeUserInformation, setCode]);
 
-  return { tabs, activeTab, unblur, setActive, selectTest };
+  React.useEffect(() => {
+    setCodeRef.current = setCode;
+  }, [setCode]);
+
+  useOnMount(() => {
+    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(() =>
+      setCodeRef.current(true)
+    );
+  });
+
+  return {
+    tabs,
+    activeTab,
+    unblur,
+    setActive,
+    selectTest,
+    activeUserInformation,
+    pasteCode,
+    setCode,
+  };
 };

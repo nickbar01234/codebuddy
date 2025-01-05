@@ -74,11 +74,13 @@ const createModel = async (id: string) => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
+  console.log("Creating Model");
   if (
     monaco.editor
       .getEditors()
       .find((editor: any) => editor.id === "CodeBuddy") == undefined
   ) {
+    console.log("No Editor Found");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -88,6 +90,7 @@ const createModel = async (id: string) => {
       }
     );
     buddyEditor.id = "CodeBuddy";
+    console.log("Creating model is done");
   }
 };
 
@@ -97,6 +100,7 @@ const setValueModel = async (
     "code" | "language" | "changes" | "changeUser"
   >
 ) => {
+  console.log("using setValueModel");
   const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
@@ -262,7 +266,7 @@ chrome.runtime.onMessage.addListener(
       }
 
       default:
-        console.error(`Unhandled request ${request}`);
+        // console.error(`Unhandled request ${request}`);
         break;
     }
 
