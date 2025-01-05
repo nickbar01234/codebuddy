@@ -6,6 +6,7 @@ import { ExtensionStorage } from "@cb/types";
 import { CodeBuddyPreference } from "@cb/constants";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { State, stateContext } from "@cb/context/StateProvider";
+import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -52,18 +53,7 @@ const EditorPanel = () => {
                   "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
                 }
               >
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#000000"
-                  strokeWidth="2"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
+                <UserIcon />
               </div>
               <Ripple />
             </div>
@@ -133,24 +123,7 @@ const EditorPanel = () => {
                   onClick={pasteCode}
                   className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-clipboard-copy"
-                  >
-                    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                    <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-                    <path d="M16 4h2a2 2 0 0 1 2 2v4" />
-                    <path d="M21 14H11" />
-                    <path d="m15 10-4 4 4 4" />
-                  </svg>
+                  <PasteCodeIcon />
                   <span className=" ml-2">Paste Code</span>
                 </button>
               </div>

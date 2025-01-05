@@ -384,9 +384,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return;
       }
       if (!reload) {
-        localStorage.removeItem("reloading");
-        localStorage.removeItem("curRoomId");
-        localStorage.removeItem("tabs");
+        // localStorage.removeItem("reloading");
+        // localStorage.removeItem("curRoomId");
+        // localStorage.removeItem("tabs");
+        localStorage.clear();
       }
       await db.usernamesCollection(roomId).deleteUser(username);
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
