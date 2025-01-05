@@ -19,6 +19,8 @@ export const useTab = (props: UseActiveTabProps) => {
   );
   const [activeTab, setActiveTab] = React.useState<Tab>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
+  const [doneChangeUser, setDoneChangeUser] = React.useState<boolean>(false);
+  const [editorMount, setEditorMount] = React.useState<boolean>(false);
 
   const activeUserInformation = React.useMemo(
     () => (activeTab == undefined ? undefined : informations[activeTab?.id]),
@@ -55,6 +57,7 @@ export const useTab = (props: UseActiveTabProps) => {
 
   const setActive = React.useCallback(
     (peer: string) => {
+      console.log("Change tab");
       replaceTab(activeTab?.id, { active: false });
       replaceTab(peer, { active: true });
       setChangeUser(true);
@@ -74,6 +77,7 @@ export const useTab = (props: UseActiveTabProps) => {
   const setCode = React.useCallback(
     (changeUser: boolean) => {
       if (activeUserInformation != undefined) {
+        console.log("Changeuser in setcode ", changeUser);
         const {
           code: { value, language },
           changes,
@@ -133,10 +137,15 @@ export const useTab = (props: UseActiveTabProps) => {
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
+      console.log("Changeuser", changeUser, activeUserInformation);
       setCode(changeUser);
       setChangeUser(false);
     }
-  }, [activeTab?.id, activeUserInformation, changeUser, setCode]);
+  }, [activeTab?.id, activeUserInformation, setCode]);
+
+  React.useEffect(() => {
+    setCode(true);
+  }, [editorMount]);
 
   return {
     tabs,
@@ -145,6 +154,6 @@ export const useTab = (props: UseActiveTabProps) => {
     setActive,
     activeUserInformation,
     pasteCode,
-    setChangeUser,
+    setEditorMount,
   };
 };

@@ -74,13 +74,13 @@ const createModel = async (id: string) => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  // console.log("Creating Model");
+  console.log("Creating Model");
   if (
     monaco.editor
       .getEditors()
       .find((editor: any) => editor.id === "CodeBuddy") == undefined
   ) {
-    // console.log("No Editor Found");
+    console.log("No Editor Found");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -90,7 +90,7 @@ const createModel = async (id: string) => {
       }
     );
     buddyEditor.id = "CodeBuddy";
-    // console.log("Creating model is done");
+    console.log("Creating model is done");
   }
 };
 
@@ -100,7 +100,7 @@ const setValueModel = async (
     "code" | "language" | "changes" | "changeUser"
   >
 ) => {
-  // console.log("using setValueModel");
+  console.log("using setValueModel");
   const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
@@ -113,7 +113,7 @@ const setValueModel = async (
     changeUser ||
     Object.keys(changes).length === 0
   ) {
-    // console.log("Setting Value Model");
+    console.log("Setting Value Model");
     await monaco.editor.setModelLanguage(myEditor.getModel(), language);
     myEditor.setValue(code);
     return;
@@ -133,7 +133,7 @@ const setValueModel = async (
   await myEditor.updateOptions({ readOnly: false });
   await myEditor.executeEdits("apply changes", [editOperations]);
   await myEditor.updateOptions({ readOnly: true });
-  // console.log("Applied Changes");
+  console.log("Applied Changes");
 };
 
 const cleanEditor = async () => {
@@ -143,9 +143,9 @@ const cleanEditor = async () => {
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");
   if (editor != undefined) {
-    // await editor.dispose().catch(console.error);
+    await editor.dispose().catch(console.error);
   }
-  // console.log("Cleaned Editor");
+  console.log("Cleaned Editor");
 };
 
 chrome.webNavigation.onCompleted.addListener(function () {
@@ -266,7 +266,7 @@ chrome.runtime.onMessage.addListener(
       }
 
       default:
-        // // console.error(`Unhandled request ${request}`);
+        // console.error(`Unhandled request ${request}`);
         break;
     }
 

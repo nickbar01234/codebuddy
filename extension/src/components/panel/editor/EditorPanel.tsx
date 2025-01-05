@@ -22,7 +22,7 @@ const EditorPanel = () => {
     setActive,
     activeUserInformation,
     pasteCode,
-    setChangeUser,
+    setEditorMount,
   } = useTab({
     informations,
   });
@@ -37,7 +37,8 @@ const EditorPanel = () => {
   useOnMount(() => {
     sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(
       async () => {
-        setChangeUser(true);
+        setEditorMount(true);
+        console.log("Editor mounted");
       }
     );
   });
