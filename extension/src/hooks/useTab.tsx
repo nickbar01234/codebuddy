@@ -94,7 +94,7 @@ export const useTab = (props: UseActiveTabProps) => {
 
   const setActive = React.useCallback(
     (peer: string) => {
-      console.log("Change tab");
+      // console.log("Change tab");
       replaceTab(activeTab?.id, { active: false });
       replaceTab(peer, { active: true });
       setChangeUser(true);
@@ -113,9 +113,9 @@ export const useTab = (props: UseActiveTabProps) => {
 
   const setCode = React.useCallback(
     (changeUser: boolean) => {
-      console.log("Attempting to set code", activeUserInformation);
+      // console.log("Attempting to set code", activeUserInformation);
       if (activeUserInformation != undefined) {
-        console.log("Code", activeUserInformation);
+        // console.log("Code", activeUserInformation);
         const {
           code: { value, language },
           changes,
@@ -178,7 +178,7 @@ export const useTab = (props: UseActiveTabProps) => {
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
-        console.log("Test cases", tests);
+        // console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
     );
@@ -204,7 +204,7 @@ export const useTab = (props: UseActiveTabProps) => {
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
-      console.log("Changeuser", changeUser, activeUserInformation);
+      // console.log("Changeuser", changeUser, activeUserInformation);
       setCode(changeUser);
       setChangeUser(false);
     }

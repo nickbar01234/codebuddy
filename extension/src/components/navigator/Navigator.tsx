@@ -43,16 +43,19 @@ export const RootNavigator = () => {
       </div>
       <div className="h-full w-full relative overflow-hidden ">
         <Menu displayMenu={displayPopup} setDisplayMenu={setDisplayPopup} />
-        {state === State.HOME && localStorage.getItem("curRoomId") && (
-          <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-            <LoadingPanel
-              numberOfUsers={
-                JSON.parse(localStorage.getItem("curRoomId") || "{}")
-                  .numberOfUsers
-              }
-            />
-          </div>
-        )}
+        {state === State.HOME &&
+          (localStorage.getItem("curRoomId") ? (
+            <div className="absolute inset-0 h-full w-full flex justify-center items-center">
+              <LoadingPanel
+                numberOfUsers={
+                  JSON.parse(localStorage.getItem("curRoomId") || "{}")
+                    .numberOfUsers
+                }
+              />
+            </div>
+          ) : (
+            <div className="text-5xl">HOME PANEL</div>
+          ))}
         <EditorPanel />
       </div>
     </div>
