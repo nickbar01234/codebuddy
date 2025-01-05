@@ -1,15 +1,27 @@
-import type { RTCContext } from "@cb/context/RTCProvider";
+import type { PeerInformation, RTCContext } from "@cb/context/RTCProvider";
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
+import useInferTests from "./useInferTests";
 
 interface UseActiveTabProps {
   informations: RTCContext["informations"];
+}
+
+interface Assignment {
+  variable: string;
+  value: string;
+}
+
+interface TestCase {
+  selected: boolean;
+  test: Assignment[];
 }
 
 interface Tab {
   id: string;
   active: boolean;
   viewable: boolean;
+  tests: TestCase[];
 }
 
 export const useTab = (props: UseActiveTabProps) => {
@@ -19,8 +31,8 @@ export const useTab = (props: UseActiveTabProps) => {
   );
   const [activeTab, setActiveTab] = React.useState<Tab>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
-  const [doneChangeUser, setDoneChangeUser] = React.useState<boolean>(false);
   const [editorMount, setEditorMount] = React.useState<boolean>(false);
+  const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
     () => (activeTab == undefined ? undefined : informations[activeTab?.id]),
@@ -35,15 +47,38 @@ export const useTab = (props: UseActiveTabProps) => {
             ? override(tab)
             : { ...tab, ...override };
         };
-        setTabs((prev) => {
-          const newTabs = prev.map((tab) =>
-            tab.id === id ? delegate(tab) : { ...tab }
-          );
-          return newTabs;
-        });
+        setTabs((prev) =>
+          prev.map((tab) => (tab.id === id ? delegate(tab) : { ...tab }))
+        );
       }
     },
     []
+  );
+
+  const groupTestCases = React.useCallback(
+    (information: PeerInformation): TestCase[] => {
+      const groups = (information.tests?.tests ?? []).reduce(
+        (acc, test) => {
+          // TODO(nickbar01234): Nasty implementation, but works
+          const lastGroup = acc[acc.length - 1];
+          if (lastGroup.length < variables.length) {
+            lastGroup.push(test);
+          } else {
+            acc.push([test]);
+          }
+          return acc;
+        },
+        [[]] as Array<string[]>
+      );
+      return groups.map((group) => ({
+        selected: false,
+        test: group.map((assignment, idx) => ({
+          variable: variables[idx],
+          value: assignment,
+        })),
+      }));
+    },
+    [variables]
   );
 
   const findActiveTab = React.useCallback(
@@ -51,9 +86,10 @@ export const useTab = (props: UseActiveTabProps) => {
     [tabs]
   );
 
-  const unblur = React.useCallback(() => {
-    replaceTab(activeTab?.id, { viewable: true });
-  }, [activeTab, replaceTab]);
+  const unblur = React.useCallback(
+    () => replaceTab(activeTab?.id, { viewable: true }),
+    [activeTab, replaceTab]
+  );
 
   const setActive = React.useCallback(
     (peer: string) => {
@@ -64,12 +100,11 @@ export const useTab = (props: UseActiveTabProps) => {
     },
     [activeTab, replaceTab]
   );
-
   const pasteCode = React.useCallback(() => {
     if (activeUserInformation != undefined) {
       sendServiceRequest({
         action: "setValue",
-        value: activeUserInformation.code.code.value,
+        value: activeUserInformation.code?.code.value ?? "",
       });
     }
   }, [activeUserInformation]);
@@ -81,7 +116,13 @@ export const useTab = (props: UseActiveTabProps) => {
         const {
           code: { value, language },
           changes,
-        } = activeUserInformation.code;
+        } = activeUserInformation.code ?? {
+          code: {
+            value: "",
+            language: "",
+          },
+          changes: "",
+        };
         sendServiceRequest({
           action: "setValueOtherEditor",
           code: value,
@@ -94,22 +135,51 @@ export const useTab = (props: UseActiveTabProps) => {
     [activeUserInformation]
   );
 
+  const selectTest = React.useCallback(
+    (idx: number) => {
+      replaceTab(activeTab?.id, (tab) => {
+        const updatedTests = tab.tests.map((test, currIdx) => ({
+          ...test,
+          selected: idx === currIdx,
+        }));
+        if (
+          updatedTests.length > 0 &&
+          updatedTests.find((test) => test.selected) == undefined
+        ) {
+          updatedTests[0].selected = true;
+        }
+        return { ...tab, tests: updatedTests };
+      });
+    },
+    [activeTab, replaceTab]
+  );
+
   React.useEffect(() => {
     const prevTabs: Tab[] = JSON.parse(localStorage.getItem("tabs") || "[]");
     setTabs((prev) =>
-      Object.keys(informations).map(
-        (peer) =>
-          prev.find((tab) => tab.id === peer) ?? {
-            id: peer,
-            active: false,
-            viewable:
-              prevTabs &&
-              prevTabs.some((obj) => obj.id === peer) &&
-              (prevTabs.find((obj) => obj.id === peer)?.viewable ?? false),
-          }
-      )
+      Object.keys(informations).map((peer) => {
+        const peerTab = prev.find((tab) => tab.id === peer) ?? {
+          id: peer,
+          active: false,
+          viewable:
+            prevTabs &&
+            prevTabs.some((obj) => obj.id === peer) &&
+            (prevTabs.find((obj) => obj.id === peer)?.viewable ?? false),
+          tests: [],
+        };
+        const tests = groupTestCases(informations[peer]);
+        if (tests.length > 0) {
+          const lastSelectedTest = peerTab.tests.findIndex(
+            (test) => test.selected
+          );
+          const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
+          tests[selectedTest].selected = true;
+        }
+        console.log("Test cases", tests);
+        return { ...peerTab, tests };
+      })
     );
-  }, [informations]);
+  }, [informations, groupTestCases]);
 
   React.useEffect(() => {
     if (activeTab == undefined && tabs.length > 0) {
@@ -131,9 +201,7 @@ export const useTab = (props: UseActiveTabProps) => {
     };
   }, [tabs]);
 
-  React.useEffect(() => {
-    setActiveTab(findActiveTab());
-  }, [findActiveTab]);
+  React.useEffect(() => setActiveTab(findActiveTab()), [findActiveTab]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
@@ -152,6 +220,7 @@ export const useTab = (props: UseActiveTabProps) => {
     activeTab,
     unblur,
     setActive,
+    selectTest,
     activeUserInformation,
     pasteCode,
     setEditorMount,

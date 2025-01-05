@@ -17,7 +17,12 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { sendServiceRequest } from "@cb/services";
-import { PeerCodeMessage, PeerMessage } from "@cb/types";
+import {
+  Payload,
+  PeerCodeMessage,
+  PeerMessage,
+  PeerTestMessage,
+} from "@cb/types";
 
 const servers = {
   iceServers: [
@@ -61,8 +66,11 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
-interface PeerInformation {
-  code: Omit<PeerCodeMessage, "action">;
+const CODE_MIRROR_CONTENT = ".cm-content";
+
+export interface PeerInformation {
+  code?: Payload<PeerCodeMessage>;
+  tests?: Payload<PeerTestMessage>;
 }
 
 export interface RTCContext {
@@ -134,7 +142,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
     });
   }, [sendMessages]);
 
+  const sendTests = React.useCallback(async () => {
+    const node = document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement;
+    if (node != null) {
+      sendMessages({ action: "tests", tests: node.innerText.split("\n") });
+    }
+  }, [sendMessages]);
+
   const sendCodeRef = React.useRef(sendCode);
+  const sendTestsRef = React.useRef(sendTests);
 
   const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
@@ -148,11 +164,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const onmessage = (username: string) =>
     function (event: MessageEvent) {
-      console.log("Message from " + username);
       const payload: PeerMessage = JSON.parse(event.data ?? {});
-      const { action, ...rest } = payload;
+      console.log("Message from " + username, payload);
+      const { action } = payload;
       switch (action) {
-        case "code":
+        case "code": {
+          const { action: _, ...rest } = payload;
           setInformations((prev) => ({
             ...prev,
             [username]: {
@@ -161,8 +178,23 @@ export const RTCProvider = (props: RTCProviderProps) => {
             },
           }));
           break;
+        }
+
+        case "tests": {
+          const { action: _, ...rest } = payload;
+          setInformations((prev) => ({
+            ...prev,
+            [username]: {
+              ...prev[username],
+              tests: rest,
+            },
+          }));
+          break;
+        }
+
         default:
           console.error("Unknown payload", payload);
+          break;
       }
     };
 
@@ -525,9 +557,25 @@ export const RTCProvider = (props: RTCProviderProps) => {
         subtree: true,
       });
     });
-    return () => {
-      observer.disconnect();
-    };
+    return observer.disconnect;
+  });
+
+  React.useEffect(() => {
+    sendTests();
+    sendTestsRef.current = sendTests;
+  }, [sendTests]);
+
+  useOnMount(() => {
+    // TODO(nickbar01234) - This is probably not rigorous enough
+    const observer = new MutationObserver(() => sendTestsRef.current());
+    waitForElement(CODE_MIRROR_CONTENT, 1000).then((testEditor) => {
+      observer.observe(testEditor, {
+        attributes: true, // Trigger code when user inputs via prettified test case console
+        childList: true,
+        subtree: true,
+      });
+    });
+    return observer.disconnect;
   });
 
   return (
