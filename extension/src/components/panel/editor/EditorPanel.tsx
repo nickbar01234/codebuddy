@@ -124,7 +124,6 @@ const EditorPanel = () => {
                   <span className="ml-2">Paste Code</span>
                 </button>
               </div>
-
               <div
                 id={EDITOR_NODE_ID}
                 className="w-full overflow-hidden h-full"
