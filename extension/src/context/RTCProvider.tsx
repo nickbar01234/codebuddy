@@ -426,6 +426,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const connection = async () => {
+      console.log("Connecting to room", roomId);
       if (roomId == null) return;
 
       const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
@@ -441,6 +442,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const removedPeers = Object.keys(pcs.current).filter(
           (username) => !usernames.includes(username)
         );
+        console.log("Usernames", usernames);
+        console.log("Added peers", addedPeers);
+        console.log("Removed peers", removedPeers);
         addedPeers.forEach(async (peer) => {
           console.log("Added peer");
           if (peer == undefined || peer === username) {
@@ -465,13 +469,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
             return rest;
           });
         });
-        localStorage.setItem(
-          "curRoomId",
-          JSON.stringify({
-            roomId: roomId,
-            numberOfUsers: usernames.length,
-          })
-        );
       });
 
       unsubscribeRef.current = unsubscribe;
@@ -481,6 +478,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       connection();
       return () => {
         if (unsubscribeRef.current != null) {
+          console.log("Unsubscribing");
           unsubscribeRef.current();
         }
       };
@@ -491,6 +489,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sendCode();
     sendCodeRef.current = sendCode;
   }, [sendCode]);
+
+  React.useEffect(() => {
+    if (roomId != null && informations) {
+      localStorage.setItem(
+        "curRoomId",
+        JSON.stringify({
+          roomId: roomId,
+          numberOfUsers: Object.keys(informations).length,
+        })
+      );
+    }
+  }, [roomId, informations]);
 
   useOnMount(() => {
     const observer = new MutationObserver(async () => {

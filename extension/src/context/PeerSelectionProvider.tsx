@@ -114,7 +114,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const setActivePeerId = React.useCallback(
     (peer: string) => {
-      console.log("Change peer");
+      // console.log("Change peer");
       replacePeer(activePeer?.id, { active: false });
       replacePeer(peer, { active: true });
       setChangeUser(true);
@@ -133,9 +133,9 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const setCode = React.useCallback(
     (changeUser: boolean) => {
-      console.log("Attempting to set code", activeUserInformation);
+      // console.log("Attempting to set code", activeUserInformation);
       if (activeUserInformation != undefined) {
-        console.log("Code", activeUserInformation);
+        // console.log("Code", activeUserInformation);
         const {
           code: { value, language },
           changes,
@@ -199,7 +199,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
-        console.log("Test cases", tests);
+        // console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
     );
@@ -225,7 +225,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
-      console.log("Changeuser", changeUser, activeUserInformation);
+      // console.log("Changeuser", changeUser, activeUserInformation);
       setCode(changeUser);
       setChangeUser(false);
     }
