@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React from "react";
 import { SparklesCore } from "@cb/components/ui/Sparkle";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -42,16 +42,18 @@ export const Compare = ({
   autoplay = false,
   autoplayDuration = 5000,
 }: CompareProps) => {
-  const [sliderXPercent, setSliderXPercent] = useState(initialSliderPercentage);
-  const [isDragging, setIsDragging] = useState(false);
+  const [sliderXPercent, setSliderXPercent] = React.useState(
+    initialSliderPercentage
+  );
+  const [isDragging, setIsDragging] = React.useState(false);
 
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const sliderRef = React.useRef<HTMLDivElement>(null);
 
-  const [isMouseOver, setIsMouseOver] = useState(false);
+  const [isMouseOver, setIsMouseOver] = React.useState(false);
 
-  const autoplayRef = useRef<NodeJS.Timeout | null>(null);
+  const autoplayRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const startAutoplay = useCallback(() => {
+  const startAutoplay = React.useCallback(() => {
     if (!autoplay) return;
 
     const startTime = Date.now();
@@ -68,14 +70,14 @@ export const Compare = ({
     animate();
   }, [autoplay, autoplayDuration]);
 
-  const stopAutoplay = useCallback(() => {
+  const stopAutoplay = React.useCallback(() => {
     if (autoplayRef.current) {
       clearTimeout(autoplayRef.current);
       autoplayRef.current = null;
     }
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     startAutoplay();
     return () => stopAutoplay();
   }, [startAutoplay, stopAutoplay]);
@@ -96,8 +98,8 @@ export const Compare = ({
     startAutoplay();
   }
 
-  const handleStart = useCallback(
-    (clientX: number) => {
+  const handleStart = React.useCallback(
+    (_clientX: number) => {
       if (slideMode === "drag") {
         setIsDragging(true);
       }
@@ -105,13 +107,13 @@ export const Compare = ({
     [slideMode]
   );
 
-  const handleEnd = useCallback(() => {
+  const handleEnd = React.useCallback(() => {
     if (slideMode === "drag") {
       setIsDragging(false);
     }
   }, [slideMode]);
 
-  const handleMove = useCallback(
+  const handleMove = React.useCallback(
     (clientX: number) => {
       if (!sliderRef.current) return;
       if (slideMode === "hover" || (slideMode === "drag" && isDragging)) {
@@ -126,17 +128,17 @@ export const Compare = ({
     [slideMode, isDragging]
   );
 
-  const handleMouseDown = useCallback(
+  const handleMouseDown = React.useCallback(
     (e: React.MouseEvent) => handleStart(e.clientX),
     [handleStart]
   );
-  const handleMouseUp = useCallback(() => handleEnd(), [handleEnd]);
-  const handleMouseMove = useCallback(
+  const handleMouseUp = React.useCallback(() => handleEnd(), [handleEnd]);
+  const handleMouseMove = React.useCallback(
     (e: React.MouseEvent) => handleMove(e.clientX),
     [handleMove]
   );
 
-  const handleTouchStart = useCallback(
+  const handleTouchStart = React.useCallback(
     (e: React.TouchEvent) => {
       if (!autoplay) {
         handleStart(e.touches[0].clientX);
@@ -145,13 +147,13 @@ export const Compare = ({
     [handleStart, autoplay]
   );
 
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = React.useCallback(() => {
     if (!autoplay) {
       handleEnd();
     }
   }, [handleEnd, autoplay]);
 
-  const handleTouchMove = useCallback(
+  const handleTouchMove = React.useCallback(
     (e: React.TouchEvent) => {
       if (!autoplay) {
         handleMove(e.touches[0].clientX);

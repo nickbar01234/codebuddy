@@ -1,5 +1,5 @@
 import db from "@cb/db";
-import { useOnMount, useState } from "@cb/hooks";
+import { useOnMount, useAppState } from "@cb/hooks";
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
@@ -71,7 +71,7 @@ export const MAX_CAPACITY = 4;
 export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
-  } = useState();
+  } = useAppState();
 
   const pcs = React.useRef<Record<string, Connection>>({});
   const [roomId, setRoomId] = React.useState<null | string>(null);
