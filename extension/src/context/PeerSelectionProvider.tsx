@@ -1,13 +1,24 @@
-import type { PeerInformation, RTCContext } from "@cb/context/RTCProvider";
+import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
-import useInferTests from "./useInferTests";
-import { useOnMount } from ".";
+import { useOnMount, useRTC } from "../hooks";
+import { PeerInformation } from "./RTCProvider";
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 
-interface UseActiveTabProps {
-  informations: RTCContext["informations"];
+interface PeerSelectionContext {
+  peers: Peer[];
+  activePeer: Peer | undefined;
+  setActivePeerId: (peer: string) => void;
+  unblur: () => void;
+  selectTest: (idx: number) => void;
+  activeUserInformation: PeerInformation | undefined;
+  pasteCode: () => void;
+  setCode: (changeUser: boolean) => void;
 }
+
+export const PeerSelectionContext = React.createContext(
+  {} as PeerSelectionContext
+);
 
 interface Assignment {
   variable: string;
@@ -19,37 +30,46 @@ interface TestCase {
   test: Assignment[];
 }
 
-interface Tab {
+interface Peer {
   id: string;
   active: boolean;
   viewable: boolean;
   tests: TestCase[];
 }
 
-export const useTab = (props: UseActiveTabProps) => {
-  const { informations } = props;
-  const [tabs, setTabs] = React.useState<Tab[]>(
+interface PeerSelectionProviderProps {
+  children: React.ReactNode;
+}
+
+export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
+  children,
+}) => {
+  const { informations } = useRTC();
+  const [peers, setPeers] = React.useState<Peer[]>(
     JSON.parse(localStorage.getItem("tabs") || "[]")
   );
-  const [activeTab, setActiveTab] = React.useState<Tab>();
+  const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
-    () => (activeTab == undefined ? undefined : informations[activeTab?.id]),
-    [informations, activeTab]
+    () => (activePeer == undefined ? undefined : informations[activePeer?.id]),
+    [informations, activePeer]
   );
 
-  const replaceTab = React.useCallback(
-    (id: string | undefined, override: ((tab: Tab) => Tab) | Partial<Tab>) => {
+  const replacePeer = React.useCallback(
+    (
+      id: string | undefined,
+      override: ((peer: Peer) => Peer) | Partial<Peer>
+    ) => {
       if (id != undefined) {
-        const delegate = (tab: Tab) => {
+        const delegate = (peer: Peer) => {
           return typeof override === "function"
-            ? override(tab)
-            : { ...tab, ...override };
+            ? override(peer)
+            : { ...peer, ...override };
         };
-        setTabs((prev) =>
-          prev.map((tab) => (tab.id === id ? delegate(tab) : { ...tab }))
+        setPeers((prev) =>
+          prev.map((peer) => (peer.id === id ? delegate(peer) : peer))
         );
       }
     },
@@ -82,24 +102,24 @@ export const useTab = (props: UseActiveTabProps) => {
     [variables]
   );
 
-  const findActiveTab = React.useCallback(
-    () => tabs.find((tab) => tab.active),
-    [tabs]
+  const findActivePeer = React.useCallback(
+    () => peers.find((peer) => peer.active),
+    [peers]
   );
 
   const unblur = React.useCallback(
-    () => replaceTab(activeTab?.id, { viewable: true }),
-    [activeTab, replaceTab]
+    () => replacePeer(activePeer?.id, { viewable: true }),
+    [activePeer, replacePeer]
   );
 
-  const setActive = React.useCallback(
+  const setActivePeerId = React.useCallback(
     (peer: string) => {
-      console.log("Change tab");
-      replaceTab(activeTab?.id, { active: false });
-      replaceTab(peer, { active: true });
+      console.log("Change peer");
+      replacePeer(activePeer?.id, { active: false });
+      replacePeer(peer, { active: true });
       setChangeUser(true);
     },
-    [activeTab, replaceTab]
+    [activePeer, replacePeer]
   );
 
   const pasteCode = React.useCallback(() => {
@@ -142,8 +162,8 @@ export const useTab = (props: UseActiveTabProps) => {
 
   const selectTest = React.useCallback(
     (idx: number) => {
-      replaceTab(activeTab?.id, (tab) => {
-        const updatedTests = tab.tests.map((test, currIdx) => ({
+      replacePeer(activePeer?.id, (peer) => {
+        const updatedTests = peer.tests.map((test, currIdx) => ({
           ...test,
           selected: idx === currIdx,
         }));
@@ -153,24 +173,25 @@ export const useTab = (props: UseActiveTabProps) => {
         ) {
           updatedTests[0].selected = true;
         }
-        return { ...tab, tests: updatedTests };
+        return { ...peer, tests: updatedTests };
       });
     },
-    [activeTab, replaceTab]
+    [activePeer, replacePeer]
   );
 
   React.useEffect(() => {
-    const prevTabs: Tab[] = JSON.parse(localStorage.getItem("tabs") || "[]");
-    setTabs((prev) =>
-      Object.keys(informations).map((peer) => {
-        const peerTab = prev.find((tab) => tab.id === peer) ?? {
-          id: peer,
+    const prevPeers: Peer[] = JSON.parse(localStorage.getItem("tabs") || "[]");
+    setPeers((prev) =>
+      Object.keys(informations).map((peerInfo) => {
+        const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
+          id: peerInfo,
           active: false,
           viewable:
-            prevTabs.some((tab) => tab.id === peer && tab.viewable) ?? false,
+            prevPeers.some((peer) => peer.id === peerInfo && peer.viewable) ??
+            false,
           tests: [],
         };
-        const tests = groupTestCases(informations[peer]);
+        const tests = groupTestCases(informations[peerInfo]);
         if (tests.length > 0) {
           const lastSelectedTest = peerTab.tests.findIndex(
             (test) => test.selected
@@ -185,22 +206,22 @@ export const useTab = (props: UseActiveTabProps) => {
   }, [informations, groupTestCases]);
 
   React.useEffect(() => {
-    if (activeTab == undefined && tabs.length > 0) {
-      setActive(tabs[0].id);
+    if (activePeer == undefined && peers.length > 0) {
+      setActivePeerId(peers[0].id);
     }
-  }, [tabs, activeTab, setActive]);
+  }, [peers, activePeer, setActivePeerId]);
 
   React.useEffect(() => {
     const handleBeforeUnload = async () => {
-      localStorage.setItem("tabs", JSON.stringify(tabs));
+      localStorage.setItem("tabs", JSON.stringify(peers));
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [tabs]);
+  }, [peers]);
 
-  React.useEffect(() => setActiveTab(findActiveTab()), [findActiveTab]);
+  React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
@@ -208,7 +229,7 @@ export const useTab = (props: UseActiveTabProps) => {
       setCode(changeUser);
       setChangeUser(false);
     }
-  }, [activeTab?.id, activeUserInformation, setCode]);
+  }, [activePeer?.id, activeUserInformation, setCode]);
 
   React.useEffect(() => {
     setCodeRef.current = setCode;
@@ -220,14 +241,20 @@ export const useTab = (props: UseActiveTabProps) => {
     );
   });
 
-  return {
-    tabs,
-    activeTab,
-    unblur,
-    setActive,
-    selectTest,
-    activeUserInformation,
-    pasteCode,
-    setCode,
-  };
+  return (
+    <PeerSelectionContext.Provider
+      value={{
+        peers,
+        activePeer,
+        setActivePeerId,
+        unblur,
+        selectTest,
+        activeUserInformation,
+        pasteCode,
+        setCode,
+      }}
+    >
+      {children}
+    </PeerSelectionContext.Provider>
+  );
 };

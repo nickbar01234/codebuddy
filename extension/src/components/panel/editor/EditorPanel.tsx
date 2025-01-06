@@ -1,11 +1,11 @@
 import React from "react";
-import { useOnMount, useRTC, useTab } from "@cb/hooks/index";
+import { useOnMount, usePeerSelection } from "@cb/hooks/index";
 import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
 import { ResizableBox } from "react-resizable";
 import { ExtensionStorage } from "@cb/types";
 import { CodeBuddyPreference } from "@cb/constants";
 import { Ripple } from "@cb/components/ui/Ripple";
-import { State, stateContext } from "@cb/context/StateProvider";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { capitalize } from "@cb/utils/string";
 import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
 export interface TabMetadata {
@@ -16,26 +16,23 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { informations } = useRTC();
   const {
-    tabs,
-    activeTab,
+    peers,
+    activePeer,
     unblur,
-    setActive,
+    setActivePeerId,
     activeUserInformation,
     pasteCode,
     selectTest,
-  } = useTab({
-    informations,
-  });
-  const { state } = React.useContext(stateContext);
+  } = usePeerSelection();
+  const { state } = React.useContext(appStateContext);
 
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
   >(CodeBuddyPreference.codePreference);
 
-  const canViewCode = activeTab?.viewable ?? false;
-  const activeTest = activeTab?.tests.find((test) => test.selected);
+  const canViewCode = activePeer?.viewable ?? false;
+  const activeTest = activePeer?.tests.find((test) => test.selected);
 
   useOnMount(() => {
     getStorage("codePreference").then(setCodePreference);
@@ -43,8 +40,8 @@ const EditorPanel = () => {
 
   return (
     <>
-      {tabs.length === 0 &&
-        state === State.ROOM &&
+      {peers.length === 0 &&
+        state === AppState.ROOM &&
         JSON.parse(localStorage.getItem("curRoomId") || "{}").numberOfUsers ==
           0 && (
           <div className="flex flex-col items-center justify-center h-full w-full">
@@ -62,10 +59,10 @@ const EditorPanel = () => {
         )}
       <div
         className="flex flex-col h-full justify-between"
-        style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time
+        style={{ visibility: peers.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time
       >
         {/* todo(nickbar01234): Fix styling */}
-        {!canViewCode && tabs.length != 0 && (
+        {!canViewCode && peers.length != 0 && (
           <button
             className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 font-bold py-2 px-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg z-50"
             onClick={unblur}
@@ -137,7 +134,7 @@ const EditorPanel = () => {
             <div className="mx-5 my-4 flex flex-col space-y-4">
               <div className="flex w-full flex-row items-start justify-between gap-4">
                 <div className="flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll hide-scrollbar">
-                  {activeTab?.tests.map((test, idx) => (
+                  {activePeer?.tests.map((test, idx) => (
                     <div key={idx} onClick={() => selectTest(idx)}>
                       {test.selected ? (
                         <button className="font-medium items-center whitespace-nowrap focus:outline-none inline-flex bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 relative rounded-lg px-4 py-1 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1">
@@ -177,7 +174,7 @@ const EditorPanel = () => {
           </div>
         </div>
         <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
-          {tabs.map(({ id, active }) => (
+          {peers.map(({ id, active }) => (
             <React.Fragment key={id}>
               {/* Leetcode className flexlayout__tab_button_* */}
               <div
@@ -186,7 +183,7 @@ const EditorPanel = () => {
                     ? "flexlayout__tab_button-selected medium"
                     : "flexlayout__tab_button--unselected normal"
                 }`}
-                onClick={() => setActive(id)}
+                onClick={() => setActivePeerId(id)}
               >
                 {id}
               </div>

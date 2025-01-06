@@ -8,7 +8,7 @@ import {
   MenuIcon,
   ResetIcon,
 } from "@cb/components/icons";
-import { State, stateContext } from "@cb/context/StateProvider";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { getQuestionIdFromUrl } from "@cb/utils";
 
@@ -27,13 +27,13 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   displayMenu,
   setDisplayMenu,
 }) => {
-  const { state, setState } = React.useContext(stateContext);
+  const { state, setState } = React.useContext(appStateContext);
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const [displayInputRoomId, setDisplayInputRoomId] = React.useState(false);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const items: MenuItem[] = React.useMemo(() => {
-    if (state === State.HOME) {
+    if (state === AppState.HOME) {
       return [
         {
           display: "Reset Extension",
@@ -48,7 +48,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <PlusIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(State.ROOM);
+            setState(AppState.ROOM);
             const questionId = getQuestionIdFromUrl(window.location.href);
             createRoom(questionId);
             setDisplayMenu(false);
@@ -63,7 +63,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           },
         },
       ];
-    } else if (state === State.ROOM) {
+    } else if (state === AppState.ROOM) {
       return [
         {
           display: "Copy room ID",
@@ -79,7 +79,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <LeaveIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(State.HOME);
+            setState(AppState.HOME);
             setDisplayMenu(false);
             if (roomId) leaveRoom(roomId);
           },
@@ -92,17 +92,17 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
 
   React.useEffect(() => {
     if (roomId != null) {
-      setState(State.ROOM);
+      setState(AppState.ROOM);
     } else {
-      setState(State.HOME);
+      setState(AppState.HOME);
     }
   }, [roomId, setState]);
 
   React.useEffect(() => {
     if (roomId != null) {
-      setState(State.ROOM);
+      setState(AppState.ROOM);
     } else {
-      setState(State.HOME);
+      setState(AppState.HOME);
     }
   }, [roomId, setState]);
 
@@ -121,7 +121,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     const questionId = getQuestionIdFromUrl(window.location.href);
     const haveJoined = await joinRoom(inputRoomId, questionId);
     if (haveJoined) {
-      setState(State.ROOM);
+      setState(AppState.ROOM);
     }
     setDisplayInputRoomId(false);
     setDisplayMenu(false);

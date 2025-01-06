@@ -3,18 +3,15 @@ import React from "react";
 import { Toaster } from "sonner";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { stateContext } from "@cb/context/StateProvider";
-import { State } from "@cb/context/StateProvider";
-import { useRTC, useTab } from "@cb/hooks/index";
+import { appStateContext } from "@cb/context/AppStateProvider";
+import { AppState } from "@cb/context/AppStateProvider";
+import { usePeerSelection } from "@cb/hooks/index";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { CaretRightIcon } from "@cb/components/icons";
 
 export const RootNavigator = () => {
-  const { state } = React.useContext(stateContext);
-  const { informations } = useRTC();
-  const { activeTab } = useTab({
-    informations,
-  });
+  const { state } = React.useContext(appStateContext);
+  const { activePeer } = usePeerSelection();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -46,7 +43,7 @@ export const RootNavigator = () => {
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
-          {activeTab?.id && (
+          {activePeer?.id && (
             <React.Fragment>
               <CaretRightIcon />{" "}
               <UserDropdown
@@ -62,7 +59,7 @@ export const RootNavigator = () => {
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
-        {state === State.HOME && localStorage.getItem("curRoomId") && (
+        {state === AppState.HOME && localStorage.getItem("curRoomId") && (
           <div className="absolute inset-0 h-full w-full flex justify-center items-center">
             <LoadingPanel
               numberOfUsers={

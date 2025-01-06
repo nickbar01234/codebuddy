@@ -1,11 +1,11 @@
-import { RefObject, useEffect, useId, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 
 export interface AnimatedBeamProps {
   className?: string;
-  containerRef: RefObject<HTMLElement>; // Container ref
-  fromRef: RefObject<HTMLElement>;
-  toRef: RefObject<HTMLElement>;
+  containerRef: React.RefObject<HTMLElement>; // Container ref
+  fromRef: React.RefObject<HTMLElement>;
+  toRef: React.RefObject<HTMLElement>;
   curvature?: number;
   reverse?: boolean;
   pathColor?: string;
@@ -40,9 +40,12 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
   endXOffset = 0,
   endYOffset = 0,
 }) => {
-  const id = useId();
-  const [pathD, setPathD] = useState("");
-  const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
+  const id = React.useId();
+  const [pathD, setPathD] = React.useState("");
+  const [svgDimensions, setSvgDimensions] = React.useState({
+    width: 0,
+    height: 0,
+  });
 
   // Calculate the gradient coordinates based on the reverse prop
   const gradientCoordinates = reverse
@@ -59,7 +62,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
         y2: ["0%", "0%"],
       };
 
-  useEffect(() => {
+  React.useEffect(() => {
     const updatePath = () => {
       if (containerRef.current && fromRef.current && toRef.current) {
         const containerRect = containerRef.current.getBoundingClientRect();
