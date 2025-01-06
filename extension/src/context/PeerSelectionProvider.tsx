@@ -1,9 +1,8 @@
 import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
-import { useOnMount, useRTC } from "../hooks";
+import { useRTC } from "../hooks";
 import { PeerInformation } from "./RTCProvider";
-import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -199,7 +198,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
-        // console.log("Test cases", tests);
+        console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
     );
@@ -234,12 +233,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => {
     setCodeRef.current = setCode;
   }, [setCode]);
-
-  useOnMount(() => {
-    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(() =>
-      setCodeRef.current(true)
-    );
-  });
 
   return (
     <PeerSelectionContext.Provider

@@ -95,6 +95,7 @@ const createModel = async (id: string) => {
   }
 };
 
+export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const setValueModel = async (
   args: Pick<
     SetOtherEditorRequest,
@@ -105,6 +106,24 @@ const setValueModel = async (
   const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
+  if (
+    monaco.editor
+      .getEditors()
+      .find((editor: any) => editor.id === "CodeBuddy") == undefined
+  ) {
+    console.log("No Editor Found");
+    const buddyEditor = await monaco.editor.create(
+      document.getElementById(EDITOR_NODE_ID),
+      {
+        readOnly: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        minimap: { enabled: false },
+      }
+    );
+    buddyEditor.id = "CodeBuddy";
+    console.log("Creating model is done");
+  }
   const myEditor = await monaco.editor
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");
