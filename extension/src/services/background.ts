@@ -137,6 +137,9 @@ const setValueModel = async (
   await myEditor.executeEdits("apply changes", [editOperations]);
   const myCode = await myEditor.getValue();
   if (myCode !== code) {
+    console.log("Detected Conflict");
+    console.log(code);
+    console.log(myCode);
     await myEditor.setValue(code);
   }
   await myEditor.updateOptions({ readOnly: true });

@@ -12,6 +12,7 @@ import {
   getDocs,
   onSnapshot,
   setDoc,
+  arrayRemove,
   updateDoc,
 } from "firebase/firestore";
 import React from "react";
@@ -169,8 +170,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
-    await setDoc(roomRef, { questionId }, { merge: true });
-    await db.usernamesCollection(roomRef.id).addUser(username);
+    await setDoc(
+      roomRef,
+      { questionId, usernames: arrayUnion(username) },
+      { merge: true }
+    );
+    // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
     localStorage.setItem(
@@ -265,17 +270,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
         return false;
       }
+      const usernames = roomDoc.data().usernames;
+      // const usernamesCollection = await db.usernamesCollection(roomId).doc();
 
-      const usernamesCollection = await db.usernamesCollection(roomId).doc();
-      if (usernamesCollection.size >= MAX_CAPACITY) {
+      if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
         return false;
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-
-      await db.usernamesCollection(roomId).addUser(username);
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayUnion(username),
+      });
+      // await db.usernamesCollection(roomId).addUser(username);
 
       onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
@@ -341,7 +349,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         "curRoomId",
         JSON.stringify({
           roomId: roomId,
-          numberOfUsers: usernamesCollection.size,
+          numberOfUsers: usernames.length,
+          // numberOfUsers: usernamesCollection.size,
         })
       );
       return true;
@@ -361,7 +370,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
         // localStorage.removeItem("tabs");
         localStorage.clear();
       }
-      await db.usernamesCollection(roomId).deleteUser(username);
+
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(username),
+      });
+      // await db.usernamesCollection(roomId).deleteUser(username);
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
       myAnswers.docs.forEach(async (doc) => {
         deleteDoc(doc.ref);
@@ -383,7 +396,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const handleBeforeUnload = async () => {
       if (roomId) {
         console.log("Before Reloading", roomId);
-        await db.usernamesCollection(roomId).deleteUser(username);
+        await updateDoc(db.room(roomId).ref(), {
+          usernames: arrayRemove(username),
+        });
+        // await db.usernamesCollection(roomId).deleteUser(username);
       }
     };
 
@@ -402,24 +418,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const reloadJob = async () => {
         await leaveRoom(prevRoomId, true);
         await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
-        // const usernamesCollection = await db
-        //   .usernamesCollection(prevRoomId)
-        //   .doc();
-        // const afterRefreshInfo = JSON.parse(
-        //   localStorage.getItem("curRoomId") ?? "{}"
-        // );
-        // console.log("Username collection after reloading", usernamesCollection);
-        // console.log("after refresh info", afterRefreshInfo);
-        // const prevRoom = await db.room(prevRoomId).doc();
-        // console.log("number of collections", prevRoom.data());
-        // if (
-        //   afterRefreshInfo == undefined ||
-        //   afterRefreshInfo.roomId !== prevRoomId ||
-        //   afterRefreshInfo.numberOfUsers !== usernamesCollection.size - 1
-        // ) {
-        //   console.log(usernamesCollection);
-        // }
-        // if (!afterRefreshInfo.roomId &&
       };
       reloadJob();
     }
@@ -428,69 +426,54 @@ export const RTCProvider = (props: RTCProviderProps) => {
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
-      const unsubscribe = onSnapshot(
-        db.usernamesCollection(roomId).ref(),
-        (snapshot) => {
-          snapshot.docChanges().forEach(async (change) => {
-            if (change.type === "removed") {
-              const peer = change.doc.id;
-              if (peer == undefined) return;
-              if (pcs.current[peer] == undefined) return;
-              const { [peer]: _, ...rest } = pcs.current;
-              pcs.current = rest;
-              console.log("Removed peer", peer);
-              await deleteDoc(db.connections(roomId, username).doc(peer));
-              setInformations((prev) => {
-                const { [peer]: _, ...rest } = prev;
-                return rest;
-              });
-              setConnected((prev) => {
-                const { [peer]: _, ...rest } = prev;
-                return rest;
-              });
-              localStorage.setItem(
-                "curRoomId",
-                JSON.stringify({
-                  roomId: roomId,
-                  numberOfUsers:
-                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
-                      .numberOfUsers - 1,
-                })
-              );
-              return;
-            }
-            if (change.type === "added") {
-              console.log("Added peer");
-              const peer = change.doc.id;
-              const usernamesSnapshot = await db
-                .usernamesCollection(roomId)
-                .doc();
-              const myTimeStamp = usernamesSnapshot.docs
-                .find((doc) => doc.id === username)
-                ?.data().createdAt;
-              // console.log(myTimeStamp);
-              if (peer == undefined || peer === username) {
-                return;
-              }
-              if (myTimeStamp.seconds >= change.doc.data().createdAt.seconds) {
-                return;
-              }
 
-              console.log("Create Offer to", change.doc.id);
-              await createOffer(roomId, peer);
-              localStorage.setItem(
-                "curRoomId",
-                JSON.stringify({
-                  roomId: roomId,
-                  numberOfUsers:
-                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
-                      .numberOfUsers + 1,
-                })
-              );
-            }
+      const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
+        const data = snapshot.data();
+        if (data == undefined) return;
+        const usernames = data.usernames.slice(
+          data.usernames.indexOf(username) + 1
+        );
+        const numberOfUsers = JSON.parse(
+          localStorage.getItem("curRoomId") ?? "{}"
+        ).numberOfUsers;
+        const addedPeers = usernames.filter(
+          (username) => !pcs.current[username]
+        );
+        const removedPeers = Object.keys(pcs.current).filter(
+          (username) => !usernames.includes(username)
+        );
+        addedPeers.forEach(async (peer) => {
+          console.log("Added peer");
+          if (peer == undefined || peer === username) {
+            return;
+          }
+          console.log("Create Offer to", peer);
+          await createOffer(roomId, peer);
+        });
+        removedPeers.forEach(async (peer) => {
+          if (peer == undefined) return;
+          if (pcs.current[peer] == undefined) return;
+          const { [peer]: _, ...rest } = pcs.current;
+          pcs.current = rest;
+          console.log("Removed peer", peer);
+          await deleteDoc(db.connections(roomId, username).doc(peer));
+          setInformations((prev) => {
+            const { [peer]: _, ...rest } = prev;
+            return rest;
           });
-        }
-      );
+          setConnected((prev) => {
+            const { [peer]: _, ...rest } = prev;
+            return rest;
+          });
+        });
+        localStorage.setItem(
+          "curRoomId",
+          JSON.stringify({
+            roomId: roomId,
+            numberOfUsers: usernames.length,
+          })
+        );
+      });
 
       unsubscribeRef.current = unsubscribe;
     };
