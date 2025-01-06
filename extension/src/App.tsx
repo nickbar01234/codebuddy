@@ -6,6 +6,7 @@ import { AppStateProvider } from "@cb/context/AppStateProvider";
 import { useOnMount } from "@cb/hooks";
 import { sendServiceRequest } from "@cb/services";
 import { Status } from "@cb/types";
+import { PeerSelectionProvider } from "./context/PeerSelectionProvider";
 
 const App = () => {
   const [status, setStatus] = React.useState<Status>({
@@ -21,7 +22,9 @@ const App = () => {
       <AppPanel>
         <AppStateProvider user={status.user}>
           <RTCProvider>
-            <RootNavigator />
+            <PeerSelectionProvider>
+              <RootNavigator />
+            </PeerSelectionProvider>
           </RTCProvider>
         </AppStateProvider>
       </AppPanel>

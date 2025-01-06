@@ -1,5 +1,5 @@
 import { CaretDownIcon } from "@cb/components/icons";
-import { useRTC, useTab } from "@cb/hooks/index";
+import { usePeerSelection } from "@cb/hooks/index";
 import React from "react";
 
 interface UserDropdownProps {
@@ -7,13 +7,10 @@ interface UserDropdownProps {
   toggle: (e: React.MouseEvent<Element, MouseEvent>) => void;
 }
 const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
-  const { informations } = useRTC();
-  const { activeTab, tabs, setActive } = useTab({
-    informations,
-  });
+  const { activePeer, peers, setActivePeerId } = usePeerSelection();
 
   return (
-    activeTab && (
+    activePeer && (
       <div className="relative">
         <button
           data-dropdown-toggle="dropdown"
@@ -21,7 +18,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           type="button"
           onClick={toggle}
         >
-          {activeTab.id} <CaretDownIcon />
+          {activePeer.id} <CaretDownIcon />
         </button>
         <div
           className={`absolute z-10 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 ${
@@ -29,13 +26,13 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           }`}
         >
           <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
-            {tabs.map((tab) => (
-              <li key={tab.id}>
+            {peers.map((peer) => (
+              <li key={peer.id}>
                 <a
-                  onClick={() => setActive(tab.id)}
+                  onClick={() => setActivePeerId(peer.id)}
                   className="block px-4 py-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
                 >
-                  {tab.id}
+                  {peer.id}
                 </a>
               </li>
             ))}

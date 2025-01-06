@@ -5,16 +5,13 @@ import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { appStateContext } from "@cb/context/AppStateProvider";
 import { AppState } from "@cb/context/AppStateProvider";
-import { useRTC, useTab } from "@cb/hooks/index";
+import { usePeerSelection } from "@cb/hooks/index";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { CaretRightIcon } from "@cb/components/icons";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
-  const { informations } = useRTC();
-  const { activeTab } = useTab({
-    informations,
-  });
+  const { activePeer } = usePeerSelection();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -48,7 +45,7 @@ export const RootNavigator = () => {
       >
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
-          {activeTab?.id && (
+          {activePeer?.id && (
             <React.Fragment>
               <CaretRightIcon />{" "}
               <UserDropdown
