@@ -190,6 +190,7 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+
       case "getValue": {
         chrome.scripting
           .executeScript({

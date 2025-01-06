@@ -246,6 +246,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const joinRoom = React.useCallback(
     async (roomId: string, questionId: string): Promise<boolean> => {
+      console.log("Joining room", roomId);
       if (!roomId) {
         toast.error("Please enter room ID");
         return false;
@@ -327,6 +328,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           });
         });
       });
+
       if (
         JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
         roomId.toString()
@@ -349,6 +351,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const leaveRoom = React.useCallback(
     async (roomId: string, reload = false) => {
+      console.log("Leaving room", roomId);
       if (roomId == null) {
         return;
       }
@@ -380,7 +383,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const handleBeforeUnload = async () => {
       if (roomId) {
         console.log("Before Reloading", roomId);
-        localStorage.setItem("reloading", roomId);
         await db.usernamesCollection(roomId).deleteUser(username);
       }
     };
@@ -393,44 +395,35 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username]);
 
   React.useEffect(() => {
-    const reloading = localStorage.getItem("reloading");
-    if (reloading) {
-      console.log("Reloading", reloading);
-      localStorage.removeItem("reloading");
+    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+    if (refreshInfo && refreshInfo.roomId) {
+      console.log("Reloading", refreshInfo);
+      const prevRoomId = refreshInfo.roomId;
       const reloadJob = async () => {
-        await leaveRoom(reloading, true);
-        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+        await leaveRoom(prevRoomId, true);
+        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+        // const usernamesCollection = await db
+        //   .usernamesCollection(prevRoomId)
+        //   .doc();
+        // const afterRefreshInfo = JSON.parse(
+        //   localStorage.getItem("curRoomId") ?? "{}"
+        // );
+        // console.log("Username collection after reloading", usernamesCollection);
+        // console.log("after refresh info", afterRefreshInfo);
+        // const prevRoom = await db.room(prevRoomId).doc();
+        // console.log("number of collections", prevRoom.data());
+        // if (
+        //   afterRefreshInfo == undefined ||
+        //   afterRefreshInfo.roomId !== prevRoomId ||
+        //   afterRefreshInfo.numberOfUsers !== usernamesCollection.size - 1
+        // ) {
+        //   console.log(usernamesCollection);
+        // }
+        // if (!afterRefreshInfo.roomId &&
       };
       reloadJob();
     }
   }, [joinRoom, leaveRoom]);
-  React.useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (roomId) {
-        console.log("Before Reloading", roomId);
-        localStorage.setItem("reloading", roomId);
-        await db.usernamesCollection(roomId).deleteUser(username);
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [roomId, username]);
-
-  React.useEffect(() => {
-    const reloading = localStorage.getItem("reloading");
-    if (reloading) {
-      console.log("Reloading", reloading);
-      localStorage.removeItem("reloading");
-      const reloadJob = async () => {
-        await leaveRoom(reloading, true);
-        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-    }
-  }, []);
 
   React.useEffect(() => {
     const connection = async () => {

@@ -43,23 +43,23 @@ const EditorPanel = () => {
 
   return (
     <>
-      {tabs.length === 0 &&
-        state === State.ROOM &&
-        JSON.parse(localStorage.getItem("curRoomId") || "{}").numberOfUsers ==
-          0 && (
-          <div className="flex flex-col items-center justify-center h-full w-full">
-            <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
-              <div
-                className={
-                  "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
-                }
-              >
-                <UserIcon />
+      {tabs.length === 0 ||
+        (state === State.ROOM &&
+          JSON.parse(localStorage.getItem("curRoomId") || "{}").numberOfUsers ==
+            0 && (
+            <div className="flex flex-col items-center justify-center h-full w-full">
+              <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
+                <div
+                  className={
+                    "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
+                  }
+                >
+                  <UserIcon />
+                </div>
+                <Ripple />
               </div>
-              <Ripple />
             </div>
-          </div>
-        )}
+          ))}
       <div
         className="flex flex-col h-full justify-between"
         style={{ visibility: tabs.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time

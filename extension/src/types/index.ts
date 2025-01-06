@@ -56,8 +56,15 @@ interface CleanEditorRequest {
   action: "cleanEditor";
 }
 
+interface ReloadRequest {
+  action: "reload";
+  roomId: string;
+  username: string;
+}
+
 export type ServiceRequest =
   | CookieRequest
+  | ReloadRequest
   | GetValueRequest
   | SetValueRequest
   | CreateMonacoModelRequest
@@ -76,6 +83,7 @@ export type ServiceResponse = {
   setValueOtherEditor: void;
   updateEditorLayout: void;
   cleanEditor: void;
+  reload: void;
 };
 
 interface AppPreference {
