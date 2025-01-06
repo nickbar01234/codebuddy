@@ -5,6 +5,7 @@ import {
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
+import { Toaster } from "sonner";
 import {
   Unsubscribe,
   arrayUnion,
@@ -185,6 +186,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         numberOfUsers: 0,
       })
     );
+    navigator.clipboard.writeText(roomRef.id);
+    toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
 
   const createOffer = React.useCallback(
