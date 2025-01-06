@@ -43,9 +43,7 @@ export const RootNavigator = () => {
           duration: 10 * 1000,
         }}
       />
-      <div
-        className={`flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2`}
-      >
+      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
           {activeTab?.id && (
