@@ -365,9 +365,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return;
       }
       if (!reload) {
-        // localStorage.removeItem("reloading");
-        // localStorage.removeItem("curRoomId");
-        // localStorage.removeItem("tabs");
+        console.log("Cleaning up local storage");
+        localStorage.removeItem("reloading");
+        localStorage.removeItem("curRoomId");
+        localStorage.removeItem("tabs");
         localStorage.clear();
       }
 
