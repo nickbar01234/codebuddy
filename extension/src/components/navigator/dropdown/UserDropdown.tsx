@@ -13,7 +13,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
 
   return (
     activeTab && (
-      <div className="relative">
+      <div>
         <button
           data-dropdown-toggle="dropdown"
           className="font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary"
@@ -38,7 +38,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           </svg>
         </button>
         <div
-          className={`absolute z-10 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 ${
+          className={`absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 left-0 ${
             isOpen ? "block" : "hidden"
           }`}
         >

@@ -136,7 +136,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div>
       <button
         className="hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
         id="headlessui-menu-button-:r3q:"
