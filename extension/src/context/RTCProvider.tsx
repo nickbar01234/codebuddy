@@ -369,9 +369,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       if (!reload) {
         console.log("Cleaning up local storage");
-        localStorage.removeItem("reloading");
         localStorage.removeItem("curRoomId");
-        localStorage.removeItem("tabs");
+        // localStorage.removeItem("tabs");
         localStorage.clear();
         sendServiceRequest({
           action: "cleanEditor",
