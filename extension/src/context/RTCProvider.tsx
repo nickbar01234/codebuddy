@@ -439,6 +439,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const removedPeers = Object.keys(pcs.current).filter(
           (username) => !usernames.includes(username)
         );
+        console.log("Added peers", addedPeers);
+        console.log("Removed peers", removedPeers);
         addedPeers.forEach(async (peer) => {
           console.log("Added peer");
           if (peer == undefined || peer === username) {
@@ -463,13 +465,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
             return rest;
           });
         });
-        localStorage.setItem(
-          "curRoomId",
-          JSON.stringify({
-            roomId: roomId,
-            numberOfUsers: usernames.length,
-          })
-        );
       });
 
       unsubscribeRef.current = unsubscribe;
@@ -477,6 +472,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     if (roomId != null) {
       connection();
+      console.log("unsubscribed");
       return () => {
         if (unsubscribeRef.current != null) {
           unsubscribeRef.current();
@@ -489,6 +485,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sendCode();
     sendCodeRef.current = sendCode;
   }, [sendCode]);
+
+  React.useEffect(() => {
+    if (roomId != null && informations) {
+      localStorage.setItem(
+        "curRoomId",
+        JSON.stringify({
+          roomId: roomId,
+          numberOfUsers: Object.keys(informations).length,
+        })
+      );
+    }
+  }, [roomId, informations]);
 
   useOnMount(() => {
     const observer = new MutationObserver(async () => {
