@@ -95,15 +95,14 @@ const createModel = async (id: string) => {
   }
 };
 
-export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const setValueModel = async (
   args: Pick<
     SetOtherEditorRequest,
-    "code" | "language" | "changes" | "changeUser"
+    "code" | "language" | "changes" | "changeUser" | "editorId"
   >
 ) => {
   console.log("using setValueModel");
-  const { code, language, changes, changeUser } = args;
+  const { code, language, changes, changeUser, editorId } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   if (
@@ -112,17 +111,21 @@ const setValueModel = async (
       .find((editor: any) => editor.id === "CodeBuddy") == undefined
   ) {
     console.log("No Editor Found");
-    const buddyEditor = await monaco.editor.create(
-      document.getElementById(EDITOR_NODE_ID),
-      {
-        readOnly: true,
-        scrollBeyondLastLine: false,
-        automaticLayout: true,
-        minimap: { enabled: false },
-      }
-    );
-    buddyEditor.id = "CodeBuddy";
-    console.log("Creating model is done");
+    try {
+      const buddyEditor = await monaco.editor.create(
+        document.getElementById(editorId),
+        {
+          readOnly: true,
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          minimap: { enabled: false },
+        }
+      );
+      buddyEditor.id = "CodeBuddy";
+      console.log("Creating model is done");
+    } catch (error) {
+      console.error(error);
+    }
   }
   const myEditor = await monaco.editor
     .getEditors()
@@ -265,6 +268,7 @@ chrome.runtime.onMessage.addListener(
                 language: request.language,
                 changes: request.changes,
                 changeUser: request.changeUser,
+                editorId: request.editorId,
               },
             ],
             world: "MAIN",

@@ -370,6 +370,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         localStorage.removeItem("curRoomId");
         localStorage.removeItem("tabs");
         localStorage.clear();
+        sendServiceRequest({
+          action: "cleanEditor",
+        });
       }
 
       await updateDoc(db.room(roomId).ref(), {
@@ -384,11 +387,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setInformations({});
       setConnected({});
       pcs.current = {};
-      if (!reload) {
-        sendServiceRequest({
-          action: "cleanEditor",
-        });
-      }
     },
     [username]
   );
