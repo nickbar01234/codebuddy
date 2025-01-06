@@ -434,9 +434,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const usernames = data.usernames.slice(
           data.usernames.indexOf(username) + 1
         );
-        const numberOfUsers = JSON.parse(
-          localStorage.getItem("curRoomId") ?? "{}"
-        ).numberOfUsers;
+
         const addedPeers = usernames.filter(
           (username) => !pcs.current[username]
         );

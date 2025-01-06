@@ -85,7 +85,6 @@ const createModel = async (id: string) => {
       document.getElementById(id),
       {
         readOnly: true,
-        domReadOnly: true,
         scrollBeyondLastLine: false,
         automaticLayout: true,
         minimap: { enabled: false },

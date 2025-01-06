@@ -1,31 +1,15 @@
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
-import React from "react";
-import { Toaster } from "sonner";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { stateContext } from "@cb/context/StateProvider";
-import { State } from "@cb/context/StateProvider";
-import { useRTC, useTab } from "@cb/hooks/index";
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import { CaretRightIcon } from "@cb/components/icons";
+import { State, stateContext } from "@cb/context/StateProvider";
+import React from "react";
+import { Toaster } from "sonner";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(stateContext);
-  const { informations } = useRTC();
-  const { activeTab } = useTab({
-    informations,
-  });
-
-  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
-  const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
-    e.stopPropagation();
-    setUserDropdownOpen(!isUserDropdownOpen);
-  };
-
   const [displayMenu, setDisplayMenu] = React.useState(false);
 
   const onPanelClick = () => {
-    setUserDropdownOpen(false);
     setDisplayMenu(false);
   };
 
@@ -48,15 +32,6 @@ export const RootNavigator = () => {
       >
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
-          {activeTab?.id && (
-            <React.Fragment>
-              <CaretRightIcon />{" "}
-              <UserDropdown
-                isOpen={isUserDropdownOpen}
-                toggle={toggleUserDropdown}
-              />
-            </React.Fragment>
-          )}
         </div>
         <RoomControlMenu
           displayMenu={displayMenu}
