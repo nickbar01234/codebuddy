@@ -1,11 +1,10 @@
+import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
+import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 import { PeerInformation } from "./RTCProvider";
-import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
-import { set } from "mongoose";
-import { waitForElement } from "@cb/utils";
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -47,9 +46,13 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
   const { informations, roomId } = useRTC();
-  const [peers, setPeers] = React.useState<Peer[]>([]);
+  const [peers, setPeers] = React.useState<Peer[]>(
+    JSON.parse(localStorage.getItem("tabs") || JSON.stringify({ peers: [] }))
+      .peers
+  );
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(true);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -109,17 +112,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const unblur = React.useCallback(() => {
     replacePeer(activePeer?.id, { viewable: true });
-    localStorage.setItem(
-      "tabs",
-      JSON.stringify({
-        roomId,
-        peers: peers.map((peer) => ({
-          id: peer.id,
-          viewable: peer.viewable || peer.id === activePeer?.id,
-        })),
-      })
-    );
-  }, [activePeer, replacePeer, roomId, peers]);
+  }, [activePeer, replacePeer]);
 
   const setActivePeerId = React.useCallback(
     (peer: string) => {
@@ -190,10 +183,23 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
 
   React.useEffect(() => {
+    if (!loading) {
+      console.log("Setting tabs", roomId, peers);
+      localStorage.setItem(
+        "tabs",
+        JSON.stringify({
+          roomId,
+          peers: peers,
+        })
+      );
+    }
+  }, [peers, loading, roomId]);
+
+  React.useEffect(() => {
     const prevInfo: {
       roomId: string;
       peers: Peer[];
-    } = JSON.parse(localStorage.getItem("tabs") || "[]");
+    } = JSON.parse(localStorage.getItem("tabs") || "{}");
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
         const prevPeersTab = prevInfo.peers;
@@ -217,6 +223,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
+        setLoading(false);
         // console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
@@ -237,6 +244,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       setCode(changeUser);
       setChangeUser(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePeer?.id, activeUserInformation, setCode]); // not including changeUser
 
   React.useEffect(() => {

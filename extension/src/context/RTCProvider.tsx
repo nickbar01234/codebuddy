@@ -194,6 +194,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createOffer = React.useCallback(
     async (roomId: string, peer: string) => {
+      console.log("Create Offer to", peer);
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
@@ -434,9 +435,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
 
-        console.log("usernames", usernames);
-        console.log("Added peers", addedPeers);
-        console.log("Removed peers", removedPeers);
         removedPeers.forEach(async (peer) => {
           if (peer == undefined) return;
           if (pcs.current[peer] == undefined) return;
@@ -453,13 +451,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
             return rest;
           });
         });
-        addedPeers.forEach(async (peer) => {
-          console.log("Added peer");
-          if (peer == undefined || peer === username) {
-            return;
-          }
-          console.log("Create Offer to", peer);
-          await createOffer(roomId, peer);
+        addedPeers.forEach((peer) => {
+          createOffer(roomId, peer);
         });
       });
 
