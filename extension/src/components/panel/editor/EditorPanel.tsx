@@ -26,6 +26,7 @@ const EditorPanel = () => {
     selectTest,
   } = usePeerSelection();
   const { state } = React.useContext(appStateContext);
+  const [loadingOrAlone, setLoadingOrAlone] = React.useState<boolean>(false);
 
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
@@ -35,12 +36,18 @@ const EditorPanel = () => {
   const activeTest = activePeer?.tests.find((test) => test.selected);
 
   useOnMount(() => {
+    const determineLoading = setTimeout(() => {
+      if (peers.length === 0) {
+        setLoadingOrAlone(true);
+      }
+    }, 200);
     getStorage("codePreference").then(setCodePreference);
+    return () => clearTimeout(determineLoading);
   });
 
   return (
     <>
-      {peers.length === 0 && state === AppState.ROOM && (
+      {!loadingOrAlone && state === AppState.ROOM && (
         <div className="flex flex-col items-center justify-center h-full w-full">
           <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
             <div
