@@ -431,26 +431,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
         const data = snapshot.data();
         if (data == undefined) return;
-        const usernames = data.usernames.slice(
-          data.usernames.indexOf(username) + 1
-        );
-
-        const addedPeers = usernames.filter(
-          (username) => !pcs.current[username]
-        );
+        const usernames = data.usernames;
+        if (!usernames.includes(username)) return;
         const removedPeers = Object.keys(pcs.current).filter(
           (username) => !usernames.includes(username)
         );
+        const addedPeers = usernames
+          .slice(data.usernames.indexOf(username) + 1)
+          .filter((username) => !pcs.current[username]);
+
+        console.log("usernames", usernames);
         console.log("Added peers", addedPeers);
         console.log("Removed peers", removedPeers);
-        addedPeers.forEach(async (peer) => {
-          console.log("Added peer");
-          if (peer == undefined || peer === username) {
-            return;
-          }
-          console.log("Create Offer to", peer);
-          await createOffer(roomId, peer);
-        });
         removedPeers.forEach(async (peer) => {
           if (peer == undefined) return;
           if (pcs.current[peer] == undefined) return;
@@ -466,6 +458,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
             const { [peer]: _, ...rest } = prev;
             return rest;
           });
+        });
+        addedPeers.forEach(async (peer) => {
+          console.log("Added peer");
+          if (peer == undefined || peer === username) {
+            return;
+          }
+          console.log("Create Offer to", peer);
+          await createOffer(roomId, peer);
         });
       });
 
