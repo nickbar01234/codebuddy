@@ -1,13 +1,13 @@
-import React from "react";
-import { useOnMount, usePeerSelection } from "@cb/hooks/index";
-import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
-import { ResizableBox } from "react-resizable";
-import { ExtensionStorage } from "@cb/types";
-import { CodeBuddyPreference } from "@cb/constants";
-import { Ripple } from "@cb/components/ui/Ripple";
-import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { capitalize } from "@cb/utils/string";
 import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
+import { Ripple } from "@cb/components/ui/Ripple";
+import { CodeBuddyPreference } from "@cb/constants";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { usePeerSelection } from "@cb/hooks/index";
+import { sendServiceRequest, setStorage } from "@cb/services";
+import { ExtensionStorage } from "@cb/types";
+import { capitalize } from "@cb/utils/string";
+import React from "react";
+import { ResizableBox } from "react-resizable";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -27,7 +27,6 @@ const EditorPanel = () => {
     loading,
   } = usePeerSelection();
   const { state } = React.useContext(appStateContext);
-  const [loadingOrAlone, setLoadingOrAlone] = React.useState<boolean>(false);
 
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
@@ -35,16 +34,6 @@ const EditorPanel = () => {
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
-
-  useOnMount(() => {
-    const determineLoading = setTimeout(() => {
-      if (peers.length === 0) {
-        setLoadingOrAlone(true);
-      }
-    }, 200);
-    getStorage("codePreference").then(setCodePreference);
-    return () => clearTimeout(determineLoading);
-  });
 
   return (
     <>
