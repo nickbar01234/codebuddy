@@ -15,6 +15,7 @@ interface PeerSelectionContext {
   activeUserInformation: PeerInformation | undefined;
   pasteCode: () => void;
   setCode: (changeUser: boolean) => void;
+  loading: boolean;
 }
 
 export const PeerSelectionContext = React.createContext(
@@ -278,6 +279,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         selectTest,
         activeUserInformation,
         pasteCode,
+        loading,
         setCode,
       }}
     >
