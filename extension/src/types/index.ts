@@ -107,7 +107,14 @@ export interface PeerTestMessage {
 export interface HeartBeatMessage {
   action: "heartbeat";
   username: string;
-  roomId: string;
+  ack: boolean;
+}
+
+export interface PeerState {
+  lastSeen: number;
+  latency: number;
+  deviation: number;
+  connected: boolean;
 }
 
 export type Payload<T> = Omit<T, "action">;
