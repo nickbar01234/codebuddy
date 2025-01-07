@@ -117,7 +117,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       );
       return cur;
     });
-  }, [activePeer, replacePeer]);
+  }, [activePeer, replacePeer, roomId]);
 
   const setActivePeerId = React.useCallback(
     (peer: string) => {
@@ -219,7 +219,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         return { ...peerTab, tests };
       })
     );
-  }, [informations, groupTestCases]);
+  }, [informations, groupTestCases, roomId]);
 
   React.useEffect(() => {
     if (activePeer == undefined && peers.length > 0) {

@@ -8,6 +8,7 @@ import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
+import { set } from "mongoose";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -22,6 +23,7 @@ export const RootNavigator = () => {
   const [displayMenu, setDisplayMenu] = React.useState(false);
 
   const onPanelClick = () => {
+    setUserDropdownOpen(false);
     setDisplayMenu(false);
   };
 
