@@ -1,23 +1,5 @@
 import db from "@cb/db";
-import { useOnMount, useAppState } from "@cb/hooks";
-import {
-  constructUrlFromQuestionId,
-  getQuestionIdFromUrl,
-  waitForElement,
-} from "@cb/utils";
-import { Toaster } from "sonner";
-import {
-  Unsubscribe,
-  arrayUnion,
-  deleteDoc,
-  getDocs,
-  onSnapshot,
-  setDoc,
-  arrayRemove,
-  updateDoc,
-} from "firebase/firestore";
-import React from "react";
-import { toast } from "sonner";
+import { useAppState, useOnMount } from "@cb/hooks";
 import { sendServiceRequest } from "@cb/services";
 import {
   Payload,
@@ -25,6 +7,23 @@ import {
   PeerMessage,
   PeerTestMessage,
 } from "@cb/types";
+import {
+  constructUrlFromQuestionId,
+  getQuestionIdFromUrl,
+  waitForElement,
+} from "@cb/utils";
+import {
+  Unsubscribe,
+  arrayRemove,
+  arrayUnion,
+  deleteDoc,
+  getDocs,
+  onSnapshot,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import React from "react";
+import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
 
 const servers = {
@@ -381,6 +380,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: arrayRemove(username),
       });
       // await db.usernamesCollection(roomId).deleteUser(username);
+
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
       myAnswers.docs.forEach(async (doc) => {
         deleteDoc(doc.ref);
@@ -403,7 +403,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         // await db.usernamesCollection(roomId).deleteUser(username);
       }
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
