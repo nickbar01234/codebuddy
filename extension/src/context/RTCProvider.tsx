@@ -316,6 +316,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createOffer = React.useCallback(
     async (roomId: string, peer: string) => {
+      console.log("Create Offer to", peer);
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
