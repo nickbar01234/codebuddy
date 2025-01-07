@@ -24,6 +24,7 @@ const EditorPanel = () => {
     activeUserInformation,
     pasteCode,
     selectTest,
+    loading,
   } = usePeerSelection();
   const { state } = React.useContext(appStateContext);
   const [loadingOrAlone, setLoadingOrAlone] = React.useState<boolean>(false);
@@ -47,7 +48,7 @@ const EditorPanel = () => {
 
   return (
     <>
-      {!loadingOrAlone && state === AppState.ROOM && (
+      {!loading && peers.length == 0 && state === AppState.ROOM && (
         <div className="flex flex-col items-center justify-center h-full w-full">
           <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
             <div
