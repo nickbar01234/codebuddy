@@ -83,7 +83,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const sendMessage = React.useCallback(
     (username: string) => (payload: PeerMessage) => {
-      if (pcs.current[username].channel !== undefined) {
+      if (
+        pcs.current[username].channel !== undefined &&
+        pcs.current[username].channel.readyState === "open"
+      ) {
         console.log("Sending message to " + username);
         pcs.current[username].channel.send(JSON.stringify(payload));
       } else {
@@ -347,14 +350,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
-      localStorage.setItem(
-        "curRoomId",
-        JSON.stringify({
-          roomId: roomId,
-          numberOfUsers: usernames.length,
-          // numberOfUsers: usernamesCollection.size,
-        })
-      );
       return true;
     },
     [username]
@@ -368,8 +363,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       if (!reload) {
         console.log("Cleaning up local storage");
-        localStorage.removeItem("curRoomId");
-        // localStorage.removeItem("tabs");
         localStorage.clear();
         sendServiceRequest({
           action: "cleanEditor",
@@ -426,7 +419,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
-
+      if (unsubscribeRef.current != null) {
+        unsubscribeRef.current();
+      }
       const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
         const data = snapshot.data();
         if (data == undefined) return;
