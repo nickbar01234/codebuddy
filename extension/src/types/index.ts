@@ -107,6 +107,7 @@ export interface PeerTestMessage {
 export interface HeartBeatMessage {
   action: "heartbeat";
   username: string;
+  roomId: string;
   ack: boolean;
 }
 
