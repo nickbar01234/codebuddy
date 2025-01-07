@@ -102,31 +102,9 @@ const setValueModel = async (
   >
 ) => {
   console.log("using setValueModel");
-  const { code, language, changes, changeUser, editorId } = args;
+  const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  if (
-    monaco.editor
-      .getEditors()
-      .find((editor: any) => editor.id === "CodeBuddy") == undefined
-  ) {
-    console.log("No Editor Found");
-    try {
-      const buddyEditor = await monaco.editor.create(
-        document.getElementById(editorId),
-        {
-          readOnly: true,
-          scrollBeyondLastLine: false,
-          automaticLayout: true,
-          minimap: { enabled: false },
-        }
-      );
-      buddyEditor.id = "CodeBuddy";
-      console.log("Creating model is done");
-    } catch (error) {
-      console.error(error);
-    }
-  }
   const myEditor = await monaco.editor
     .getEditors()
     .find((e: any) => e.id === "CodeBuddy");

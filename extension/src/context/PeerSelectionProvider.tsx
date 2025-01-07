@@ -1,9 +1,11 @@
 import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
 import React from "react";
-import { useRTC } from "../hooks";
+import { useOnMount, useRTC } from "../hooks";
 import { PeerInformation } from "./RTCProvider";
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
+import { set } from "mongoose";
+import { waitForElement } from "@cb/utils";
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -107,17 +109,17 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const unblur = React.useCallback(() => {
     replacePeer(activePeer?.id, { viewable: true });
-    setPeers((cur) => {
-      localStorage.setItem(
-        "tabs",
-        JSON.stringify({
-          roomId: roomId,
-          peers: cur,
-        })
-      );
-      return cur;
-    });
-  }, [activePeer, replacePeer]);
+    localStorage.setItem(
+      "tabs",
+      JSON.stringify({
+        roomId,
+        peers: peers.map((peer) => ({
+          id: peer.id,
+          viewable: peer.viewable || peer.id === activePeer?.id,
+        })),
+      })
+    );
+  }, [activePeer, replacePeer, roomId, peers]);
 
   const setActivePeerId = React.useCallback(
     (peer: string) => {
@@ -219,29 +221,13 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         return { ...peerTab, tests };
       })
     );
-  }, [informations, groupTestCases]);
+  }, [informations, groupTestCases, roomId]);
 
   React.useEffect(() => {
     if (activePeer == undefined && peers.length > 0) {
       setActivePeerId(peers[0].id);
     }
   }, [peers, activePeer, setActivePeerId]);
-
-  // React.useEffect(() => {
-  //   const handleBeforeUnload = async () => {
-  //     localStorage.setItem(
-  //       "tabs",
-  //       JSON.stringify({
-  //         roomId: roomId,
-  //         peers: peers,
-  //       })
-  //     );
-  //   };
-  //   window.addEventListener("beforeunload", handleBeforeUnload);
-  //   return () => {
-  //     window.removeEventListener("beforeunload", handleBeforeUnload);
-  //   };
-  // }, [peers]);
 
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
@@ -251,11 +237,28 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       setCode(changeUser);
       setChangeUser(false);
     }
-  }, [activePeer?.id, activeUserInformation, setCode]);
+  }, [activePeer?.id, activeUserInformation, setCode]); // not including changeUser
 
   React.useEffect(() => {
     setCodeRef.current = setCode;
   }, [setCode]);
+
+  useOnMount(() => {
+    waitForElement(".monaco-editor", 2000)
+      .then(() =>
+        sendServiceRequest({
+          action: "createModel",
+          id: EDITOR_NODE_ID,
+        })
+      )
+      .then(() => {
+        // console.log("Created Model");
+        setCodeRef.current(true);
+      })
+      .catch((error) => {
+        console.error("Error during the process:", error);
+      });
+  });
 
   return (
     <PeerSelectionContext.Provider
