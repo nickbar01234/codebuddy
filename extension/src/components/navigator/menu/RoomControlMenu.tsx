@@ -57,9 +57,21 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         {
           display: "Join Room",
           icon: <CodeIcon />,
-          onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
+          onClick: (
+            e:
+              | React.MouseEvent<Element, MouseEvent>
+              | React.KeyboardEvent<Element>
+          ) => {
             e.stopPropagation();
-            setDisplayInputRoomId(true);
+
+            // Check if the event is a mouse click or an Enter key press
+            if (
+              e.type === "click" ||
+              (e.type === "keydown" &&
+                (e as React.KeyboardEvent).key === "Enter")
+            ) {
+              setDisplayInputRoomId(true);
+            }
           },
         },
       ];
@@ -116,7 +128,9 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     setDisplayInputRoomId(false);
   };
 
-  const onJoinRoom = async (e: React.MouseEvent<Element, MouseEvent>) => {
+  const onJoinRoom = async (
+    e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>
+  ) => {
     e.stopPropagation();
     const questionId = getQuestionIdFromUrl(window.location.href);
     const haveJoined = await joinRoom(inputRoomId, questionId);
@@ -178,6 +192,12 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
                 placeholder="Enter room ID"
                 onClick={onClickRoomIdInput}
                 onChange={onChangeRoomIdInput}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation();
+                    onJoinRoom(e as React.KeyboardEvent<Element>);
+                  } // Trigger the join room action
+                }}
               />
             </div>
           </React.Fragment>
