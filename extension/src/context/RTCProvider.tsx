@@ -571,13 +571,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
         removedPeers.forEach(deletePeer);
 
-        addedPeers.forEach(async (peer) => {
-          console.log("Added peer");
-          if (peer == undefined || peer === username) {
-            return;
-          }
-          console.log("Create Offer to", peer);
-          await createOffer(roomId, peer);
+        addedPeers.forEach((peer) => {
+          createOffer(roomId, peer);
         });
       });
 
