@@ -6,6 +6,7 @@ import {
   PeerCodeMessage,
   PeerMessage,
   PeerTestMessage,
+  HeartBeatMessage,
 } from "@cb/types";
 import {
   constructUrlFromQuestionId,
@@ -78,6 +79,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
+  const [heartbeats, setHeartbeats] = React.useState<
+    Record<string, HeartBeatMessage>
+  >({});
+
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [connected, setConnected] = React.useState<Record<string, boolean>>({});
 
@@ -423,6 +428,24 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [joinRoom, leaveRoom]);
 
+  const deletePeer = async (peer: string) => {
+    if (peer == undefined) return;
+    if (pcs.current[peer] == undefined) return;
+    if (roomId == null) return;
+    const { [peer]: _, ...rest } = pcs.current;
+    pcs.current = rest;
+    console.log("Removed peer", peer);
+    await deleteDoc(db.connections(roomId, username).doc(peer));
+    setInformations((prev) => {
+      const { [peer]: _, ...rest } = prev;
+      return rest;
+    });
+    setConnected((prev) => {
+      const { [peer]: _, ...rest } = prev;
+      return rest;
+    });
+  };
+
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
@@ -430,6 +453,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
         const data = snapshot.data();
         if (data == undefined) return;
+
         const usernames = data.usernames;
         if (!usernames.includes(username)) return;
         const removedPeers = Object.keys(pcs.current).filter(
@@ -442,22 +466,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         console.log("usernames", usernames);
         console.log("Added peers", addedPeers);
         console.log("Removed peers", removedPeers);
-        removedPeers.forEach(async (peer) => {
-          if (peer == undefined) return;
-          if (pcs.current[peer] == undefined) return;
-          const { [peer]: _, ...rest } = pcs.current;
-          pcs.current = rest;
-          console.log("Removed peer", peer);
-          await deleteDoc(db.connections(roomId, username).doc(peer));
-          setInformations((prev) => {
-            const { [peer]: _, ...rest } = prev;
-            return rest;
-          });
-          setConnected((prev) => {
-            const { [peer]: _, ...rest } = prev;
-            return rest;
-          });
-        });
+
+        removedPeers.forEach(deletePeer);
+
         addedPeers.forEach(async (peer) => {
           console.log("Added peer");
           if (peer == undefined || peer === username) {
@@ -498,6 +509,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       );
     }
   }, [roomId, informations]);
+
+  React.useEffect(() => {});
 
   useOnMount(() => {
     const observer = new MutationObserver(async () => {

@@ -112,6 +112,12 @@ export interface PeerTestMessage {
   tests: string[];
 }
 
+export interface HeartBeatMessage {
+  action: "heartbeat";
+  username: string;
+  roomId: string;
+}
+
 export type Payload<T> = Omit<T, "action">;
 
 export type PeerMessage = PeerCodeMessage | PeerTestMessage;
