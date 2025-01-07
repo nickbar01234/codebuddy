@@ -398,36 +398,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [username]
   );
 
-  React.useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (roomId) {
-        console.log("Before Reloading", roomId);
-        await updateDoc(db.room(roomId).ref(), {
-          usernames: arrayRemove(username),
-        });
-        // await db.usernamesCollection(roomId).deleteUser(username);
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [roomId, username]);
-
-  React.useEffect(() => {
-    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
-    if (refreshInfo && refreshInfo.roomId) {
-      console.log("Reloading", refreshInfo);
-      const prevRoomId = refreshInfo.roomId;
-      const reloadJob = async () => {
-        await leaveRoom(prevRoomId, true);
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-    }
-  }, [joinRoom, leaveRoom]);
-
   const deletePeer = async (peer: string) => {
     if (peer == undefined) return;
     if (pcs.current[peer] == undefined) return;
@@ -445,6 +415,36 @@ export const RTCProvider = (props: RTCProviderProps) => {
       return rest;
     });
   };
+
+  React.useEffect(() => {
+    const handleBeforeUnload = async () => {
+      if (roomId) {
+        await updateDoc(db.room(roomId).ref(), {
+          usernames: arrayRemove(username),
+        });
+        console.log("Before Reloading", roomId);
+        // await db.usernamesCollection(roomId).deleteUser(username);
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [roomId, username]);
+
+  React.useEffect(() => {
+    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+    if (refreshInfo && refreshInfo.roomId) {
+      const prevRoomId = refreshInfo.roomId;
+      const reloadJob = async () => {
+        await leaveRoom(prevRoomId, true);
+        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+      };
+      reloadJob();
+      console.log("Reloading", refreshInfo);
+    }
+  }, [joinRoom, leaveRoom]);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -494,11 +494,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username, createOffer]);
 
   React.useEffect(() => {
-    sendCode();
-    sendCodeRef.current = sendCode;
-  }, [sendCode]);
-
-  React.useEffect(() => {
     if (roomId != null && informations) {
       localStorage.setItem(
         "curRoomId",
@@ -510,7 +505,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, informations]);
 
-  React.useEffect(() => {});
+  React.useEffect(() => {}, [roomId, informations, connected]);
+
+  React.useEffect(() => {
+    sendCode();
+    sendCodeRef.current = sendCode;
+  }, [sendCode]);
 
   useOnMount(() => {
     const observer = new MutationObserver(async () => {
