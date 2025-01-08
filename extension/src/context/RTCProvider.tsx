@@ -487,16 +487,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (!reload) {
         console.log("Cleaning up local storage");
         localStorage.clear();
-        // sendServiceRequest({
-        //   action: "cleanEditor",
-        // }); if we clean the editor, the provider is only mounted once if the user dont reload the page. We will not have editor for the next room
       }
 
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayRemove(username),
       });
-      // await db.usernamesCollection(roomId).deleteUser(username);
-
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
       myAnswers.docs.forEach(async (doc) => {
         deleteDoc(doc.ref);
@@ -565,9 +560,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
 
-        console.log("usernames", usernames);
-        console.log("Added peers", addedPeers);
-        console.log("Removed peers", removedPeers);
+        // console.log("usernames", usernames);
+        // console.log("Added peers", addedPeers);
+        // console.log("Removed peers", removedPeers);
 
         removedPeers.forEach(deletePeer);
 
@@ -607,7 +602,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     };
   }, [roomId, username]);
 
-  useOnMount(() => {
+  React.useEffect(() => {
     const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
     if (refreshInfo && refreshInfo.roomId) {
       const prevRoomId = refreshInfo.roomId;
@@ -618,7 +613,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       reloadJob();
       console.log("Reloading", refreshInfo);
     }
-  });
+  }, [leaveRoom, joinRoom]);
 
   React.useEffect(() => {
     if (roomId != null && informations) {

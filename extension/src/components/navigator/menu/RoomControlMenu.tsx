@@ -27,13 +27,14 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   displayMenu,
   setDisplayMenu,
 }) => {
-  const { state, setState } = React.useContext(appStateContext);
+  const { state: appState, setState: setAppState } =
+    React.useContext(appStateContext);
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const [displayInputRoomId, setDisplayInputRoomId] = React.useState(false);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const items: MenuItem[] = React.useMemo(() => {
-    if (state === AppState.HOME) {
+    if (appState === AppState.HOME) {
       return [
         {
           display: "Reset Extension",
@@ -48,7 +49,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <PlusIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(AppState.ROOM);
+            setAppState(AppState.ROOM);
             const questionId = getQuestionIdFromUrl(window.location.href);
             createRoom(questionId);
             setDisplayMenu(false);
@@ -75,7 +76,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           },
         },
       ];
-    } else if (state === AppState.ROOM) {
+    } else if (appState === AppState.ROOM) {
       return [
         {
           display: "Copy room ID",
@@ -91,7 +92,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <LeaveIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(AppState.HOME);
+            setAppState(AppState.HOME);
             setDisplayMenu(false);
             if (roomId) leaveRoom(roomId);
           },
@@ -100,23 +101,23 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     }
 
     return [];
-  }, [state, createRoom, setDisplayMenu, setState, roomId, leaveRoom]);
+  }, [appState, createRoom, setDisplayMenu, setAppState, roomId, leaveRoom]);
 
   React.useEffect(() => {
     if (roomId != null) {
-      setState(AppState.ROOM);
+      setAppState(AppState.ROOM);
     } else {
-      setState(AppState.HOME);
+      setAppState(AppState.HOME);
     }
-  }, [roomId, setState]);
+  }, [roomId, setAppState]);
 
   React.useEffect(() => {
     if (roomId != null) {
-      setState(AppState.ROOM);
+      setAppState(AppState.ROOM);
     } else {
-      setState(AppState.HOME);
+      setAppState(AppState.HOME);
     }
-  }, [roomId, setState]);
+  }, [roomId, setAppState]);
 
   const toggleDisplayMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.stopPropagation();
@@ -135,7 +136,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     const questionId = getQuestionIdFromUrl(window.location.href);
     const haveJoined = await joinRoom(inputRoomId, questionId);
     if (haveJoined) {
-      setState(AppState.ROOM);
+      setAppState(AppState.ROOM);
     }
     setDisplayInputRoomId(false);
     setDisplayMenu(false);
@@ -157,7 +158,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         type="button"
         aria-haspopup="true"
         aria-expanded="false"
-        data-headlessui-state=""
+        data-headlessui-appState=""
         onClick={toggleDisplayMenu}
       >
         <MenuIcon />
@@ -168,14 +169,14 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           displayMenu ? "block" : "hidden"
         }`}
         role="menu"
-        data-headlessui-state="open"
+        data-headlessui-appState="open"
       >
         {displayInputRoomId ? (
           <React.Fragment>
             <div
               className="flex gap-x-1 items-center text-md w-full cursor-pointer select-none rounded px-3 py-[5px] text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
               role="menuitem"
-              data-headlessui-state=""
+              data-headlessui-appState=""
               onClick={onBackButtonClick}
             >
               <BackIcon />
@@ -184,7 +185,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
             <div
               className="flex gap-x-1 px-3 py-[5px] items-center text-md w-full text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
               role="menuitem"
-              data-headlessui-state=""
+              data-headlessui-appState=""
             >
               <PlusIcon onClick={onJoinRoom} />
               <input
@@ -207,7 +208,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
               key={item.display}
               className="flex gap-x-1 items-center text-md w-full cursor-pointer select-none rounded px-3 py-[5px] text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
               role="menuitem"
-              data-headlessui-state=""
+              data-headlessui-appState=""
               onClick={item.onClick}
             >
               {item.icon}

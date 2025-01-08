@@ -182,38 +182,48 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     },
     [activePeer, replacePeer]
   );
+  const setLocalStorageForIndividualPeers = React.useCallback(
+    (peer: Peer) => {
+      localStorage.setItem(
+        "tabs" + peer.id,
+        JSON.stringify({ ...peer, roomId: roomId })
+      );
+    },
+    [roomId]
+  );
+
+  const getLocalStorageForIndividualPeers = React.useCallback(
+    (peerId: string) => {
+      const prevPeer = JSON.parse(
+        localStorage.getItem("tabs" + peerId) || "{}"
+      );
+      if (Object.keys(prevPeer).length === 0) return undefined;
+
+      const prevRoomId = prevPeer.roomId;
+      if (roomId && prevRoomId != roomId) return undefined;
+
+      return prevPeer;
+    },
+    [roomId]
+  );
 
   React.useEffect(() => {
     if (!loading) {
-      console.log("Setting tabs", roomId, peers);
-      localStorage.setItem(
-        "tabs",
-        JSON.stringify({
-          roomId,
-          peers: peers,
-        })
-      );
+      for (const peer of peers) {
+        setLocalStorageForIndividualPeers(peer);
+      }
     }
-  }, [peers, loading, roomId]);
+  }, [peers, loading, roomId, setLocalStorageForIndividualPeers]);
 
   React.useEffect(() => {
-    const prevInfo: {
-      roomId: string;
-      peers: Peer[];
-    } = JSON.parse(localStorage.getItem("tabs") || "{}");
+    console.log("Begin loading");
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
-        const prevPeersTab = prevInfo.peers;
-        const prevRoomId = prevInfo.roomId;
+        const prevPeer = getLocalStorageForIndividualPeers(peerInfo);
         const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
           id: peerInfo,
-          active: false,
-          viewable:
-            prevRoomId == roomId &&
-            (prevPeersTab.some(
-              (peer) => peer.id === peerInfo && peer.viewable
-            ) ??
-              false),
+          active: (prevPeer && prevPeer.active) || false,
+          viewable: (prevPeer && prevPeer.viewable) || false,
           tests: [],
         };
         const tests = groupTestCases(informations[peerInfo]);
@@ -224,20 +234,25 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
+        if (peerTab.active) {
+          setActivePeerId(peerInfo);
+          setActivePeer(peerTab);
+        }
+
         setLoading(false);
-        // console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
     );
-  }, [informations, groupTestCases, roomId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [informations, groupTestCases, roomId, getLocalStorageForIndividualPeers]); // add will create cyclic dependency
+
+  React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
     if (activePeer == undefined && peers.length > 0) {
       setActivePeerId(peers[0].id);
     }
   }, [peers, activePeer, setActivePeerId]);
-
-  React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {

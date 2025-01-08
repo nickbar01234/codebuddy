@@ -8,6 +8,7 @@ import { ExtensionStorage } from "@cb/types";
 import { capitalize } from "@cb/utils/string";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import { cn } from "@cb/utils/cn";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -52,8 +53,10 @@ const EditorPanel = () => {
         </div>
       )}
       <div
-        className="flex flex-col h-full justify-between"
-        style={{ visibility: peers.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time
+        className={cn(
+          "flex flex-col relative h-full w-full",
+          peers.length === 0 ? "hidden" : "visible"
+        )}
       >
         {/* todo(nickbar01234): Fix styling */}
         {!canViewCode && peers.length != 0 && (
@@ -172,11 +175,12 @@ const EditorPanel = () => {
             <React.Fragment key={id}>
               {/* Leetcode className flexlayout__tab_button_* */}
               <div
-                className={`relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50 ${
+                className={cn(
+                  `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
                   active
                     ? "flexlayout__tab_button-selected medium"
                     : "flexlayout__tab_button--unselected normal"
-                }`}
+                )}
                 onClick={() => setActivePeerId(id)}
               >
                 {id}
