@@ -59,6 +59,7 @@ export interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   sendMessages: (value: PeerMessage) => void;
+  peerState: Record<string, PeerState>;
 }
 
 interface RTCProviderProps {
@@ -705,6 +706,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         setRoomId,
         informations,
         sendMessages,
+        peerState,
       }}
     >
       {props.children}

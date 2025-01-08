@@ -7,11 +7,12 @@ import { Toaster } from "sonner";
 import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection } from "@cb/hooks/index";
+import { usePeerSelection, useRTC } from "@cb/hooks/index";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { activePeer } = usePeerSelection();
+  const { peerState } = useRTC();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -25,6 +26,7 @@ export const RootNavigator = () => {
     setUserDropdownOpen(false);
     setDisplayMenu(false);
   };
+  const ping = Math.round(peerState[activePeer?.id || ""]?.latency);
 
   return (
     <div
@@ -43,13 +45,28 @@ export const RootNavigator = () => {
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
-          {activePeer?.id && (
+          {state === AppState.ROOM && activePeer?.id && (
             <React.Fragment>
               <CaretRightIcon />{" "}
               <UserDropdown
                 isOpen={isUserDropdownOpen}
                 toggle={toggleUserDropdown}
               />
+              {peerState[activePeer.id] && (
+                <span
+                  className={`${
+                    ping === null
+                      ? "text-red-500"
+                      : ping < 1300
+                      ? "text-green-500"
+                      : ping < 2000
+                      ? "text-yellow-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {ping !== null ? `${ping} ms` : "Error"}
+                </span>
+              )}
             </React.Fragment>
           )}
         </div>

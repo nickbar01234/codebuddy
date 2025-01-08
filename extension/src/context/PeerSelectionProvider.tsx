@@ -234,10 +234,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
-        if (peerTab.active) {
-          setActivePeerId(peerInfo);
-          setActivePeer(peerTab);
-        }
 
         setLoading(false);
         return { ...peerTab, tests };
