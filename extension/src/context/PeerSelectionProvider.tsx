@@ -222,7 +222,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         const prevPeer = getLocalStorageForIndividualPeers(peerInfo);
         const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
           id: peerInfo,
-          active: (prevPeer && prevPeer.active) || false,
+          active: false, // cannot set it here will conflict with the useEffect below
           viewable: (prevPeer && prevPeer.viewable) || false,
           tests: [],
         };
@@ -246,9 +246,16 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   React.useEffect(() => {
     if (activePeer == undefined && peers.length > 0) {
+      for (const peer of peers) {
+        const prevPeer = getLocalStorageForIndividualPeers(peer.id);
+        if (prevPeer && prevPeer.active) {
+          setActivePeerId(peer.id);
+          return;
+        }
+      }
       setActivePeerId(peers[0].id);
     }
-  }, [peers, activePeer, setActivePeerId]);
+  }, [peers, activePeer, setActivePeerId, getLocalStorageForIndividualPeers]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
