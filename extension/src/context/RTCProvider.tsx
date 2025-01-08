@@ -134,6 +134,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sendMessage = React.useCallback(
     (peer: string) => (payload: PeerMessage | HeartBeatMessage) => {
       if (
+        pcs.current[peer] &&
         pcs.current[peer].channel !== undefined &&
         connected.includes(peer) &&
         pcs.current[peer].channel.readyState === "open"
