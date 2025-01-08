@@ -8,8 +8,8 @@ interface UserDropdownProps {
   toggle: (e: React.MouseEvent<Element, MouseEvent>) => void;
 }
 
-const GREENTHRESHOLD = 1200;
-const YELLOWTHRESHOLD = 1400;
+const GREENTHRESHOLD = 1150;
+const YELLOWTHRESHOLD = 1300;
 
 const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { activePeer, peers, setActivePeerId } = usePeerSelection();
