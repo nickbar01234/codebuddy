@@ -55,9 +55,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
                       `bar-${
                         i + 1
                       } inline-block w-[6px] ml-[2px] rounded-[2px]`,
-                      signalStrength.bg +
-                        " " +
-                        (i + 1 > signalStrength.level ? "opacity-20" : "")
+                      signalStrength.bg,
+                      i + 1 > signalStrength.level && "opacity-20"
                     )}
                   ></span>
                 ))}
