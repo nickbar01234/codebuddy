@@ -7,12 +7,11 @@ import { Toaster } from "sonner";
 import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection, useRTC } from "@cb/hooks/index";
+import { usePeerSelection } from "@cb/hooks/index";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { activePeer } = usePeerSelection();
-  const { peerState } = useRTC();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -26,8 +25,6 @@ export const RootNavigator = () => {
     setUserDropdownOpen(false);
     setDisplayMenu(false);
   };
-  const ping = Math.round(peerState[activePeer?.id || ""]?.latency);
-
   return (
     <div
       className="h-full w-full relative flex flex-col"
@@ -52,21 +49,6 @@ export const RootNavigator = () => {
                 isOpen={isUserDropdownOpen}
                 toggle={toggleUserDropdown}
               />
-              {peerState[activePeer.id] && (
-                <span
-                  className={`${
-                    ping === null
-                      ? "text-red-500"
-                      : ping < 1300
-                      ? "text-green-500"
-                      : ping < 2000
-                      ? "text-yellow-500"
-                      : "text-red-500"
-                  }`}
-                >
-                  {ping !== null ? `${ping} ms` : "Error"}
-                </span>
-              )}
             </React.Fragment>
           )}
         </div>

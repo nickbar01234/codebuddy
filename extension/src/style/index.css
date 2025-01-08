@@ -30,6 +30,13 @@
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
 }
+.tooltip {
+  @apply absolute opacity-0 invisible transition-opacity duration-300 ease-in-out;
+}
+
+.has-tooltip:hover .tooltip {
+  @apply opacity-100 visible;
+}
 
 /* add the code bellow */
 @layer utilities {
