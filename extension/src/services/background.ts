@@ -62,17 +62,26 @@ const getValue = async () => {
 
 const setValue = async (value: string) => {
   const monaco = (window as any).monaco;
-  const lcCodeEditor = monaco.editor
+  const myEditor = monaco.editor
     .getEditors()
     .filter((e: any) => e.id !== "CodeBuddy")
-    .map((e: any) => e.getModel())
-    .find((m: any) => m.getLanguageId() !== "plaintext");
-  lcCodeEditor.setValue(value);
+    .find((m: any) => m.getModel().getLanguageId() !== "plaintext");
+  try {
+    const fullRange = myEditor.getModel().getFullModelRange();
+    myEditor.executeEdits(null, [
+      {
+        range: fullRange,
+        text: value,
+      },
+    ]);
+    myEditor.pushUndoStop();
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 const createModel = async (id: string) => {
   await new Promise((resolve) => setTimeout(resolve, 2000));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   console.log("Creating Model");
   if (
