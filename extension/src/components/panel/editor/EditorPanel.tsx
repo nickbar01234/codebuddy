@@ -2,13 +2,14 @@ import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { CodeBuddyPreference } from "@cb/constants";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection } from "@cb/hooks/index";
-import { sendServiceRequest, setStorage } from "@cb/services";
+import { useOnMount, usePeerSelection } from "@cb/hooks/index";
+import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
+import { cn } from "@cb/utils/cn";
 import { capitalize } from "@cb/utils/string";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { cn } from "@cb/utils/cn";
+
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -35,6 +36,9 @@ const EditorPanel = () => {
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
+  useOnMount(() => {
+    getStorage("codePreference").then(setCodePreference);
+  });
 
   return (
     <>
