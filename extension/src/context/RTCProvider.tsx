@@ -592,7 +592,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         await updateDoc(db.room(roomId).ref(), {
           usernames: arrayRemove(username),
         });
-        console.log("Before Reloading", roomId);
+        // console.log("Before Reloading", roomId);
         // await db.usernamesCollection(roomId).deleteUser(username);
       }
     };
@@ -612,7 +612,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
       };
       reloadJob();
-      console.log("Reloading", refreshInfo);
+      // console.log("Reloading", refreshInfo);
     }
   }, [leaveRoom, joinRoom]);
 

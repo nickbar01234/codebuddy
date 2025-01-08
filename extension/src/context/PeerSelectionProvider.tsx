@@ -6,6 +6,7 @@ import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 import { PeerInformation } from "./RTCProvider";
 
+const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 2;
 interface PeerSelectionContext {
   peers: Peer[];
   activePeer: Peer | undefined;
@@ -53,6 +54,8 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
+  const [stillSettingPastActivePeer, setStillSettingPastActivePeer] =
+    React.useState<boolean>(true);
   const [loading, setLoading] = React.useState<boolean>(true);
   const { variables } = useInferTests();
 
@@ -186,7 +189,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     (peer: Peer) => {
       localStorage.setItem(
         "tabs" + peer.id,
-        JSON.stringify({ ...peer, roomId: roomId })
+        JSON.stringify({ ...peer, roomId: roomId, lastSet: Date.now() })
       );
     },
     [roomId]
@@ -211,9 +214,18 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     if (!loading) {
       for (const peer of peers) {
         setLocalStorageForIndividualPeers(peer);
+        if (peer.active && !stillSettingPastActivePeer) {
+          localStorage.setItem("lastActivePeer", peer.id);
+        }
       }
     }
-  }, [peers, loading, roomId, setLocalStorageForIndividualPeers]);
+  }, [
+    peers,
+    loading,
+    roomId,
+    setLocalStorageForIndividualPeers,
+    stillSettingPastActivePeer,
+  ]);
 
   React.useEffect(() => {
     console.log("Begin loading");
@@ -228,9 +240,14 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         };
         const tests = groupTestCases(informations[peerInfo]);
         if (tests.length > 0) {
-          const lastSelectedTest = peerTab.tests.findIndex(
+          let lastSelectedTest = peerTab.tests.findIndex(
             (test) => test.selected
           );
+          if (lastSelectedTest == -1 && prevPeer) {
+            lastSelectedTest = prevPeer.tests.findIndex(
+              (test: TestCase) => test.selected
+            );
+          }
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
@@ -245,17 +262,18 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
-    if (activePeer == undefined && peers.length > 0) {
-      for (const peer of peers) {
-        const prevPeer = getLocalStorageForIndividualPeers(peer.id);
-        if (prevPeer && prevPeer.active) {
-          setActivePeerId(peer.id);
-          return;
-        }
+    if (
+      (activePeer === undefined || stillSettingPastActivePeer) &&
+      peers.length > 0
+    ) {
+      const lastActivePeer = localStorage.getItem("lastActivePeer");
+      if (lastActivePeer && peers.some((peer) => peer.id === lastActivePeer)) {
+        setActivePeerId(lastActivePeer);
+      } else {
+        setActivePeerId(peers[0].id);
       }
-      setActivePeerId(peers[0].id);
     }
-  }, [peers, activePeer, setActivePeerId, getLocalStorageForIndividualPeers]);
+  }, [peers, activePeer, setActivePeerId, stillSettingPastActivePeer]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
@@ -285,6 +303,10 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       .catch((error) => {
         console.error("Error during the process:", error);
       });
+    const setPastActive = setTimeout(() => {
+      setStillSettingPastActivePeer(false);
+    }, TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE);
+    return () => clearTimeout(setPastActive);
   });
 
   return (

@@ -80,7 +80,7 @@ const createModel = async (id: string) => {
       .getEditors()
       .find((editor: any) => editor.id === "CodeBuddy") == undefined
   ) {
-    console.log("No Editor Found");
+    // console.log("No Editor Found");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -91,7 +91,7 @@ const createModel = async (id: string) => {
       }
     );
     buddyEditor.id = "CodeBuddy";
-    console.log("Creating model is done");
+    // console.log("Creating model is done");
   }
 };
 
