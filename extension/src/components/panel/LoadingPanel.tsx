@@ -29,7 +29,7 @@ export function LoadingPanel({
   const div3Ref = React.useRef<HTMLDivElement>(null);
   const div6Ref = React.useRef<HTMLDivElement>(null);
   const div7Ref = React.useRef<HTMLDivElement>(null);
-  console.log("LoadingPanel -> numberOfUsers", numberOfUsers);
+  // console.log("LoadingPanel -> numberOfUsers", numberOfUsers);
   return (
     <div
       className={
