@@ -544,9 +544,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         await updateDoc(db.room(roomId).ref(), {
           usernames: arrayRemove(username),
         });
-
-        // console.log("Before Reloading", roomId);
-        // await db.usernamesCollection(roomId).deleteUser(username);
       }
     },
     [roomId, username]
