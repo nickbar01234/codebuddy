@@ -1,4 +1,4 @@
-import db from "@cb/db";
+import db, { firestore } from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
 import { sendServiceRequest } from "@cb/services";
 import {
@@ -16,6 +16,7 @@ import {
 } from "@cb/utils";
 import {
   Unsubscribe,
+  writeBatch,
   arrayRemove,
   arrayUnion,
   deleteDoc,
@@ -509,28 +510,37 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   // modify to accept many peers.
-  const deletePeer = React.useCallback(
-    async (peer: string) => {
+  const deletePeers = React.useCallback(
+    async (peers: string | string[]) => {
+      if (typeof peers === "string") {
+        peers = [peers];
+      }
       if (roomId == null) return;
-      if (peer == undefined) return;
-      await updateDoc(db.room(roomId).ref(), {
-        usernames: arrayRemove(peer),
+      if (peers == undefined) return;
+      const batch = writeBatch(firestore);
+      peers
+        .map((peer) => db.connections(roomId, username).doc(peer))
+        .forEach((docRef) => batch.delete(docRef));
+      batch.update(db.room(roomId).ref(), {
+        usernames: arrayRemove(...peers),
       });
-      await deleteDoc(db.connections(roomId, username).doc(peer));
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [peer]: _, ...rest } = pcs.current;
-      pcs.current = rest;
-      setInformations((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [peer]: _, ...rest } = prev;
-        return rest;
+      await batch.commit();
+      const updatedPcs = { ...pcs.current };
+      peers.forEach((peer) => {
+        delete updatedPcs[peer];
       });
-      setPeerState((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { [peer]: _, ...rest } = prev;
-        return rest;
-      });
-      console.log("Removed peer", peer);
+      pcs.current = updatedPcs;
+      setInformations((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).filter(([key]) => !peers.includes(key))
+        )
+      );
+      setPeerState((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).filter(([key]) => !peers.includes(key))
+        )
+      );
+      console.log("Removed peers", peers);
     },
     [roomId, username]
   );
@@ -588,12 +598,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const addedPeers = usernames
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
-
-        // console.log("usernames", usernames);
-        // console.log("Added peers", addedPeers);
-        // console.log("Removed peers", removedPeers);
-
-        removedPeers.forEach(deletePeer);
+        removedPeers.forEach(deletePeers);
 
         addedPeers.forEach((peer) => {
           createOffer(roomId, peer);
@@ -612,7 +617,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       };
     }
-  }, [roomId, username, createOffer, deletePeer]);
+  }, [roomId, username, createOffer, deletePeers]);
 
   React.useEffect(() => {
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -664,7 +669,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const checkAliveInterval = setInterval(() => {
         for (const peer of Object.keys(peerState)) {
           if (peerState[peer].lastSeen + timeOutHeartBeat < Date.now()) {
-            deletePeer(peer);
+            deletePeers(peer);
           }
         }
       }, timeOutHeartBeat);
@@ -679,7 +684,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     username,
     peerState,
     roomId,
-    deletePeer,
+    deletePeers,
     timeOutHeartBeat,
   ]);
 
