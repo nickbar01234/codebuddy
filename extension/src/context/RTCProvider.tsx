@@ -537,13 +537,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const temporarilyLeaveRoom = React.useCallback(
     async (refresh: boolean) => {
+      if (refresh) {
+        localStorage.setItem("refresh", "true");
+      }
       if (roomId) {
         await updateDoc(db.room(roomId).ref(), {
           usernames: arrayRemove(username),
         });
-        if (refresh) {
-          localStorage.setItem("refresh", "true");
-        }
+
         // console.log("Before Reloading", roomId);
         // await db.usernamesCollection(roomId).deleteUser(username);
       }
