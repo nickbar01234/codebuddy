@@ -31,10 +31,10 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             {activePeer.id} <CaretDownIcon />
           </button>
 
-          <div>
+          <div className="group h-full flex items-center justify-center relative">
             <i
               className={cn(
-                "group has-tooltip inline-flex items-end justify-end w-auto h-[24px] p-[4px] z-50 relative icon__signal-strength"
+                "group-hover has-tooltip inline-flex items-end justify-end w-auto h-[24px] p-[4px] z-50 icon__signal-strength"
               )}
             >
               {Array.from({ length: 3 }).map((_, i) => (
@@ -47,19 +47,20 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
                   )}
                 ></span>
               ))}
-              <span
-                className={cn(
-                  `shadow-lg whitespace-nowrap text-xs font-bold
-                   left-full invisible absolute z-50 ml-1  w-min
-                    -translate-x-3 text-nowrap top-1/2 -translate-y-1
+            </i>
+            <span
+              className={cn(
+                `shadow-lg whitespace-nowrap text-xs font-bold
+                   left-full  absolute z-50 ml-1  w-min
+                   invisible
+                    -translate-x-4 text-nowrap
                   transition-all group-hover:visible group-hover:translate-x-0 
                   group-hover:opacity-100`,
-                  signalStrength.text
-                )}
-              >
-                {ping !== null ? `${ping} ms` : "Error"}
-              </span>
-            </i>
+                signalStrength.text
+              )}
+            >
+              {ping !== null ? `${ping} ms` : "Error"}
+            </span>
           </div>
         </div>
 
