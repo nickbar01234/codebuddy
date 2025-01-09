@@ -60,6 +60,7 @@ export interface RTCContext {
   informations: Record<string, PeerInformation>;
   sendMessages: (value: PeerMessage) => void;
   peerState: Record<string, PeerState>;
+  joiningBackRoom: (join: boolean) => void;
 }
 
 interface RTCProviderProps {
@@ -482,6 +483,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const leaveRoom = React.useCallback(
     async (roomId: string, reload = false) => {
+      localStorage.removeItem("refresh");
       console.log("Leaving room", roomId);
       if (roomId == null) {
         return;
@@ -506,6 +508,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [username]
   );
 
+  // modify to accept many peers.
   const deletePeer = React.useCallback(
     async (peer: string) => {
       if (roomId == null) return;
@@ -548,12 +551,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [roomId, username]
   );
 
-  const handleBeforeUnload = React.useCallback(
-    async (event: BeforeUnloadEvent) => {
-      await temporarilyLeaveRoom(true);
-      event.preventDefault();
+  const handleBeforeUnload = React.useCallback(async () => {
+    await temporarilyLeaveRoom(true);
+  }, [temporarilyLeaveRoom]);
+
+  const joiningBackRoom = React.useCallback(
+    async (join: boolean) => {
+      const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+      const prevRoomId = refreshInfo.roomId;
+      await leaveRoom(prevRoomId, join);
+      if (join) {
+        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+      }
     },
-    [temporarilyLeaveRoom]
+    [joinRoom, leaveRoom]
   );
 
   React.useEffect(() => {
@@ -621,16 +632,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
-    if (refreshInfo && refreshInfo.roomId) {
-      const prevRoomId = refreshInfo.roomId;
-      const reloadJob = async () => {
-        await leaveRoom(prevRoomId, true);
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-      // console.log("Reloading", refreshInfo);
+    const refresh = JSON.parse(localStorage.getItem("refresh") ?? "false");
+    if (refresh) {
+      if (refreshInfo && refreshInfo.roomId) {
+        joiningBackRoom(true);
+        // console.log("Reloading", refreshInfo);
+      }
     }
-  }, [leaveRoom, joinRoom]);
+  }, [joiningBackRoom]);
 
   React.useEffect(() => {
     if (roomId != null && informations) {
@@ -655,6 +664,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           sendHeartBeat(peer, false);
         }
       }, HEARTBEAT_INTERVAL);
+
       const checkAliveInterval = setInterval(() => {
         for (const peer of Object.keys(peerState)) {
           if (peerState[peer].lastSeen + timeOutHeartBeat < Date.now()) {
@@ -662,6 +672,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
         }
       }, timeOutHeartBeat);
+
       return () => {
         clearInterval(checkAliveInterval);
         clearInterval(sendInterval);
@@ -723,16 +734,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
         informations,
         sendMessages,
         peerState,
+        joiningBackRoom,
       }}
     >
       {props.children}
     </RTCContext.Provider>
   );
 };
+
 const calculateNewRTT = (latency: number, sample: number) => {
   if (latency == 0) return sample;
   return (1 - ALPHA) * latency + ALPHA * sample;
 };
+
 const calculateNewDeviation = (
   prevDeviation: number,
   latency: number,
@@ -741,6 +755,7 @@ const calculateNewDeviation = (
   if (prevDeviation == 0) return 1 / Math.sqrt(2 * latency);
   return (1 - BETA) * prevDeviation + BETA * Math.abs(latency - sample);
 };
+
 const calculateNewTimeOutInterval = (latency: number, deviation: number) => {
   return latency + 4 * deviation + BUFFER_TIME_OUT;
 };

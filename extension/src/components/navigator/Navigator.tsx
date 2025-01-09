@@ -7,11 +7,12 @@ import { Toaster } from "sonner";
 import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection } from "@cb/hooks/index";
+import { usePeerSelection, useRTC } from "@cb/hooks/index";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { activePeer } = usePeerSelection();
+  const { joiningBackRoom } = useRTC();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -58,16 +59,44 @@ export const RootNavigator = () => {
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
-        {state === AppState.HOME && localStorage.getItem("curRoomId") && (
-          <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-            <LoadingPanel
-              numberOfUsers={
-                JSON.parse(localStorage.getItem("curRoomId") || "{}")
-                  .numberOfUsers
-              }
-            />
-          </div>
-        )}
+        <div className="absolute inset-0 h-full w-full flex justify-center items-center">
+          {state === AppState.HOME &&
+            localStorage.getItem("curRoomId") &&
+            (JSON.parse(localStorage.getItem("refresh") ?? "false") ? (
+              <LoadingPanel
+                numberOfUsers={
+                  JSON.parse(localStorage.getItem("curRoomId") || "{}")
+                    .numberOfUsers
+                }
+              />
+            ) : (
+              <div className="rounded-lg shadow-2xl w-[90%] max-w-sm">
+                <h1 className="text-lg font-semibold text-black dark:text-white  mb-4 text-center">
+                  Do you want to rejoin the room?
+                </h1>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      joiningBackRoom(false);
+                    }}
+                    className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    No
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      joiningBackRoom(true);
+                    }}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Yes
+                  </button>
+                </div>
+              </div>
+            ))}
+        </div>
         <EditorPanel />
       </div>
     </div>
