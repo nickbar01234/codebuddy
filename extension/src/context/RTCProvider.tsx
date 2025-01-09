@@ -598,7 +598,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const addedPeers = usernames
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
-        removedPeers.forEach(deletePeers);
+
+        deletePeers(removedPeers);
 
         addedPeers.forEach((peer) => {
           createOffer(roomId, peer);
