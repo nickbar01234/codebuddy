@@ -62,7 +62,11 @@ export const RootNavigator = () => {
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
           {state === AppState.HOME &&
             localStorage.getItem("curRoomId") &&
-            (JSON.parse(localStorage.getItem("refresh") ?? "false") ? (
+            ((
+              performance.getEntriesByType(
+                "navigation"
+              )[0] as PerformanceNavigationTiming
+            ).type === "reload" ? (
               <LoadingPanel
                 numberOfUsers={
                   JSON.parse(localStorage.getItem("curRoomId") || "{}")

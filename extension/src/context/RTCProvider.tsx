@@ -476,6 +476,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
+      localStorage.removeItem("refresh");
       return true;
     },
     [username, onmessage]
@@ -483,7 +484,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const leaveRoom = React.useCallback(
     async (roomId: string, reload = false) => {
-      localStorage.removeItem("refresh");
       console.log("Leaving room", roomId);
       if (roomId == null) {
         return;
@@ -535,22 +535,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [roomId, username]
   );
 
-  const temporarilyLeaveRoom = React.useCallback(
-    async (refresh: boolean) => {
-      if (refresh) {
-        localStorage.setItem("refresh", "true");
-      }
-      if (roomId) {
-        await updateDoc(db.room(roomId).ref(), {
-          usernames: arrayRemove(username),
-        });
-      }
-    },
-    [roomId, username]
-  );
+  const temporarilyLeaveRoom = React.useCallback(async () => {
+    if (roomId) {
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(username),
+      });
+    }
+  }, [roomId, username]);
 
   const handleBeforeUnload = React.useCallback(async () => {
-    await temporarilyLeaveRoom(true);
+    await temporarilyLeaveRoom();
   }, [temporarilyLeaveRoom]);
 
   const joiningBackRoom = React.useCallback(
@@ -629,13 +623,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [handleBeforeUnload]);
 
   React.useEffect(() => {
+    const navigationEntry = performance.getEntriesByType(
+      "navigation"
+    )[0] as PerformanceNavigationTiming;
+
     const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
-    const refresh = JSON.parse(localStorage.getItem("refresh") ?? "false");
-    if (refresh) {
-      if (refreshInfo && refreshInfo.roomId) {
-        joiningBackRoom(true);
-        // console.log("Reloading", refreshInfo);
-      }
+    if (
+      navigationEntry.type === "reload" &&
+      refreshInfo &&
+      refreshInfo.roomId
+    ) {
+      joiningBackRoom(true);
     }
   }, [joiningBackRoom]);
 
