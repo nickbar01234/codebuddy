@@ -15,7 +15,6 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { activePeer, peers, setActivePeerId } = usePeerSelection();
   const { peerState } = useRTC();
   const ping = Math.round(peerState[activePeer?.id || ""]?.latency);
-  const [isTooltipVisible, setTooltipVisible] = React.useState(false);
   const signalStrength = getStatus(ping);
   return (
     activePeer && (
@@ -24,45 +23,44 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           <button
             data-dropdown-toggle="dropdown"
             className={cn(
-              "font-medium has-tooltip rounded-lg text-sm px-3 py-2 text-center inline-flex items-center hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary relative"
+              "font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary relative"
             )}
             type="button"
             onClick={toggle}
-            onMouseEnter={() => setTooltipVisible(true)}
-            onMouseLeave={() => setTooltipVisible(false)}
           >
             {activePeer.id} <CaretDownIcon />
-            <span
+          </button>
+
+          <div>
+            <i
               className={cn(
-                "tooltip rounded shadow-lg p-1 whitespace-nowrap text-xs absolute font-bold left-full top-1/2 -translate-y-1/2",
-                signalStrength.text
+                "group has-tooltip inline-flex items-end justify-end w-auto h-[24px] p-[4px] z-50 relative icon__signal-strength"
               )}
             >
-              {ping !== null ? `${ping} ms` : "Error"}
-            </span>
-          </button>
-          {!isTooltipVisible && (
-            <div>
-              <i
+              {Array.from({ length: 3 }).map((_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    `bar-${i + 1} inline-block w-[6px] ml-[2px] rounded-[2px]`,
+                    signalStrength.bg,
+                    i + 1 > signalStrength.level && "opacity-20"
+                  )}
+                ></span>
+              ))}
+              <span
                 className={cn(
-                  " rounded-[4px] inline-flex items-end justify-end w-auto h-[24px] p-[4px] icon__signal-strength z-50 "
+                  `shadow-lg whitespace-nowrap text-xs font-bold
+                   left-full invisible absolute z-50 ml-1  w-min
+                    -translate-x-3 text-nowrap top-1/2 -translate-y-1
+                  transition-all group-hover:visible group-hover:translate-x-0 
+                  group-hover:opacity-100`,
+                  signalStrength.text
                 )}
               >
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={cn(
-                      `bar-${
-                        i + 1
-                      } inline-block w-[6px] ml-[2px] rounded-[2px]`,
-                      signalStrength.bg,
-                      i + 1 > signalStrength.level && "opacity-20"
-                    )}
-                  ></span>
-                ))}
-              </i>
-            </div>
-          )}
+                {ping !== null ? `${ping} ms` : "Error"}
+              </span>
+            </i>
+          </div>
         </div>
 
         <div
