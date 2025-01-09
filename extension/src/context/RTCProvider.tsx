@@ -532,6 +532,30 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [roomId, username]
   );
 
+  const temporarilyLeaveRoom = React.useCallback(
+    async (refresh: boolean) => {
+      if (roomId) {
+        await updateDoc(db.room(roomId).ref(), {
+          usernames: arrayRemove(username),
+        });
+        if (refresh) {
+          localStorage.setItem("refresh", "true");
+        }
+        // console.log("Before Reloading", roomId);
+        // await db.usernamesCollection(roomId).deleteUser(username);
+      }
+    },
+    [roomId, username]
+  );
+
+  const handleBeforeUnload = React.useCallback(
+    async (event: BeforeUnloadEvent) => {
+      await temporarilyLeaveRoom(true);
+      event.preventDefault();
+    },
+    [temporarilyLeaveRoom]
+  );
+
   React.useEffect(() => {
     setConnected((prev) => {
       const newConnected = Object.keys(peerState).sort();
@@ -588,21 +612,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username, createOffer, deletePeer]);
 
   React.useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (roomId) {
-        await updateDoc(db.room(roomId).ref(), {
-          usernames: arrayRemove(username),
-        });
-        // console.log("Before Reloading", roomId);
-        // await db.usernamesCollection(roomId).deleteUser(username);
-      }
-    };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [roomId, username]);
+  }, [handleBeforeUnload]);
 
   React.useEffect(() => {
     const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
