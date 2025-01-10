@@ -486,11 +486,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       if (!reload) {
         console.log("Cleaning up local storage");
+        console.log("Cleaning up local storage");
         localStorage.clear();
         // sendServiceRequest({
         //   action: "cleanEditor",
         // }); if we clean the editor, the provider is only mounted once if the user dont reload the page. We will not have editor for the next room
       }
+
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(username),
+      });
+      // await db.usernamesCollection(roomId).deleteUser(username);
 
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayRemove(username),
@@ -668,6 +674,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sendCode();
     sendCodeRef.current = sendCode;
   }, [sendCode]);
+
+  React.useEffect(() => {
+    if (roomId != null && informations) {
+      localStorage.setItem(
+        "curRoomId",
+        JSON.stringify({
+          roomId: roomId,
+          numberOfUsers: Object.keys(informations).length,
+        })
+      );
+    }
+  }, [roomId, informations]);
 
   useOnMount(() => {
     const observer = new MutationObserver(async () => {

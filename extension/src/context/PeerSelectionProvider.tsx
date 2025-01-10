@@ -1,4 +1,5 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
+import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
 import { waitForElement } from "@cb/utils";
@@ -47,10 +48,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
   const { informations, roomId } = useRTC();
-  const [peers, setPeers] = React.useState<Peer[]>(
-    JSON.parse(localStorage.getItem("tabs") || JSON.stringify({ peers: [] }))
-      .peers
-  );
+  const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
