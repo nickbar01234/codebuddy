@@ -1,5 +1,4 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
-import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
 import { waitForElement } from "@cb/utils";
