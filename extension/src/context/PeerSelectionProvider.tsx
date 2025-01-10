@@ -47,10 +47,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
   const { informations, roomId } = useRTC();
-  const [peers, setPeers] = React.useState<Peer[]>(
-    JSON.parse(localStorage.getItem("tabs") || JSON.stringify({ peers: [] }))
-      .peers
-  );
+  const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const [loading, setLoading] = React.useState<boolean>(true);
