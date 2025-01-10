@@ -1,13 +1,13 @@
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
-import React from "react";
-import { Toaster } from "sonner";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { appStateContext } from "@cb/context/AppStateProvider";
-import { AppState } from "@cb/context/AppStateProvider";
-import { usePeerSelection } from "@cb/hooks/index";
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import React from "react";
+import { Toaster } from "sonner";
+
 import { CaretRightIcon } from "@cb/components/icons";
+import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { usePeerSelection } from "@cb/hooks/index";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);

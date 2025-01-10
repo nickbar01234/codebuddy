@@ -45,6 +45,7 @@ export interface SetOtherEditorRequest {
     forceMoveMarkers: boolean;
   };
   changeUser: boolean;
+  editorId: string;
 }
 
 interface UpdateEditorLayoutRequest {

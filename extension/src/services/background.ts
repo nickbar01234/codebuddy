@@ -85,7 +85,6 @@ const createModel = async (id: string) => {
       document.getElementById(id),
       {
         readOnly: true,
-        domReadOnly: true,
         scrollBeyondLastLine: false,
         automaticLayout: true,
         minimap: { enabled: false },
@@ -99,7 +98,7 @@ const createModel = async (id: string) => {
 const setValueModel = async (
   args: Pick<
     SetOtherEditorRequest,
-    "code" | "language" | "changes" | "changeUser"
+    "code" | "language" | "changes" | "changeUser" | "editorId"
   >
 ) => {
   console.log("using setValueModel");
@@ -137,6 +136,9 @@ const setValueModel = async (
   await myEditor.executeEdits("apply changes", [editOperations]);
   const myCode = await myEditor.getValue();
   if (myCode !== code) {
+    console.log("Detected Conflict");
+    console.log(code);
+    console.log(myCode);
     await myEditor.setValue(code);
   }
   await myEditor.updateOptions({ readOnly: true });
@@ -190,6 +192,7 @@ chrome.runtime.onMessage.addListener(
         });
         break;
       }
+
       case "getValue": {
         chrome.scripting
           .executeScript({
@@ -243,6 +246,7 @@ chrome.runtime.onMessage.addListener(
                 language: request.language,
                 changes: request.changes,
                 changeUser: request.changeUser,
+                editorId: request.editorId,
               },
             ],
             world: "MAIN",

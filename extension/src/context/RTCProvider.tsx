@@ -1,5 +1,12 @@
 import db from "@cb/db";
-import { useOnMount, useAppState } from "@cb/hooks";
+import { useAppState, useOnMount } from "@cb/hooks";
+import { sendServiceRequest } from "@cb/services";
+import {
+  Payload,
+  PeerCodeMessage,
+  PeerMessage,
+  PeerTestMessage,
+} from "@cb/types";
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
@@ -7,6 +14,7 @@ import {
 } from "@cb/utils";
 import {
   Unsubscribe,
+  arrayRemove,
   arrayUnion,
   deleteDoc,
   getDocs,
@@ -16,13 +24,6 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import { sendServiceRequest } from "@cb/services";
-import {
-  Payload,
-  PeerCodeMessage,
-  PeerMessage,
-  PeerTestMessage,
-} from "@cb/types";
 import { additionalServers } from "./additionalServers";
 
 const servers = {
@@ -82,7 +83,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const sendMessage = React.useCallback(
     (username: string) => (payload: PeerMessage) => {
-      if (pcs.current[username].channel !== undefined) {
+      if (
+        pcs.current[username].channel !== undefined &&
+        pcs.current[username].channel.readyState === "open"
+      ) {
         console.log("Sending message to " + username);
         pcs.current[username].channel.send(JSON.stringify(payload));
       } else {
@@ -169,8 +173,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
-    await setDoc(roomRef, { questionId }, { merge: true });
-    await db.usernamesCollection(roomRef.id).addUser(username);
+    await setDoc(
+      roomRef,
+      { questionId, usernames: arrayUnion(username) },
+      { merge: true }
+    );
+    // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
     localStorage.setItem(
@@ -180,10 +188,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
         numberOfUsers: 0,
       })
     );
+    navigator.clipboard.writeText(roomRef.id);
+    toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
 
   const createOffer = React.useCallback(
     async (roomId: string, peer: string) => {
+      console.log("Create Offer to", peer);
       const meRef = db.connections(roomId, peer).doc(username);
 
       const pc = new RTCPeerConnection(servers);
@@ -246,6 +257,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const joinRoom = React.useCallback(
     async (roomId: string, questionId: string): Promise<boolean> => {
+      console.log("Joining room", roomId);
       if (!roomId) {
         toast.error("Please enter room ID");
         return false;
@@ -264,17 +276,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
         return false;
       }
+      const usernames = roomDoc.data().usernames;
+      // const usernamesCollection = await db.usernamesCollection(roomId).doc();
 
-      const usernamesCollection = await db.usernamesCollection(roomId).doc();
-      if (usernamesCollection.size >= MAX_CAPACITY) {
+      if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
         return false;
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-
-      await db.usernamesCollection(roomId).addUser(username);
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayUnion(username),
+      });
+      // await db.usernamesCollection(roomId).addUser(username);
 
       onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
@@ -327,6 +342,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           });
         });
       });
+
       if (
         JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
         roomId.toString()
@@ -335,13 +351,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
-      localStorage.setItem(
-        "curRoomId",
-        JSON.stringify({
-          roomId: roomId,
-          numberOfUsers: usernamesCollection.size,
-        })
-      );
       return true;
     },
     [username]
@@ -349,16 +358,23 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const leaveRoom = React.useCallback(
     async (roomId: string, reload = false) => {
+      console.log("Leaving room", roomId);
       if (roomId == null) {
         return;
       }
       if (!reload) {
-        // localStorage.removeItem("reloading");
-        // localStorage.removeItem("curRoomId");
-        // localStorage.removeItem("tabs");
+        console.log("Cleaning up local storage");
         localStorage.clear();
+        sendServiceRequest({
+          action: "cleanEditor",
+        });
       }
-      await db.usernamesCollection(roomId).deleteUser(username);
+
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(username),
+      });
+      // await db.usernamesCollection(roomId).deleteUser(username);
+
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
       myAnswers.docs.forEach(async (doc) => {
         deleteDoc(doc.ref);
@@ -367,11 +383,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setInformations({});
       setConnected({});
       pcs.current = {};
-      if (!reload) {
-        sendServiceRequest({
-          action: "cleanEditor",
-        });
-      }
     },
     [username]
   );
@@ -380,11 +391,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const handleBeforeUnload = async () => {
       if (roomId) {
         console.log("Before Reloading", roomId);
-        localStorage.setItem("reloading", roomId);
-        await db.usernamesCollection(roomId).deleteUser(username);
+        await updateDoc(db.room(roomId).ref(), {
+          usernames: arrayRemove(username),
+        });
+        // await db.usernamesCollection(roomId).deleteUser(username);
       }
     };
-
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
@@ -393,117 +405,63 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username]);
 
   React.useEffect(() => {
-    const reloading = localStorage.getItem("reloading");
-    if (reloading) {
-      console.log("Reloading", reloading);
-      localStorage.removeItem("reloading");
+    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+    if (refreshInfo && refreshInfo.roomId) {
+      console.log("Reloading", refreshInfo);
+      const prevRoomId = refreshInfo.roomId;
       const reloadJob = async () => {
-        await leaveRoom(reloading, true);
-        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
+        await leaveRoom(prevRoomId, true);
+        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
       };
       reloadJob();
     }
   }, [joinRoom, leaveRoom]);
-  React.useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (roomId) {
-        console.log("Before Reloading", roomId);
-        localStorage.setItem("reloading", roomId);
-        await db.usernamesCollection(roomId).deleteUser(username);
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [roomId, username]);
-
-  React.useEffect(() => {
-    const reloading = localStorage.getItem("reloading");
-    if (reloading) {
-      console.log("Reloading", reloading);
-      localStorage.removeItem("reloading");
-      const reloadJob = async () => {
-        await leaveRoom(reloading, true);
-        await joinRoom(reloading, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-    }
-  }, []);
 
   React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
-      const unsubscribe = onSnapshot(
-        db.usernamesCollection(roomId).ref(),
-        (snapshot) => {
-          snapshot.docChanges().forEach(async (change) => {
-            if (change.type === "removed") {
-              const peer = change.doc.id;
-              if (peer == undefined) return;
-              if (pcs.current[peer] == undefined) return;
-              const { [peer]: _, ...rest } = pcs.current;
-              pcs.current = rest;
-              console.log("Removed peer", peer);
-              await deleteDoc(db.connections(roomId, username).doc(peer));
-              setInformations((prev) => {
-                const { [peer]: _, ...rest } = prev;
-                return rest;
-              });
-              setConnected((prev) => {
-                const { [peer]: _, ...rest } = prev;
-                return rest;
-              });
-              localStorage.setItem(
-                "curRoomId",
-                JSON.stringify({
-                  roomId: roomId,
-                  numberOfUsers:
-                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
-                      .numberOfUsers - 1,
-                })
-              );
-              return;
-            }
-            if (change.type === "added") {
-              console.log("Added peer");
-              const peer = change.doc.id;
-              const usernamesSnapshot = await db
-                .usernamesCollection(roomId)
-                .doc();
-              const myTimeStamp = usernamesSnapshot.docs
-                .find((doc) => doc.id === username)
-                ?.data().createdAt;
-              // console.log(myTimeStamp);
-              if (peer == undefined || peer === username) {
-                return;
-              }
-              if (myTimeStamp.seconds >= change.doc.data().createdAt.seconds) {
-                return;
-              }
+      if (unsubscribeRef.current != null) {
+        unsubscribeRef.current();
+      }
+      const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
+        const data = snapshot.data();
+        if (data == undefined) return;
+        const usernames = data.usernames;
+        if (!usernames.includes(username)) return;
+        const removedPeers = Object.keys(pcs.current).filter(
+          (username) => !usernames.includes(username)
+        );
+        const addedPeers = usernames
+          .slice(data.usernames.indexOf(username) + 1)
+          .filter((username) => !pcs.current[username]);
 
-              console.log("Create Offer to", change.doc.id);
-              await createOffer(roomId, peer);
-              localStorage.setItem(
-                "curRoomId",
-                JSON.stringify({
-                  roomId: roomId,
-                  numberOfUsers:
-                    JSON.parse(localStorage.getItem("curRoomId") ?? "{}")
-                      .numberOfUsers + 1,
-                })
-              );
-            }
+        removedPeers.forEach(async (peer) => {
+          if (peer == undefined) return;
+          if (pcs.current[peer] == undefined) return;
+          const { [peer]: _, ...rest } = pcs.current;
+          pcs.current = rest;
+          console.log("Removed peer", peer);
+          await deleteDoc(db.connections(roomId, username).doc(peer));
+          setInformations((prev) => {
+            const { [peer]: _, ...rest } = prev;
+            return rest;
           });
-        }
-      );
+          setConnected((prev) => {
+            const { [peer]: _, ...rest } = prev;
+            return rest;
+          });
+        });
+        addedPeers.forEach((peer) => {
+          createOffer(roomId, peer);
+        });
+      });
 
       unsubscribeRef.current = unsubscribe;
     };
 
     if (roomId != null) {
       connection();
+      console.log("unsubscribed");
       return () => {
         if (unsubscribeRef.current != null) {
           unsubscribeRef.current();
@@ -516,6 +474,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sendCode();
     sendCodeRef.current = sendCode;
   }, [sendCode]);
+
+  React.useEffect(() => {
+    if (roomId != null && informations) {
+      localStorage.setItem(
+        "curRoomId",
+        JSON.stringify({
+          roomId: roomId,
+          numberOfUsers: Object.keys(informations).length,
+        })
+      );
+    }
+  }, [roomId, informations]);
 
   useOnMount(() => {
     const observer = new MutationObserver(async () => {

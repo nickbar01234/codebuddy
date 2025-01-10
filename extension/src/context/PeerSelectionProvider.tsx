@@ -1,9 +1,10 @@
+import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
 import { sendServiceRequest } from "@cb/services";
+import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 import { PeerInformation } from "./RTCProvider";
-import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -14,6 +15,7 @@ interface PeerSelectionContext {
   activeUserInformation: PeerInformation | undefined;
   pasteCode: () => void;
   setCode: (changeUser: boolean) => void;
+  loading: boolean;
 }
 
 export const PeerSelectionContext = React.createContext(
@@ -44,12 +46,11 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { informations } = useRTC();
-  const [peers, setPeers] = React.useState<Peer[]>(
-    JSON.parse(localStorage.getItem("tabs") || "[]")
-  );
+  const { informations, roomId } = useRTC();
+  const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(true);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -107,14 +108,13 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     [peers]
   );
 
-  const unblur = React.useCallback(
-    () => replacePeer(activePeer?.id, { viewable: true }),
-    [activePeer, replacePeer]
-  );
+  const unblur = React.useCallback(() => {
+    replacePeer(activePeer?.id, { viewable: true });
+  }, [activePeer, replacePeer]);
 
   const setActivePeerId = React.useCallback(
     (peer: string) => {
-      console.log("Change peer");
+      // console.log("Change peer");
       replacePeer(activePeer?.id, { active: false });
       replacePeer(peer, { active: true });
       setChangeUser(true);
@@ -133,9 +133,9 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const setCode = React.useCallback(
     (changeUser: boolean) => {
-      console.log("Attempting to set code", activeUserInformation);
+      // console.log("Attempting to set code", activeUserInformation);
       if (activeUserInformation != undefined) {
-        console.log("Code", activeUserInformation);
+        // console.log("Code", activeUserInformation);
         const {
           code: { value, language },
           changes,
@@ -152,6 +152,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           language: language,
           changes: changes !== "" ? JSON.parse(changes) : {},
           changeUser: changeUser,
+          editorId: EDITOR_NODE_ID,
         });
       }
     },
@@ -180,15 +181,36 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
 
   React.useEffect(() => {
-    const prevPeers: Peer[] = JSON.parse(localStorage.getItem("tabs") || "[]");
+    if (!loading) {
+      console.log("Setting tabs", roomId, peers);
+      localStorage.setItem(
+        "tabs",
+        JSON.stringify({
+          roomId,
+          peers: peers,
+        })
+      );
+    }
+  }, [peers, loading, roomId]);
+
+  React.useEffect(() => {
+    const prevInfo: {
+      roomId: string;
+      peers: Peer[];
+    } = JSON.parse(localStorage.getItem("tabs") || "{}");
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
+        const prevPeersTab = prevInfo.peers;
+        const prevRoomId = prevInfo.roomId;
         const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
           id: peerInfo,
           active: false,
           viewable:
-            prevPeers.some((peer) => peer.id === peerInfo && peer.viewable) ??
-            false,
+            prevRoomId == roomId &&
+            (prevPeersTab.some(
+              (peer) => peer.id === peerInfo && peer.viewable
+            ) ??
+              false),
           tests: [],
         };
         const tests = groupTestCases(informations[peerInfo]);
@@ -199,11 +221,12 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
-        console.log("Test cases", tests);
+        setLoading(false);
+        // console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
     );
-  }, [informations, groupTestCases]);
+  }, [informations, groupTestCases, roomId]);
 
   React.useEffect(() => {
     if (activePeer == undefined && peers.length > 0) {
@@ -211,34 +234,36 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     }
   }, [peers, activePeer, setActivePeerId]);
 
-  React.useEffect(() => {
-    const handleBeforeUnload = async () => {
-      localStorage.setItem("tabs", JSON.stringify(peers));
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [peers]);
-
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
-      console.log("Changeuser", changeUser, activeUserInformation);
+      // console.log("Changeuser", changeUser, activeUserInformation);
       setCode(changeUser);
       setChangeUser(false);
     }
-  }, [activePeer?.id, activeUserInformation, setCode]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePeer?.id, activeUserInformation, setCode]); // not including changeUser
 
   React.useEffect(() => {
     setCodeRef.current = setCode;
   }, [setCode]);
 
   useOnMount(() => {
-    sendServiceRequest({ action: "createModel", id: EDITOR_NODE_ID }).then(() =>
-      setCodeRef.current(true)
-    );
+    waitForElement(".monaco-editor", 2000)
+      .then(() =>
+        sendServiceRequest({
+          action: "createModel",
+          id: EDITOR_NODE_ID,
+        })
+      )
+      .then(() => {
+        // console.log("Created Model");
+        setCodeRef.current(true);
+      })
+      .catch((error) => {
+        console.error("Error during the process:", error);
+      });
   });
 
   return (
@@ -251,6 +276,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         selectTest,
         activeUserInformation,
         pasteCode,
+        loading,
         setCode,
       }}
     >
