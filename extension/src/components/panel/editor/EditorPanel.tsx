@@ -6,9 +6,10 @@ import { ExtensionStorage } from "@cb/types";
 import { CodeBuddyPreference } from "@cb/constants";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { capitalize } from "@cb/utils/string";
-import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
+import { UserIcon } from "@cb/components/icons";
 import EditorToolBar from "./EditorToolBar";
+import useWindowDimensions from "@cb/hooks/useWindowDimensions";
+
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -17,17 +18,10 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const {
-    peers,
-    activePeer,
-    unblur,
-    setActivePeerId,
-    activeUserInformation,
-    pasteCode,
-    selectTest,
-    loading,
-  } = usePeerSelection();
+  const { peers, activePeer, unblur, setActivePeerId, selectTest, loading } =
+    usePeerSelection();
   const { state } = React.useContext(appStateContext);
+  const { height } = useWindowDimensions();
 
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
@@ -79,7 +73,8 @@ const EditorPanel = () => {
             axis="y"
             resizeHandles={canViewCode ? ["s"] : undefined}
             className="h-full flex relative w-full"
-            maxConstraints={[Infinity, 600]}
+            minConstraints={[Infinity, height * 0.2]}
+            maxConstraints={[Infinity, height * 0.5]}
             handle={
               <div className="absolute bottom-0 h-2 bg-layer-bg-gray dark:bg-layer-bg-gray w-full">
                 <div className="relative top-1/2 -translate-y-1/2 flexlayout__splitter flexlayout__splitter_horz w-full h-[2px] hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[2px] after:bg-[--color-splitter] cursor-ns-resize" />
@@ -104,7 +99,7 @@ const EditorPanel = () => {
               });
             }}
           >
-            <div className="relative h-full flex flex-col grow gap-y-2">
+            <div className="relative h-full flex flex-col grow gap-y-2 w-full">
               <EditorToolBar />
               <div
                 id={EDITOR_NODE_ID}

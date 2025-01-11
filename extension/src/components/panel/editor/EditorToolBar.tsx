@@ -1,5 +1,6 @@
 import { PasteCodeIcon } from "@cb/components/icons";
 import { usePeerSelection } from "@cb/hooks/index";
+import { capitalize } from "@cb/utils/string";
 
 const EditorToolBar = () => {
   const { activeUserInformation, pasteCode } = usePeerSelection();
@@ -7,7 +8,7 @@ const EditorToolBar = () => {
   return (
     <div className="flex h-8 items-center justify-between border-b p-2 border-border-quaternary dark:border-border-quaternary overflow-x-scroll hide-scrollbar gap-4">
       <div className="text-text-secondary dark:text-text-secondary text-sm font-normal group">
-        {activeUserInformation?.code?.code.language ?? ""}
+        {capitalize(activeUserInformation?.code?.code.language ?? "")}
       </div>
       <button
         type="button"
