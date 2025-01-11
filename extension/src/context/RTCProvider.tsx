@@ -1,6 +1,11 @@
 import db from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
-import { sendServiceRequest } from "@cb/services";
+import {
+  clearLocalStorage,
+  getLocalStorage,
+  sendServiceRequest,
+  setLocalStorage,
+} from "@cb/services";
 import {
   Payload,
   PeerCodeMessage,
@@ -181,13 +186,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
-    localStorage.setItem(
-      "curRoomId",
-      JSON.stringify({
-        roomId: roomRef.id,
-        numberOfUsers: 0,
-      })
-    );
+    setLocalStorage({ curRoomId: { roomId: roomRef.id, numberOfUsers: 0 } });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -343,10 +342,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
       });
 
-      if (
-        JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
-        roomId.toString()
-      ) {
+      if (getLocalStorage("curRoomId")?.roomId !== roomId.toString()) {
         toast.success(
           `You have successfully joined the room with ID ${roomId}.`
         );
@@ -364,7 +360,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       if (!reload) {
         console.log("Cleaning up local storage");
-        localStorage.clear();
+        clearLocalStorage();
         sendServiceRequest({
           action: "cleanEditor",
         });
@@ -405,7 +401,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username]);
 
   React.useEffect(() => {
-    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+    const refreshInfo = getLocalStorage("curRoomId");
     if (refreshInfo && refreshInfo.roomId) {
       console.log("Reloading", refreshInfo);
       const prevRoomId = refreshInfo.roomId;
@@ -477,13 +473,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && informations) {
-      localStorage.setItem(
-        "curRoomId",
-        JSON.stringify({
-          roomId: roomId,
-          numberOfUsers: Object.keys(informations).length,
-        })
-      );
+      setLocalStorage({
+        curRoomId: { roomId, numberOfUsers: Object.keys(informations).length },
+      });
     }
   }, [roomId, informations]);
 

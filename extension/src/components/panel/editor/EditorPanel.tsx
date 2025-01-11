@@ -1,6 +1,10 @@
 import React from "react";
 import { useOnMount, usePeerSelection } from "@cb/hooks/index";
-import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
+import {
+  getChromeStorage,
+  sendServiceRequest,
+  setChromeStorage,
+} from "@cb/services";
 import { ResizableBox } from "react-resizable";
 import { ExtensionStorage } from "@cb/types";
 import { CodeBuddyPreference } from "@cb/constants";
@@ -31,7 +35,7 @@ const EditorPanel = () => {
   const activeTest = activePeer?.tests.find((test) => test.selected);
 
   useOnMount(() => {
-    getStorage("codePreference").then(setCodePreference);
+    getChromeStorage("codePreference").then(setCodePreference);
   });
 
   return (
@@ -87,7 +91,7 @@ const EditorPanel = () => {
               })
             }
             onResizeStop={(_e, data) => {
-              setStorage({
+              setChromeStorage({
                 codePreference: {
                   ...codePreference,
                   height: data.size.height,
