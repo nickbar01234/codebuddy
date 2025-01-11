@@ -73,6 +73,38 @@ export const RTCProvider = (props: RTCProviderProps) => {
     user: { username },
   } = useAppState();
 
+  useOnMount(() => {
+    waitForElement(`[data-e2e-locator="console-submit-button"]`, 2000)
+      .then((button) => button as HTMLButtonElement)
+      .then((button) => {
+        const originalOnClick = button.onclick;
+        button.onclick = function (event) {
+          if (originalOnClick) {
+            originalOnClick.call(this, event);
+          }
+
+          waitForElement(`[data-e2e-locator="submission-result"]`, 10000)
+            .then(() => {
+              sendMessages({
+                action: "event",
+                event: "submit-success",
+                eventMessage: `User ${username} passed all test cases`,
+              });
+            })
+            .catch((error) => {
+              sendMessages({
+                action: "event",
+                event: "submit-failure",
+                eventMessage: `User ${username} failed some test cases`,
+              });
+            });
+        };
+      })
+      .catch((error) => {
+        console.error("Error mounting callback on submit code button:", error);
+      });
+  });
+
   const pcs = React.useRef<Record<string, Connection>>({});
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const [informations, setInformations] = React.useState<
@@ -162,6 +194,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
               tests: rest,
             },
           }));
+          break;
+        }
+
+        case "event": {
+          const { event, eventMessage } = payload;
+          if (event == "submit-success") {
+            toast.success(`Update: ${eventMessage}`);
+          } else if (event == "submit-failure") {
+            toast.error(`Update: ${eventMessage}`);
+          }
           break;
         }
 

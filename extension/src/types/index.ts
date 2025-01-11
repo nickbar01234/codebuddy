@@ -106,4 +106,10 @@ export interface PeerTestMessage {
 
 export type Payload<T> = Omit<T, "action">;
 
-export type PeerMessage = PeerCodeMessage | PeerTestMessage;
+interface PeerEventMessage {
+  action: "event";
+  event: string;
+  eventMessage: string;
+}
+
+export type PeerMessage = PeerCodeMessage | PeerTestMessage | PeerEventMessage;
