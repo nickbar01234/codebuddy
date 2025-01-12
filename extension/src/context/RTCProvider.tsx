@@ -124,19 +124,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     []
   );
 
-  const onOpen = (peer: string) => () => {
-    console.log("Data Channel is open for " + peer);
-    setPeerState((prev) => ({
-      ...prev,
-      [peer]: {
-        lastSeen: Date.now(),
-        latency: 0,
-        deviation: 0,
-        connected: true,
-      },
-    }));
-  };
-
   const sendMessage = React.useCallback(
     (peer: string) => (payload: PeerMessage) => {
       if (
@@ -263,6 +250,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sendCodeRef = React.useRef(sendCode);
   const sendTestsRef = React.useRef(sendTests);
   const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
+
+  const onOpen = (peer: string) => () => {
+    console.log("Data Channel is open for " + peer);
+    setPeerState((prev) => ({
+      ...prev,
+      [peer]: {
+        lastSeen: Date.now(),
+        latency: 0,
+        deviation: 0,
+        connected: true,
+      },
+    }));
+  };
 
   const onmessage = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -611,19 +611,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     };
   }, [roomId, username]);
 
-  useOnMount(() => {
-    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
-    if (refreshInfo && refreshInfo.roomId) {
-      const prevRoomId = refreshInfo.roomId;
-      const reloadJob = async () => {
-        await leaveRoom(prevRoomId, true);
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-      console.log("Reloading", refreshInfo);
-    }
-  });
-
   React.useEffect(() => {
     if (roomId != null && informations) {
       setLocalStorage({
@@ -669,14 +656,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sendCodeRef.current = sendCode;
   }, [sendCode]);
 
-  React.useEffect(() => {
-    if (roomId != null && informations) {
-      setLocalStorage({
-        curRoomId: { roomId, numberOfUsers: Object.keys(informations).length },
-      });
-    }
-  }, [roomId, informations]);
-
   useOnMount(() => {
     const observer = new MutationObserver(async () => {
       await sendCodeRef.current();
@@ -708,6 +687,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
     return observer.disconnect;
   });
 
+  useOnMount(() => {
+    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+    if (refreshInfo && refreshInfo.roomId) {
+      const prevRoomId = refreshInfo.roomId;
+      const reloadJob = async () => {
+        await leaveRoom(prevRoomId, true);
+        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+      };
+      reloadJob();
+      console.log("Reloading", refreshInfo);
+    }
+  });
   return (
     <RTCContext.Provider
       value={{
