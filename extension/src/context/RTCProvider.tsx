@@ -1,6 +1,11 @@
 import db from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
-import { sendServiceRequest } from "@cb/services";
+import {
+  clearLocalStorage,
+  getLocalStorage,
+  sendServiceRequest,
+  setLocalStorage,
+} from "@cb/services";
 import {
   HeartBeatMessage,
   Payload,
@@ -305,13 +310,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
-    localStorage.setItem(
-      "curRoomId",
-      JSON.stringify({
-        roomId: roomRef.id,
-        numberOfUsers: 0,
-      })
-    );
+    setLocalStorage({ curRoomId: { roomId: roomRef.id, numberOfUsers: 0 } });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -467,10 +466,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
       });
 
-      if (
-        JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
-        roomId.toString()
-      ) {
+      if (getLocalStorage("curRoomId")?.roomId !== roomId.toString()) {
         toast.success(
           `You have successfully joined the room with ID ${roomId}.`
         );
@@ -489,7 +485,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (!reload) {
         console.log("Cleaning up local storage");
         console.log("Cleaning up local storage");
-        localStorage.clear();
+        clearLocalStorage();
         // sendServiceRequest({
         //   action: "cleanEditor",
         // }); if we clean the editor, the provider is only mounted once if the user dont reload the page. We will not have editor for the next room
@@ -630,13 +626,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && informations) {
-      localStorage.setItem(
-        "curRoomId",
-        JSON.stringify({
-          roomId: roomId,
-          numberOfUsers: Object.keys(informations).length,
-        })
-      );
+      setLocalStorage({
+        curRoomId: { roomId, numberOfUsers: Object.keys(informations).length },
+      });
     }
   }, [roomId, informations]);
 
@@ -679,13 +671,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && informations) {
-      localStorage.setItem(
-        "curRoomId",
-        JSON.stringify({
-          roomId: roomId,
-          numberOfUsers: Object.keys(informations).length,
-        })
-      );
+      setLocalStorage({
+        curRoomId: { roomId, numberOfUsers: Object.keys(informations).length },
+      });
     }
   }, [roomId, informations]);
 

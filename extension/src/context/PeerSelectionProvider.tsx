@@ -1,10 +1,15 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
-import { sendServiceRequest } from "@cb/services";
+import {
+  getLocalStorage,
+  sendServiceRequest,
+  setLocalStorage,
+} from "@cb/services";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 import { PeerInformation } from "./RTCProvider";
+import { Peer, TestCase } from "@cb/types";
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -21,23 +26,6 @@ interface PeerSelectionContext {
 export const PeerSelectionContext = React.createContext(
   {} as PeerSelectionContext
 );
-
-interface Assignment {
-  variable: string;
-  value: string;
-}
-
-interface TestCase {
-  selected: boolean;
-  test: Assignment[];
-}
-
-interface Peer {
-  id: string;
-  active: boolean;
-  viewable: boolean;
-  tests: TestCase[];
-}
 
 interface PeerSelectionProviderProps {
   children: React.ReactNode;
@@ -183,25 +171,16 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => {
     if (!loading) {
       console.log("Setting tabs", roomId, peers);
-      localStorage.setItem(
-        "tabs",
-        JSON.stringify({
-          roomId,
-          peers: peers,
-        })
-      );
+      setLocalStorage({ tabs: { roomId, peers } });
     }
   }, [peers, loading, roomId]);
 
   React.useEffect(() => {
-    const prevInfo: {
-      roomId: string;
-      peers: Peer[];
-    } = JSON.parse(localStorage.getItem("tabs") || "{}");
+    const prevInfo = getLocalStorage("tabs");
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
-        const prevPeersTab = prevInfo.peers;
-        const prevRoomId = prevInfo.roomId;
+        const prevPeersTab = prevInfo?.peers ?? [];
+        const prevRoomId = prevInfo?.roomId;
         const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
           id: peerInfo,
           active: false,

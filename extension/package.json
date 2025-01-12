@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "pnpm run build && chokidar 'src/**/*' -c 'pnpm run build'",
-    "build:service-worker": "tsc -p ./src/services/tsconfig.json && TYPE=service_worker vite build",
+    "build:service_worker": "tsc -p ./src/services/tsconfig.json && TYPE=service_worker vite build",
     "build:content_script": "tsc && TYPE=content_script vite build",
     "build": "pnpm run \"/^build:.*/\"",
+    "dev": "concurrently --kill-others \"pnpm run build:content_script --watch\" \"pnpm run build:service_worker --watch\"",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -15,7 +15,6 @@
     "@tsparticles/engine": "^3.5.0",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.5.0",
-    "chokidar": "^4.0.3",
     "dotenv": "^16.4.5",
     "firebase": "^10.12.2",
     "framer-motion": "^11.5.4",
@@ -35,6 +34,7 @@
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
     "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.1.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { setStorage } from "@cb/services";
+import { setChromeStorage } from "@cb/services";
 import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
 import { CodeBuddyPreference } from "@cb/constants";
@@ -35,7 +35,7 @@ const handleCookieRequest = async (): Promise<Status> => {
  */
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    setStorage({ ...CodeBuddyPreference });
+    setChromeStorage({ ...CodeBuddyPreference });
   }
 });
 

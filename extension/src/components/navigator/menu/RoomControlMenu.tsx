@@ -11,6 +11,7 @@ import {
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { getQuestionIdFromUrl } from "@cb/utils";
+import { clearLocalStorage } from "@cb/services";
 
 interface MenuItem {
   display: string;
@@ -40,7 +41,8 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <ResetIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            localStorage.clear();
+            clearLocalStorage();
+            setDisplayMenu(false);
           },
         },
         {
