@@ -27,6 +27,11 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
+import {
+  calculateNewRTT,
+  calculateNewDeviation,
+  calculateNewTimeOutInterval,
+} from "@cb/utils/heartbeat";
 
 const servers = {
   iceServers: [
@@ -40,11 +45,8 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 const CODE_EDIOR_DIV_CHANGE_CONTENT = "#trackEditor";
-const BUFFER_TIME_OUT = 1000;
 const INITIAL_TIME_OUT = 3000;
 const HEARTBEAT_INTERVAL = 1000;
-const ALPHA = 0.125;
-const BETA = 0.25;
 
 export interface PeerInformation {
   code?: Payload<PeerCodeMessage>;
@@ -131,7 +133,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   };
 
   const sendMessage = React.useCallback(
-    (peer: string) => (payload: PeerMessage | HeartBeatMessage) => {
+    (peer: string) => (payload: PeerMessage) => {
       if (
         pcs.current[peer].channel !== undefined &&
         connected.includes(peer) &&
@@ -151,7 +153,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const sendMessages = React.useCallback(
-    (payload: PeerMessage | HeartBeatMessage) => {
+    (payload: PeerMessage) => {
       for (const peer of Object.keys(pcs.current)) {
         sendMessage(peer)(payload);
       }
@@ -189,39 +191,39 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const receiveHeartBeat = React.useCallback(
     (payload: HeartBeatMessage) => {
-      const { username: peer, ack, roomId: prevRoomId } = payload;
+      const { username: peer, roomId: prevRoomId } = payload;
       if (prevRoomId !== roomId) {
         console.log("Room ID changed, ignoring heartbeat");
         return;
       }
-      if (ack) {
-        // console.log("Received heartbeat from " + peer);
+      replacePeerState(peer, (peer) => {
+        const { lastSeen, latency, deviation } = peer;
+        const newSample = Date.now() - lastSeen;
+        const newLatency = calculateNewRTT(latency, newSample);
+        const newDeviation = calculateNewDeviation(
+          deviation,
+          newLatency,
+          newSample
+        );
+        setTimeOutHeartBeat(
+          calculateNewTimeOutInterval(newLatency, newDeviation)
+        );
+        return {
+          ...peer,
+          lastSeen: Date.now(),
+          latency: newLatency,
+          deviation: newDeviation,
+        };
+      });
+      // if (ack) {
+      //   // console.log("Received heartbeat from " + peer);
 
-        replacePeerState(peer, (peer) => {
-          const { lastSeen, latency, deviation } = peer;
-          const newSample = Date.now() - lastSeen;
-          const newLatency = calculateNewRTT(latency, newSample);
-          const newDeviation = calculateNewDeviation(
-            deviation,
-            newLatency,
-            newSample
-          );
-          setTimeOutHeartBeat(
-            calculateNewTimeOutInterval(newLatency, newDeviation)
-          );
-          return {
-            ...peer,
-            lastSeen: Date.now(),
-            latency: newLatency,
-            deviation: newDeviation,
-          };
-        });
-      } else {
-        // console.log("Sending heartbeat to " + peer);
-        sendHeartBeat(peer, true);
-      }
+      // } else {
+      //   // console.log("Sending heartbeat to " + peer);
+      //   sendHeartBeat(peer, true);
+      // }
     },
-    [replacePeerState, sendHeartBeat, roomId]
+    [replacePeerState, roomId]
   );
 
   const receiveCode = React.useCallback(
@@ -733,19 +735,4 @@ export const RTCProvider = (props: RTCProviderProps) => {
       {props.children}
     </RTCContext.Provider>
   );
-};
-const calculateNewRTT = (latency: number, sample: number) => {
-  if (latency == 0) return sample;
-  return (1 - ALPHA) * latency + ALPHA * sample;
-};
-const calculateNewDeviation = (
-  prevDeviation: number,
-  latency: number,
-  sample: number
-) => {
-  if (prevDeviation == 0) return 1 / Math.sqrt(2 * latency);
-  return (1 - BETA) * prevDeviation + BETA * Math.abs(latency - sample);
-};
-const calculateNewTimeOutInterval = (latency: number, deviation: number) => {
-  return latency + 4 * deviation + BUFFER_TIME_OUT;
 };

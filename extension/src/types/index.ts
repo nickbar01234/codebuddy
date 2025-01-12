@@ -120,4 +120,4 @@ export interface PeerState {
 
 export type Payload<T> = Omit<T, "action">;
 
-export type PeerMessage = PeerCodeMessage | PeerTestMessage;
+export type PeerMessage = PeerCodeMessage | PeerTestMessage | HeartBeatMessage;
