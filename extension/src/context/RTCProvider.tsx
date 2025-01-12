@@ -186,7 +186,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
-    setLocalStorage({ curRoomId: { roomId: roomRef.id, numberOfUsers: 0 } });
+    setLocalStorage("curRoomId", {
+      roomId: roomRef.id,
+      numberOfUsers: 0,
+    });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -473,8 +476,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && informations) {
-      setLocalStorage({
-        curRoomId: { roomId, numberOfUsers: Object.keys(informations).length },
+      setLocalStorage("curRoomId", {
+        roomId,
+        numberOfUsers: Object.keys(informations).length,
       });
     }
   }, [roomId, informations]);
