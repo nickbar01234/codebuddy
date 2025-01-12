@@ -185,7 +185,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const receiveHeartBeat = React.useCallback(
     (payload: HeartBeatMessage) => {
-      const { username: peer, roomId: prevRoomId } = payload;
+      const { username: peer, ack, roomId: prevRoomId } = payload;
       if (prevRoomId !== roomId) {
         console.log("Room ID changed, ignoring heartbeat");
         return;
@@ -210,14 +210,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
           deviation: newDeviation,
         };
       });
-      // if (ack) {
-      //   // console.log("Received heartbeat from " + peer);
-      // } else {
-      //   // console.log("Sending heartbeat to " + peer);
-      //   sendHeartBeat(peer, true);
-      // }
+      if (ack) {
+        // console.log("Received heartbeat from " + peer);
+      } else {
+        // console.log("Sending heartbeat to " + peer);
+        sendHeartBeat(peer, true);
+      }
     },
-    [replacePeerState, roomId]
+    [replacePeerState, sendHeartBeat, roomId]
   );
 
   const receiveCode = React.useCallback(
