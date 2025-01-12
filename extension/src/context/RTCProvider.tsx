@@ -14,11 +14,17 @@ import {
   PeerState,
   PeerTestMessage,
 } from "@cb/types";
+
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
+import {
+  calculateNewDeviation,
+  calculateNewRTT,
+  calculateNewTimeOutInterval,
+} from "@cb/utils/heartbeat";
 import {
   Unsubscribe,
   arrayRemove,
@@ -32,11 +38,6 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
-import {
-  calculateNewRTT,
-  calculateNewDeviation,
-  calculateNewTimeOutInterval,
-} from "@cb/utils/heartbeat";
 
 const servers = {
   iceServers: [
@@ -183,39 +184,39 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const receiveHeartBeat = React.useCallback(
     (payload: HeartBeatMessage) => {
-      const { username: peer, roomId: prevRoomId } = payload;
-      if (prevRoomId !== roomId) {
-        console.log("Room ID changed, ignoring heartbeat");
-        return;
-      }
-      replacePeerState(peer, (peer) => {
-        const { lastSeen, latency, deviation } = peer;
-        const newSample = Date.now() - lastSeen;
-        const newLatency = calculateNewRTT(latency, newSample);
-        const newDeviation = calculateNewDeviation(
-          deviation,
-          newLatency,
-          newSample
-        );
-        setTimeOutHeartBeat(
-          calculateNewTimeOutInterval(newLatency, newDeviation)
-        );
-        return {
-          ...peer,
-          lastSeen: Date.now(),
-          latency: newLatency,
-          deviation: newDeviation,
-        };
-      });
-      // if (ack) {
-      //   // console.log("Received heartbeat from " + peer);
+      const { username: peer, ack, roomId: prevRoomId } = payload;
 
-      // } else {
-      //   // console.log("Sending heartbeat to " + peer);
-      //   sendHeartBeat(peer, true);
-      // }
+      if (ack) {
+        // console.log("Received heartbeat from " + peer);
+        if (prevRoomId !== roomId) {
+          console.log("Room ID changed, ignoring heartbeat");
+          return;
+        }
+        replacePeerState(peer, (peer) => {
+          const { lastSeen, latency, deviation } = peer;
+          const newSample = Date.now() - lastSeen;
+          const newLatency = calculateNewRTT(latency, newSample);
+          const newDeviation = calculateNewDeviation(
+            deviation,
+            newLatency,
+            newSample
+          );
+          setTimeOutHeartBeat(
+            calculateNewTimeOutInterval(newLatency, newDeviation)
+          );
+          return {
+            ...peer,
+            lastSeen: Date.now(),
+            latency: newLatency,
+            deviation: newDeviation,
+          };
+        });
+      } else {
+        // console.log("Sending heartbeat to " + peer);
+        sendHeartBeat(peer, true);
+      }
     },
-    [replacePeerState, roomId]
+    [replacePeerState, sendHeartBeat, roomId]
   );
 
   const receiveCode = React.useCallback(
@@ -287,7 +288,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
 
           case "heartbeat": {
-            // console.log("Received heartbeat from " + username);
+            console.log("Received heartbeat from " + peer);
             receiveHeartBeatRef.current(payload);
             break;
           }
@@ -310,7 +311,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
-    setLocalStorage({ curRoomId: { roomId: roomRef.id, numberOfUsers: 0 } });
+    setLocalStorage({
+      curRoomId: {
+        roomId: roomRef.id,
+        numberOfUsers: 0,
+      },
+    });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -611,10 +617,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
     };
   }, [roomId, username]);
 
+  useOnMount(() => {
+    const refreshInfo = getLocalStorage("curRoomId");
+    if (refreshInfo && refreshInfo.roomId) {
+      const prevRoomId = refreshInfo.roomId;
+      const reloadJob = async () => {
+        await leaveRoom(prevRoomId, true);
+        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+      };
+      reloadJob();
+      console.log("Reloading", refreshInfo);
+    }
+  });
+
   React.useEffect(() => {
     if (roomId != null && informations) {
       setLocalStorage({
-        curRoomId: { roomId, numberOfUsers: Object.keys(informations).length },
+        curRoomId: {
+          roomId: roomId,
+          numberOfUsers: Object.keys(informations).length,
+        },
       });
     }
   }, [roomId, informations]);
@@ -633,6 +655,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const checkAliveInterval = setInterval(() => {
         for (const peer of Object.keys(peerState)) {
           if (peerState[peer].lastSeen + timeOutHeartBeat < Date.now()) {
+            console.log("Peer is dead", peerState[peer].lastSeen);
+            console.log("Time out", timeOutHeartBeat);
             deletePeer(peer);
           }
         }
@@ -687,18 +711,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     return observer.disconnect;
   });
 
-  useOnMount(() => {
-    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
-    if (refreshInfo && refreshInfo.roomId) {
-      const prevRoomId = refreshInfo.roomId;
-      const reloadJob = async () => {
-        await leaveRoom(prevRoomId, true);
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-      console.log("Reloading", refreshInfo);
-    }
-  });
   return (
     <RTCContext.Provider
       value={{
