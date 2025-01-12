@@ -79,7 +79,7 @@ interface Connection {
   username: string;
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
-  lastSeen?: number;
+  lastSeen: number;
 }
 
 export const MAX_CAPACITY = 4;
@@ -334,6 +334,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         username: peer,
         pc: pc,
         channel: channel,
+        lastSeen: Date.now(),
       };
 
       channel.onmessage = onmessage(peer);
@@ -442,6 +443,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
               username: peer,
               pc: pc,
               channel: pc.createDataChannel("channel"),
+              lastSeen: Date.now(),
             };
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
@@ -657,7 +659,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         for (const peer of Object.keys(peerState)) {
           if (
             pcs.current[peer] &&
-            pcs.current[peer].lastSeen != null &&
+            pcs.current[peer].lastSeen &&
             pcs.current[peer].lastSeen + timeOutHeartBeat < Date.now()
           ) {
             console.log("Peer is dead", pcs.current[peer].lastSeen);
