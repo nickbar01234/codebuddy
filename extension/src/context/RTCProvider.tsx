@@ -186,39 +186,38 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const receiveHeartBeat = React.useCallback(
     (payload: HeartBeatMessage) => {
       const { username: peer, ack, roomId: prevRoomId } = payload;
-
+      if (prevRoomId !== roomId) {
+        console.log("Room ID changed, ignoring heartbeat");
+        return;
+      }
+      replacePeerState(peer, (peerHeartBeat) => {
+        const { latency, deviation } = peerHeartBeat;
+        const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
+        const newSample = Date.now() - curlastSeen;
+        const newLatency = calculateNewRTT(latency, newSample);
+        const newDeviation = calculateNewDeviation(
+          deviation,
+          newLatency,
+          newSample
+        );
+        setTimeOutHeartBeat(
+          calculateNewTimeOutInterval(newLatency, newDeviation)
+        );
+        pcs.current[peer].lastSeen = Date.now();
+        return {
+          ...peerHeartBeat,
+          latency: newLatency,
+          deviation: newDeviation,
+        };
+      });
       if (ack) {
-        if (prevRoomId !== roomId) {
-          console.log("Room ID changed, ignoring heartbeat");
-          return;
-        }
-        replacePeerState(peer, (peerHeartBeat) => {
-          const { latency, deviation } = peerHeartBeat;
-          const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
-          const newSample = Date.now() - curlastSeen;
-          const newLatency = calculateNewRTT(latency, newSample);
-          const newDeviation = calculateNewDeviation(
-            deviation,
-            newLatency,
-            newSample
-          );
-          setTimeOutHeartBeat(
-            calculateNewTimeOutInterval(newLatency, newDeviation)
-          );
-          pcs.current[peer].lastSeen = Date.now();
-          return {
-            ...peerHeartBeat,
-            latency: newLatency,
-            deviation: newDeviation,
-          };
-        });
         // console.log("Received heartbeat from " + peer);
       } else {
         // console.log("Sending heartbeat to " + peer);
-        sendHeartBeat(peer, true);
+        // sendHeartBeat(peer, true);
       }
     },
-    [replacePeerState, sendHeartBeat, roomId]
+    [replacePeerState, roomId]
   );
 
   const receiveCode = React.useCallback(
