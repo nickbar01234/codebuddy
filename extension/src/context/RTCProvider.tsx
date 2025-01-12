@@ -79,6 +79,7 @@ interface Connection {
   username: string;
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
+  lastSeen?: number;
 }
 
 export const MAX_CAPACITY = 4;
@@ -184,39 +185,39 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const receiveHeartBeat = React.useCallback(
     (payload: HeartBeatMessage) => {
-      const { username: peer, ack, roomId: prevRoomId } = payload;
-
-      if (ack) {
-        // console.log("Received heartbeat from " + peer);
-        if (prevRoomId !== roomId) {
-          console.log("Room ID changed, ignoring heartbeat");
-          return;
-        }
-        replacePeerState(peer, (peer) => {
-          const { lastSeen, latency, deviation } = peer;
-          const newSample = Date.now() - lastSeen;
-          const newLatency = calculateNewRTT(latency, newSample);
-          const newDeviation = calculateNewDeviation(
-            deviation,
-            newLatency,
-            newSample
-          );
-          setTimeOutHeartBeat(
-            calculateNewTimeOutInterval(newLatency, newDeviation)
-          );
-          return {
-            ...peer,
-            lastSeen: Date.now(),
-            latency: newLatency,
-            deviation: newDeviation,
-          };
-        });
-      } else {
-        // console.log("Sending heartbeat to " + peer);
-        sendHeartBeat(peer, true);
+      const { username: peer, roomId: prevRoomId } = payload;
+      if (prevRoomId !== roomId) {
+        console.log("Room ID changed, ignoring heartbeat");
+        return;
       }
+      replacePeerState(peer, (peerHeartBeat) => {
+        const { latency, deviation } = peerHeartBeat;
+        const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
+        const newSample = Date.now() - curlastSeen;
+        const newLatency = calculateNewRTT(latency, newSample);
+        const newDeviation = calculateNewDeviation(
+          deviation,
+          newLatency,
+          newSample
+        );
+        setTimeOutHeartBeat(
+          calculateNewTimeOutInterval(newLatency, newDeviation)
+        );
+        pcs.current[peer].lastSeen = Date.now();
+        return {
+          ...peerHeartBeat,
+          latency: newLatency,
+          deviation: newDeviation,
+        };
+      });
+      // if (ack) {
+      //   // console.log("Received heartbeat from " + peer);
+      // } else {
+      //   // console.log("Sending heartbeat to " + peer);
+      //   sendHeartBeat(peer, true);
+      // }
     },
-    [replacePeerState, sendHeartBeat, roomId]
+    [replacePeerState, roomId]
   );
 
   const receiveCode = React.useCallback(
@@ -254,10 +255,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const onOpen = (peer: string) => () => {
     console.log("Data Channel is open for " + peer);
+    pcs.current[peer].lastSeen = Date.now();
     setPeerState((prev) => ({
       ...prev,
       [peer]: {
-        lastSeen: Date.now(),
         latency: 0,
         deviation: 0,
         connected: true,
@@ -654,8 +655,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }, HEARTBEAT_INTERVAL);
       const checkAliveInterval = setInterval(() => {
         for (const peer of Object.keys(peerState)) {
-          if (peerState[peer].lastSeen + timeOutHeartBeat < Date.now()) {
-            console.log("Peer is dead", peerState[peer].lastSeen);
+          if (
+            pcs.current[peer] &&
+            pcs.current[peer].lastSeen != null &&
+            pcs.current[peer].lastSeen + timeOutHeartBeat < Date.now()
+          ) {
+            console.log("Peer is dead", pcs.current[peer].lastSeen);
             console.log("Time out", timeOutHeartBeat);
             deletePeer(peer);
           }

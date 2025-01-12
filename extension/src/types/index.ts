@@ -140,7 +140,6 @@ export interface HeartBeatMessage {
 }
 
 export interface PeerState {
-  lastSeen: number;
   latency: number;
   deviation: number;
   connected: boolean;
