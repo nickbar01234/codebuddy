@@ -27,6 +27,8 @@ export const RootNavigator = () => {
     setDisplayMenu(false);
   };
 
+  const currRoomId = getLocalStorage("curRoomId");
+
   return (
     <div
       className="h-full w-full relative flex flex-col"
@@ -60,11 +62,9 @@ export const RootNavigator = () => {
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
-        {state === AppState.HOME && localStorage.getItem("curRoomId") && (
+        {state === AppState.HOME && currRoomId != undefined && (
           <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-            <LoadingPanel
-              numberOfUsers={getLocalStorage("curRoomId")?.numberOfUsers}
-            />
+            <LoadingPanel numberOfUsers={currRoomId.numberOfUsers} />
           </div>
         )}
         <EditorPanel />
