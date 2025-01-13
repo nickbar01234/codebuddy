@@ -140,7 +140,6 @@ export interface HeartBeatMessage extends PeerMessageBase {
   action: "heartbeat";
   username: string;
   roomId: string;
-  ack: boolean;
 }
 
 export interface PeerState {
