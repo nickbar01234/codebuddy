@@ -1,4 +1,4 @@
-const BUFFER_TIME_OUT = 1000;
+const BUFFER_TIME_OUT = 500;
 const ALPHA = 0.125;
 const BETA = 0.25;
 

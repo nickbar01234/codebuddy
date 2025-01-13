@@ -67,6 +67,7 @@ export interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   sendMessages: (value: PeerMessage) => void;
+  peerState: Record<string, PeerState>;
 }
 
 interface RTCProviderProps {
@@ -97,7 +98,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
-  const [connected, setConnected] = React.useState<string[]>([]);
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
@@ -129,20 +129,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
     (peer: string) => (payload: PeerMessage) => {
       if (
         pcs.current[peer].channel !== undefined &&
-        connected.includes(peer) &&
         pcs.current[peer].channel.readyState === "open"
       ) {
         // console.log("Sending message to " + peer, payload);
         pcs.current[peer].channel.send(JSON.stringify(payload));
         return true;
       } else {
-        if (connected.includes(peer) == undefined) {
+        if (Object.keys(pcs.current).includes(peer) == undefined) {
           console.log("Not connected to " + peer);
         } else console.log("Data Channel not created yet");
         return false;
       }
     },
-    [connected]
+    []
   );
 
   const sendMessages = React.useCallback(
@@ -190,11 +189,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const receiveHeartBeat = React.useCallback(
     (payload: HeartBeatMessage) => {
-      const {
-        username: peer,
-        roomId: prevRoomId,
-        timestamp: peerTimeStamp,
-      } = payload;
+      const { username: peer, roomId: prevRoomId } = payload;
       if (prevRoomId !== roomId) {
         console.log("Room ID changed, ignoring heartbeat");
         return;
@@ -213,7 +208,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           newLatency,
           newDeviation
         );
-        pcs.current[peer].lastSeen = peerTimeStamp;
         return {
           ...peerHeartBeat,
           latency: newLatency,
@@ -282,7 +276,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
           event.data ?? {}
         );
         // console.log("Message from " + username, payload);
-        const { action } = payload;
+        const { action, timestamp } = payload;
+        pcs.current[peer].lastSeen = timestamp;
         switch (action) {
           case "code": {
             // console.log("Received code from " + username);
@@ -553,17 +548,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const deletePeerRef = React.useRef(deletePeer);
 
   React.useEffect(() => {
-    setConnected((prev) => {
-      const newConnected = Object.keys(peerState).sort();
-      const oldConnected = prev.slice().sort();
-      if (JSON.stringify(newConnected) !== JSON.stringify(oldConnected)) {
-        return newConnected;
-      }
-      return prev;
-    });
-  }, [peerState]);
-
-  React.useEffect(() => {
     const connection = async () => {
       if (roomId == null) return;
       if (unsubscribeRef.current != null) {
@@ -732,6 +716,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         setRoomId,
         informations,
         sendMessages,
+        peerState,
       }}
     >
       {props.children}
