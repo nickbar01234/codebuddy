@@ -18,5 +18,6 @@ export const calculateNewTimeOutInterval = (
   latency: number,
   deviation: number
 ) => {
-  return latency + 4 * deviation + BUFFER_TIME_OUT;
+  return 2 * latency + 4 * deviation + BUFFER_TIME_OUT;
 };
+export const getUnixTs = () => Math.floor(Date.now());

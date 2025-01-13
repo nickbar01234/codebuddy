@@ -120,19 +120,23 @@ export interface LocalStorage {
     peers: Peer[];
   };
 }
+interface PeerMessageBase {
+  action: string;
+  timestamp: number;
+}
 
-export interface PeerCodeMessage {
+export interface PeerCodeMessage extends PeerMessageBase {
   action: "code";
   code: ServiceResponse["getValue"];
   changes: string;
 }
 
-export interface PeerTestMessage {
+export interface PeerTestMessage extends PeerMessageBase {
   action: "tests";
   tests: string[];
 }
 
-export interface HeartBeatMessage {
+export interface HeartBeatMessage extends PeerMessageBase {
   action: "heartbeat";
   username: string;
   roomId: string;
