@@ -121,17 +121,29 @@ export interface LocalStorage {
   };
 }
 
-export interface PeerCodeMessage {
+interface PeerMessageBase {
+  action: string;
+  timestamp: number;
+}
+
+export interface PeerCodeMessage extends PeerMessageBase {
   action: "code";
   code: ServiceResponse["getValue"];
   changes: string;
 }
 
-export interface PeerTestMessage {
+export interface PeerTestMessage extends PeerMessageBase {
   action: "tests";
   tests: string[];
 }
 
-export type Payload<T> = Omit<T, "action">;
+export interface PeerHeartBeatMessage extends PeerMessageBase {
+  action: "heartbeat";
+}
 
-export type PeerMessage = PeerCodeMessage | PeerTestMessage;
+export type Payload<T> = Omit<T, "action" | "timestamp">;
+
+export type PeerMessage =
+  | PeerCodeMessage
+  | PeerTestMessage
+  | PeerHeartBeatMessage;
