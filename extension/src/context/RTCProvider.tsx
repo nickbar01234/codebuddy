@@ -138,7 +138,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sendCodeRef = React.useRef(sendCode);
   const sendTestsRef = React.useRef(sendTests);
 
-  const onOpen = React.useRef((username: string) => () => {
+  const onOpen = (username: string) => () => {
     console.log("Data Channel is open for " + username);
     // console.log("hello");
     console.dir(pcs.current[username].pc);
@@ -147,51 +147,49 @@ export const RTCProvider = (props: RTCProviderProps) => {
       ...prev,
       [username]: true,
     }));
-  });
+  };
 
-  const onmessage = React.useRef(
-    (username: string) =>
-      function (event: MessageEvent) {
-        const payload: PeerMessage = JSON.parse(event.data ?? {});
-        console.log("Message from " + username, payload);
-        const { action } = payload;
-        switch (action) {
-          case "code": {
-            const { action: _, timestamp, ...rest } = payload;
-            setInformations((prev) => ({
-              ...prev,
-              [username]: {
-                ...prev[username],
-                code: rest,
-              },
-            }));
-            break;
-          }
-
-          case "tests": {
-            const { action: _, timestamp, ...rest } = payload;
-            setInformations((prev) => ({
-              ...prev,
-              [username]: {
-                ...prev[username],
-                tests: rest,
-              },
-            }));
-            break;
-          }
-
-          case "heartbeat": {
-            const { timestamp } = payload;
-            pcs.current[username].heartbeat = timestamp;
-            break;
-          }
-
-          default:
-            console.error("Unknown payload", payload);
-            break;
+  const onmessage = (username: string) =>
+    function (event: MessageEvent) {
+      const payload: PeerMessage = JSON.parse(event.data ?? {});
+      console.log("Message from " + username, payload);
+      const { action } = payload;
+      switch (action) {
+        case "code": {
+          const { action: _, timestamp, ...rest } = payload;
+          setInformations((prev) => ({
+            ...prev,
+            [username]: {
+              ...prev[username],
+              code: rest,
+            },
+          }));
+          break;
         }
+
+        case "tests": {
+          const { action: _, timestamp, ...rest } = payload;
+          setInformations((prev) => ({
+            ...prev,
+            [username]: {
+              ...prev[username],
+              tests: rest,
+            },
+          }));
+          break;
+        }
+
+        case "heartbeat": {
+          const { timestamp } = payload;
+          pcs.current[username].heartbeat = timestamp;
+          break;
+        }
+
+        default:
+          console.error("Unknown payload", payload);
+          break;
       }
-  );
+    };
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
@@ -223,8 +221,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         heartbeat: getUnixTs(),
       };
 
-      channel.onmessage = onmessage.current(peer);
-      channel.onopen = onOpen.current(peer);
+      channel.onmessage = onmessage(peer);
+      channel.onopen = onOpen(peer);
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
@@ -333,8 +331,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
             };
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
-              pcs.current[peer].channel.onmessage = onmessage.current(peer);
-              pcs.current[peer].channel.onopen = onOpen.current(peer);
+              pcs.current[peer].channel.onmessage = onmessage(peer);
+              pcs.current[peer].channel.onopen = onOpen(peer);
             };
             pc.onicecandidate = async (event) => {
               if (event.candidate) {
