@@ -268,7 +268,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
         // console.log("Message from " + username, payload);
         const { action, timestamp } = payload;
-        pcs.current[peer].lastSeen = timestamp;
+        if (Object.keys(pcs.current).includes(peer)) {
+          pcs.current[peer].lastSeen = timestamp;
+        }
+
         switch (action) {
           case "code": {
             // console.log("Received code from " + username);
@@ -284,7 +287,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           case "heartbeat": {
             console.log("Received heartbeat from " + peer);
-            receiveHeartBeatRef.current(payload);
+            // receiveHeartBeatRef.current(payload);
             break;
           }
 
