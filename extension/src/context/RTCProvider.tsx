@@ -6,12 +6,7 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
-import {
-  Payload,
-  PeerCodeMessage,
-  PeerMessage,
-  PeerTestMessage,
-} from "@cb/types";
+import { PeerInformation, PeerMessage } from "@cb/types";
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
@@ -42,11 +37,6 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-
-export interface PeerInformation {
-  code?: Payload<PeerCodeMessage>;
-  tests?: Payload<PeerTestMessage>;
-}
 
 export interface RTCContext {
   createRoom: (questionId: string) => void;
