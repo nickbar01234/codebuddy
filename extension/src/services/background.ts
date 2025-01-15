@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { setChromeStorage } from "@cb/services";
-import { ServiceRequest, Status, SetOtherEditorRequest } from "@cb/types";
+import { ServiceRequest, Status, ExtractMessage } from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
 import { CodeBuddyPreference } from "@cb/constants";
 
@@ -97,7 +97,7 @@ const createModel = async (id: string) => {
 
 const setValueModel = async (
   args: Pick<
-    SetOtherEditorRequest,
+    ExtractMessage<ServiceRequest, "setValueOtherEditor">,
     "code" | "language" | "changes" | "changeUser" | "editorId"
   >
 ) => {
@@ -221,7 +221,7 @@ chrome.runtime.onMessage.addListener(
         break;
       }
 
-      case "createModel": {
+      case "setupCodeBuddyModel": {
         chrome.scripting
           .executeScript({
             target: { tabId: sender.tab?.id ?? 0 },
@@ -277,7 +277,7 @@ chrome.runtime.onMessage.addListener(
       }
 
       default:
-        // console.error(`Unhandled request ${request}`);
+        console.error(`Unhandled request ${request}`);
         break;
     }
 
