@@ -171,7 +171,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => {
     if (!loading) {
       console.log("Setting tabs", roomId, peers);
-      setLocalStorage({ tabs: { roomId, peers } });
+      setLocalStorage("tabs", { roomId, peers });
     }
   }, [peers, loading, roomId]);
 
