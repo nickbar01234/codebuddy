@@ -1,16 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { setChromeStorage } from "@cb/services";
-import { ServiceRequest, Status, ExtractMessage } from "@cb/types";
+import {
+  ServiceRequest,
+  Status,
+  ExtractMessage,
+  WindowMessage,
+} from "@cb/types";
 import { updateEditorLayout } from "@cb/services/handlers/editor";
 import { CodeBuddyPreference } from "@cb/constants";
-
-const FILTER = {
-  url: [
-    {
-      urlMatches: "https://leetcode.com",
-    },
-  ],
-};
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
@@ -70,11 +67,12 @@ const setValue = async (value: string) => {
   lcCodeEditor.setValue(value);
 };
 
-const createModel = async (id: string) => {
+const setupCodeBuddyModel = async (id: string) => {
+  // TODO(nickbar01234): This timeout is weird, should send an appropriate response for client to retry
   await new Promise((resolve) => setTimeout(resolve, 2000));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
-  console.log("Creating Model");
+  console.log("Setting up CodeBuddy model");
   if (
     monaco.editor
       .getEditors()
@@ -91,8 +89,28 @@ const createModel = async (id: string) => {
       }
     );
     buddyEditor.id = "CodeBuddy";
-    console.log("Creating model is done");
+    console.log("Finished setting up CodeBuddy model");
   }
+};
+
+const setupLeetCodeModel = async () => {
+  // TODO(nickbar01234): This timeout is weird, should send an appropriate response for client to retry
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  const monaco = (window as any).monaco;
+  const leetCodeEditor = monaco.editor
+    .getEditors()
+    .filter((e: any) => e.id !== "CodeBuddy")
+    .map((e: any) => e.getModel())
+    .find((m: any) => m.getLanguageId() !== "plaintext");
+  leetCodeEditor.onDidChangeContent((event: any) => {
+    // todo(nickbar01234): Don't have a good way to include function from a different file yet
+    // Ideally, we should do the same pattern as services/index.ts
+    const leetCodeOnChange: WindowMessage = {
+      action: "leetCodeOnChange",
+      changes: event.changes[0],
+    };
+    window.postMessage(leetCodeOnChange);
+  });
 };
 
 const setValueModel = async (
@@ -101,7 +119,6 @@ const setValueModel = async (
     "code" | "language" | "changes" | "changeUser" | "editorId"
   >
 ) => {
-  console.log("using setValueModel");
   const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
@@ -137,8 +154,6 @@ const setValueModel = async (
   const myCode = await myEditor.getValue();
   if (myCode !== code) {
     console.log("Detected Conflict");
-    console.log(code);
-    console.log(myCode);
     await myEditor.setValue(code);
   }
   await myEditor.updateOptions({ readOnly: true });
@@ -156,32 +171,6 @@ const cleanEditor = async () => {
   }
   console.log("Cleaned Editor");
 };
-
-chrome.webNavigation.onCompleted.addListener(function () {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    setTimeout(() => {
-      chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id ?? 0 },
-        func: () => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const monaco = (window as any).monaco;
-          const lcCodeEditor = monaco.editor
-            .getEditors()
-            .filter((e: any) => e.id !== "CodeBuddy")
-            .map((e: any) => e.getModel())
-            .find((m: any) => m.getLanguageId() !== "plaintext");
-          lcCodeEditor.onDidChangeContent((event: any) => {
-            const trackEditor = document.getElementById("trackEditor");
-            if (trackEditor != null) {
-              trackEditor.textContent = JSON.stringify(event.changes[0]);
-            }
-          });
-        },
-        world: "MAIN",
-      });
-    }, 2000);
-  });
-}, FILTER);
 
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
@@ -225,13 +214,25 @@ chrome.runtime.onMessage.addListener(
         chrome.scripting
           .executeScript({
             target: { tabId: sender.tab?.id ?? 0 },
-            func: createModel,
+            func: setupCodeBuddyModel,
             args: [request.id],
             world: "MAIN",
           })
           .then(() => {
             sendResponse();
           });
+        break;
+      }
+
+      case "setupLeetCodeModel": {
+        chrome.scripting
+          .executeScript({
+            target: { tabId: sender.tab?.id ?? 0 },
+            func: setupLeetCodeModel,
+            args: [],
+            world: "MAIN",
+          })
+          .then(sendResponse);
         break;
       }
 

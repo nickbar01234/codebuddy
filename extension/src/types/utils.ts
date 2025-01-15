@@ -15,3 +15,16 @@ export type ExtractMessage<
 > = Extract<T, { action: key }>;
 
 export type MessagePayload<T extends GenericMessage> = Omit<T, "action">;
+
+export interface LeetCodeContentChange {
+  range: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
+  rangeLength: number;
+  text: string;
+  rangeOffset: number;
+  forceMoveMarkers: boolean;
+}

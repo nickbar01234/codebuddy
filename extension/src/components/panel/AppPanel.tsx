@@ -61,7 +61,6 @@ export const AppPanel = (props: AppPanelProps) => {
           data-collapsed={appPreference.isCollapsed}
           className="h-full w-full data-[collapsed=true]:hidden"
         >
-          <div id="trackEditor" className="hidden" />
           {props.children}
         </div>
       </div>

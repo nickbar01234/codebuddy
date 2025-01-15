@@ -6,7 +6,12 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
-import { PeerInformation, PeerMessage } from "@cb/types";
+import {
+  LeetCodeContentChange,
+  PeerInformation,
+  PeerMessage,
+  WindowMessage,
+} from "@cb/types";
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
@@ -102,13 +107,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [sendMessage]
   );
 
-  const sendCode = React.useCallback(async () => {
-    sendMessages({
-      action: "code",
-      code: await sendServiceRequest({ action: "getValue" }),
-      changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
-    });
-  }, [sendMessages]);
+  const sendCode = React.useCallback(
+    async (changes?: LeetCodeContentChange) => {
+      sendMessages({
+        action: "code",
+        code: await sendServiceRequest({ action: "getValue" }),
+        changes: JSON.stringify(changes ?? {}),
+      });
+    },
+    [sendMessages]
+  );
 
   const sendTests = React.useCallback(async () => {
     const node = document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement;
@@ -133,7 +141,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const onmessage = (username: string) =>
     function (event: MessageEvent) {
       const payload: PeerMessage = JSON.parse(event.data ?? {});
-      console.log("Message from " + username, payload);
+      console.log("Message from " + username, payload.action);
       const { action } = payload;
       switch (action) {
         case "code": {
@@ -473,19 +481,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, informations]);
 
-  useOnMount(() => {
-    const observer = new MutationObserver(async () => {
-      await sendCodeRef.current();
-    });
-    waitForElement("#trackEditor", 2000).then((editor) => {
-      observer.observe(editor, {
-        childList: true,
-        subtree: true,
-      });
-    });
-    return observer.disconnect;
-  });
-
   React.useEffect(() => {
     sendTests();
     sendTestsRef.current = sendTests;
@@ -502,6 +497,31 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
     });
     return observer.disconnect;
+  });
+
+  useOnMount(() => {
+    sendServiceRequest({ action: "setupLeetCodeModel" });
+
+    const onWindowMessage = (message: MessageEvent) => {
+      // todo(nickbar01234): Should attach an ID to message so that it's identifiable only by us.
+      if (message.data.action != undefined) {
+        const windowMessage = message.data as WindowMessage;
+        console.log("Received from window", windowMessage.action);
+        switch (windowMessage.action) {
+          case "leetCodeOnChange": {
+            sendCodeRef.current(message.data.changes);
+            break;
+          }
+
+          default:
+            console.error("Unhandled window message", windowMessage);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("message", onWindowMessage);
+    return () => window.removeEventListener("message", onWindowMessage);
   });
 
   return (
