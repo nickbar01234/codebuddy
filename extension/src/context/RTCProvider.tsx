@@ -19,12 +19,7 @@ import {
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
-import {
-  calculateNewDeviation,
-  calculateNewRTT,
-  calculateNewTimeOutInterval,
-  getUnixTs,
-} from "@cb/utils/heartbeat";
+import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import {
   Unsubscribe,
   arrayRemove,
@@ -51,9 +46,9 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 const CODE_EDIOR_DIV_CHANGE_CONTENT = "#trackEditor";
-const INITIAL_TIME_OUT = 3000;
-const CHECK_ALIVE_INTERVAL = 2000;
-const HEARTBEAT_INTERVAL = 1000;
+const INITIAL_TIME_OUT = 2 * 60 * 1000;
+const CHECK_ALIVE_INTERVAL = 20000;
+const HEARTBEAT_INTERVAL = 10000;
 
 export interface PeerInformation {
   code?: Payload<PeerCodeMessage>;
@@ -195,23 +190,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return;
       }
       replacePeerState(peer, (peerHeartBeat) => {
-        const { latency, deviation } = peerHeartBeat;
+        const { latency } = peerHeartBeat;
         const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
         const newSample = getUnixTs() - curlastSeen;
         const newLatency = calculateNewRTT(latency, newSample);
-        const newDeviation = calculateNewDeviation(
-          deviation,
-          newLatency,
-          newSample
-        );
-        pcs.current[peer].timeOut = calculateNewTimeOutInterval(
-          newLatency,
-          newDeviation
-        );
         return {
           ...peerHeartBeat,
           latency: newLatency,
-          deviation: newDeviation,
         };
       });
     },
@@ -287,7 +272,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           case "heartbeat": {
             console.log("Received heartbeat from " + peer);
-            // receiveHeartBeatRef.current(payload);
+            receiveHeartBeatRef.current(payload);
             break;
           }
 
@@ -336,6 +321,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       channel.onmessage = onmessage(peer);
       channel.onopen = onOpen(peer);
+
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
