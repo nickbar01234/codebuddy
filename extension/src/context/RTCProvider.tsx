@@ -590,6 +590,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   useOnMount(() => {
     const refreshInfo = getLocalStorage("curRoomId");
+    console.log("Refresh Info", refreshInfo);
     if (refreshInfo?.roomId != undefined) {
       const prevRoomId = refreshInfo.roomId;
       const reloadJob = async () => {

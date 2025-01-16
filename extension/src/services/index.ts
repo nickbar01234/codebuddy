@@ -25,7 +25,8 @@ export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const store = JSON.parse(
     localStorage.getItem(LOCAL_STORAGE_PREFIX + key) ?? "{}"
   );
-  return store[key] as LocalStorage[K] | undefined;
+  console.log("Store", store);
+  return store as LocalStorage[K] | undefined;
 };
 
 export const setLocalStorage = <K extends keyof LocalStorage>(
@@ -35,7 +36,8 @@ export const setLocalStorage = <K extends keyof LocalStorage>(
   localStorage.setItem(LOCAL_STORAGE_PREFIX + key, JSON.stringify(value));
 };
 
-export const clearLocalStorage = () =>
-  LOCAL_STORAGE.map((key) => LOCAL_STORAGE_PREFIX + key).forEach(
-    localStorage.removeItem
+export const clearLocalStorage = () => {
+  LOCAL_STORAGE.map((key) => LOCAL_STORAGE_PREFIX + key).forEach((key) =>
+    localStorage.removeItem(key)
   );
+};
