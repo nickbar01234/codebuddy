@@ -5,10 +5,10 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
+import { Peer, PeerInformation, TestCase } from "@cb/types";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { Peer, PeerInformation, TestCase } from "@cb/types";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 2;
 interface PeerSelectionContext {
@@ -171,24 +171,27 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
   const setLocalStorageForIndividualPeers = React.useCallback(
     (peer: Peer) => {
-      localStorage.setItem(
-        "tabs" + peer.id,
-        JSON.stringify({ ...peer, roomId: roomId, lastSet: Date.now() })
-      );
+      const currentTab = getLocalStorage("tabs") ?? {
+        roomId: roomId,
+        peers: {},
+      };
+      currentTab.peers[peer.id] = {
+        ...peer,
+      };
+      setLocalStorage("tabs", currentTab);
     },
     [roomId]
   );
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
-      const prevPeer = JSON.parse(
-        localStorage.getItem("tabs" + peerId) || "{}"
-      );
+      const prevTabs = getLocalStorage("tabs");
+      if (!prevTabs) return undefined;
+      const prevPeer = prevTabs?.peers[peerId];
+      if (!prevPeer) return undefined;
       if (Object.keys(prevPeer).length === 0) return undefined;
-
-      const prevRoomId = prevPeer.roomId;
+      const prevRoomId = prevTabs?.roomId;
       if (roomId && prevRoomId != roomId) return undefined;
-
       return prevPeer;
     },
     [roomId]
@@ -199,7 +202,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       for (const peer of peers) {
         setLocalStorageForIndividualPeers(peer);
         if (peer.active && !hardLoading) {
-          localStorage.setItem("lastActivePeer", peer.id);
+          setLocalStorage("lastActivePeer", peer.id);
         }
       }
     }
@@ -247,7 +250,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   React.useEffect(() => {
     if ((activePeer === undefined || hardLoading) && peers.length > 0) {
-      const lastActivePeer = localStorage.getItem("lastActivePeer");
+      const lastActivePeer = getLocalStorage("lastActivePeer");
       if (lastActivePeer && peers.some((peer) => peer.id === lastActivePeer)) {
         setActivePeerId(lastActivePeer);
       } else {

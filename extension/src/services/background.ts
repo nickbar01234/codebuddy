@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { CodeBuddyPreference } from "@cb/constants";
 import { setChromeStorage } from "@cb/services";
+import { updateEditorLayout } from "@cb/services/handlers/editor";
 import {
+  ExtractMessage,
   ServiceRequest,
   Status,
-  ExtractMessage,
   WindowMessage,
 } from "@cb/types";
-import { updateEditorLayout } from "@cb/services/handlers/editor";
-import { CodeBuddyPreference } from "@cb/constants";
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({

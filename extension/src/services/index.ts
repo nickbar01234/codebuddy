@@ -7,7 +7,11 @@ import {
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
-const LOCAL_STORAGE: Array<keyof LocalStorage> = ["curRoomId", "tabs"];
+const LOCAL_STORAGE: Array<keyof LocalStorage> = [
+  "curRoomId",
+  "tabs",
+  "lastActivePeer",
+];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
   request: T
@@ -22,10 +26,12 @@ export const getChromeStorage = <K extends keyof ExtensionStorage>(key: K) =>
   >;
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
-  const store = JSON.parse(
-    localStorage.getItem(LOCAL_STORAGE_PREFIX + key) ?? "{}"
-  );
-  console.log("Store", store);
+  if (!LOCAL_STORAGE.includes(key)) {
+    throw new Error(`Key ${key} not found in LOCAL_STORAGE`);
+  }
+  const getLocalStorage = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
+  if (!getLocalStorage) return undefined;
+  const store = JSON.parse(getLocalStorage);
   return store as LocalStorage[K] | undefined;
 };
 

@@ -45,6 +45,7 @@ export interface LocalStorage {
   };
   tabs: {
     roomId: string | null;
-    peers: Peer[];
+    peers: Record<string, Peer>;
   };
+  lastActivePeer: string;
 }

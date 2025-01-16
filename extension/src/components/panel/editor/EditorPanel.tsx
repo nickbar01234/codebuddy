@@ -1,8 +1,9 @@
-import { PasteCodeIcon, UserIcon } from "@cb/components/icons";
+import { UserIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { CodeBuddyPreference } from "@cb/constants";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useOnMount, usePeerSelection } from "@cb/hooks/index";
+import useWindowDimensions from "@cb/hooks/useWindowDimensions";
 import {
   getChromeStorage,
   sendServiceRequest,
@@ -10,11 +11,9 @@ import {
 } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { cn } from "@cb/utils/cn";
-import { capitalize } from "@cb/utils/string";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
-import useWindowDimensions from "@cb/hooks/useWindowDimensions";
 
 export interface TabMetadata {
   id: string;
@@ -29,8 +28,6 @@ const EditorPanel = () => {
     activePeer,
     unblur,
     setActivePeerId,
-    activeUserInformation,
-    pasteCode,
     selectTest,
     softLoading,
     hardLoading,

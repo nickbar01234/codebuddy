@@ -533,24 +533,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sendTestsRef = React.useRef(sendTests);
   const sendHeartBeatRef = React.useRef(sendHeartBeat);
   const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
-  const deletePeerRef = React.useRef(deletePeer);
+  const deletePeerRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
-
-  const temporarilyLeaveRoom = React.useCallback(async () => {
-    if (roomId) {
-      await updateDoc(db.room(roomId).ref(), {
-        usernames: arrayRemove(username),
-      });
-    }
-  }, [roomId, username]);
-
-  const handleBeforeUnload = React.useCallback(async () => {
-    await temporarilyLeaveRoom();
-  }, [temporarilyLeaveRoom]);
 
   const joiningBackRoom = React.useCallback(
     async (join: boolean) => {
-      const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+      const refreshInfo = getLocalStorage("curRoomId");
+      if (refreshInfo == undefined) return;
       const prevRoomId = refreshInfo.roomId;
       await leaveRoom(prevRoomId, join);
       if (join) {
@@ -655,8 +644,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [receiveHeartBeat]);
 
   React.useEffect(() => {
-    deletePeerRef.current = deletePeer;
-  }, [deletePeer]);
+    deletePeerRef.current = deletePeers;
+  }, [deletePeers]);
 
   useOnMount(() => {
     const sendInterval = setInterval(() => {
