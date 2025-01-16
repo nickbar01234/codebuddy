@@ -1,4 +1,8 @@
-import type { GenericMessage, GenericResponse } from "./utils";
+import type {
+  GenericMessage,
+  GenericResponse,
+  LeetCodeContentChange,
+} from "./utils";
 
 export interface User {
   id: string;
@@ -31,22 +35,15 @@ interface SetupCodeBuddyModel extends GenericMessage {
   id: string;
 }
 
+interface SetupLeetCodeModel extends GenericMessage {
+  action: "setupLeetCodeModel";
+}
+
 interface SetOtherEditorRequest extends GenericMessage {
   action: "setValueOtherEditor";
   code: string;
   language: string;
-  changes: {
-    range: {
-      startLineNumber: number;
-      startColumn: number;
-      endLineNumber: number;
-      endColumn: number;
-    };
-    rangeLength: number;
-    text: string;
-    rangeOffset: number;
-    forceMoveMarkers: boolean;
-  };
+  changes: LeetCodeContentChange;
   changeUser: boolean;
   editorId: string;
 }
@@ -67,7 +64,8 @@ export type ServiceRequest =
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
   | UpdateEditorLayoutRequest
-  | CleanEditorRequest;
+  | CleanEditorRequest
+  | SetupLeetCodeModel;
 
 export type ServiceResponse = GenericResponse<
   ServiceRequest,
@@ -79,6 +77,7 @@ export type ServiceResponse = GenericResponse<
     };
     setValue: void;
     setupCodeBuddyModel: void;
+    setupLeetCodeModel: void;
     setValueOtherEditor: void;
     updateEditorLayout: void;
     cleanEditor: void;

@@ -1,6 +1,11 @@
 export * from "./services";
 export * from "./peers";
-export type { MessagePayload, ExtractMessage } from "./utils";
+export * from "./window";
+export type {
+  MessagePayload,
+  ExtractMessage,
+  LeetCodeContentChange,
+} from "./utils";
 
 interface AppPreference {
   width: number;
