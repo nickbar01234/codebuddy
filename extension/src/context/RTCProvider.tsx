@@ -263,7 +263,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
 
           case "heartbeat": {
-            console.log("Received heartbeat from " + peer);
+            // console.log("Received heartbeat from " + peer);
             receiveHeartBeatRef.current(peer);
             break;
           }
