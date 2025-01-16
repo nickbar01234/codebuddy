@@ -1,7 +1,11 @@
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { useOnMount } from "@cb/hooks";
-import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
+import {
+  getChromeStorage,
+  sendServiceRequest,
+  setChromeStorage,
+} from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
@@ -19,7 +23,7 @@ export const AppPanel = (props: AppPanelProps) => {
   const minWidth = 40; // Set the minimum width threshold
 
   useOnMount(() => {
-    getStorage("appPreference").then(setAppPreference);
+    getChromeStorage("appPreference").then(setAppPreference);
   });
 
   return (
@@ -38,7 +42,7 @@ export const AppPanel = (props: AppPanelProps) => {
         })
       }
       onResizeStop={(_e, data) => {
-        setStorage({
+        setChromeStorage({
           appPreference: {
             ...appPreference,
             width: data.size.width,
@@ -57,7 +61,6 @@ export const AppPanel = (props: AppPanelProps) => {
           data-collapsed={appPreference.isCollapsed}
           className="h-full w-full data-[collapsed=true]:hidden"
         >
-          <div id="trackEditor" className="hidden" />
           {props.children}
         </div>
       </div>

@@ -3,12 +3,18 @@ import { Ripple } from "@cb/components/ui/Ripple";
 import { CodeBuddyPreference } from "@cb/constants";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useOnMount, usePeerSelection } from "@cb/hooks/index";
-import { getStorage, sendServiceRequest, setStorage } from "@cb/services";
+import {
+  getChromeStorage,
+  sendServiceRequest,
+  setChromeStorage,
+} from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { cn } from "@cb/utils/cn";
 import { capitalize } from "@cb/utils/string";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import EditorToolBar from "./EditorToolBar";
+import useWindowDimensions from "@cb/hooks/useWindowDimensions";
 
 export interface TabMetadata {
   id: string;
@@ -30,6 +36,7 @@ const EditorPanel = () => {
     hardLoading,
   } = usePeerSelection();
   const { state } = React.useContext(appStateContext);
+  const { height } = useWindowDimensions();
 
   const [codePreference, setCodePreference] = React.useState<
     ExtensionStorage["codePreference"]
@@ -38,7 +45,7 @@ const EditorPanel = () => {
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   useOnMount(() => {
-    getStorage("codePreference").then(setCodePreference);
+    getChromeStorage("codePreference").then(setCodePreference);
   });
 
   return (
@@ -84,7 +91,8 @@ const EditorPanel = () => {
             axis="y"
             resizeHandles={canViewCode ? ["s"] : undefined}
             className="h-full flex relative w-full"
-            maxConstraints={[Infinity, 600]}
+            minConstraints={[Infinity, height * 0.2]}
+            maxConstraints={[Infinity, height * 0.5]}
             handle={
               <div className="absolute bottom-0 h-2 bg-layer-bg-gray dark:bg-layer-bg-gray w-full">
                 <div className="relative top-1/2 -translate-y-1/2 flexlayout__splitter flexlayout__splitter_horz w-full h-[2px] hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[2px] after:bg-[--color-splitter] cursor-ns-resize" />
@@ -97,7 +105,7 @@ const EditorPanel = () => {
               })
             }
             onResizeStop={(_e, data) => {
-              setStorage({
+              setChromeStorage({
                 codePreference: {
                   ...codePreference,
                   height: data.size.height,
@@ -109,25 +117,8 @@ const EditorPanel = () => {
               });
             }}
           >
-            <div className="relative h-full flex flex-col grow gap-y-2">
-              <div className="flex justify-between items-center">
-                {" "}
-                <h1 className="font-medium text-gray-900 dark:text-white ml-3">
-                  Language:{" "}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-                    {capitalize(activeUserInformation?.code?.code.language)}
-                  </span>
-                </h1>
-                <button
-                  type="button"
-                  data-tooltip-target="tooltip-default"
-                  onClick={pasteCode}
-                  className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-xs px-2 py-2 text-center inline-flex items-center mt-1 me-1"
-                >
-                  <PasteCodeIcon />
-                  <span className="ml-2">Paste Code</span>
-                </button>
-              </div>
+            <div className="relative h-full flex flex-col grow gap-y-2 w-full">
+              <EditorToolBar />
               <div
                 id={EDITOR_NODE_ID}
                 className="w-full overflow-hidden h-full"

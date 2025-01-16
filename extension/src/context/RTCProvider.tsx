@@ -1,19 +1,25 @@
 import db, { firestore } from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
-import { sendServiceRequest } from "@cb/services";
 import {
-  HeartBeatMessage,
-  Payload,
-  PeerCodeMessage,
+  clearLocalStorage,
+  getLocalStorage,
+  sendServiceRequest,
+  setLocalStorage,
+} from "@cb/services";
+import {
+  ExtractMessage,
+  LeetCodeContentChange,
+  PeerInformation,
   PeerMessage,
   PeerState,
-  PeerTestMessage,
+  WindowMessage,
 } from "@cb/types";
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
+import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import {
   Unsubscribe,
   writeBatch,
@@ -40,17 +46,9 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-const CODE_EDIOR_DIV_CHANGE_CONTENT = "#trackEditor";
-const BUFFER_TIME_OUT = 1000;
-const INITIAL_TIME_OUT = 3000;
-const HEARTBEAT_INTERVAL = 1000;
-const ALPHA = 0.125;
-const BETA = 0.25;
-
-export interface PeerInformation {
-  code?: Payload<PeerCodeMessage>;
-  tests?: Payload<PeerTestMessage>;
-}
+const HEARTBEAT_INTERVAL = 10000;
+const CHECK_ALIVE_INTERVAL = 20000;
+const INITIAL_TIME_OUT = 30000;
 
 export interface RTCContext {
   createRoom: (questionId: string) => void;
@@ -74,6 +72,8 @@ interface Connection {
   username: string;
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
+  lastSeen: number;
+  timeOut: number;
 }
 
 export const MAX_CAPACITY = 4;
@@ -82,13 +82,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
   } = useAppState();
-
   const pcs = React.useRef<Record<string, Connection>>({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
-
   const [roomId, setRoomId] = React.useState<null | string>(null);
-  const [timeOutHeartBeat, setTimeOutHeartBeat] =
-    React.useState(INITIAL_TIME_OUT);
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
@@ -120,21 +116,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     []
   );
 
-  const onOpen = (peer: string) => () => {
-    console.log("Data Channel is open for " + peer);
-    setPeerState((prev) => ({
-      ...prev,
-      [peer]: {
-        lastSeen: Date.now(),
-        latency: 0,
-        deviation: 0,
-        connected: true,
-      },
-    }));
-  };
-
   const sendMessage = React.useCallback(
-    (peer: string) => (payload: PeerMessage | HeartBeatMessage) => {
+    (peer: string) => (payload: PeerMessage) => {
       if (
         pcs.current[peer] &&
         pcs.current[peer].channel !== undefined &&
@@ -145,7 +128,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         pcs.current[peer].channel.send(JSON.stringify(payload));
         return true;
       } else {
-        if (connected.includes(peer) == undefined) {
+        if (!Object.keys(pcs.current).includes(peer)) {
           console.log("Not connected to " + peer);
         } else console.log("Data Channel not created yet");
         return false;
@@ -155,7 +138,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const sendMessages = React.useCallback(
-    (payload: PeerMessage | HeartBeatMessage) => {
+    (payload: PeerMessage) => {
       for (const peer of Object.keys(pcs.current)) {
         sendMessage(peer)(payload);
       }
@@ -164,72 +147,56 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const sendHeartBeat = React.useCallback(
-    (peer: string, reply: boolean) => {
-      if (roomId == null) return;
+    (peer: string) => {
       return sendMessage(peer)({
         action: "heartbeat",
-        username: username,
-        roomId: roomId,
-        ack: reply,
+        timestamp: getUnixTs(),
       });
     },
-    [sendMessage, username, roomId]
+    [sendMessage]
   );
 
-  const sendCode = React.useCallback(async () => {
-    sendMessages({
-      action: "code",
-      code: await sendServiceRequest({ action: "getValue" }),
-      changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
-    });
-  }, [sendMessages]);
+  const sendCode = React.useCallback(
+    async (changes?: LeetCodeContentChange) => {
+      sendMessages({
+        action: "code",
+        code: await sendServiceRequest({ action: "getValue" }),
+        changes: JSON.stringify(changes ?? {}),
+        timestamp: getUnixTs(),
+      });
+    },
+    [sendMessages]
+  );
 
   const sendTests = React.useCallback(async () => {
     const node = document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement;
     if (node != null) {
-      sendMessages({ action: "tests", tests: node.innerText.split("\n") });
+      sendMessages({
+        action: "tests",
+        tests: node.innerText.split("\n"),
+        timestamp: getUnixTs(),
+      });
     }
   }, [sendMessages]);
 
   const receiveHeartBeat = React.useCallback(
-    (payload: HeartBeatMessage) => {
-      const { username: peer, ack, roomId: prevRoomId } = payload;
-      if (prevRoomId !== roomId) {
-        console.log("Room ID changed, ignoring heartbeat");
-        return;
-      }
-      if (ack) {
-        // console.log("Received heartbeat from " + peer);
-
-        replacePeerState(peer, (peer) => {
-          const { lastSeen, latency, deviation } = peer;
-          const newSample = Date.now() - lastSeen;
-          const newLatency = calculateNewRTT(latency, newSample);
-          const newDeviation = calculateNewDeviation(
-            deviation,
-            newLatency,
-            newSample
-          );
-          setTimeOutHeartBeat(
-            calculateNewTimeOutInterval(newLatency, newDeviation)
-          );
-          return {
-            ...peer,
-            lastSeen: Date.now(),
-            latency: newLatency,
-            deviation: newDeviation,
-          };
-        });
-      } else {
-        // console.log("Sending heartbeat to " + peer);
-        sendHeartBeat(peer, true);
-      }
+    (peer: string) => {
+      replacePeerState(peer, (peerHeartBeat) => {
+        const { latency } = peerHeartBeat;
+        const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
+        const newSample = getUnixTs() - curlastSeen;
+        const newLatency = calculateNewRTT(latency, newSample);
+        return {
+          ...peerHeartBeat,
+          latency: newLatency,
+        };
+      });
     },
-    [replacePeerState, sendHeartBeat, roomId]
+    [replacePeerState]
   );
 
   const receiveCode = React.useCallback(
-    (payload: PeerCodeMessage, peer: string) => {
+    (payload: ExtractMessage<PeerMessage, "code">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { action: _, ...rest } = payload;
       setInformations((prev) => ({
@@ -244,7 +211,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const receiveTests = React.useCallback(
-    (payload: PeerTestMessage, peer: string) => {
+    (payload: ExtractMessage<PeerMessage, "tests">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { action: _, ...rest } = payload;
       setInformations((prev) => ({
@@ -257,19 +224,31 @@ export const RTCProvider = (props: RTCProviderProps) => {
     },
     []
   );
-  const sendCodeRef = React.useRef(sendCode);
-  const sendTestsRef = React.useRef(sendTests);
-  const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
+
+  const onOpen = (peer: string) => () => {
+    console.log("Data Channel is open for " + peer);
+    pcs.current[peer].lastSeen = getUnixTs();
+    setPeerState((prev) => ({
+      ...prev,
+      [peer]: {
+        latency: 0,
+        deviation: 0,
+        connected: true,
+      },
+    }));
+  };
 
   const onmessage = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (peer: string) =>
       function (event: MessageEvent) {
-        const payload: PeerMessage | HeartBeatMessage = JSON.parse(
-          event.data ?? {}
-        );
+        const payload: PeerMessage = JSON.parse(event.data ?? {});
         // console.log("Message from " + username, payload);
-        const { action } = payload;
+        const { action, timestamp } = payload;
+        if (Object.keys(pcs.current).includes(peer)) {
+          pcs.current[peer].lastSeen = timestamp;
+        }
+
         switch (action) {
           case "code": {
             // console.log("Received code from " + username);
@@ -284,8 +263,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
 
           case "heartbeat": {
-            // console.log("Received heartbeat from " + username);
-            receiveHeartBeatRef.current(payload);
+            console.log("Received heartbeat from " + peer);
+            receiveHeartBeatRef.current(peer);
             break;
           }
 
@@ -304,16 +283,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       { questionId, usernames: arrayUnion(username) },
       { merge: true }
     );
-    // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
-    localStorage.setItem(
-      "curRoomId",
-      JSON.stringify({
-        roomId: roomRef.id,
-        numberOfUsers: 0,
-      })
-    );
+    setLocalStorage("curRoomId", {
+      roomId: roomRef.id,
+      numberOfUsers: 0,
+    });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -330,10 +305,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
         username: peer,
         pc: pc,
         channel: channel,
+        lastSeen: getUnixTs(),
+        timeOut: INITIAL_TIME_OUT,
       };
 
       channel.onmessage = onmessage(peer);
       channel.onopen = onOpen(peer);
+
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
@@ -403,8 +381,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
       const usernames = roomDoc.data().usernames;
-      // const usernamesCollection = await db.usernamesCollection(roomId).doc();
-
       if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
@@ -415,7 +391,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayUnion(username),
       });
-      // await db.usernamesCollection(roomId).addUser(username);
 
       onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
@@ -432,12 +407,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           const themRef = db.connections(roomId, username).doc(peer);
           const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
-          // const pc = new RTCPeerConnection(servers);
           if (pcs.current[peer] == undefined) {
             pcs.current[peer] = {
               username: peer,
               pc: pc,
               channel: pc.createDataChannel("channel"),
+              lastSeen: getUnixTs(),
+              timeOut: INITIAL_TIME_OUT,
             };
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
@@ -469,10 +445,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
       });
 
-      if (
-        JSON.parse(localStorage.getItem("curRoomId") ?? "{}").roomId !==
-        roomId.toString()
-      ) {
+      if (getLocalStorage("curRoomId")?.roomId !== roomId.toString()) {
         toast.success(
           `You have successfully joined the room with ID ${roomId}.`
         );
@@ -491,12 +464,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       if (!reload) {
         console.log("Cleaning up local storage");
-        localStorage.clear();
+        console.log("Cleaning up local storage");
+        clearLocalStorage();
       }
 
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayRemove(username),
       });
+
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
       myAnswers.docs.forEach(async (doc) => {
         deleteDoc(doc.ref);
@@ -544,6 +519,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
     },
     [roomId, username]
   );
+
+  const deleteMe = React.useCallback(async () => {
+    if (roomId) {
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(username),
+      });
+      console.log("Before Reloading", roomId);
+    }
+  }, [roomId, username]);
+
+  const sendCodeRef = React.useRef(sendCode);
+  const sendTestsRef = React.useRef(sendTests);
+  const sendHeartBeatRef = React.useRef(sendHeartBeat);
+  const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
+  const deletePeerRef = React.useRef(deletePeer);
+  const deleteMeRef = React.useRef(deleteMe);
 
   const temporarilyLeaveRoom = React.useCallback(async () => {
     if (roomId) {
@@ -621,19 +612,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username, createOffer, deletePeers]);
 
   React.useEffect(() => {
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    deleteMeRef.current = deleteMe;
+  }, [deleteMe]);
 
+  useOnMount(() => {
+    window.addEventListener("beforeunload", deleteMeRef.current);
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("beforeunload", deleteMeRef.current);
     };
-  }, [handleBeforeUnload]);
+  });
 
   React.useEffect(() => {
     const navigationEntry = performance.getEntriesByType(
       "navigation"
     )[0] as PerformanceNavigationTiming;
 
-    const refreshInfo = JSON.parse(localStorage.getItem("curRoomId") ?? "{}");
+    const refreshInfo = getLocalStorage("curRoomId");
     if (
       navigationEntry.type === "reload" &&
       refreshInfo &&
@@ -645,67 +639,55 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && informations) {
-      localStorage.setItem(
-        "curRoomId",
-        JSON.stringify({
-          roomId: roomId,
-          numberOfUsers: Object.keys(informations).length,
-        })
-      );
+      setLocalStorage("curRoomId", {
+        roomId,
+        numberOfUsers: Object.keys(informations).length,
+      });
     }
   }, [roomId, informations]);
+
+  React.useEffect(() => {
+    sendHeartBeatRef.current = sendHeartBeat;
+  }, [sendHeartBeat]);
 
   React.useEffect(() => {
     receiveHeartBeatRef.current = receiveHeartBeat;
   }, [receiveHeartBeat]);
 
   React.useEffect(() => {
-    if (roomId != null) {
-      const sendInterval = setInterval(() => {
-        for (const peer of Object.keys(peerState)) {
-          sendHeartBeat(peer, false);
-        }
-      }, HEARTBEAT_INTERVAL);
+    deletePeerRef.current = deletePeer;
+  }, [deletePeer]);
 
-      const checkAliveInterval = setInterval(() => {
-        for (const peer of Object.keys(peerState)) {
-          if (peerState[peer].lastSeen + timeOutHeartBeat < Date.now()) {
-            deletePeers(peer);
-          }
-        }
-      }, timeOutHeartBeat);
+  useOnMount(() => {
+    const sendInterval = setInterval(() => {
+      for (const peer of Object.keys(pcs.current)) {
+        sendHeartBeatRef.current(peer);
+      }
+    }, HEARTBEAT_INTERVAL);
 
-      return () => {
-        clearInterval(checkAliveInterval);
-        clearInterval(sendInterval);
-      };
-    }
-  }, [
-    sendHeartBeat,
-    username,
-    peerState,
-    roomId,
-    deletePeers,
-    timeOutHeartBeat,
-  ]);
+    const checkAliveInterval = setInterval(() => {
+      for (const peer of Object.keys(pcs.current)) {
+        if (
+          pcs.current[peer] &&
+          pcs.current[peer].lastSeen &&
+          getUnixTs() - pcs.current[peer].lastSeen > pcs.current[peer].timeOut
+        ) {
+          console.log("Peer is dead", pcs.current[peer].lastSeen);
+          console.log("Time out", pcs.current[peer].timeOut);
+          deletePeerRef.current(peer);
+        }
+      }
+    }, CHECK_ALIVE_INTERVAL);
+    return () => {
+      clearInterval(checkAliveInterval);
+      clearInterval(sendInterval);
+    };
+  });
 
   React.useEffect(() => {
     sendCode();
     sendCodeRef.current = sendCode;
   }, [sendCode]);
-
-  useOnMount(() => {
-    const observer = new MutationObserver(async () => {
-      await sendCodeRef.current();
-    });
-    waitForElement(CODE_EDIOR_DIV_CHANGE_CONTENT, 2000).then((editor) => {
-      observer.observe(editor, {
-        childList: true,
-        subtree: true,
-      });
-    });
-    return observer.disconnect;
-  });
 
   React.useEffect(() => {
     sendTests();
@@ -725,6 +707,31 @@ export const RTCProvider = (props: RTCProviderProps) => {
     return observer.disconnect;
   });
 
+  useOnMount(() => {
+    sendServiceRequest({ action: "setupLeetCodeModel" });
+
+    const onWindowMessage = (message: MessageEvent) => {
+      // todo(nickbar01234): Should attach an ID to message so that it's identifiable only by us.
+      if (message.data.action != undefined) {
+        const windowMessage = message.data as WindowMessage;
+        console.log("Received from window", windowMessage.action);
+        switch (windowMessage.action) {
+          case "leetCodeOnChange": {
+            sendCodeRef.current(message.data.changes);
+            break;
+          }
+
+          default:
+            console.error("Unhandled window message", windowMessage);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("message", onWindowMessage);
+    return () => window.removeEventListener("message", onWindowMessage);
+  });
+
   return (
     <RTCContext.Provider
       value={{
@@ -742,22 +749,4 @@ export const RTCProvider = (props: RTCProviderProps) => {
       {props.children}
     </RTCContext.Provider>
   );
-};
-
-const calculateNewRTT = (latency: number, sample: number) => {
-  if (latency == 0) return sample;
-  return (1 - ALPHA) * latency + ALPHA * sample;
-};
-
-const calculateNewDeviation = (
-  prevDeviation: number,
-  latency: number,
-  sample: number
-) => {
-  if (prevDeviation == 0) return 1 / Math.sqrt(2 * latency);
-  return (1 - BETA) * prevDeviation + BETA * Math.abs(latency - sample);
-};
-
-const calculateNewTimeOutInterval = (latency: number, deviation: number) => {
-  return latency + 4 * deviation + BUFFER_TIME_OUT;
 };

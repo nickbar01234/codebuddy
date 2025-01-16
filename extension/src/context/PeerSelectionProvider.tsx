@@ -1,10 +1,14 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
-import { sendServiceRequest } from "@cb/services";
+import {
+  getLocalStorage,
+  sendServiceRequest,
+  setLocalStorage,
+} from "@cb/services";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { PeerInformation } from "./RTCProvider";
+import { Peer, PeerInformation, TestCase } from "@cb/types";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 2;
 interface PeerSelectionContext {
@@ -24,23 +28,6 @@ export const PeerSelectionContext = React.createContext(
   {} as PeerSelectionContext
 );
 
-interface Assignment {
-  variable: string;
-  value: string;
-}
-
-interface TestCase {
-  selected: boolean;
-  test: Assignment[];
-}
-
-interface Peer {
-  id: string;
-  active: boolean;
-  viewable: boolean;
-  tests: TestCase[];
-}
-
 interface PeerSelectionProviderProps {
   children: React.ReactNode;
 }
@@ -49,10 +36,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
   const { informations, roomId } = useRTC();
-  const [peers, setPeers] = React.useState<Peer[]>(
-    JSON.parse(localStorage.getItem("tabs") || JSON.stringify({ peers: [] }))
-      .peers
-  );
+  const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const [hardLoading, setHardLoading] = React.useState<boolean>(true);
@@ -289,7 +273,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     waitForElement(".monaco-editor", 2000)
       .then(() =>
         sendServiceRequest({
-          action: "createModel",
+          action: "setupCodeBuddyModel",
           id: EDITOR_NODE_ID,
         })
       )

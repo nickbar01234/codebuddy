@@ -8,6 +8,7 @@ import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
+import { getLocalStorage } from "@cb/services";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -26,6 +27,9 @@ export const RootNavigator = () => {
     setUserDropdownOpen(false);
     setDisplayMenu(false);
   };
+
+  const currRoomId = getLocalStorage("curRoomId");
+
   return (
     <div
       className="h-full w-full relative flex flex-col"
@@ -61,18 +65,13 @@ export const RootNavigator = () => {
       <div className="h-full w-full relative overflow-hidden">
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
           {state === AppState.HOME &&
-            localStorage.getItem("curRoomId") &&
+            currRoomId &&
             ((
               performance.getEntriesByType(
                 "navigation"
               )[0] as PerformanceNavigationTiming
             ).type === "reload" ? (
-              <LoadingPanel
-                numberOfUsers={
-                  JSON.parse(localStorage.getItem("curRoomId") || "{}")
-                    .numberOfUsers
-                }
-              />
+              <LoadingPanel numberOfUsers={currRoomId.numberOfUsers} />
             ) : (
               <div className="rounded-lg shadow-2xl w-[90%] max-w-sm">
                 <h1 className="text-lg font-semibold text-black dark:text-white  mb-4 text-center">
