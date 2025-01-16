@@ -5,7 +5,9 @@ import {
   ServiceResponse,
 } from "@cb/types";
 
-const LOCAL_STORAGE_KEY = "codebuddy";
+const LOCAL_STORAGE_PREFIX = "codebuddy";
+// todo(nickbar01234): Need a more robust typescript solution
+const LOCAL_STORAGE: Array<keyof LocalStorage> = ["curRoomId", "tabs"];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
   request: T
@@ -20,17 +22,20 @@ export const getChromeStorage = <K extends keyof ExtensionStorage>(key: K) =>
   >;
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
-  const store = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) ?? "{}");
+  const store = JSON.parse(
+    localStorage.getItem(LOCAL_STORAGE_PREFIX + key) ?? "{}"
+  );
   return store[key] as LocalStorage[K] | undefined;
 };
 
-export const setLocalStorage = (items: Partial<LocalStorage>) => {
-  const store = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) ?? "{}");
-  localStorage.setItem(
-    LOCAL_STORAGE_KEY,
-    JSON.stringify({ ...store, ...items })
-  );
+export const setLocalStorage = <K extends keyof LocalStorage>(
+  key: K,
+  value: LocalStorage[K]
+) => {
+  localStorage.setItem(LOCAL_STORAGE_PREFIX + key, JSON.stringify(value));
 };
 
 export const clearLocalStorage = () =>
-  localStorage.removeItem(LOCAL_STORAGE_KEY);
+  LOCAL_STORAGE.map((key) => LOCAL_STORAGE_PREFIX + key).forEach(
+    localStorage.removeItem
+  );

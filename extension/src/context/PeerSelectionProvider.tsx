@@ -8,8 +8,7 @@ import {
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { PeerInformation } from "./RTCProvider";
-import { Peer, TestCase } from "@cb/types";
+import { Peer, PeerInformation, TestCase } from "@cb/types";
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -171,7 +170,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => {
     if (!loading) {
       console.log("Setting tabs", roomId, peers);
-      setLocalStorage({ tabs: { roomId, peers } });
+      setLocalStorage("tabs", { roomId, peers });
     }
   }, [peers, loading, roomId]);
 
@@ -232,7 +231,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     waitForElement(".monaco-editor", 2000)
       .then(() =>
         sendServiceRequest({
-          action: "createModel",
+          action: "setupCodeBuddyModel",
           id: EDITOR_NODE_ID,
         })
       )

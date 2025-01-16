@@ -8,11 +8,11 @@ import {
 } from "@cb/services";
 import {
   HeartBeatMessage,
-  Payload,
-  PeerCodeMessage,
+  LeetCodeContentChange,
+  PeerInformation,
   PeerMessage,
   PeerState,
-  PeerTestMessage,
+  WindowMessage,
 } from "@cb/types";
 import {
   constructUrlFromQuestionId,
@@ -45,15 +45,6 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-const CODE_EDIOR_DIV_CHANGE_CONTENT = "#trackEditor";
-const INITIAL_TIME_OUT = 2 * 60 * 1000;
-const CHECK_ALIVE_INTERVAL = 20000;
-const HEARTBEAT_INTERVAL = 10000;
-
-export interface PeerInformation {
-  code?: Payload<PeerCodeMessage>;
-  tests?: Payload<PeerTestMessage>;
-}
 
 export interface RTCContext {
   createRoom: (questionId: string) => void;
@@ -154,22 +145,23 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (roomId == null) return;
       return sendMessage(peer)({
         action: "heartbeat",
-        username: username,
-        roomId: roomId,
         timestamp: getUnixTs(),
       });
     },
-    [sendMessage, username, roomId]
+    [sendMessage]
   );
 
-  const sendCode = React.useCallback(async () => {
-    sendMessages({
-      action: "code",
-      code: await sendServiceRequest({ action: "getValue" }),
-      changes: document.querySelector("#trackEditor")?.textContent ?? "{}",
-      timestamp: getUnixTs(),
-    });
-  }, [sendMessages]);
+  const sendCode = React.useCallback(
+    async (changes?: LeetCodeContentChange) => {
+      sendMessages({
+        action: "code",
+        code: await sendServiceRequest({ action: "getValue" }),
+        changes: JSON.stringify(changes ?? {}),
+        timestamp: getUnixTs(),
+      });
+    },
+    [sendMessages]
+  );
 
   const sendTests = React.useCallback(async () => {
     const node = document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement;
@@ -293,11 +285,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
     );
     console.log("Created room");
     setRoomId(roomRef.id);
-    setLocalStorage({
-      curRoomId: {
-        roomId: roomRef.id,
-        numberOfUsers: 0,
-      },
+    setLocalStorage("curRoomId", {
+      roomId: roomRef.id,
+      numberOfUsers: 0,
     });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
@@ -616,11 +606,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && informations) {
-      setLocalStorage({
-        curRoomId: {
-          roomId: roomId,
-          numberOfUsers: Object.keys(informations).length,
-        },
+      setLocalStorage("curRoomId", {
+        roomId,
+        numberOfUsers: Object.keys(informations).length,
       });
     }
   }, [roomId, informations]);
@@ -697,6 +685,31 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
     });
     return observer.disconnect;
+  });
+
+  useOnMount(() => {
+    sendServiceRequest({ action: "setupLeetCodeModel" });
+
+    const onWindowMessage = (message: MessageEvent) => {
+      // todo(nickbar01234): Should attach an ID to message so that it's identifiable only by us.
+      if (message.data.action != undefined) {
+        const windowMessage = message.data as WindowMessage;
+        console.log("Received from window", windowMessage.action);
+        switch (windowMessage.action) {
+          case "leetCodeOnChange": {
+            sendCodeRef.current(message.data.changes);
+            break;
+          }
+
+          default:
+            console.error("Unhandled window message", windowMessage);
+            break;
+        }
+      }
+    };
+
+    window.addEventListener("message", onWindowMessage);
+    return () => window.removeEventListener("message", onWindowMessage);
   });
 
   return (
