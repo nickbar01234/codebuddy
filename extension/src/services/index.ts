@@ -37,5 +37,5 @@ export const setLocalStorage = <K extends keyof LocalStorage>(
 
 export const clearLocalStorage = () =>
   LOCAL_STORAGE.map((key) => LOCAL_STORAGE_PREFIX + key).forEach(
-    localStorage.remove
+    localStorage.removeItem
   );
