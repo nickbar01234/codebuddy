@@ -7,7 +7,7 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import {
-  HeartBeatMessage,
+  ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
   PeerMessage,
@@ -45,6 +45,9 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
+const HEARTBEAT_INTERVAL = 10000;
+const CHECK_ALIVE_INTERVAL = 20000;
+const INITIAL_TIME_OUT = 30000;
 
 export interface RTCContext {
   createRoom: (questionId: string) => void;
@@ -142,7 +145,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const sendHeartBeat = React.useCallback(
     (peer: string) => {
-      if (roomId == null) return;
       return sendMessage(peer)({
         action: "heartbeat",
         timestamp: getUnixTs(),
@@ -175,12 +177,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [sendMessages]);
 
   const receiveHeartBeat = React.useCallback(
-    (payload: HeartBeatMessage) => {
-      const { username: peer, roomId: prevRoomId } = payload;
-      if (prevRoomId !== roomId) {
-        console.log("Room ID changed, ignoring heartbeat");
-        return;
-      }
+    (peer: string) => {
       replacePeerState(peer, (peerHeartBeat) => {
         const { latency } = peerHeartBeat;
         const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
@@ -192,11 +189,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
         };
       });
     },
-    [replacePeerState, roomId]
+    [replacePeerState]
   );
 
   const receiveCode = React.useCallback(
-    (payload: PeerCodeMessage, peer: string) => {
+    (payload: ExtractMessage<PeerMessage, "code">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { action: _, ...rest } = payload;
       setInformations((prev) => ({
@@ -211,7 +208,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const receiveTests = React.useCallback(
-    (payload: PeerTestMessage, peer: string) => {
+    (payload: ExtractMessage<PeerMessage, "tests">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { action: _, ...rest } = payload;
       setInformations((prev) => ({
@@ -264,7 +261,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           case "heartbeat": {
             console.log("Received heartbeat from " + peer);
-            receiveHeartBeatRef.current(payload);
+            receiveHeartBeatRef.current(peer);
             break;
           }
 
@@ -655,19 +652,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sendCode();
     sendCodeRef.current = sendCode;
   }, [sendCode]);
-
-  useOnMount(() => {
-    const observer = new MutationObserver(async () => {
-      await sendCodeRef.current();
-    });
-    waitForElement(CODE_EDIOR_DIV_CHANGE_CONTENT, 2000).then((editor) => {
-      observer.observe(editor, {
-        childList: true,
-        subtree: true,
-      });
-    });
-    return observer.disconnect;
-  });
 
   React.useEffect(() => {
     sendTests();
