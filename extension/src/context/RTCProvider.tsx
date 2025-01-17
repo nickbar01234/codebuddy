@@ -45,8 +45,8 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-const HEARTBEAT_INTERVAL = 10000;
-const CHECK_ALIVE_INTERVAL = 20000;
+const HEARTBEAT_INTERVAL = 60 * 1000;
+const CHECK_ALIVE_INTERVAL = 60 * 1000;
 const INITIAL_TIME_OUT = 30000;
 
 export interface RTCContext {
@@ -240,7 +240,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     (peer: string) =>
       function (event: MessageEvent) {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
-        // console.log("Message from " + username, payload);
+        console.log("Message from " + peer, payload);
         const { action, timestamp } = payload;
         if (Object.keys(pcs.current).includes(peer)) {
           pcs.current[peer].lastSeen = timestamp;
@@ -260,7 +260,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
 
           case "heartbeat": {
-            console.log("Received heartbeat from " + peer);
+            // console.log("Received heartbeat from " + peer);
             receiveHeartBeatRef.current(peer);
             break;
           }
@@ -460,7 +460,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       if (!reload) {
         console.log("Cleaning up local storage");
-        console.log("Cleaning up local storage");
         clearLocalStorage();
       }
 
@@ -633,9 +632,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const checkAliveInterval = setInterval(() => {
       for (const peer of Object.keys(pcs.current)) {
         if (
-          pcs.current[peer] &&
-          pcs.current[peer].lastSeen &&
-          getUnixTs() - pcs.current[peer].lastSeen > pcs.current[peer].timeOut
+          getUnixTs() - pcs.current[peer].lastSeen >
+          pcs.current[peer].timeOut
         ) {
           console.log("Peer is dead", pcs.current[peer].lastSeen);
           console.log("Time out", pcs.current[peer].timeOut);

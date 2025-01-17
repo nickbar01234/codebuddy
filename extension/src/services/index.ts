@@ -25,7 +25,6 @@ export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const store = JSON.parse(
     localStorage.getItem(LOCAL_STORAGE_PREFIX + key) ?? "{}"
   );
-  console.log("Store", store);
   return store as LocalStorage[K] | undefined;
 };
 
