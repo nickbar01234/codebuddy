@@ -46,8 +46,8 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-const HEARTBEAT_INTERVAL = 10000;
-const CHECK_ALIVE_INTERVAL = 20000;
+const HEARTBEAT_INTERVAL = 60 * 1000;
+const CHECK_ALIVE_INTERVAL = 60 * 1000;
 const INITIAL_TIME_OUT = 30000;
 
 export interface RTCContext {
