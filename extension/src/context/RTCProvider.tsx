@@ -243,7 +243,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     (peer: string) =>
       function (event: MessageEvent) {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
-        // console.log("Message from " + username, payload);
+        console.log("Message from " + peer, payload);
         const { action, timestamp } = payload;
         if (Object.keys(pcs.current).includes(peer)) {
           pcs.current[peer].lastSeen = timestamp;
@@ -463,7 +463,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return;
       }
       if (!reload) {
-        console.log("Cleaning up local storage");
         console.log("Cleaning up local storage");
         clearLocalStorage();
       }
