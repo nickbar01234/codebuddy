@@ -97,10 +97,6 @@ const EditorPanel = () => {
                   height: data.size.height,
                 },
               });
-              sendServiceRequest({
-                action: "updateEditorLayout",
-                monacoEditorId: "CodeBuddy",
-              });
             }}
           >
             <div className="relative h-full flex flex-col grow gap-y-2 w-full">

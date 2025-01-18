@@ -6,7 +6,6 @@ import {
   ExtractMessage,
   WindowMessage,
 } from "@cb/types";
-import { updateEditorLayout } from "@cb/services/handlers/editor";
 import { CodeBuddyPreference } from "@cb/constants";
 
 const handleCookieRequest = async (): Promise<Status> => {
@@ -255,16 +254,6 @@ chrome.runtime.onMessage.addListener(
           .then(() => {
             sendResponse();
           });
-        break;
-      }
-
-      case "updateEditorLayout": {
-        chrome.scripting.executeScript({
-          target: { tabId: sender.tab?.id ?? 0 },
-          func: updateEditorLayout,
-          args: [{ id: request.monacoEditorId }],
-          world: "MAIN",
-        });
         break;
       }
 

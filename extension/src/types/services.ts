@@ -48,11 +48,6 @@ interface SetOtherEditorRequest extends GenericMessage {
   editorId: string;
 }
 
-interface UpdateEditorLayoutRequest extends GenericMessage {
-  action: "updateEditorLayout";
-  monacoEditorId: string;
-}
-
 interface CleanEditorRequest extends GenericMessage {
   action: "cleanEditor";
 }
@@ -63,7 +58,6 @@ export type ServiceRequest =
   | SetValueRequest
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
-  | UpdateEditorLayoutRequest
   | CleanEditorRequest
   | SetupLeetCodeModel;
 
@@ -79,7 +73,6 @@ export type ServiceResponse = GenericResponse<
     setupCodeBuddyModel: void;
     setupLeetCodeModel: void;
     setValueOtherEditor: void;
-    updateEditorLayout: void;
     cleanEditor: void;
   }
 >;
