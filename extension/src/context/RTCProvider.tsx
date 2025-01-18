@@ -480,21 +480,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const deletePeer = React.useCallback(
     async (peer: string) => {
       if (roomId == null) return;
-      if (peer == undefined) return;
+      const { [peer]: _, ...rest } = pcs.current;
+      pcs.current = rest;
+
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayRemove(peer),
       });
+
       await deleteDoc(db.connections(roomId, username).doc(peer));
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [peer]: _, ...rest } = pcs.current;
-      pcs.current = rest;
       setInformations((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [peer]: _, ...rest } = prev;
         return rest;
       });
+
       setPeerState((prev) => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [peer]: _, ...rest } = prev;
         return rest;
       });
@@ -592,10 +591,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const prevRoomId = refreshInfo.roomId;
       const reloadJob = async () => {
         await leaveRoom(prevRoomId, true);
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+        // todo(nickbar01234): Dummy fix to mitigate a race
+        // 1. User A reload and triggers leave room
+        // 2. User B detects that A leaves the room and attempts to delete peer from local state
+        // 3. User A join rooms before (2) is completed
+        // 4. User B haven't finished cleaning A from local state
+        // 5. User A doesn't receive an offer
+        setTimeout(
+          () =>
+            joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href)),
+          1000
+        );
       };
       reloadJob();
-      console.log("Reloading", refreshInfo);
     }
   });
 
