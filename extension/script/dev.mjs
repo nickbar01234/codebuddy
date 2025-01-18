@@ -1,5 +1,5 @@
-import puppeteer from "puppeteer";
 import chokidar from "chokidar";
+import puppeteer from "puppeteer";
 
 const EXTENSION_PATH = "./dist/";
 
@@ -7,6 +7,16 @@ const EXTENSION_HOST = "https://leetcode.com/problems/";
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 
 const pages = [];
+const peers = [
+  {
+    peer: "code",
+    createRoom: true,
+  },
+  {
+    peer: "buddy",
+    createRoom: false,
+  },
+];
 
 const setup = async () => {
   const createBrowser = async (peer, createRoom) => {
@@ -16,6 +26,7 @@ const setup = async () => {
       args: [
         `--disable-extensions-except=${EXTENSION_PATH}`,
         `--load-extension=${EXTENSION_PATH}`,
+        "--start-maximized",
       ],
     });
     const page = await browser.newPage();
@@ -25,9 +36,14 @@ const setup = async () => {
         localStorage.setItem(
           "codebuddytest",
           JSON.stringify({
-            peer: peer,
             roomId: "CODE_BUDDY_TEST",
             createRoomOnMount: createRoom,
+          })
+        );
+        localStorage.setItem(
+          "codebuddyfakeUser",
+          JSON.stringify({
+            peer: peer,
           })
         );
       },
@@ -35,10 +51,21 @@ const setup = async () => {
       createRoom
     );
     await page.goto(TARGET_QUESTION);
-    return page;
+    setTimeout(() => {
+      page.evaluate(
+        () => {
+          localStorage.removeItem("codebuddytest");
+        },
+        peer,
+        createRoom
+      );
+    }, 2000);
+
+    return { browser, page };
   };
-  pages.push(await createBrowser("code", true));
-  pages.push(await createBrowser("buddy", false));
+  for (const { peer, createRoom } of peers) {
+    pages.push(await createBrowser(peer, createRoom));
+  }
 };
 
 setup().then(() => {
@@ -47,6 +74,19 @@ setup().then(() => {
     .on("change", () => {
       console.log("Detected build");
       // todo(nickbar1234): How to unpack extension again?
-      pages.forEach((page) => page.reload());
+
+      pages.forEach(async ({ browser, page }) => {
+        try {
+          await page.waitForSelector("#codeBuddyReload", { visible: true });
+          await page.click("#codeBuddyReload");
+
+          setTimeout(() => {
+            page.reload();
+          }, 1000);
+        } catch (e) {
+          console.error(e);
+          browser.close();
+        }
+      });
     });
 });

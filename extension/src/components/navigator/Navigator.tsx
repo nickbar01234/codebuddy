@@ -3,12 +3,12 @@ import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import React from "react";
 import { Toaster } from "sonner";
-
 import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
 import { getLocalStorage } from "@cb/services";
+import { sendServiceRequest } from "@cb/services";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -56,6 +56,19 @@ export const RootNavigator = () => {
             </React.Fragment>
           )}
         </div>
+        <button
+          id="codeBuddyReload"
+          type="button"
+          title="Reload extension"
+          className="opacity-0"
+          onClick={() => {
+            sendServiceRequest({
+              action: "reloadExtension",
+            });
+          }}
+        >
+          reload
+        </button>
         <RoomControlMenu
           displayMenu={displayMenu}
           setDisplayMenu={setDisplayMenu}

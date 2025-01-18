@@ -266,6 +266,11 @@ chrome.runtime.onMessage.addListener(
         break;
       }
 
+      case "reloadExtension": {
+        chrome.runtime.reload();
+        break;
+      }
+
       default:
         console.error(`Unhandled request ${request}`);
         break;
