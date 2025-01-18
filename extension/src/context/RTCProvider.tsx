@@ -8,11 +8,9 @@ import {
 } from "@cb/services";
 import {
   ExtractMessage,
-  ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
   PeerMessage,
-  PeerState,
   PeerState,
   WindowMessage,
 } from "@cb/types";
@@ -532,13 +530,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sendTestsRef = React.useRef(sendTests);
   const sendHeartBeatRef = React.useRef(sendHeartBeat);
   const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
-  const deletePeerRef = React.useRef(deletePeer);
-  const deleteMeRef = React.useRef(deleteMe);
-
-  const sendCodeRef = React.useRef(sendCode);
-  const sendTestsRef = React.useRef(sendTests);
-  const sendHeartBeatRef = React.useRef(sendHeartBeat);
-  const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
   const deletePeerRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
 
@@ -549,7 +540,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const prevRoomId = refreshInfo.roomId;
       await leaveRoom(prevRoomId, join);
       if (join) {
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+        setTimeout(() => {
+          joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+        }, 1500);
       }
     },
     [joinRoom, leaveRoom]
@@ -665,10 +658,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         if (
           pcs.current[peer] &&
           pcs.current[peer].lastSeen &&
-          getUnixTs() - pcs.current[peer].lastSeen > pcs.current[peer].timeOut
+          getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT
         ) {
           console.log("Peer is dead", pcs.current[peer].lastSeen);
-          console.log("Time out", pcs.current[peer].timeOut);
           deletePeerRef.current(peer);
         }
       }
