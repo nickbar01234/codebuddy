@@ -45,9 +45,10 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-const HEARTBEAT_INTERVAL = 60 * 1000;
-const CHECK_ALIVE_INTERVAL = 60 * 1000;
-const INITIAL_TIME_OUT = 30000;
+
+const HEARTBEAT_INTERVAL = 30_000; // ms
+const CHECK_ALIVE_INTERVAL = 30_000; // ms
+const TIMEOUT = 120; // seconds;
 
 export interface RTCContext {
   createRoom: (questionId: string) => void;
@@ -71,7 +72,6 @@ interface Connection {
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
   lastSeen: number;
-  timeOut: number;
 }
 
 export const MAX_CAPACITY = 4;
@@ -303,7 +303,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         pc: pc,
         channel: channel,
         lastSeen: getUnixTs(),
-        timeOut: INITIAL_TIME_OUT,
       };
 
       channel.onmessage = onmessage(peer);
@@ -410,7 +409,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
               pc: pc,
               channel: pc.createDataChannel("channel"),
               lastSeen: getUnixTs(),
-              timeOut: INITIAL_TIME_OUT,
             };
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
@@ -631,12 +629,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     const checkAliveInterval = setInterval(() => {
       for (const peer of Object.keys(pcs.current)) {
-        if (
-          getUnixTs() - pcs.current[peer].lastSeen >
-          pcs.current[peer].timeOut
-        ) {
+        if (getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT) {
           console.log("Peer is dead", pcs.current[peer].lastSeen);
-          console.log("Time out", pcs.current[peer].timeOut);
           deletePeerRef.current(peer);
         }
       }
