@@ -50,10 +50,14 @@ const HEARTBEAT_INTERVAL = 30_000; // ms
 const CHECK_ALIVE_INTERVAL = 30_000; // ms
 const TIMEOUT = 120; // seconds;
 
+interface CreateRoom {
+  roomId?: string;
+}
+
 export interface RTCContext {
-  createRoom: (questionId: string) => void;
-  joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
-  leaveRoom: (roomId: string) => void;
+  createRoom: (args: CreateRoom) => void;
+  joinRoom: (roomId: string) => Promise<boolean>;
+  leaveRoom: (roomId: string) => Promise<void>;
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
@@ -273,8 +277,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [receiveCode, receiveTests]
   );
 
-  const createRoom = async (questionId: string) => {
-    const roomRef = db.rooms().ref();
+  const createRoom = async ({ roomId }: CreateRoom) => {
+    const questionId = getQuestionIdFromUrl(window.location.href);
+    const roomRef =
+      roomId == undefined ? db.rooms().ref() : db.rooms().doc(roomId).ref();
     await setDoc(
       roomRef,
       { questionId, usernames: arrayUnion(username) },
@@ -356,7 +362,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const joinRoom = React.useCallback(
-    async (roomId: string, questionId: string): Promise<boolean> => {
+    async (roomId: string): Promise<boolean> => {
+      const questionId = getQuestionIdFromUrl(window.location.href);
       console.log("Joining room", roomId);
       if (!roomId) {
         toast.error("Please enter room ID");
@@ -597,11 +604,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         // 3. User A join rooms before (2) is completed
         // 4. User B haven't finished cleaning A from local state
         // 5. User A doesn't receive an offer
-        setTimeout(
-          () =>
-            joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href)),
-          1500
-        );
+        setTimeout(() => joinRoom(prevRoomId), 1500);
       };
       reloadJob();
     }

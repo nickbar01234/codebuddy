@@ -42,8 +42,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
             setState(AppState.ROOM);
-            const questionId = getQuestionIdFromUrl(window.location.href);
-            createRoom(questionId);
+            createRoom({});
             setDisplayMenu(false);
           },
         },
@@ -120,8 +119,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
 
   const onJoinRoom = async (e: React.MouseEvent<Element, MouseEvent>) => {
     e.stopPropagation();
-    const questionId = getQuestionIdFromUrl(window.location.href);
-    const haveJoined = await joinRoom(inputRoomId, questionId);
+    const haveJoined = await joinRoom(inputRoomId);
     if (haveJoined) {
       setState(AppState.ROOM);
     }

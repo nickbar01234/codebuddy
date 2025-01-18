@@ -47,4 +47,9 @@ export interface LocalStorage {
     roomId: string | null;
     peers: Peer[];
   };
+  test?: {
+    peer: string;
+    createRoomOnMount: boolean;
+    roomId: string;
+  };
 }

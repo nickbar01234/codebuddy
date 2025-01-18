@@ -4,9 +4,10 @@ import { AppPanel } from "@cb/components/panel";
 import { RTCProvider } from "@cb/context/RTCProvider";
 import { AppStateProvider } from "@cb/context/AppStateProvider";
 import { useOnMount } from "@cb/hooks";
-import { sendServiceRequest } from "@cb/services";
+import { getLocalStorage, sendServiceRequest } from "@cb/services";
 import { Status } from "@cb/types";
 import { PeerSelectionProvider } from "./context/PeerSelectionProvider";
+import TestProvider from "./context/TestProvider";
 
 const App = () => {
   const [status, setStatus] = React.useState<Status>({
@@ -14,18 +15,31 @@ const App = () => {
   });
 
   useOnMount(() => {
-    sendServiceRequest({ action: "cookie" }).then(setStatus);
+    sendServiceRequest({ action: "cookie" }).then((status) => {
+      const test = getLocalStorage("test");
+      if (status.status === "AUTHENTICATED") {
+        setStatus(status);
+      } else if (test != undefined) {
+        const { peer } = test;
+        setStatus({
+          status: "AUTHENTICATED",
+          user: { username: peer, id: peer },
+        });
+      }
+    });
   });
 
   if (status.status === "AUTHENTICATED") {
     return (
       <AppStateProvider user={status.user}>
         <RTCProvider>
-          <PeerSelectionProvider>
-            <AppPanel>
-              <RootNavigator />
-            </AppPanel>
-          </PeerSelectionProvider>
+          <TestProvider>
+            <PeerSelectionProvider>
+              <AppPanel>
+                <RootNavigator />
+              </AppPanel>
+            </PeerSelectionProvider>
+          </TestProvider>
         </RTCProvider>
       </AppStateProvider>
     );
