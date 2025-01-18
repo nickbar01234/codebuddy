@@ -49,10 +49,6 @@ export const AppPanel = (props: AppPanelProps) => {
             isCollapsed: data.size.width === minWidth,
           },
         });
-        sendServiceRequest({
-          action: "updateEditorLayout",
-          monacoEditorId: "CodeBuddy",
-        });
       }}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
