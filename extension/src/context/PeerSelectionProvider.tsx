@@ -186,7 +186,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           viewable:
             prevRoomId == roomId &&
             (prevPeersTab.some(
-              (peer) => peer.id === peerInfo && peer.viewable
+              (peer: Peer) => peer.id === peerInfo && peer.viewable
             ) ??
               false),
           tests: [],

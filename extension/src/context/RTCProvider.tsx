@@ -7,9 +7,11 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import {
+  ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
   PeerMessage,
+  PeerState,
   WindowMessage,
 } from "@cb/types";
 import {
@@ -17,6 +19,7 @@ import {
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
+import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import {
   Unsubscribe,
   arrayRemove,
@@ -43,6 +46,10 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 
+const HEARTBEAT_INTERVAL = 30_000; // ms
+const CHECK_ALIVE_INTERVAL = 30_000; // ms
+const TIMEOUT = 120; // seconds;
+
 export interface RTCContext {
   createRoom: (questionId: string) => void;
   joinRoom: (roomId: string, questionId: string) => Promise<boolean>;
@@ -51,7 +58,7 @@ export interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   sendMessages: (value: PeerMessage) => void;
-  connected: Record<string, boolean>;
+  peerState: Record<string, PeerState>;
 }
 
 interface RTCProviderProps {
@@ -64,6 +71,7 @@ interface Connection {
   username: string;
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
+  lastSeen: number;
 }
 
 export const MAX_CAPACITY = 4;
@@ -72,27 +80,55 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
   } = useAppState();
-
   const pcs = React.useRef<Record<string, Connection>>({});
+  const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
-  const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
-  const [connected, setConnected] = React.useState<Record<string, boolean>>({});
+  const [connected, setConnected] = React.useState<string[]>([]);
+  const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
+    {}
+  );
+
+  const replacePeerState = React.useCallback(
+    (
+      peer: string,
+      override: ((state: PeerState) => PeerState) | Partial<PeerState>
+    ) => {
+      if (peer != undefined) {
+        const delegate = (state: PeerState) => {
+          return typeof override === "function"
+            ? override(state)
+            : { ...state, ...override };
+        };
+        setPeerState((prev) =>
+          Object.fromEntries(
+            Object.entries(prev).map(([key, value]) =>
+              key === peer ? [key, delegate(value)] : [key, value]
+            )
+          )
+        );
+      }
+    },
+    []
+  );
 
   const sendMessage = React.useCallback(
-    (username: string) => (payload: PeerMessage) => {
+    (peer: string) => (payload: PeerMessage) => {
       if (
-        pcs.current[username].channel !== undefined &&
-        pcs.current[username].channel.readyState === "open"
+        pcs.current[peer].channel !== undefined &&
+        connected.includes(peer) &&
+        pcs.current[peer].channel.readyState === "open"
       ) {
-        console.log("Sending message to " + username);
-        pcs.current[username].channel.send(JSON.stringify(payload));
+        // console.log("Sending message to " + peer, payload);
+        pcs.current[peer].channel.send(JSON.stringify(payload));
+        return true;
       } else {
-        if (connected[username] == undefined) {
-          console.log("Not connected to " + username);
+        if (!Object.keys(pcs.current).includes(peer)) {
+          console.log("Not connected to " + peer);
         } else console.log("Data Channel not created yet");
+        return false;
       }
     },
     [connected]
@@ -100,9 +136,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const sendMessages = React.useCallback(
     (payload: PeerMessage) => {
-      for (const username of Object.keys(pcs.current)) {
-        sendMessage(username)(payload);
+      for (const peer of Object.keys(pcs.current)) {
+        sendMessage(peer)(payload);
       }
+    },
+    [sendMessage]
+  );
+
+  const sendHeartBeat = React.useCallback(
+    (peer: string) => {
+      return sendMessage(peer)({
+        action: "heartbeat",
+        timestamp: getUnixTs(),
+      });
     },
     [sendMessage]
   );
@@ -113,6 +159,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         action: "code",
         code: await sendServiceRequest({ action: "getValue" }),
         changes: JSON.stringify(changes ?? {}),
+        timestamp: getUnixTs(),
       });
     },
     [sendMessages]
@@ -121,58 +168,110 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sendTests = React.useCallback(async () => {
     const node = document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement;
     if (node != null) {
-      sendMessages({ action: "tests", tests: node.innerText.split("\n") });
+      sendMessages({
+        action: "tests",
+        tests: node.innerText.split("\n"),
+        timestamp: getUnixTs(),
+      });
     }
   }, [sendMessages]);
 
-  const sendCodeRef = React.useRef(sendCode);
-  const sendTestsRef = React.useRef(sendTests);
+  const receiveHeartBeat = React.useCallback(
+    (peer: string) => {
+      replacePeerState(peer, (peerHeartBeat) => {
+        const { latency } = peerHeartBeat;
+        const curlastSeen = pcs.current[peer]?.lastSeen ?? 0;
+        const newSample = getUnixTs() - curlastSeen;
+        const newLatency = calculateNewRTT(latency, newSample);
+        return {
+          ...peerHeartBeat,
+          latency: newLatency,
+        };
+      });
+    },
+    [replacePeerState]
+  );
 
-  const onOpen = (username: string) => () => {
-    console.log("Data Channel is open for " + username);
-    // console.log("hello");
-    console.dir(pcs.current[username].pc);
-    setConnected((prev) => ({
+  const receiveCode = React.useCallback(
+    (payload: ExtractMessage<PeerMessage, "code">, peer: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { action: _, ...rest } = payload;
+      setInformations((prev) => ({
+        ...prev,
+        [peer]: {
+          ...prev[peer],
+          code: rest,
+        },
+      }));
+    },
+    []
+  );
+
+  const receiveTests = React.useCallback(
+    (payload: ExtractMessage<PeerMessage, "tests">, peer: string) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { action: _, ...rest } = payload;
+      setInformations((prev) => ({
+        ...prev,
+        [peer]: {
+          ...prev[peer],
+          tests: rest,
+        },
+      }));
+    },
+    []
+  );
+
+  const onOpen = (peer: string) => () => {
+    console.log("Data Channel is open for " + peer);
+    pcs.current[peer].lastSeen = getUnixTs();
+    setPeerState((prev) => ({
       ...prev,
-      [username]: true,
+      [peer]: {
+        latency: 0,
+        deviation: 0,
+        connected: true,
+      },
     }));
   };
 
-  const onmessage = (username: string) =>
-    function (event: MessageEvent) {
-      const payload: PeerMessage = JSON.parse(event.data ?? {});
-      console.log("Message from " + username, payload.action);
-      const { action } = payload;
-      switch (action) {
-        case "code": {
-          const { action: _, ...rest } = payload;
-          setInformations((prev) => ({
-            ...prev,
-            [username]: {
-              ...prev[username],
-              code: rest,
-            },
-          }));
-          break;
+  const onmessage = React.useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (peer: string) =>
+      function (event: MessageEvent) {
+        const payload: PeerMessage = JSON.parse(event.data ?? {});
+        console.log("Message from " + peer, payload);
+        const { action, timestamp } = payload;
+        if (Object.keys(pcs.current).includes(peer)) {
+          pcs.current[peer].lastSeen = timestamp;
         }
 
-        case "tests": {
-          const { action: _, ...rest } = payload;
-          setInformations((prev) => ({
-            ...prev,
-            [username]: {
-              ...prev[username],
-              tests: rest,
-            },
-          }));
-          break;
-        }
+        switch (action) {
+          case "code": {
+            // console.log("Received code from " + username);
+            receiveCode(payload, peer);
+            break;
+          }
 
-        default:
-          console.error("Unknown payload", payload);
-          break;
-      }
-    };
+          case "tests": {
+            // console.log("Received tests from " + username);
+            receiveTests(payload, peer);
+            break;
+          }
+
+          case "heartbeat": {
+            // console.log("Received heartbeat from " + peer);
+            receiveHeartBeatRef.current(peer);
+            break;
+          }
+
+          default:
+            console.error("Unknown payload", payload);
+            break;
+        }
+      },
+    [receiveCode, receiveTests]
+  );
 
   const createRoom = async (questionId: string) => {
     const roomRef = db.rooms().ref();
@@ -181,7 +280,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       { questionId, usernames: arrayUnion(username) },
       { merge: true }
     );
-    // await db.usernamesCollection(roomRef.id).addUser(username);
     console.log("Created room");
     setRoomId(roomRef.id);
     setLocalStorage("curRoomId", {
@@ -204,10 +302,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
         username: peer,
         pc: pc,
         channel: channel,
+        lastSeen: getUnixTs(),
       };
 
       channel.onmessage = onmessage(peer);
       channel.onopen = onOpen(peer);
+
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
           await setDoc(
@@ -252,7 +352,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
       });
     },
-    [username]
+    [username, onmessage]
   );
 
   const joinRoom = React.useCallback(
@@ -277,8 +377,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
       const usernames = roomDoc.data().usernames;
-      // const usernamesCollection = await db.usernamesCollection(roomId).doc();
-
       if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
@@ -289,7 +387,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayUnion(username),
       });
-      // await db.usernamesCollection(roomId).addUser(username);
 
       onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
         snapshot.docChanges().forEach(async (change) => {
@@ -306,12 +403,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           const themRef = db.connections(roomId, username).doc(peer);
           const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
-          // const pc = new RTCPeerConnection(servers);
           if (pcs.current[peer] == undefined) {
             pcs.current[peer] = {
               username: peer,
               pc: pc,
               channel: pc.createDataChannel("channel"),
+              lastSeen: getUnixTs(),
             };
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
@@ -350,7 +447,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       return true;
     },
-    [username]
+    [username, onmessage]
   );
 
   const leaveRoom = React.useCallback(
@@ -362,15 +459,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (!reload) {
         console.log("Cleaning up local storage");
         clearLocalStorage();
-        sendServiceRequest({
-          action: "cleanEditor",
-        });
       }
 
       await updateDoc(db.room(roomId).ref(), {
         usernames: arrayRemove(username),
       });
-      // await db.usernamesCollection(roomId).deleteUser(username);
 
       const myAnswers = await getDocs(db.connections(roomId, username).ref());
       myAnswers.docs.forEach(async (doc) => {
@@ -378,41 +471,63 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
       setRoomId(null);
       setInformations({});
-      setConnected({});
+      setPeerState({});
       pcs.current = {};
     },
     [username]
   );
 
-  React.useEffect(() => {
-    const handleBeforeUnload = async () => {
-      if (roomId) {
-        console.log("Before Reloading", roomId);
-        await updateDoc(db.room(roomId).ref(), {
-          usernames: arrayRemove(username),
-        });
-        // await db.usernamesCollection(roomId).deleteUser(username);
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
+  const deletePeer = React.useCallback(
+    async (peer: string) => {
+      if (roomId == null) return;
+      const { [peer]: _, ...rest } = pcs.current;
+      pcs.current = rest;
 
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(peer),
+      });
+
+      await deleteDoc(db.connections(roomId, username).doc(peer));
+      setInformations((prev) => {
+        const { [peer]: _, ...rest } = prev;
+        return rest;
+      });
+
+      setPeerState((prev) => {
+        const { [peer]: _, ...rest } = prev;
+        return rest;
+      });
+      console.log("Removed peer", peer);
+    },
+    [roomId, username]
+  );
+
+  const deleteMe = React.useCallback(async () => {
+    if (roomId) {
+      await updateDoc(db.room(roomId).ref(), {
+        usernames: arrayRemove(username),
+      });
+      console.log("Before Reloading", roomId);
+    }
   }, [roomId, username]);
 
+  const sendCodeRef = React.useRef(sendCode);
+  const sendTestsRef = React.useRef(sendTests);
+  const sendHeartBeatRef = React.useRef(sendHeartBeat);
+  const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
+  const deletePeerRef = React.useRef(deletePeer);
+  const deleteMeRef = React.useRef(deleteMe);
+
   React.useEffect(() => {
-    const refreshInfo = getLocalStorage("curRoomId");
-    if (refreshInfo && refreshInfo.roomId) {
-      console.log("Reloading", refreshInfo);
-      const prevRoomId = refreshInfo.roomId;
-      const reloadJob = async () => {
-        await leaveRoom(prevRoomId, true);
-        await joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
-      };
-      reloadJob();
-    }
-  }, [joinRoom, leaveRoom]);
+    setConnected((prev) => {
+      const newConnected = Object.keys(peerState).sort();
+      const oldConnected = prev.slice().sort();
+      if (JSON.stringify(newConnected) !== JSON.stringify(oldConnected)) {
+        return newConnected;
+      }
+      return prev;
+    });
+  }, [peerState]);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -423,6 +538,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
         const data = snapshot.data();
         if (data == undefined) return;
+
         const usernames = data.usernames;
         if (!usernames.includes(username)) return;
         const removedPeers = Object.keys(pcs.current).filter(
@@ -432,22 +548,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
 
-        removedPeers.forEach(async (peer) => {
-          if (peer == undefined) return;
-          if (pcs.current[peer] == undefined) return;
-          const { [peer]: _, ...rest } = pcs.current;
-          pcs.current = rest;
-          console.log("Removed peer", peer);
-          await deleteDoc(db.connections(roomId, username).doc(peer));
-          setInformations((prev) => {
-            const { [peer]: _, ...rest } = prev;
-            return rest;
-          });
-          setConnected((prev) => {
-            const { [peer]: _, ...rest } = prev;
-            return rest;
-          });
-        });
+        console.log("usernames", usernames);
+        console.log("Added peers", addedPeers);
+        console.log("Removed peers", removedPeers);
+
+        removedPeers.forEach(deletePeer);
+
         addedPeers.forEach((peer) => {
           createOffer(roomId, peer);
         });
@@ -465,12 +571,41 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       };
     }
-  }, [roomId, username, createOffer]);
+  }, [roomId, username, createOffer, deletePeer]);
 
   React.useEffect(() => {
-    sendCode();
-    sendCodeRef.current = sendCode;
-  }, [sendCode]);
+    deleteMeRef.current = deleteMe;
+  }, [deleteMe]);
+
+  useOnMount(() => {
+    window.addEventListener("beforeunload", deleteMeRef.current);
+    return () => {
+      window.removeEventListener("beforeunload", deleteMeRef.current);
+    };
+  });
+
+  useOnMount(() => {
+    const refreshInfo = getLocalStorage("curRoomId");
+    console.log("Refresh Info", refreshInfo);
+    if (refreshInfo?.roomId != undefined) {
+      const prevRoomId = refreshInfo.roomId;
+      const reloadJob = async () => {
+        await leaveRoom(prevRoomId, true);
+        // todo(nickbar01234): Dummy fix to mitigate a race
+        // 1. User A reload and triggers leave room
+        // 2. User B detects that A leaves the room and attempts to delete peer from local state
+        // 3. User A join rooms before (2) is completed
+        // 4. User B haven't finished cleaning A from local state
+        // 5. User A doesn't receive an offer
+        setTimeout(
+          () =>
+            joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href)),
+          1500
+        );
+      };
+      reloadJob();
+    }
+  });
 
   React.useEffect(() => {
     if (roomId != null && informations) {
@@ -480,6 +615,44 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
     }
   }, [roomId, informations]);
+
+  React.useEffect(() => {
+    sendHeartBeatRef.current = sendHeartBeat;
+  }, [sendHeartBeat]);
+
+  React.useEffect(() => {
+    receiveHeartBeatRef.current = receiveHeartBeat;
+  }, [receiveHeartBeat]);
+
+  React.useEffect(() => {
+    deletePeerRef.current = deletePeer;
+  }, [deletePeer]);
+
+  useOnMount(() => {
+    const sendInterval = setInterval(() => {
+      for (const peer of Object.keys(pcs.current)) {
+        sendHeartBeatRef.current(peer);
+      }
+    }, HEARTBEAT_INTERVAL);
+
+    const checkAliveInterval = setInterval(() => {
+      for (const peer of Object.keys(pcs.current)) {
+        if (getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT) {
+          console.log("Peer is dead", peer, pcs.current[peer].lastSeen);
+          deletePeerRef.current(peer);
+        }
+      }
+    }, CHECK_ALIVE_INTERVAL);
+    return () => {
+      clearInterval(checkAliveInterval);
+      clearInterval(sendInterval);
+    };
+  });
+
+  React.useEffect(() => {
+    sendCode();
+    sendCodeRef.current = sendCode;
+  }, [sendCode]);
 
   React.useEffect(() => {
     sendTests();
@@ -534,7 +707,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         setRoomId,
         informations,
         sendMessages,
-        connected,
+        peerState,
       }}
     >
       {props.children}
