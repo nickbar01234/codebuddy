@@ -600,7 +600,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         setTimeout(
           () =>
             joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href)),
-          1000
+          1500
         );
       };
       reloadJob();
@@ -638,7 +638,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const checkAliveInterval = setInterval(() => {
       for (const peer of Object.keys(pcs.current)) {
         if (getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT) {
-          console.log("Peer is dead", pcs.current[peer].lastSeen);
+          console.log("Peer is dead", peer, pcs.current[peer].lastSeen);
           deletePeerRef.current(peer);
         }
       }
