@@ -18,11 +18,7 @@ const Circle = React.forwardRef<
 
 Circle.displayName = "Circle";
 
-export function LoadingPanel({
-  numberOfUsers = 1,
-}: {
-  numberOfUsers?: number;
-}) {
+export function LoadingPanel({ numberOfUsers = 0 }: { numberOfUsers: number }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const div1Ref = React.useRef<HTMLDivElement>(null);
   const div2Ref = React.useRef<HTMLDivElement>(null);

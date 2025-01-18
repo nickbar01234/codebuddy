@@ -24,5 +24,5 @@ const remoteServers = [
   },
 ];
 // TODO: Set to true to use the additional servers
-const useAdditionalServers = true;
+const useAdditionalServers = false;
 export const additionalServers = useAdditionalServers ? remoteServers : [];

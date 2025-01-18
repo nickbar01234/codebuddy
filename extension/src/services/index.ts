@@ -26,13 +26,8 @@ export const getChromeStorage = <K extends keyof ExtensionStorage>(key: K) =>
   >;
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
-  if (!LOCAL_STORAGE.includes(key)) {
-    throw new Error(`Key ${key} not found in LOCAL_STORAGE`);
-  }
-  const getLocalStorage = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
-  if (!getLocalStorage) return undefined;
-  const store = JSON.parse(getLocalStorage);
-  return store as LocalStorage[K] | undefined;
+  const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
+  return maybeItem == null ? undefined : JSON.parse(maybeItem);
 };
 
 export const setLocalStorage = <K extends keyof LocalStorage>(
