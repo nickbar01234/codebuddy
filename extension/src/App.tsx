@@ -16,11 +16,11 @@ const App = () => {
 
   useOnMount(() => {
     sendServiceRequest({ action: "cookie" }).then((status) => {
-      const test = getLocalStorage("test");
+      const fakeUser = getLocalStorage("fakeUser");
       if (status.status === "AUTHENTICATED") {
         setStatus(status);
-      } else if (test != undefined) {
-        const { peer } = test;
+      } else if (fakeUser != undefined) {
+        const { peer } = fakeUser;
         setStatus({
           status: "AUTHENTICATED",
           user: { username: peer, id: peer },

@@ -1,17 +1,16 @@
-import React from "react";
 import {
   BackIcon,
   CodeIcon,
   CopyIcon,
-  PlusIcon,
   LeaveIcon,
   MenuIcon,
+  PlusIcon,
   ResetIcon,
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
-import { getQuestionIdFromUrl } from "@cb/utils";
 import { clearLocalStorage } from "@cb/services";
+import React from "react";
 
 interface MenuItem {
   display: string;
@@ -145,6 +144,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         aria-expanded="false"
         data-headlessui-state=""
         onClick={toggleDisplayMenu}
+        title="Toggle Menu"
       >
         <MenuIcon />
       </button>

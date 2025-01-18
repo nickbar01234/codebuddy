@@ -48,8 +48,10 @@ export interface LocalStorage {
     peers: Peer[];
   };
   test?: {
-    peer: string;
     createRoomOnMount: boolean;
     roomId: string;
+  };
+  fakeUser?: {
+    peer: string;
   };
 }
