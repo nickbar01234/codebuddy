@@ -8,10 +8,12 @@ import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
 import { getLocalStorage } from "@cb/services";
+import useDevMode from "@cb/hooks/useDevMode";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { activePeer } = usePeerSelection();
+  useDevMode();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -44,7 +46,7 @@ export const RootNavigator = () => {
       />
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
         <div className="flex items-center">
-          <h2 className="font-medium">CodeBuddy2</h2>
+          <h2 className="font-medium">CodeBuddy</h2>
           {activePeer?.id && (
             <React.Fragment>
               <CaretRightIcon />{" "}

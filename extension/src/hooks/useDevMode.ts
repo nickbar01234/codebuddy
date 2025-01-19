@@ -1,13 +1,8 @@
-import { useOnMount, useRTC } from "@cb/hooks";
-import { sendServiceRequest } from "@cb/services";
 import { WindowMessage } from "types/window";
+import { useOnMount, useRTC } from ".";
+import { sendServiceRequest } from "@cb/services";
 
-interface TestProviderProps {
-  children?: React.ReactNode;
-}
-
-const TestProvider = (props: TestProviderProps) => {
-  const { children } = props;
+const useDevMode = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
 
   useOnMount(() => {
@@ -31,9 +26,7 @@ const TestProvider = (props: TestProviderProps) => {
           }
 
           case "reloadExtension": {
-            sendServiceRequest({ action: "reloadExtension" }).then(() =>
-              window.location.reload()
-            );
+            sendServiceRequest({ action: "reloadExtension" });
             break;
           }
         }
@@ -43,8 +36,6 @@ const TestProvider = (props: TestProviderProps) => {
     window.addEventListener("message", onWindowMessage);
     return () => window.removeEventListener("message", onWindowMessage);
   });
-
-  return <>{children}</>;
 };
 
-export default TestProvider;
+export default useDevMode;

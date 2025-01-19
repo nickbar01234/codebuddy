@@ -1,5 +1,6 @@
 import chokidar from "chokidar";
 import puppeteer from "puppeteer";
+import _ from "lodash";
 
 const EXTENSION_PATH = "./dist/";
 
@@ -54,19 +55,27 @@ const setup = async () => {
   }
 };
 
+const reload = _.throttle(() => {
+  console.log("Detected build");
+  pages.forEach(async ({ browser, page }) => {
+    try {
+      await page.evaluate(() => {
+        window.postMessage({ action: "reloadExtension" });
+      });
+      page.reload();
+    } catch (e) {
+      console.error(e);
+    }
+  });
+}, 5000);
+
 setup().then(() => {
   chokidar
     .watch(EXTENSION_PATH, { awaitWriteFinish: true })
-    .on("change", () => {
-      console.log("Detected build");
-      pages.forEach(async ({ browser, page }) => {
-        try {
-          await page.evaluate(() => {
-            window.postMessage({ action: "reloadExtension" });
-          });
-        } catch (e) {
-          console.error(e);
-        }
-      });
-    });
+    .on("change", reload);
+});
+
+// eslint-disable-next-line no-undef
+process.on("SIGINT", () => {
+  pages.forEach(({ browser }) => browser.close());
 });
