@@ -232,7 +232,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     []
   );
 
-  const onOpen = (peer: string) => () => {
+  const onOpen = React.useRef((peer: string) => () => {
     console.log("Data Channel is open for " + peer);
     pcs.current[peer].lastSeen = getUnixTs();
     sendCodeRef.current({ peer, payload: undefined });
@@ -245,7 +245,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         connected: true,
       },
     }));
-  };
+  });
 
   const onmessage = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -315,7 +315,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
 
       channel.onmessage = onmessage(peer);
-      channel.onopen = onOpen(peer);
+      channel.onopen = onOpen.current(peer);
 
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
@@ -422,7 +422,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
               pcs.current[peer].channel.onmessage = onmessage(peer);
-              pcs.current[peer].channel.onopen = onOpen(peer);
+              pcs.current[peer].channel.onopen = onOpen.current(peer);
             };
             pc.onicecandidate = async (event) => {
               if (event.candidate) {
