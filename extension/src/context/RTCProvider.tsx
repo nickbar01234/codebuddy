@@ -57,7 +57,6 @@ export interface RTCContext {
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
-  sendMessages: (value: PeerMessage) => void;
   peerState: Record<string, PeerState>;
 }
 
@@ -74,6 +73,12 @@ interface Connection {
   lastSeen: number;
 }
 
+interface SendMessage<T> {
+  peer?: string;
+  // todo(nickbar01234): Make payload optional
+  payload: T;
+}
+
 export const MAX_CAPACITY = 4;
 
 export const RTCProvider = (props: RTCProviderProps) => {
@@ -86,7 +91,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
-  const [connected, setConnected] = React.useState<string[]>([]);
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
@@ -114,67 +118,73 @@ export const RTCProvider = (props: RTCProviderProps) => {
     []
   );
 
-  const sendMessage = React.useCallback(
+  const sendMessageRef = React.useRef(
     (peer: string) => (payload: PeerMessage) => {
       if (
         pcs.current[peer].channel !== undefined &&
-        connected.includes(peer) &&
         pcs.current[peer].channel.readyState === "open"
       ) {
-        // console.log("Sending message to " + peer, payload);
         pcs.current[peer].channel.send(JSON.stringify(payload));
-        return true;
+      } else if (!Object.keys(pcs.current).includes(peer)) {
+        console.log("Not connected to " + peer);
       } else {
-        if (!Object.keys(pcs.current).includes(peer)) {
-          console.log("Not connected to " + peer);
-        } else console.log("Data Channel not created yet");
-        return false;
+        console.log("Data Channel not created yet");
       }
-    },
-    [connected]
+    }
   );
 
-  const sendMessages = React.useCallback(
-    (payload: PeerMessage) => {
-      for (const peer of Object.keys(pcs.current)) {
-        sendMessage(peer)(payload);
+  const sendMessagesRef = React.useRef(
+    ({ peer, payload }: SendMessage<PeerMessage>) => {
+      if (peer != undefined) {
+        sendMessageRef.current(peer)(payload);
+      } else {
+        Object.keys(pcs.current)
+          .map(sendMessageRef.current)
+          .forEach((cb) => cb(payload));
       }
-    },
-    [sendMessage]
+    }
   );
 
-  const sendHeartBeat = React.useCallback(
-    (peer: string) => {
-      return sendMessage(peer)({
-        action: "heartbeat",
-        timestamp: getUnixTs(),
-      });
-    },
-    [sendMessage]
+  const sendHeartBeatRef = React.useRef(() =>
+    sendMessagesRef.current({
+      payload: { action: "heartbeat", timestamp: getUnixTs() },
+    })
   );
 
-  const sendCode = React.useCallback(
-    async (changes?: LeetCodeContentChange) => {
-      sendMessages({
-        action: "code",
-        code: await sendServiceRequest({ action: "getValue" }),
-        changes: JSON.stringify(changes ?? {}),
-        timestamp: getUnixTs(),
-      });
-    },
-    [sendMessages]
-  );
-
-  const sendTests = React.useCallback(async () => {
-    const node = document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement;
-    if (node != null) {
-      sendMessages({
-        action: "tests",
-        tests: node.innerText.split("\n"),
-        timestamp: getUnixTs(),
+  const sendCodeRef = React.useRef(
+    async ({
+      peer,
+      payload: changes,
+    }: SendMessage<LeetCodeContentChange | undefined>) => {
+      sendMessagesRef.current({
+        peer,
+        payload: {
+          action: "code",
+          code: await sendServiceRequest({ action: "getValue" }),
+          changes: JSON.stringify(changes ?? {}),
+          timestamp: getUnixTs(),
+        },
       });
     }
-  }, [sendMessages]);
+  );
+
+  const sendTestsRef = React.useRef(
+    async ({ peer }: SendMessage<undefined>) => {
+      const node = document.querySelector(
+        CODE_MIRROR_CONTENT
+      ) as HTMLDivElement;
+      if (node != null) {
+        sendMessagesRef.current({
+          peer,
+          payload: {
+            action: "tests",
+            tests: node.innerText.split("\n"),
+            timestamp: getUnixTs(),
+          },
+        });
+      }
+    }
+  );
 
   const receiveHeartBeat = React.useCallback(
     (peer: string) => {
@@ -222,9 +232,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     []
   );
 
-  const onOpen = (peer: string) => () => {
+  const onOpen = React.useRef((peer: string) => () => {
     console.log("Data Channel is open for " + peer);
     pcs.current[peer].lastSeen = getUnixTs();
+    sendCodeRef.current({ peer, payload: undefined });
+    sendTestsRef.current({ peer, payload: undefined });
     setPeerState((prev) => ({
       ...prev,
       [peer]: {
@@ -233,7 +245,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         connected: true,
       },
     }));
-  };
+  });
 
   const onmessage = React.useCallback(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -248,20 +260,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
         switch (action) {
           case "code": {
-            // console.log("Received code from " + username);
             receiveCode(payload, peer);
             break;
           }
 
           case "tests": {
-            // console.log("Received tests from " + username);
             receiveTests(payload, peer);
             break;
           }
 
           case "heartbeat": {
-            // console.log("Received heartbeat from " + peer);
-            receiveHeartBeatRef.current(peer);
+            receiveHeartBeat(peer);
             break;
           }
 
@@ -270,7 +279,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
             break;
         }
       },
-    [receiveCode, receiveTests]
+    [receiveCode, receiveTests, receiveHeartBeat]
   );
 
   const createRoom = async (questionId: string) => {
@@ -306,7 +315,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       };
 
       channel.onmessage = onmessage(peer);
-      channel.onopen = onOpen(peer);
+      channel.onopen = onOpen.current(peer);
 
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
@@ -413,7 +422,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
             pc.ondatachannel = (event) => {
               pcs.current[peer].channel = event.channel;
               pcs.current[peer].channel.onmessage = onmessage(peer);
-              pcs.current[peer].channel.onopen = onOpen(peer);
+              pcs.current[peer].channel.onopen = onOpen.current(peer);
             };
             pc.onicecandidate = async (event) => {
               if (event.candidate) {
@@ -511,23 +520,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username]);
 
-  const sendCodeRef = React.useRef(sendCode);
-  const sendTestsRef = React.useRef(sendTests);
-  const sendHeartBeatRef = React.useRef(sendHeartBeat);
-  const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
   const deletePeerRef = React.useRef(deletePeer);
   const deleteMeRef = React.useRef(deleteMe);
-
-  React.useEffect(() => {
-    setConnected((prev) => {
-      const newConnected = Object.keys(peerState).sort();
-      const oldConnected = prev.slice().sort();
-      if (JSON.stringify(newConnected) !== JSON.stringify(oldConnected)) {
-        return newConnected;
-      }
-      return prev;
-    });
-  }, [peerState]);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -617,23 +611,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, informations]);
 
   React.useEffect(() => {
-    sendHeartBeatRef.current = sendHeartBeat;
-  }, [sendHeartBeat]);
-
-  React.useEffect(() => {
-    receiveHeartBeatRef.current = receiveHeartBeat;
-  }, [receiveHeartBeat]);
-
-  React.useEffect(() => {
     deletePeerRef.current = deletePeer;
   }, [deletePeer]);
 
   useOnMount(() => {
-    const sendInterval = setInterval(() => {
-      for (const peer of Object.keys(pcs.current)) {
-        sendHeartBeatRef.current(peer);
-      }
-    }, HEARTBEAT_INTERVAL);
+    const sendInterval = setInterval(
+      sendHeartBeatRef.current,
+      HEARTBEAT_INTERVAL
+    );
 
     const checkAliveInterval = setInterval(() => {
       for (const peer of Object.keys(pcs.current)) {
@@ -649,19 +634,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     };
   });
 
-  React.useEffect(() => {
-    sendCode();
-    sendCodeRef.current = sendCode;
-  }, [sendCode]);
-
-  React.useEffect(() => {
-    sendTests();
-    sendTestsRef.current = sendTests;
-  }, [sendTests]);
-
   useOnMount(() => {
     // TODO(nickbar01234) - This is probably not rigorous enough
-    const observer = new MutationObserver(() => sendTestsRef.current());
+    const observer = new MutationObserver(() =>
+      sendTestsRef.current({ payload: undefined })
+    );
     waitForElement(CODE_MIRROR_CONTENT, 1000).then((testEditor) => {
       observer.observe(testEditor, {
         attributes: true, // Trigger code when user inputs via prettified test case console
@@ -706,7 +683,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         roomId,
         setRoomId,
         informations,
-        sendMessages,
         peerState,
       }}
     >
