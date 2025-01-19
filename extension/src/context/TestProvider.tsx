@@ -1,5 +1,6 @@
 import { useOnMount, useRTC } from "@cb/hooks";
-import { getLocalStorage } from "@cb/services";
+import { sendServiceRequest } from "@cb/services";
+import { WindowMessage } from "types/window";
 
 interface TestProviderProps {
   children?: React.ReactNode;
@@ -10,17 +11,37 @@ const TestProvider = (props: TestProviderProps) => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
 
   useOnMount(() => {
-    const test = getLocalStorage("test");
-    if (test != undefined) {
-      const { createRoomOnMount, roomId } = test;
-      leaveRoom(roomId).then(() => {
-        if (createRoomOnMount) {
-          createRoom({ roomId });
-        } else {
-          joinRoom(roomId);
+    const onWindowMessage = (message: MessageEvent) => {
+      // todo(nickbar01234): Uniquely identify that this is test browser
+      if (message.data.action != undefined) {
+        const windowMessage = message.data as WindowMessage;
+        switch (windowMessage.action) {
+          case "createRoom": {
+            leaveRoom(windowMessage.roomId).then(() =>
+              createRoom({ roomId: windowMessage.roomId })
+            );
+            break;
+          }
+
+          case "joinRoom": {
+            leaveRoom(windowMessage.roomId).then(() =>
+              joinRoom(windowMessage.roomId)
+            );
+            break;
+          }
+
+          case "reloadExtension": {
+            sendServiceRequest({ action: "reloadExtension" }).then(() =>
+              window.location.reload()
+            );
+            break;
+          }
         }
-      });
-    }
+      }
+    };
+
+    window.addEventListener("message", onWindowMessage);
+    return () => window.removeEventListener("message", onWindowMessage);
   });
 
   return <>{children}</>;

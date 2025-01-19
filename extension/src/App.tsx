@@ -16,7 +16,7 @@ const App = () => {
 
   useOnMount(() => {
     sendServiceRequest({ action: "cookie" }).then((status) => {
-      const fakeUser = getLocalStorage("fakeUser");
+      const fakeUser = getLocalStorage("test");
       if (status.status === "AUTHENTICATED") {
         setStatus(status);
       } else if (fakeUser != undefined) {

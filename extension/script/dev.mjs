@@ -31,36 +31,22 @@ const setup = async () => {
     });
     const page = await browser.newPage();
     await page.goto(EXTENSION_HOST);
-    await page.evaluate(
-      (peer, createRoom) => {
-        localStorage.setItem(
-          "codebuddytest",
-          JSON.stringify({
-            roomId: "CODE_BUDDY_TEST",
-            createRoomOnMount: createRoom,
-          })
-        );
-        localStorage.setItem(
-          "codebuddyfakeUser",
-          JSON.stringify({
-            peer: peer,
-          })
-        );
-      },
-      peer,
-      createRoom
-    );
-    await page.goto(TARGET_QUESTION);
-    setTimeout(() => {
-      page.evaluate(
-        () => {
-          localStorage.removeItem("codebuddytest");
-        },
-        peer,
-        createRoom
+    await page.evaluate((peer) => {
+      localStorage.setItem(
+        "codebuddytest",
+        JSON.stringify({
+          peer: peer,
+        })
       );
-    }, 2000);
-
+    }, peer);
+    await page.goto(TARGET_QUESTION);
+    await page.evaluate((createRoom) => {
+      if (createRoom) {
+        window.postMessage({ action: "createRoom", roomId: "CODE_BUDDY_TEST" });
+      } else {
+        window.postMessage({ action: "joinRoom", roomId: "CODE_BUDDY_TEST" });
+      }
+    }, createRoom);
     return { browser, page };
   };
   for (const { peer, createRoom } of peers) {
@@ -73,19 +59,13 @@ setup().then(() => {
     .watch(EXTENSION_PATH, { awaitWriteFinish: true })
     .on("change", () => {
       console.log("Detected build");
-      // todo(nickbar1234): How to unpack extension again?
-
       pages.forEach(async ({ browser, page }) => {
         try {
-          await page.waitForSelector("#codeBuddyReload", { visible: true });
-          await page.click("#codeBuddyReload");
-
-          setTimeout(() => {
-            page.reload();
-          }, 1000);
+          await page.evaluate(() => {
+            window.postMessage({ action: "reloadExtension" });
+          });
         } catch (e) {
           console.error(e);
-          browser.close();
         }
       });
     });

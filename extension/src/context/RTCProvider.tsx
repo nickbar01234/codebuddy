@@ -460,22 +460,23 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const leaveRoom = React.useCallback(
     async (roomId: string, reload = false) => {
       console.log("Leaving room", roomId);
-      if (roomId == null) {
-        return;
-      }
       if (!reload) {
         console.log("Cleaning up local storage");
         clearLocalStorage();
       }
 
-      await updateDoc(db.room(roomId).ref(), {
-        usernames: arrayRemove(username),
-      });
+      try {
+        await updateDoc(db.room(roomId).ref(), {
+          usernames: arrayRemove(username),
+        });
 
-      const myAnswers = await getDocs(db.connections(roomId, username).ref());
-      myAnswers.docs.forEach(async (doc) => {
-        deleteDoc(doc.ref);
-      });
+        const myAnswers = await getDocs(db.connections(roomId, username).ref());
+        myAnswers.docs.forEach(async (doc) => {
+          deleteDoc(doc.ref);
+        });
+      } catch (e: any) {
+        console.error("Failed to leave room", e);
+      }
       setRoomId(null);
       setInformations({});
       setPeerState({});
@@ -688,6 +689,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
             sendCodeRef.current(message.data.changes);
             break;
           }
+
+          // Only for tests
+          case "createRoom":
+          case "joinRoom":
+          case "reloadExtension":
+            break;
 
           default:
             console.error("Unhandled window message", windowMessage);
