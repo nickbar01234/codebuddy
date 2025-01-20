@@ -7,6 +7,7 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import {
+  EventType,
   ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
@@ -34,6 +35,10 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
+import {
+  LEETCODE_SUBMISSION_RESULT,
+  LEETCODE_SUBMIT_BUTTON,
+} from "constants/page-elements";
 
 const servers = {
   iceServers: [
@@ -100,6 +105,46 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
+
+  useOnMount(() => {
+    waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
+      .then((button) => button as HTMLButtonElement)
+      .then((button) => {
+        const originalOnClick = button.onclick;
+        button.onclick = function (event) {
+          if (originalOnClick) {
+            originalOnClick.call(this, event);
+          }
+
+          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
+            .then(() => {
+              sendMessagesRef.current({
+                peer: undefined,
+                payload: {
+                  action: "event",
+                  event: EventType.SUBMIT_SUCCESS,
+                  eventMessage: `User ${username} passed all test cases`,
+                  timestamp: getUnixTs(),
+                },
+              });
+            })
+            .catch((_error) => {
+              sendMessagesRef.current({
+                peer: undefined,
+                payload: {
+                  action: "event",
+                  event: EventType.SUBMIT_FAILURE,
+                  eventMessage: `User ${username} failed some test cases`,
+                  timestamp: getUnixTs(),
+                },
+              });
+            });
+        };
+      })
+      .catch((error) => {
+        console.error("Error mounting callback on submit code button:", error);
+      });
+  });
 
   const replacePeerState = React.useCallback(
     (
@@ -277,6 +322,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           case "heartbeat": {
             receiveHeartBeat(peer);
+            break;
+          }
+
+          case "event": {
+            const { event, eventMessage } = payload;
+            switch (event) {
+              case EventType.SUBMIT_SUCCESS:
+                toast.success(`Update: ${eventMessage}`);
+                break;
+              case EventType.SUBMIT_FAILURE:
+                toast.error(`Update: ${eventMessage}`);
+                break;
+              default:
+                console.error("Unknown event", event);
+                break;
+            }
             break;
           }
 
