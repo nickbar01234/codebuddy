@@ -322,6 +322,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
             break;
           }
 
+          case "event": {
+            const { event, eventMessage } = payload;
+            switch (event) {
+              case "submit-success":
+                toast.success(`Update: ${eventMessage}`);
+                break;
+              case "submit-failure":
+                toast.error(`Update: ${eventMessage}`);
+                break;
+              default:
+                console.error("Unknown event", event);
+                break;
+            }
+            break;
+          }
+
           default:
             console.error("Unknown payload", payload);
             break;
