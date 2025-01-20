@@ -33,6 +33,10 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
+import {
+  LEETCODE_SUBMISSION_RESULT,
+  LEETCODE_SUBMIT_BUTTON,
+} from "constants/page-elements";
 
 const servers = {
   iceServers: [
@@ -96,7 +100,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   useOnMount(() => {
-    waitForElement(`[data-e2e-locator="console-submit-button"]`, 2000)
+    waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
         const originalOnClick = button.onclick;
@@ -105,7 +109,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
             originalOnClick.call(this, event);
           }
 
-          waitForElement(`[data-e2e-locator="submission-result"]`, 10000)
+          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
             .then(() => {
               sendMessagesRef.current({
                 peer: undefined,

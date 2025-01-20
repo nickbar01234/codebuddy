@@ -26,11 +26,21 @@ interface PeerEventMessage extends PeerGenericMessage {
   eventMessage: string;
 }
 
+interface SubmitSuccessEvent extends PeerEventMessage {
+  event: "submit-success";
+}
+
+interface SubmitFailureEvent extends PeerEventMessage {
+  event: "submit-failure";
+}
+
+type EventMessage = SubmitSuccessEvent | SubmitFailureEvent;
+
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
   | PeerHeartBeatMessage
-  | PeerEventMessage;
+  | EventMessage;
 
 export interface PeerInformation {
   code?: MessagePayload<PeerCodeMessage>;
