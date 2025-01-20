@@ -55,7 +55,7 @@ const setup = async () => {
   }
 };
 
-const reload = _.throttle(() => {
+const reload = _.debounce(() => {
   console.log("Detected build");
   pages.forEach(async ({ browser, page }) => {
     try {
@@ -67,7 +67,7 @@ const reload = _.throttle(() => {
       console.error(e);
     }
   });
-}, 5000);
+}, 1500);
 
 setup().then(() => {
   chokidar
