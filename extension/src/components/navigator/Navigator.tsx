@@ -3,16 +3,17 @@ import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import React from "react";
 import { Toaster } from "sonner";
-
 import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import { getLocalStorage } from "@cb/services";
+import useDevMode from "@cb/hooks/useDevMode";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { activePeer } = usePeerSelection();
+  useDevMode();
   const { joiningBackRoom } = useRTC();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);

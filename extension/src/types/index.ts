@@ -47,5 +47,7 @@ export interface LocalStorage {
     roomId: string | null;
     peers: Record<string, Peer>;
   };
-  lastActivePeer: string;
+  test?: {
+    peer: string;
+  };
 }

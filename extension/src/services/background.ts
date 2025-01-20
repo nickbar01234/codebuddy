@@ -268,22 +268,17 @@ chrome.runtime.onMessage.addListener(
         break;
       }
 
-      case "updateEditorLayout": {
-        chrome.scripting.executeScript({
-          target: { tabId: sender.tab?.id ?? 0 },
-          func: updateEditorLayout,
-          args: [{ id: request.monacoEditorId }],
-          world: "MAIN",
-        });
-        break;
-      }
-
       case "cleanEditor": {
         chrome.scripting.executeScript({
           target: { tabId: sender.tab?.id ?? 0 },
           func: cleanEditor,
           world: "MAIN",
         });
+        break;
+      }
+
+      case "reloadExtension": {
+        chrome.runtime.reload();
         break;
       }
 

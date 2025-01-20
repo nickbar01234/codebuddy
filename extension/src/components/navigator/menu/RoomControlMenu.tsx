@@ -5,6 +5,7 @@ import {
   LeaveIcon,
   MenuIcon,
   PlusIcon,
+  PlusIcon,
   ResetIcon,
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
@@ -42,9 +43,8 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <PlusIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setAppState(AppState.ROOM);
-            const questionId = getQuestionIdFromUrl(window.location.href);
-            createRoom(questionId);
+            setState(AppState.ROOM);
+            createRoom({});
             setDisplayMenu(false);
           },
         },
@@ -135,8 +135,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>
   ) => {
     e.stopPropagation();
-    const questionId = getQuestionIdFromUrl(window.location.href);
-    const haveJoined = await joinRoom(inputRoomId, questionId);
+    const haveJoined = await joinRoom(inputRoomId);
     if (haveJoined) {
       setAppState(AppState.ROOM);
     }
@@ -162,7 +161,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         aria-expanded="false"
         data-headlessui-appState=""
         onClick={toggleDisplayMenu}
-        title="Menu"
+        title="Toggle Menu"
       >
         <MenuIcon />
       </button>

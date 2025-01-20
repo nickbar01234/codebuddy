@@ -27,7 +27,9 @@ export const getChromeStorage = <K extends keyof ExtensionStorage>(key: K) =>
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
-  return maybeItem == null ? undefined : JSON.parse(maybeItem);
+  return maybeItem == null
+    ? undefined
+    : (JSON.parse(maybeItem) as LocalStorage[K]);
 };
 
 export const setLocalStorage = <K extends keyof LocalStorage>(
