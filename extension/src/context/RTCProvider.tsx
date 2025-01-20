@@ -724,7 +724,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         console.log("Received from window", windowMessage.action);
         switch (windowMessage.action) {
           case "leetCodeOnChange": {
-            sendCodeRef.current(message.data.changes);
+            sendCodeRef.current({ payload: windowMessage.changes });
             break;
           }
 
