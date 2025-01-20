@@ -50,4 +50,5 @@ export interface LocalStorage {
   test?: {
     peer: string;
   };
+  lastActivePeer: string;
 }

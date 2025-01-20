@@ -10,7 +10,7 @@ import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 
-const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 2;
+const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 3;
 interface PeerSelectionContext {
   peers: Peer[];
   activePeer: Peer | undefined;
