@@ -11,6 +11,7 @@ import {
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { getQuestionIdFromUrl } from "@cb/utils";
+import { clearLocalStorage } from "@cb/services";
 
 interface MenuItem {
   display: string;
@@ -36,14 +37,6 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     if (state === AppState.HOME) {
       return [
         {
-          display: "Reset Extension",
-          icon: <ResetIcon />,
-          onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
-            e.stopPropagation();
-            localStorage.clear();
-          },
-        },
-        {
           display: "Create Room",
           icon: <PlusIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -60,6 +53,15 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
             setDisplayInputRoomId(true);
+          },
+        },
+        {
+          display: "Reset Extension",
+          icon: <ResetIcon />,
+          onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
+            e.stopPropagation();
+            clearLocalStorage();
+            setDisplayMenu(false);
           },
         },
       ];

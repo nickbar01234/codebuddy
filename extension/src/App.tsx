@@ -19,15 +19,15 @@ const App = () => {
 
   if (status.status === "AUTHENTICATED") {
     return (
-      <AppPanel>
-        <AppStateProvider user={status.user}>
-          <RTCProvider>
-            <PeerSelectionProvider>
+      <AppStateProvider user={status.user}>
+        <RTCProvider>
+          <PeerSelectionProvider>
+            <AppPanel>
               <RootNavigator />
-            </PeerSelectionProvider>
-          </RTCProvider>
-        </AppStateProvider>
-      </AppPanel>
+            </AppPanel>
+          </PeerSelectionProvider>
+        </RTCProvider>
+      </AppStateProvider>
     );
   } else {
     // TODO(nickbar01234) - Handle unauthenticated

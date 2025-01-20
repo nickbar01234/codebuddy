@@ -8,6 +8,7 @@ import { CaretRightIcon } from "@cb/components/icons";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
+import { getLocalStorage } from "@cb/services";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -25,6 +26,8 @@ export const RootNavigator = () => {
     setUserDropdownOpen(false);
     setDisplayMenu(false);
   };
+
+  const currRoomId = getLocalStorage("curRoomId");
 
   return (
     <div
@@ -59,14 +62,9 @@ export const RootNavigator = () => {
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
-        {state === AppState.HOME && localStorage.getItem("curRoomId") && (
+        {state === AppState.HOME && currRoomId != undefined && (
           <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-            <LoadingPanel
-              numberOfUsers={
-                JSON.parse(localStorage.getItem("curRoomId") || "{}")
-                  .numberOfUsers
-              }
-            />
+            <LoadingPanel numberOfUsers={currRoomId.numberOfUsers} />
           </div>
         )}
         <EditorPanel />
