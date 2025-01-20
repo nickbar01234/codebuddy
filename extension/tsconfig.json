@@ -31,7 +31,8 @@
       "@cb/context/*": ["./context/*"],
       "@cb/db": ["./db/index.ts"],
       "@cb/db/*": ["./db/*"],
-      "@cb/constants": ["./constants/index.ts"]
+      "@cb/constants": ["./constants/index.ts"],
+      "@cb/constants/*": ["./constants/*"]
     }
   },
   "include": ["./src", "./src/services/index.ts"],

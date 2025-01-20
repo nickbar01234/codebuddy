@@ -37,7 +37,7 @@ import { additionalServers } from "./additionalServers";
 import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
-} from "constants/page-elements";
+} from "@cb/constants/page-elements";
 
 const servers = {
   iceServers: [
