@@ -7,6 +7,7 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import {
+  EventType,
   ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
@@ -119,7 +120,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 peer: undefined,
                 payload: {
                   action: "event",
-                  event: "submit-success",
+                  event: EventType.SUBMIT_SUCCESS,
                   eventMessage: `User ${username} passed all test cases`,
                   timestamp: getUnixTs(),
                 },
@@ -130,7 +131,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 peer: undefined,
                 payload: {
                   action: "event",
-                  event: "submit-failure",
+                  event: EventType.SUBMIT_FAILURE,
                   eventMessage: `User ${username} failed some test cases`,
                   timestamp: getUnixTs(),
                 },
@@ -325,10 +326,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "event": {
             const { event, eventMessage } = payload;
             switch (event) {
-              case "submit-success":
+              case EventType.SUBMIT_SUCCESS:
                 toast.success(`Update: ${eventMessage}`);
                 break;
-              case "submit-failure":
+              case EventType.SUBMIT_FAILURE:
                 toast.error(`Update: ${eventMessage}`);
                 break;
               default:
