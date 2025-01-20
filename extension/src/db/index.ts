@@ -10,10 +10,10 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 
-import { config } from "@cb/db/config";
+import { firebaseOptions } from "@cb/constants";
 import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
 
-const app = initializeApp(config);
+const app = initializeApp(firebaseOptions);
 export const firestore = getFirestore(app);
 
 const entry = () => {
