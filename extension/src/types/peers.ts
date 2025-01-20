@@ -20,10 +20,17 @@ interface PeerHeartBeatMessage extends PeerGenericMessage {
   action: "heartbeat";
 }
 
+interface PeerEventMessage extends PeerGenericMessage {
+  action: "event";
+  event: string;
+  eventMessage: string;
+}
+
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
-  | PeerHeartBeatMessage;
+  | PeerHeartBeatMessage
+  | PeerEventMessage;
 
 export interface PeerInformation {
   code?: MessagePayload<PeerCodeMessage>;

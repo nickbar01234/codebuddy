@@ -99,6 +99,46 @@ export const RTCProvider = (props: RTCProviderProps) => {
     {}
   );
 
+  useOnMount(() => {
+    waitForElement(`[data-e2e-locator="console-submit-button"]`, 2000)
+      .then((button) => button as HTMLButtonElement)
+      .then((button) => {
+        const originalOnClick = button.onclick;
+        button.onclick = function (event) {
+          if (originalOnClick) {
+            originalOnClick.call(this, event);
+          }
+
+          waitForElement(`[data-e2e-locator="submission-result"]`, 10000)
+            .then(() => {
+              sendMessagesRef.current({
+                peer: undefined,
+                payload: {
+                  action: "event",
+                  event: "submit-success",
+                  eventMessage: `User ${username} passed all test cases`,
+                  timestamp: getUnixTs(),
+                },
+              });
+            })
+            .catch((_error) => {
+              sendMessagesRef.current({
+                peer: undefined,
+                payload: {
+                  action: "event",
+                  event: "submit-failure",
+                  eventMessage: `User ${username} failed some test cases`,
+                  timestamp: getUnixTs(),
+                },
+              });
+            });
+        };
+      })
+      .catch((error) => {
+        console.error("Error mounting callback on submit code button:", error);
+      });
+  });
+
   const replacePeerState = React.useCallback(
     (
       peer: string,
