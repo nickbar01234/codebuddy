@@ -1,18 +1,14 @@
-import React from "react";
-import { useOnMount, usePeerSelection } from "@cb/hooks/index";
-import {
-  getChromeStorage,
-  sendServiceRequest,
-  setChromeStorage,
-} from "@cb/services";
-import { ResizableBox } from "react-resizable";
-import { ExtensionStorage } from "@cb/types";
-import { CodeBuddyPreference } from "@cb/constants";
-import { Ripple } from "@cb/components/ui/Ripple";
-import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { UserIcon } from "@cb/components/icons";
-import EditorToolBar from "./EditorToolBar";
+import { Ripple } from "@cb/components/ui/Ripple";
+import { CodeBuddyPreference } from "@cb/constants";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { useOnMount, usePeerSelection } from "@cb/hooks/index";
 import useWindowDimensions from "@cb/hooks/useWindowDimensions";
+import { getChromeStorage, setChromeStorage } from "@cb/services";
+import { ExtensionStorage } from "@cb/types";
+import React from "react";
+import { ResizableBox } from "react-resizable";
+import EditorToolBar from "./EditorToolBar";
 
 export interface TabMetadata {
   id: string;

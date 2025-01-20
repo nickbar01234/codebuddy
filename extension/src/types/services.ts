@@ -52,6 +52,10 @@ interface CleanEditorRequest extends GenericMessage {
   action: "cleanEditor";
 }
 
+interface ReloadExtensionRequest extends GenericMessage {
+  action: "reloadExtension";
+}
+
 export type ServiceRequest =
   | CookieRequest
   | GetValueRequest
@@ -59,7 +63,8 @@ export type ServiceRequest =
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
   | CleanEditorRequest
-  | SetupLeetCodeModel;
+  | SetupLeetCodeModel
+  | ReloadExtensionRequest;
 
 export type ServiceResponse = GenericResponse<
   ServiceRequest,
@@ -74,5 +79,6 @@ export type ServiceResponse = GenericResponse<
     setupLeetCodeModel: void;
     setValueOtherEditor: void;
     cleanEditor: void;
+    reloadExtension: void;
   }
 >;
