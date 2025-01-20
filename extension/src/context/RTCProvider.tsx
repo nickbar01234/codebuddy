@@ -128,7 +128,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 },
               });
             })
-            .catch((_error) => {
+            .catch(() => {
               sendMessagesRef.current({
                 peer: undefined,
                 payload: {
