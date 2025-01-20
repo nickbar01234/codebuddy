@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CodeBuddyPreference } from "@cb/constants";
 import { setChromeStorage } from "@cb/services";
-import { updateEditorLayout } from "@cb/services/handlers/editor";
 import {
   ExtractMessage,
   ServiceRequest,

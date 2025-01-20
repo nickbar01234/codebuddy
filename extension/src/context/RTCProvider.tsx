@@ -486,7 +486,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         myAnswers.docs.forEach(async (doc) => {
           deleteDoc(doc.ref);
         });
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("Failed to leave room", e);
       }
       setRoomId(null);
@@ -543,9 +543,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username]);
 
-  const sendCodeRef = React.useRef(sendCode);
-  const sendTestsRef = React.useRef(sendTests);
-  const sendHeartBeatRef = React.useRef(sendHeartBeat);
   const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
   const deletePeerRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
@@ -558,23 +555,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await leaveRoom(prevRoomId, join);
       if (join) {
         setTimeout(() => {
-          joinRoom(prevRoomId, getQuestionIdFromUrl(window.location.href));
+          joinRoom(prevRoomId);
         }, 1500);
       }
     },
     [joinRoom, leaveRoom]
   );
-
-  React.useEffect(() => {
-    setConnected((prev) => {
-      const newConnected = Object.keys(peerState).sort();
-      const oldConnected = prev.slice().sort();
-      if (JSON.stringify(newConnected) !== JSON.stringify(oldConnected)) {
-        return newConnected;
-      }
-      return prev;
-    });
-  }, [peerState]);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -650,10 +636,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
     }
   }, [roomId, informations]);
-
-  React.useEffect(() => {
-    sendHeartBeatRef.current = sendHeartBeat;
-  }, [sendHeartBeat]);
 
   React.useEffect(() => {
     receiveHeartBeatRef.current = receiveHeartBeat;

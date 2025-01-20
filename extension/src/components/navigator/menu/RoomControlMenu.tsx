@@ -5,13 +5,11 @@ import {
   LeaveIcon,
   MenuIcon,
   PlusIcon,
-  PlusIcon,
   ResetIcon,
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { clearLocalStorage } from "@cb/services";
-import { getQuestionIdFromUrl } from "@cb/utils";
 import React from "react";
 
 interface MenuItem {
@@ -43,7 +41,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <PlusIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(AppState.ROOM);
+            setAppState(AppState.ROOM);
             createRoom({});
             setDisplayMenu(false);
           },
