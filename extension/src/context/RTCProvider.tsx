@@ -7,6 +7,7 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import {
+  EventType,
   ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
@@ -33,6 +34,10 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
+import {
+  LEETCODE_SUBMISSION_RESULT,
+  LEETCODE_SUBMIT_BUTTON,
+} from "constants/page-elements";
 
 const servers = {
   iceServers: [
@@ -100,7 +105,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   useOnMount(() => {
-    waitForElement(`[data-e2e-locator="console-submit-button"]`, 2000)
+    waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
         const originalOnClick = button.onclick;
@@ -109,13 +114,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
             originalOnClick.call(this, event);
           }
 
-          waitForElement(`[data-e2e-locator="submission-result"]`, 10000)
+          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
             .then(() => {
               sendMessagesRef.current({
                 peer: undefined,
                 payload: {
                   action: "event",
-                  event: "submit-success",
+                  event: EventType.SUBMIT_SUCCESS,
                   eventMessage: `User ${username} passed all test cases`,
                   timestamp: getUnixTs(),
                 },
@@ -126,7 +131,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 peer: undefined,
                 payload: {
                   action: "event",
-                  event: "submit-failure",
+                  event: EventType.SUBMIT_FAILURE,
                   eventMessage: `User ${username} failed some test cases`,
                   timestamp: getUnixTs(),
                 },
@@ -315,6 +320,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           case "heartbeat": {
             receiveHeartBeat(peer);
+            break;
+          }
+
+          case "event": {
+            const { event, eventMessage } = payload;
+            switch (event) {
+              case EventType.SUBMIT_SUCCESS:
+                toast.success(`Update: ${eventMessage}`);
+                break;
+              case EventType.SUBMIT_FAILURE:
+                toast.error(`Update: ${eventMessage}`);
+                break;
+              default:
+                console.error("Unknown event", event);
+                break;
+            }
             break;
           }
 
