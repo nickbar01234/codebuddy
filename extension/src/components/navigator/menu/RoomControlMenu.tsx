@@ -1,17 +1,16 @@
-import React from "react";
 import {
   BackIcon,
   CodeIcon,
   CopyIcon,
-  PlusIcon,
   LeaveIcon,
   MenuIcon,
+  PlusIcon,
   ResetIcon,
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
-import { getQuestionIdFromUrl } from "@cb/utils";
 import { clearLocalStorage } from "@cb/services";
+import React from "react";
 
 interface MenuItem {
   display: string;
@@ -42,8 +41,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
             setState(AppState.ROOM);
-            const questionId = getQuestionIdFromUrl(window.location.href);
-            createRoom(questionId);
+            createRoom({});
             setDisplayMenu(false);
           },
         },
@@ -120,8 +118,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
 
   const onJoinRoom = async (e: React.MouseEvent<Element, MouseEvent>) => {
     e.stopPropagation();
-    const questionId = getQuestionIdFromUrl(window.location.href);
-    const haveJoined = await joinRoom(inputRoomId, questionId);
+    const haveJoined = await joinRoom(inputRoomId);
     if (haveJoined) {
       setState(AppState.ROOM);
     }
@@ -147,6 +144,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         aria-expanded="false"
         data-headlessui-state=""
         onClick={toggleDisplayMenu}
+        title="Toggle Menu"
       >
         <MenuIcon />
       </button>

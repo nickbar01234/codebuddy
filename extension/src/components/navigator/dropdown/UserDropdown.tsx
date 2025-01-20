@@ -18,7 +18,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           type="button"
           onClick={toggle}
         >
-          {activePeer.id} <CaretDownIcon />
+          {activePeer.id}
+          <CaretDownIcon />
         </button>
         <div
           className={`absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 left-0 ${
