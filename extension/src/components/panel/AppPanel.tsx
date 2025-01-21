@@ -1,15 +1,12 @@
+import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
+import { VerticalHandle } from "@cb/components/panel/Handle";
+import { CodeBuddyPreference } from "@cb/constants";
+import { useOnMount } from "@cb/hooks";
+import useWindowDimensions from "@cb/hooks/useWindowDimensions";
+import { getChromeStorage, setChromeStorage } from "@cb/services";
+import { ExtensionStorage } from "@cb/types";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { useOnMount } from "@cb/hooks";
-import {
-  getChromeStorage,
-  sendServiceRequest,
-  setChromeStorage,
-} from "@cb/services";
-import { ExtensionStorage } from "@cb/types";
-import { VerticalHandle } from "@cb/components/panel/Handle";
-import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
-import { CodeBuddyPreference } from "@cb/constants";
 
 interface AppPanelProps {
   children?: React.ReactNode;
@@ -19,6 +16,19 @@ export const AppPanel = (props: AppPanelProps) => {
   const [appPreference, setAppPreference] = React.useState<
     ExtensionStorage["appPreference"]
   >(CodeBuddyPreference.appPreference);
+  const { width } = useWindowDimensions();
+  const prevWidth = React.useRef(width);
+
+  React.useEffect(() => {
+    const oldRatio = appPreference.width / prevWidth.current;
+    console.log("resizing", width, appPreference.width, oldRatio);
+    setAppPreference((prev) => ({
+      ...prev,
+      width: width * oldRatio,
+      isCollapsed: width * oldRatio <= minWidth,
+    }));
+    prevWidth.current = width;
+  }, [width]);
 
   const minWidth = 40; // Set the minimum width threshold
 
