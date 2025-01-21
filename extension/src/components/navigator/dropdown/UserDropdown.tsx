@@ -1,7 +1,7 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
-import React from "react";
 import { cn } from "@cb/utils/cn";
+import React from "react";
 
 interface UserDropdownProps {
   isOpen: boolean;
@@ -59,7 +59,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
                 signalStrength.text
               )}
             >
-              {ping !== null ? `${ping} ms` : "Error"}
+              {signalStrength.title}
+              {/* {ping !== null ? `${ping} ms` : "Error"} */}
             </span>
           </div>
         </div>
@@ -97,9 +98,19 @@ function getStatus(ping: number | null) {
       : "red";
 
   const statusMapping = {
-    red: { bg: "bg-red-500", text: "text-red-500", level: 1 },
-    green: { bg: "bg-green-500", text: "text-green-500", level: 3 },
-    yellow: { bg: "bg-yellow-500", text: "text-yellow-500", level: 2 },
+    red: { bg: "bg-red-500", text: "text-red-500", level: 1, title: "Error" },
+    green: {
+      bg: "bg-green-500",
+      text: "text-green-500",
+      level: 3,
+      title: "Good",
+    },
+    yellow: {
+      bg: "bg-yellow-500",
+      text: "text-yellow-500",
+      level: 2,
+      title: "Okay",
+    },
   };
 
   return { status, ...statusMapping[status] };

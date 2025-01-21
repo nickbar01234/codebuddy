@@ -55,8 +55,6 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
               | React.KeyboardEvent<Element>
           ) => {
             e.stopPropagation();
-
-            // Check if the event is a mouse click or an Enter key press
             if (
               e.type === "click" ||
               (e.type === "keydown" &&
