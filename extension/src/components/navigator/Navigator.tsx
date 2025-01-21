@@ -74,6 +74,7 @@ export const RootNavigator = () => {
             ).type === "reload" ? (
               <LoadingPanel numberOfUsers={currRoomId.numberOfUsers} />
             ) : (
+              // TODO: clean up this
               <div className="rounded-lg shadow-2xl w-[90%] max-w-sm">
                 <h1 className="text-lg font-semibold text-black dark:text-white  mb-4 text-center">
                   Do you want to rejoin the room?
