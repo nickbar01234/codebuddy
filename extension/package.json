@@ -15,7 +15,6 @@
     "@tsparticles/engine": "^3.5.0",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.5.0",
-    "chokidar": "^4.0.3",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
     "firebase": "^10.12.2",
