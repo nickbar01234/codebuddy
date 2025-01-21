@@ -561,10 +561,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   // modify to accept many peers.
   const deletePeers = React.useCallback(
-    async (peers: string | string[]) => {
-      if (typeof peers === "string") {
-        peers = [peers];
-      }
+    async (peers: string[]) => {
       if (roomId == null) return;
       if (peers == undefined) return;
       const batch = writeBatch(firestore);
@@ -642,7 +639,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
 
-        deletePeers(removedPeers);
+        deletePeerRef.current(removedPeers);
 
         addedPeers.forEach((peer) => {
           createOffer(roomId, peer);
@@ -661,7 +658,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       };
     }
-  }, [roomId, username, createOffer, deletePeers]);
+  }, [roomId, username, createOffer]);
 
   React.useEffect(() => {
     deleteMeRef.current = deleteMe;
@@ -713,16 +710,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
     );
 
     const checkAliveInterval = setInterval(() => {
+      const timeOutPeers: string[] = [];
       for (const peer of Object.keys(pcs.current)) {
-        if (
-          pcs.current[peer] &&
-          pcs.current[peer].lastSeen &&
-          getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT
-        ) {
+        if (getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT) {
           console.log("Peer is dead", pcs.current[peer].lastSeen);
-          deletePeerRef.current(peer);
+          timeOutPeers.push(peer);
         }
       }
+      deletePeerRef.current(timeOutPeers);
     }, CHECK_ALIVE_INTERVAL);
     return () => {
       clearInterval(checkAliveInterval);

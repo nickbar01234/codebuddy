@@ -36,15 +36,14 @@
     display: none;
   }
 }
-/* Base Styles */
 
-*,
-*::before,
-*::after {
+.bar,
+.bar::before,
+.bar::after {
   box-sizing: border-box;
 }
 
-i:hover span {
+i.bar:hover span {
   animation-name: signal-intro;
   animation-play-state: running;
 }

@@ -4,11 +4,7 @@ import { CodeBuddyPreference } from "@cb/constants";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useOnMount, usePeerSelection } from "@cb/hooks/index";
 import useWindowDimensions from "@cb/hooks/useWindowDimensions";
-import {
-  getChromeStorage,
-  sendServiceRequest,
-  setChromeStorage,
-} from "@cb/services";
+import { getChromeStorage, setChromeStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import { cn } from "@cb/utils/cn";
 import React from "react";

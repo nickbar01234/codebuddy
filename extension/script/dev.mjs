@@ -67,7 +67,7 @@ const reload = _.debounce(() => {
       console.error(e);
     }
   });
-}, 1500);
+}, 2000);
 
 setup().then(() => {
   chokidar
