@@ -15,11 +15,10 @@ export const CodeBuddyPreference: ExtensionStorage = {
 };
 
 export const firebaseOptions: FirebaseOptions = {
-  apiKey: "AIzaSyBDu1Q1vQVi1x6U0GfWXIFmohb32jIhKjY",
-  authDomain: "codebuddy-1b0dc.firebaseapp.com",
-  projectId: "codebuddy-1b0dc",
-  storageBucket: "codebuddy-1b0dc.firebasestorage.app",
-  messagingSenderId: "871987263347",
-  appId: "1:871987263347:web:cb21306ac3d48eb4e5b706",
-  measurementId: "G-64K0SVBGFK",
+  apiKey: env.VITE_API_KEY,
+  authDomain: env.VITE_AUTH_DOMAIN,
+  projectId: env.VITE_PROJECT_ID,
+  storageBucket: env.VITE_STORAGE_BUCKET,
+  messagingSenderId: env.VITE_MESSAGING_SENDER_ID,
+  appId: env.VITE_APP_ID,
 };
