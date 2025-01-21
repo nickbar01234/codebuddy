@@ -14,7 +14,7 @@ const YELLOWTHRESHOLD = 1300;
 const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { activePeer, peers, setActivePeerId } = usePeerSelection();
   const { peerState } = useRTC();
-  const ping = Math.round(peerState[activePeer?.id || ""]?.latency);
+  const ping = activePeer ? peerState[activePeer.id].latency : 1400;
   const signalStrength = getStatus(ping);
   return (
     activePeer && (
@@ -87,15 +87,9 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
     )
   );
 };
-function getStatus(ping: number | null) {
+function getStatus(ping: number) {
   const status =
-    ping === null
-      ? "red"
-      : ping < GREENTHRESHOLD
-      ? "green"
-      : ping < YELLOWTHRESHOLD
-      ? "yellow"
-      : "red";
+    ping < GREENTHRESHOLD ? "green" : ping < YELLOWTHRESHOLD ? "yellow" : "red";
 
   const statusMapping = {
     red: { bg: "bg-red-500", text: "text-red-500", level: 1, title: "Error" },
