@@ -109,14 +109,6 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     }
   }, [roomId, setAppState]);
 
-  React.useEffect(() => {
-    if (roomId != null) {
-      setAppState(AppState.ROOM);
-    } else {
-      setAppState(AppState.HOME);
-    }
-  }, [roomId, setAppState]);
-
   const toggleDisplayMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.stopPropagation();
     setDisplayMenu(!displayMenu);
@@ -155,7 +147,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         type="button"
         aria-haspopup="true"
         aria-expanded="false"
-        data-headlessui-appState=""
+        data-headlessui-state=""
         onClick={toggleDisplayMenu}
         title="Toggle Menu"
       >
@@ -167,14 +159,14 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           displayMenu ? "block" : "hidden"
         }`}
         role="menu"
-        data-headlessui-appState="open"
+        data-headlessui-state="open"
       >
         {displayInputRoomId ? (
           <React.Fragment>
             <div
               className="flex gap-x-1 items-center text-md w-full cursor-pointer select-none rounded px-3 py-[5px] text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
               role="menuitem"
-              data-headlessui-appState=""
+              data-headlessui-state=""
               onClick={onBackButtonClick}
             >
               <BackIcon />
@@ -183,7 +175,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
             <div
               className="flex gap-x-1 px-3 py-[5px] items-center text-md w-full text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
               role="menuitem"
-              data-headlessui-appState=""
+              data-headlessui-state=""
             >
               <PlusIcon onClick={onJoinRoom} />
               <input
@@ -206,7 +198,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
               key={item.display}
               className="flex gap-x-1 items-center text-md w-full cursor-pointer select-none rounded px-3 py-[5px] text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
               role="menuitem"
-              data-headlessui-appState=""
+              data-headlessui-state=""
               onClick={item.onClick}
             >
               {item.icon}
