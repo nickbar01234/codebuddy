@@ -12,6 +12,7 @@ lerna-debug.log*
 
 # Env
 .env*
+!.env.tpl
 
 # Misc
 .DS_Store
