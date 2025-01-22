@@ -176,7 +176,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
 
   React.useEffect(() => {
-    if (!isBuffer) {
+    if (!isBuffer && roomId) {
       setLocalStorage("tabs", {
         roomId: roomId,
         peers: peers.reduce((acc: Record<string, Peer>, peer) => {

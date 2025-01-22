@@ -1,10 +1,13 @@
+import {
+  LEETCODE_SUBMISSION_RESULT,
+  LEETCODE_SUBMIT_BUTTON,
+} from "@cb/constants/page-elements";
 import db, { firestore } from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
 import {
   clearLocalStorage,
   getLocalStorage,
   sendServiceRequest,
-  setLocalStorage,
 } from "@cb/services";
 import {
   EventType,
@@ -22,23 +25,19 @@ import {
 } from "@cb/utils";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import {
-  Unsubscribe,
-  writeBatch,
   arrayRemove,
   arrayUnion,
   deleteDoc,
   getDocs,
   onSnapshot,
   setDoc,
+  Unsubscribe,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
-import {
-  LEETCODE_SUBMISSION_RESULT,
-  LEETCODE_SUBMIT_BUTTON,
-} from "@cb/constants/page-elements";
 
 const servers = {
   iceServers: [
@@ -360,10 +359,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     );
     console.log("Created room");
     setRoomId(roomRef.id);
-    setLocalStorage("curRoomId", {
-      roomId: roomRef.id,
-      numberOfUsers: 0,
-    });
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -519,7 +514,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
       });
 
-      if (getLocalStorage("curRoomId")?.roomId !== roomId.toString()) {
+      if (getLocalStorage("tabs")?.roomId !== roomId.toString()) {
         toast.success(
           `You have successfully joined the room with ID ${roomId}.`
         );
@@ -607,7 +602,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const joiningBackRoom = React.useCallback(
     async (join: boolean) => {
-      const refreshInfo = getLocalStorage("curRoomId");
+      const refreshInfo = getLocalStorage("tabs");
       if (refreshInfo == undefined) return;
       const prevRoomId = refreshInfo.roomId;
       await leaveRoom(prevRoomId, join);
@@ -676,7 +671,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       "navigation"
     )[0] as PerformanceNavigationTiming;
 
-    const refreshInfo = getLocalStorage("curRoomId");
+    const refreshInfo = getLocalStorage("tabs");
     if (
       navigationEntry.type === "reload" &&
       refreshInfo &&
@@ -685,15 +680,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       joiningBackRoom(true);
     }
   }, [joiningBackRoom]);
-
-  React.useEffect(() => {
-    if (roomId != null && informations) {
-      setLocalStorage("curRoomId", {
-        roomId,
-        numberOfUsers: Object.keys(informations).length,
-      });
-    }
-  }, [roomId, informations]);
 
   React.useEffect(() => {
     receiveHeartBeatRef.current = receiveHeartBeat;

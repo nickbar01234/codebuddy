@@ -7,11 +7,7 @@ import {
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
-const LOCAL_STORAGE: Array<keyof LocalStorage> = [
-  "curRoomId",
-  "tabs",
-  "lastActivePeer",
-];
+const LOCAL_STORAGE: Array<keyof LocalStorage> = ["tabs", "lastActivePeer"];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
   request: T

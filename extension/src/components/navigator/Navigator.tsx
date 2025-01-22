@@ -29,7 +29,7 @@ export const RootNavigator = () => {
     setDisplayMenu(false);
   };
 
-  const currRoomId = getLocalStorage("curRoomId");
+  const currentTabInfo = getLocalStorage("tabs");
 
   return (
     <div
@@ -66,13 +66,15 @@ export const RootNavigator = () => {
       <div className="h-full w-full relative overflow-hidden">
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
           {state === AppState.HOME &&
-            currRoomId &&
+            currentTabInfo &&
             ((
               performance.getEntriesByType(
                 "navigation"
               )[0] as PerformanceNavigationTiming
             ).type === "reload" ? (
-              <LoadingPanel numberOfUsers={currRoomId.numberOfUsers} />
+              <LoadingPanel
+                numberOfUsers={Object.keys(currentTabInfo.peers).length}
+              />
             ) : (
               // TODO: clean up this
               <div className="rounded-lg shadow-2xl w-[90%] max-w-sm">
