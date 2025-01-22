@@ -167,19 +167,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     },
     [activePeer, replacePeer]
   );
-  const setLocalStorageForIndividualPeers = React.useCallback(
-    (peer: Peer) => {
-      const currentTab = getLocalStorage("tabs") ?? {
-        roomId: roomId,
-        peers: {},
-      };
-      currentTab.peers[peer.id] = {
-        ...peer,
-      };
-      setLocalStorage("tabs", currentTab);
-    },
-    [roomId]
-  );
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
@@ -189,13 +176,19 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
 
   React.useEffect(() => {
-    for (const peer of peers) {
-      setLocalStorageForIndividualPeers(peer);
-      if (peer.active && !isBuffer) {
-        setLocalStorage("lastActivePeer", peer.id);
-      }
+    if (!isBuffer) {
+      setLocalStorage("tabs", {
+        roomId: roomId,
+        peers: peers.reduce((acc: Record<string, Peer>, peer) => {
+          if (peer.active) {
+            setLocalStorage("lastActivePeer", peer.id);
+          }
+          acc[peer.id] = peer;
+          return acc;
+        }, {}),
+      });
     }
-  }, [peers, roomId, setLocalStorageForIndividualPeers, isBuffer]);
+  }, [peers, roomId, isBuffer]);
 
   React.useEffect(() => {
     setPeers((prev) =>

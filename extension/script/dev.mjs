@@ -17,6 +17,14 @@ const peers = [
     peer: "buddy",
     createRoom: false,
   },
+  {
+    peer: "observer",
+    createRoom: false,
+  },
+  {
+    peer: "dundun",
+    createRoom: false,
+  },
 ];
 
 const setup = async () => {
