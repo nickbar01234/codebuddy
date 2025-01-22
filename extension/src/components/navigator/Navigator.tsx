@@ -12,7 +12,7 @@ import { Toaster } from "sonner";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const RootNavigator = () => {
-  const { state, navigationEntry } = React.useContext(appStateContext);
+  const { state } = React.useContext(appStateContext);
   const { activePeer, isBuffer } = usePeerSelection();
   useDevMode();
 
@@ -65,9 +65,8 @@ export const RootNavigator = () => {
       </div>
       <div className="h-full w-full relative overflow-hidden">
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-          {state === AppState.HOME &&
-            currentTabInfo &&
-            (navigationEntry === "reload" ? (
+          {currentTabInfo &&
+            (state === AppState.LOADING ? (
               <LoadingPanel
                 numberOfUsers={Object.keys(currentTabInfo.peers).length}
               />

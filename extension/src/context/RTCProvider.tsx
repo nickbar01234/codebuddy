@@ -38,6 +38,7 @@ import {
 import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
+import { AppState } from "./AppStateProvider";
 
 const servers = {
   iceServers: [
@@ -98,7 +99,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const pcs = React.useRef<Record<string, Connection>>({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [roomId, setRoomId] = React.useState<null | string>(null);
-  const { navigationEntry } = useAppState();
+  const { state: appState } = useAppState();
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
@@ -668,10 +669,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    if (navigationEntry === "reload" && refreshInfo?.roomId) {
+    if (appState === AppState.LOADING && refreshInfo?.roomId) {
       joiningBackRoom(true);
     }
-  }, [joiningBackRoom, navigationEntry]);
+  }, [joiningBackRoom, appState]);
 
   React.useEffect(() => {
     receiveHeartBeatRef.current = receiveHeartBeat;

@@ -1,5 +1,5 @@
-import { useRTC } from "@cb/hooks/index";
-import React from "react";
+import { AppState } from "@cb/context/AppStateProvider";
+import { useAppState, useRTC } from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
 
 export const RejoinPrompt = () => {
@@ -17,18 +17,15 @@ export const RejoinPrompt = () => {
   );
 };
 const RenderButton = ({ label, isYes }: { label: string; isYes: boolean }) => {
-  const [loading, setLoading] = React.useState(false);
   const { joiningBackRoom } = useRTC();
-  const handleClick = async (join: boolean) => {
-    setLoading(true);
-    await joiningBackRoom(join);
-    setLoading(false);
-  };
-
+  const { setState } = useAppState();
   return (
     <button
       type="button"
-      onClick={() => handleClick(isYes)}
+      onClick={() => {
+        joiningBackRoom(isYes);
+        setState(AppState.LOADING);
+      }}
       className={cn(
         "px-4 py-2 rounded-lg transition-colors flex items-center justify-center",
         {
@@ -38,11 +35,7 @@ const RenderButton = ({ label, isYes }: { label: string; isYes: boolean }) => {
         }
       )}
     >
-      {loading ? (
-        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-      ) : (
-        label
-      )}
+      {label}
     </button>
   );
 };

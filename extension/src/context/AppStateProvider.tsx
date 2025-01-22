@@ -1,9 +1,12 @@
 import { User } from "@cb/types";
 import React from "react";
+import { getLocalStorage } from "@cb/services";
+import { useOnMount } from "@cb/hooks";
 
 enum AppState {
   HOME, // Home screen
   ROOM, // In-room
+  LOADING,
 }
 
 interface AppStateProviderProps {
@@ -15,7 +18,6 @@ interface AppStateContext {
   user: User;
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
-  navigationEntry: string;
 }
 
 const appStateContext = React.createContext({} as AppStateContext);
@@ -25,18 +27,21 @@ const Provider = appStateContext.Provider;
 export const AppStateProvider = (props: AppStateProviderProps) => {
   const { children, user } = props;
   const [state, setState] = React.useState(AppState.HOME);
+  useOnMount(() => {
+    const refreshInfo = getLocalStorage("tabs");
+    const maybeReload = performance.getEntriesByType(
+      "navigation"
+    )[0] as PerformanceNavigationTiming;
 
+    if (refreshInfo?.roomId && maybeReload.type === "reload")
+      setState(AppState.LOADING);
+  });
   return (
     <Provider
       value={{
         user: user,
         state: state,
         setState: setState,
-        navigationEntry: (
-          performance.getEntriesByType(
-            "navigation"
-          )[0] as PerformanceNavigationTiming
-        ).type,
       }}
     >
       {children}
