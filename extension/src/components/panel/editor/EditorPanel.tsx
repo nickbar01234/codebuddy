@@ -19,15 +19,8 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const {
-    peers,
-    activePeer,
-    unblur,
-    setActivePeerId,
-    selectTest,
-    softLoading,
-    hardLoading,
-  } = usePeerSelection();
+  const { peers, activePeer, unblur, setActivePeerId, selectTest, isBuffer } =
+    usePeerSelection();
   const { state } = React.useContext(appStateContext);
   const { height } = useWindowDimensions();
 
@@ -43,22 +36,20 @@ const EditorPanel = () => {
 
   return (
     <>
-      {(!hardLoading || !softLoading) &&
-        peers.length == 0 &&
-        state === AppState.ROOM && (
-          <div className="flex flex-col items-center justify-center h-full w-full">
-            <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
-              <div
-                className={
-                  "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
-                }
-              >
-                <UserIcon />
-              </div>
-              <Ripple />
+      {!isBuffer && peers.length == 0 && state === AppState.ROOM && (
+        <div className="flex flex-col items-center justify-center h-full w-full">
+          <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
+            <div
+              className={
+                "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
+              }
+            >
+              <UserIcon />
             </div>
+            <Ripple />
           </div>
-        )}
+        </div>
+      )}
       <div
         className={cn(
           "flex flex-col relative h-full w-full",

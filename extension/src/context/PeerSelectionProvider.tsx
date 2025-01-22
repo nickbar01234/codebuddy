@@ -20,8 +20,7 @@ interface PeerSelectionContext {
   activeUserInformation: PeerInformation | undefined;
   pasteCode: () => void;
   setCode: (changeUser: boolean) => void;
-  softLoading: boolean;
-  hardLoading: boolean;
+  isBuffer: boolean;
 }
 
 export const PeerSelectionContext = React.createContext(
@@ -39,8 +38,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
-  const [hardLoading, setHardLoading] = React.useState<boolean>(true);
-  const [softLoading, setSoftLoading] = React.useState<boolean>(true);
+  const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -185,37 +183,21 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
-      const prevTabs = getLocalStorage("tabs");
-      if (!prevTabs) return undefined;
-      const prevPeer = prevTabs?.peers[peerId];
-      if (!prevPeer) return undefined;
-      if (Object.keys(prevPeer).length === 0) return undefined;
-      const prevRoomId = prevTabs?.roomId;
-      if (roomId && prevRoomId != roomId) return undefined;
-      return prevPeer;
+      return (getLocalStorage("tabs")?.peers ?? {})[peerId];
     },
-    [roomId]
+    []
   );
 
   React.useEffect(() => {
-    if (!softLoading) {
-      for (const peer of peers) {
-        setLocalStorageForIndividualPeers(peer);
-        if (peer.active && !hardLoading) {
-          setLocalStorage("lastActivePeer", peer.id);
-        }
+    for (const peer of peers) {
+      setLocalStorageForIndividualPeers(peer);
+      if (peer.active && !isBuffer) {
+        setLocalStorage("lastActivePeer", peer.id);
       }
     }
-  }, [
-    peers,
-    softLoading,
-    roomId,
-    setLocalStorageForIndividualPeers,
-    hardLoading,
-  ]);
+  }, [peers, roomId, setLocalStorageForIndividualPeers, isBuffer]);
 
   React.useEffect(() => {
-    console.log("Begin softLoading");
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
         const prevPeer = getLocalStorageForIndividualPeers(peerInfo);
@@ -238,8 +220,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
           tests[selectedTest].selected = true;
         }
-
-        setSoftLoading(false);
         return { ...peerTab, tests };
       })
     );
@@ -249,7 +229,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
-    if ((activePeer === undefined || hardLoading) && peers.length > 0) {
+    if ((activePeer === undefined || isBuffer) && peers.length > 0) {
       const lastActivePeer = getLocalStorage("lastActivePeer");
       if (lastActivePeer && peers.some((peer) => peer.id === lastActivePeer)) {
         setActivePeerId(lastActivePeer);
@@ -257,7 +237,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         setActivePeerId(peers[0].id);
       }
     }
-  }, [peers, activePeer, setActivePeerId, hardLoading]);
+  }, [peers, activePeer, setActivePeerId, isBuffer]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
@@ -288,7 +268,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         console.error("Error during the process:", error);
       });
     const setPastActive = setTimeout(() => {
-      setHardLoading(false);
+      setIsBuffer(false);
     }, TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE);
     return () => clearTimeout(setPastActive);
   });
@@ -303,9 +283,8 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         selectTest,
         activeUserInformation,
         pasteCode,
-        softLoading,
         setCode,
-        hardLoading,
+        isBuffer,
       }}
     >
       {children}

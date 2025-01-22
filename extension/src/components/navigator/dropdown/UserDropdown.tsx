@@ -28,7 +28,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             type="button"
             onClick={toggle}
           >
-            {activePeer.id} <CaretDownIcon />
+            {activePeer.id} {peers.length > 1 && <CaretDownIcon />}
           </button>
 
           <div className="bar group h-full flex items-center justify-center relative">
