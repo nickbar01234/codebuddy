@@ -86,15 +86,9 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
     )
   );
 };
-function getStatus(ping: number | undefined | null) {
+function getStatus(ping: number) {
   const status =
-    ping === undefined || ping === null
-      ? "red"
-      : ping < GREENTHRESHOLD
-      ? "green"
-      : ping < YELLOWTHRESHOLD
-      ? "yellow"
-      : "red";
+    ping < GREENTHRESHOLD ? "green" : ping < YELLOWTHRESHOLD ? "yellow" : "red";
 
   const statusMapping = {
     red: { bg: "bg-red-500", text: "text-red-500", level: 1, title: "Error" },

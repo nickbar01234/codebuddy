@@ -7,9 +7,11 @@ export const RejoinPrompt = () => {
       <h1 className="text-lg font-semibold text-black dark:text-white  mb-4 text-center">
         Do you want to rejoin the room?
       </h1>
-      <RenderButton label="No" isYes={false} />
-      <RenderButton label="Yes" isYes={true} />
-      <div className="flex gap-4 justify-center"></div>
+
+      <div className="flex gap-4 justify-center">
+        <RenderButton label="No" isYes={false} />
+        <RenderButton label="Yes" isYes={true} />
+      </div>
     </div>
   );
 };
