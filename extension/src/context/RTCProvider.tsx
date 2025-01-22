@@ -67,7 +67,7 @@ export interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
-  joiningBackRoom: (join: boolean) => void;
+  joiningBackRoom: (join: boolean) => Promise<void>;
 }
 
 interface RTCProviderProps {
@@ -98,6 +98,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const pcs = React.useRef<Record<string, Connection>>({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [roomId, setRoomId] = React.useState<null | string>(null);
+  const { navigationEntry } = useAppState();
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
@@ -667,19 +668,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
   });
 
   React.useEffect(() => {
-    const navigationEntry = performance.getEntriesByType(
-      "navigation"
-    )[0] as PerformanceNavigationTiming;
-
     const refreshInfo = getLocalStorage("tabs");
-    if (
-      navigationEntry.type === "reload" &&
-      refreshInfo &&
-      refreshInfo.roomId
-    ) {
+    if (navigationEntry === "reload" && refreshInfo && refreshInfo.roomId) {
       joiningBackRoom(true);
     }
-  }, [joiningBackRoom]);
+  }, [joiningBackRoom, navigationEntry]);
 
   React.useEffect(() => {
     receiveHeartBeatRef.current = receiveHeartBeat;

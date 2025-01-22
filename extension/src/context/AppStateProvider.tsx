@@ -15,6 +15,7 @@ interface AppStateContext {
   user: User;
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
+  navigationEntry: string;
 }
 
 const appStateContext = React.createContext({} as AppStateContext);
@@ -26,7 +27,18 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
   const [state, setState] = React.useState(AppState.HOME);
 
   return (
-    <Provider value={{ user: user, state: state, setState: setState }}>
+    <Provider
+      value={{
+        user: user,
+        state: state,
+        setState: setState,
+        navigationEntry: (
+          performance.getEntriesByType(
+            "navigation"
+          )[0] as PerformanceNavigationTiming
+        ).type,
+      }}
+    >
       {children}
     </Provider>
   );

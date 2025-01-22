@@ -1,20 +1,20 @@
+import { CaretRightIcon } from "@cb/components/icons";
+import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { usePeerSelection } from "@cb/hooks/index";
+import useDevMode from "@cb/hooks/useDevMode";
+import { getLocalStorage } from "@cb/services";
 import React from "react";
 import { Toaster } from "sonner";
-import { CaretRightIcon } from "@cb/components/icons";
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection, useRTC } from "@cb/hooks/index";
-import { getLocalStorage } from "@cb/services";
-import useDevMode from "@cb/hooks/useDevMode";
+import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const RootNavigator = () => {
-  const { state } = React.useContext(appStateContext);
-  const { activePeer } = usePeerSelection();
+  const { state, navigationEntry } = React.useContext(appStateContext);
+  const { activePeer, isBuffer } = usePeerSelection();
   useDevMode();
-  const { joiningBackRoom } = useRTC();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -67,41 +67,15 @@ export const RootNavigator = () => {
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
           {state === AppState.HOME &&
             currentTabInfo &&
-            ((
-              performance.getEntriesByType(
-                "navigation"
-              )[0] as PerformanceNavigationTiming
-            ).type === "reload" ? (
+            (navigationEntry === "reload" ? (
               <LoadingPanel
                 numberOfUsers={Object.keys(currentTabInfo.peers).length}
               />
             ) : (
-              // TODO: clean up this
-              <div className="rounded-lg shadow-2xl w-[90%] max-w-sm">
-                <h1 className="text-lg font-semibold text-black dark:text-white  mb-4 text-center">
-                  Do you want to rejoin the room?
-                </h1>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      joiningBackRoom(false);
-                    }}
-                    className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition-colors"
-                  >
-                    No
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      joiningBackRoom(true);
-                    }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Yes
-                  </button>
-                </div>
-              </div>
+              !isBuffer && (
+                // TODO: clean up this
+                <RejoinPrompt />
+              )
             ))}
         </div>
         <EditorPanel />
