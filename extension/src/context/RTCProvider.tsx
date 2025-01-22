@@ -559,7 +559,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
       if (roomId == null) return;
-      if (peers == undefined) return;
       const batch = writeBatch(firestore);
       peers
         .map((peer) => db.connections(roomId, username).doc(peer))
@@ -598,7 +597,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId, username]);
 
   const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
-  const deletePeerRef = React.useRef(deletePeers);
+  const deletePeersRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
 
   const joiningBackRoom = React.useCallback(
@@ -635,7 +634,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           .slice(data.usernames.indexOf(username) + 1)
           .filter((username) => !pcs.current[username]);
 
-        deletePeerRef.current(removedPeers);
+        deletePeersRef.current(removedPeers);
 
         addedPeers.forEach((peer) => {
           createOffer(roomId, peer);
@@ -669,7 +668,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    if (navigationEntry === "reload" && refreshInfo && refreshInfo.roomId) {
+    if (navigationEntry === "reload" && refreshInfo?.roomId) {
       joiningBackRoom(true);
     }
   }, [joiningBackRoom, navigationEntry]);
@@ -679,7 +678,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [receiveHeartBeat]);
 
   React.useEffect(() => {
-    deletePeerRef.current = deletePeers;
+    deletePeersRef.current = deletePeers;
   }, [deletePeers]);
 
   useOnMount(() => {
@@ -689,14 +688,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     );
 
     const checkAliveInterval = setInterval(() => {
-      const timeOutPeers: string[] = [];
-      for (const peer of Object.keys(pcs.current)) {
-        if (getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT) {
-          console.log("Peer is dead", pcs.current[peer].lastSeen);
-          timeOutPeers.push(peer);
-        }
-      }
-      deletePeerRef.current(timeOutPeers);
+      const timeOutPeers = Object.keys(pcs.current).filter(
+        (peer) => getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT
+      );
+      console.log("Dead peers", timeOutPeers);
+      deletePeersRef.current(timeOutPeers);
     }, CHECK_ALIVE_INTERVAL);
     return () => {
       clearInterval(checkAliveInterval);
