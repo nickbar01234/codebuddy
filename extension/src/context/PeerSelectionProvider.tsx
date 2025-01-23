@@ -208,7 +208,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           const currentSelectedTest = peerTab.tests.findIndex(
             (test) => test.selected
           );
-          console.log("Heree", prevPeer);
           const lastSelectedTest = prevPeer
             ? prevPeer.tests.findIndex((test: TestCase) => test.selected)
             : -1;
