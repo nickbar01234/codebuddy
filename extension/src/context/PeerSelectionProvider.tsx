@@ -11,6 +11,7 @@ import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 3.5;
+
 interface PeerSelectionContext {
   peers: Peer[];
   activePeer: Peer | undefined;
@@ -221,8 +222,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         return { ...peerTab, tests };
       })
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [informations, groupTestCases, roomId, getLocalStorageForIndividualPeers]); // add will create cyclic dependency
+  }, [informations, groupTestCases, getLocalStorageForIndividualPeers]);
 
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
