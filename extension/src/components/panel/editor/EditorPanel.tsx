@@ -29,23 +29,24 @@ const EditorPanel = () => {
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
+  const emptyRoom = peers.length === 0;
+
   useOnMount(() => {
     getChromeStorage("codePreference").then(setCodePreference);
   });
 
   return (
     <>
-      {!isBuffer && peers.length == 0 && state === AppState.ROOM && (
+      {!isBuffer && emptyRoom && state === AppState.ROOM && (
         <LoadingPanel numberOfUsers={peers.length} />
       )}
       <div
-        className={cn(
-          "flex flex-col relative h-full w-full",
-          peers.length === 0 ? "hidden" : "visible"
-        )}
+        className={cn("flex flex-col relative h-full w-full", {
+          hidden: emptyRoom,
+        })}
       >
         {/* todo(nickbar01234): Fix styling */}
-        {!canViewCode && peers.length != 0 && (
+        {!canViewCode && (
           <button
             className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 font-bold py-2 px-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg z-50"
             onClick={unblur}
@@ -143,9 +144,10 @@ const EditorPanel = () => {
               <div
                 className={cn(
                   `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
-                  active
-                    ? "flexlayout__tab_button-selected medium"
-                    : "flexlayout__tab_button--unselected normal"
+                  {
+                    "flexlayout__tab_button-selected medium": active,
+                    "flexlayout__tab_button--unselected normal": !active,
+                  }
                 )}
                 onClick={() => setActivePeerId(id)}
               >

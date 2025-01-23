@@ -196,21 +196,27 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         const prevPeer = getLocalStorageForIndividualPeers(peerInfo);
         const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
           id: peerInfo,
-          active: false, // cannot set it here will conflict with the useEffect below
+          active: false,
           viewable: (prevPeer && prevPeer.viewable) || false,
           tests: [],
         };
         const tests = groupTestCases(informations[peerInfo]);
         if (tests.length > 0) {
-          let lastSelectedTest = peerTab.tests.findIndex(
+          // Check if peerTab has selected?
+          // Otherwise, fallback to prevPeer
+          // If prevPeer doesn't exist, select index 0
+          const currentSelectedTest = peerTab.tests.findIndex(
             (test) => test.selected
           );
-          if (lastSelectedTest == -1 && prevPeer) {
-            lastSelectedTest = prevPeer.tests.findIndex(
-              (test: TestCase) => test.selected
-            );
-          }
-          const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
+          console.log("Heree", prevPeer);
+          const lastSelectedTest = prevPeer
+            ? prevPeer.tests.findIndex((test: TestCase) => test.selected)
+            : -1;
+          const selectedTest = Math.max(
+            currentSelectedTest,
+            lastSelectedTest,
+            0
+          );
           tests[selectedTest].selected = true;
         }
         return { ...peerTab, tests };
@@ -260,9 +266,13 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       .catch((error) => {
         console.error("Error during the process:", error);
       });
+  });
+
+  useOnMount(() => {
     const setPastActive = setTimeout(() => {
       setIsBuffer(false);
     }, TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE);
+
     return () => clearTimeout(setPastActive);
   });
 

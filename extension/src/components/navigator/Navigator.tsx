@@ -65,17 +65,13 @@ export const RootNavigator = () => {
       </div>
       <div className="h-full w-full relative overflow-hidden">
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-          {currentTabInfo &&
-            (state === AppState.LOADING ? (
-              <LoadingPanel
-                numberOfUsers={Object.keys(currentTabInfo.peers).length}
-              />
-            ) : (
-              state === AppState.HOME && (
-                // TODO: clean up this
-                <RejoinPrompt />
-              )
-            ))}
+          {state === AppState.LOADING ? (
+            <LoadingPanel
+              numberOfUsers={Object.keys(currentTabInfo?.peers ?? 0).length}
+            />
+          ) : state === AppState.REJOINING ? (
+            <RejoinPrompt />
+          ) : null}
         </div>
         <EditorPanel />
       </div>

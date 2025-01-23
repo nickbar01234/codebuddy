@@ -560,6 +560,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
       if (roomId == null) return;
+      const updatedPcs = { ...pcs.current };
+      peers.forEach((peer) => {
+        delete updatedPcs[peer];
+      });
+      pcs.current = updatedPcs;
       const batch = writeBatch(firestore);
       peers
         .map((peer) => db.connections(roomId, username).doc(peer))
@@ -568,11 +573,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
-      const updatedPcs = { ...pcs.current };
-      peers.forEach((peer) => {
-        delete updatedPcs[peer];
-      });
-      pcs.current = updatedPcs;
       setInformations((prev) =>
         Object.fromEntries(
           Object.entries(prev).filter(([key]) => !peers.includes(key))
@@ -607,6 +607,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (refreshInfo == undefined) return;
       const prevRoomId = refreshInfo.roomId;
       await leaveRoom(prevRoomId, join);
+      // todo(nickbar01234): Dummy fix to mitigate a race
+      // 1. User A reload and triggers leave room
+      // 2. User B detects that A leaves the room and attempts to delete peer from local state
+      // 3. User A join rooms before (2) is completed
+      // 4. User B haven't finished cleaning A from local state
+      // 5. User A doesn't receive an offer
       if (join) {
         setTimeout(() => {
           joinRoom(prevRoomId);
@@ -692,6 +698,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const timeOutPeers = Object.keys(pcs.current).filter(
         (peer) => getUnixTs() - pcs.current[peer].lastSeen > TIMEOUT
       );
+
+      // Note that this race is thereotically possible
+      // Time 1: User A detected B is dead and attempt to delete peer
+      // User A thread to delete peer is delayed
+      // Time 2: User A rejoins
+      // Time 3: deletePeers is executed
+      // User A gets kicked out
+      // In practice, we delay the user before joining room, so it should be fine? :)
       console.log("Dead peers", timeOutPeers);
       deletePeersRef.current(timeOutPeers);
     }, CHECK_ALIVE_INTERVAL);
