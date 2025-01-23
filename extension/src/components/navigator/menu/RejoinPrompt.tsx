@@ -10,13 +10,19 @@ export const RejoinPrompt = () => {
       </h1>
 
       <div className="flex gap-4 justify-center">
-        <RenderButton label="No" isYes={false} />
-        <RenderButton label="Yes" isYes={true} />
+        <RenderButton label="No" />
+        <RenderButton label="Yes" isYes />
       </div>
     </div>
   );
 };
-const RenderButton = ({ label, isYes }: { label: string; isYes: boolean }) => {
+const RenderButton = ({
+  label,
+  isYes = false,
+}: {
+  label: string;
+  isYes?: boolean;
+}) => {
   const { joiningBackRoom } = useRTC();
   const { setState } = useAppState();
   return (
