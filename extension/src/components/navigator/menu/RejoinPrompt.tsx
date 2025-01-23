@@ -24,7 +24,11 @@ const RenderButton = ({ label, isYes }: { label: string; isYes: boolean }) => {
       type="button"
       onClick={() => {
         joiningBackRoom(isYes);
-        setState(AppState.LOADING);
+        if (isYes) {
+          setState(AppState.LOADING);
+        } else {
+          setState(AppState.HOME);
+        }
       }}
       className={cn(
         "px-4 py-2 rounded-lg transition-colors flex items-center justify-center",
