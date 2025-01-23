@@ -13,7 +13,7 @@ import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
-  const { activePeer, isBuffer } = usePeerSelection();
+  const { activePeer } = usePeerSelection();
   useDevMode();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
@@ -71,7 +71,7 @@ export const RootNavigator = () => {
                 numberOfUsers={Object.keys(currentTabInfo.peers).length}
               />
             ) : (
-              !isBuffer && (
+              state === AppState.HOME && (
                 // TODO: clean up this
                 <RejoinPrompt />
               )
