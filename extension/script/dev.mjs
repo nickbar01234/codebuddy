@@ -17,6 +17,14 @@ const peers = [
     peer: "buddy",
     createRoom: false,
   },
+  {
+    peer: "observer",
+    createRoom: false,
+  },
+  {
+    peer: "dundun",
+    createRoom: false,
+  },
 ];
 
 const setup = async () => {
@@ -55,7 +63,7 @@ const setup = async () => {
   }
 };
 
-const reload = _.throttle(() => {
+const reload = _.debounce(() => {
   console.log("Detected build");
   pages.forEach(async ({ browser, page }) => {
     try {
@@ -67,7 +75,7 @@ const reload = _.throttle(() => {
       console.error(e);
     }
   });
-}, 5000);
+}, 2000);
 
 setup().then(() => {
   chokidar

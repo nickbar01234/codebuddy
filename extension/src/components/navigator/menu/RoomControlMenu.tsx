@@ -10,6 +10,7 @@ import {
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { clearLocalStorage } from "@cb/services";
+import { cn } from "@cb/utils/cn";
 import React from "react";
 
 interface MenuItem {
@@ -27,20 +28,21 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   displayMenu,
   setDisplayMenu,
 }) => {
-  const { state, setState } = React.useContext(appStateContext);
+  const { state: appState, setState: setAppState } =
+    React.useContext(appStateContext);
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const [displayInputRoomId, setDisplayInputRoomId] = React.useState(false);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const items: MenuItem[] = React.useMemo(() => {
-    if (state === AppState.HOME) {
+    if (appState === AppState.HOME) {
       return [
         {
           display: "Create Room",
           icon: <PlusIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(AppState.ROOM);
+            setAppState(AppState.ROOM);
             createRoom({});
             setDisplayMenu(false);
           },
@@ -48,9 +50,19 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
         {
           display: "Join Room",
           icon: <CodeIcon />,
-          onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
+          onClick: (
+            e:
+              | React.MouseEvent<Element, MouseEvent>
+              | React.KeyboardEvent<Element>
+          ) => {
             e.stopPropagation();
-            setDisplayInputRoomId(true);
+            if (
+              e.type === "click" ||
+              (e.type === "keydown" &&
+                (e as React.KeyboardEvent).key === "Enter")
+            ) {
+              setDisplayInputRoomId(true);
+            }
           },
         },
         {
@@ -63,7 +75,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           },
         },
       ];
-    } else if (state === AppState.ROOM) {
+    } else if (appState === AppState.ROOM) {
       return [
         {
           display: "Copy room ID",
@@ -79,7 +91,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
           icon: <LeaveIcon />,
           onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
             e.stopPropagation();
-            setState(AppState.HOME);
+            setAppState(AppState.HOME);
             setDisplayMenu(false);
             if (roomId) leaveRoom(roomId);
           },
@@ -88,23 +100,15 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     }
 
     return [];
-  }, [state, createRoom, setDisplayMenu, setState, roomId, leaveRoom]);
+  }, [appState, createRoom, setDisplayMenu, setAppState, roomId, leaveRoom]);
 
   React.useEffect(() => {
     if (roomId != null) {
-      setState(AppState.ROOM);
+      setAppState(AppState.ROOM);
     } else {
-      setState(AppState.HOME);
+      setAppState(AppState.HOME);
     }
-  }, [roomId, setState]);
-
-  React.useEffect(() => {
-    if (roomId != null) {
-      setState(AppState.ROOM);
-    } else {
-      setState(AppState.HOME);
-    }
-  }, [roomId, setState]);
+  }, [roomId, setAppState]);
 
   const toggleDisplayMenu = (e: React.MouseEvent<Element, MouseEvent>) => {
     e.stopPropagation();
@@ -116,11 +120,13 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
     setDisplayInputRoomId(false);
   };
 
-  const onJoinRoom = async (e: React.MouseEvent<Element, MouseEvent>) => {
+  const onJoinRoom = async (
+    e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>
+  ) => {
     e.stopPropagation();
     const haveJoined = await joinRoom(inputRoomId);
     if (haveJoined) {
-      setState(AppState.ROOM);
+      setAppState(AppState.ROOM);
     }
     setDisplayInputRoomId(false);
     setDisplayMenu(false);
@@ -137,7 +143,14 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   return (
     <div>
       <button
-        className="hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
+        className={cn(
+          "hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1",
+          {
+            // todo(nickbar01234): Fix this?
+            hidden:
+              appState === AppState.REJOINING || appState === AppState.LOADING,
+          }
+        )}
         id="headlessui-menu-button-:r3q:"
         type="button"
         aria-haspopup="true"
@@ -148,7 +161,6 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
       >
         <MenuIcon />
       </button>
-
       <div
         className={`bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 absolute right-0 top-8 w-[200px] rounded-lg p-2 outline-none transform opacity-100 scale-100 z-50 ${
           displayMenu ? "block" : "hidden"
@@ -178,6 +190,12 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
                 placeholder="Enter room ID"
                 onClick={onClickRoomIdInput}
                 onChange={onChangeRoomIdInput}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.stopPropagation();
+                    onJoinRoom(e as React.KeyboardEvent<Element>);
+                  } // Trigger the join room action
+                }}
               />
             </div>
           </React.Fragment>

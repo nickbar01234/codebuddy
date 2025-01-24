@@ -30,10 +30,50 @@
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
 }
-
 /* add the code bellow */
 @layer utilities {
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+}
+
+.bar,
+.bar::before,
+.bar::after {
+  box-sizing: border-box;
+}
+
+i.bar:hover span {
+  animation-name: signal-intro;
+  animation-play-state: running;
+}
+
+.icon__signal-strength span {
+  transform-origin: 100% 100%;
+  animation-iteration-count: 1;
+  animation-timing-function: cubic-bezier(0.17, 0.67, 0.42, 1.3);
+  animation-fill-mode: both;
+  animation-play-state: paused;
+}
+.icon__signal-strength .bar-1 {
+  height: 33%;
+  animation-duration: 0.3s;
+  animation-delay: 0.1s;
+}
+.icon__signal-strength .bar-2 {
+  height: 66%;
+  animation-duration: 0.25s;
+  animation-delay: 0.2s;
+}
+.icon__signal-strength .bar-3 {
+  height: 100%;
+  animation-duration: 0.2s;
+  animation-delay: 0.3s;
+}
+
+@keyframes signal-intro {
+  from {
+    opacity: 0.2;
+    height: 2px;
   }
 }

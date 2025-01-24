@@ -11,6 +11,7 @@ const EditorToolBar = () => {
         {capitalize(activeUserInformation?.code?.code.language ?? "")}
       </div>
       <button
+        title="Paste code"
         type="button"
         data-tooltip-target="tooltip-default"
         onClick={pasteCode}
