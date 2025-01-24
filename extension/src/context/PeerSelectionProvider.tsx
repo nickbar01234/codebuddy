@@ -10,7 +10,7 @@ import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 
-const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 3.5;
+const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -175,6 +175,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     },
     []
   );
+
   const setLocalStorageForIndividualPeers = React.useCallback(
     (peer: Peer) => {
       const currentTab = getLocalStorage("tabs") ?? {
@@ -188,6 +189,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     },
     [roomId]
   );
+
   React.useEffect(() => {
     for (const peer of peers) {
       setLocalStorageForIndividualPeers(peer);
@@ -197,24 +199,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     }
   }, [peers, roomId, setLocalStorageForIndividualPeers, isBuffer]);
 
-  // React.useEffect(() => {
-  //   console.log("Peers changed", peers);
-  //   if (!isBuffer && roomId) {
-  //     setLocalStorage("tabs", {
-  //       roomId: roomId,
-  //       peers: peers.reduce((acc: Record<string, Peer>, peer) => {
-  //         if (peer.active) {
-  //           setLocalStorage("lastActivePeer", peer.id);
-  //         }
-  //         acc[peer.id] = peer;
-  //         return acc;
-  //       }, {}),
-  //     });
-  //   }
-  // }, [peers, roomId, isBuffer]);
-
   React.useEffect(() => {
-    console.log("Informations changed", informations);
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
         const prevPeer = getLocalStorageForIndividualPeers(peerInfo);
