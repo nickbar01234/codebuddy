@@ -175,6 +175,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     (peer: Peer) => {
       const currentTab = getLocalStorage("tabs") ?? {
         roomId: roomId ?? "",
+        numberOfPeers: 0,
         peers: {},
       };
       (currentTab.peers as Record<string, Peer>)[peer.id] = {

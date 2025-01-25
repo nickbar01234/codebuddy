@@ -67,9 +67,7 @@ export const RootNavigator = () => {
       <div className="flex-grow w-full relative overflow-hidden">
         <div className="absolute inset-0 z-0 h-full w-full flex justify-center items-center">
           {state === AppState.LOADING ? (
-            <LoadingPanel
-              numberOfUsers={Object.keys(currentTabInfo?.peers ?? 0).length}
-            />
+            <LoadingPanel numberOfUsers={currentTabInfo?.numberOfPeers ?? 0} />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
           ) : null}

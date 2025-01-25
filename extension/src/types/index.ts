@@ -42,6 +42,7 @@ export interface LocalStorage {
   tabs: {
     roomId: string;
     peers: Record<string, Peer>;
+    numberOfPeers: number;
   };
   test?: {
     peer: string;

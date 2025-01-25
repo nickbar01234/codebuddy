@@ -8,6 +8,7 @@ import {
   clearLocalStorage,
   getLocalStorage,
   sendServiceRequest,
+  setLocalStorage,
 } from "@cb/services";
 import {
   EventType,
@@ -65,7 +66,6 @@ export interface RTCContext {
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string) => Promise<void>;
   roomId: string | null;
-  setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
   joiningBackRoom: (join: boolean) => Promise<void>;
@@ -525,7 +525,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
-      localStorage.removeItem("refresh");
       setAppState(AppState.ROOM);
       return true;
     },
@@ -633,15 +632,25 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [joinRoom, leaveRoom, setAppState]
   );
 
-  // React.useEffect(() => {
-  //   if (roomId != null) {
-  //     setAppState(AppState.ROOM);
-  //   } else {
-  //     setAppState(AppState.HOME);
-  //   }
-  // }, [roomId, setAppState, informations, isBuffer]);
+  React.useEffect(() => {
+    if (!isBuffer && roomId) {
+      if (Object.keys(informations).length == 0) {
+        setAppState(AppState.LOADING);
+      } else {
+        setAppState(AppState.ROOM);
+      }
+    }
+  }, [setAppState, informations, isBuffer, roomId]);
 
-  console.log("current app state: ", appState);
+  React.useEffect(() => {
+    if (roomId) {
+      const currentTab = getLocalStorage("tabs");
+      if (currentTab) {
+        currentTab.numberOfPeers = Object.keys(informations).length;
+        setLocalStorage("tabs", currentTab);
+      }
+    }
+  }, [informations, roomId]);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -797,7 +806,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         joinRoom,
         leaveRoom,
         roomId,
-        setRoomId,
         informations,
         peerState,
         joiningBackRoom,
