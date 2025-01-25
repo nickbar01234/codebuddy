@@ -1,10 +1,7 @@
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 import { VerticalHandle } from "@cb/components/panel/Handle";
-import { CodeBuddyPreference } from "@cb/constants";
-import { useOnMount } from "@cb/hooks";
-import useWindowDimensions from "@cb/hooks/useWindowDimensions";
-import { getChromeStorage, setChromeStorage } from "@cb/services";
-import { ExtensionStorage } from "@cb/types";
+import { MIN_WIDTH } from "@cb/context/WindowProvider";
+import { useWindowDimensions } from "@cb/hooks";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 interface AppPanelProps {
@@ -12,28 +9,7 @@ interface AppPanelProps {
 }
 
 export const AppPanel = (props: AppPanelProps) => {
-  const [appPreference, setAppPreference] = React.useState<
-    ExtensionStorage["appPreference"]
-  >(CodeBuddyPreference.appPreference);
-  const { width } = useWindowDimensions();
-  const prevWidth = React.useRef(width);
-
-  React.useEffect(() => {
-    const oldRatio = appPreference.width / prevWidth.current;
-    console.log("resizing", width, appPreference.width, oldRatio);
-    setAppPreference((prev) => ({
-      ...prev,
-      width: width * oldRatio,
-      isCollapsed: width * oldRatio <= minWidth,
-    }));
-    prevWidth.current = width;
-  }, [width]);
-
-  const minWidth = 40; // Set the minimum width threshold
-
-  useOnMount(() => {
-    getChromeStorage("appPreference").then(setAppPreference);
-  });
+  const { appPreference, setAppWidth, onResizeStop } = useWindowDimensions();
 
   return (
     <ResizableBox
@@ -42,23 +18,9 @@ export const AppPanel = (props: AppPanelProps) => {
       resizeHandles={["w"]}
       className="h-full flex relative"
       handle={VerticalHandle}
-      minConstraints={[minWidth, 0]}
-      onResize={(_e, data) =>
-        setAppPreference({
-          ...appPreference,
-          width: data.size.width,
-          isCollapsed: data.size.width === minWidth,
-        })
-      }
-      onResizeStop={(_e, data) => {
-        setChromeStorage({
-          appPreference: {
-            ...appPreference,
-            width: data.size.width,
-            isCollapsed: data.size.width === minWidth,
-          },
-        });
-      }}
+      minConstraints={[MIN_WIDTH, 0]}
+      onResize={(_e, data) => setAppWidth(data.size.width)}
+      onResizeStop={onResizeStop}
     >
       <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
         {appPreference.isCollapsed && <CollapsedPanel />}

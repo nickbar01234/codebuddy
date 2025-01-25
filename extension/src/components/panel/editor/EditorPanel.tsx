@@ -1,10 +1,10 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { CodeBuddyPreference } from "@cb/constants";
-import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { useOnMount, usePeerSelection } from "@cb/hooks/index";
-import useWindowDimensions from "@cb/hooks/useWindowDimensions";
-import { getChromeStorage, setChromeStorage } from "@cb/services";
-import { ExtensionStorage } from "@cb/types";
+import { AppState } from "@cb/context/AppStateProvider";
+import {
+  useAppState,
+  usePeerSelection,
+  useWindowDimensions,
+} from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
@@ -20,24 +20,17 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { peers, activePeer, unblur, setActivePeerId, selectTest, isBuffer } =
     usePeerSelection();
-  const { state } = React.useContext(appStateContext);
-  const { height } = useWindowDimensions();
-
-  const [codePreference, setCodePreference] = React.useState<
-    ExtensionStorage["codePreference"]
-  >(CodeBuddyPreference.codePreference);
+  const { state: appState } = useAppState();
+  const { setCodePreferenceHeight, onResizeStop, codePreference, height } =
+    useWindowDimensions();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
-  useOnMount(() => {
-    getChromeStorage("codePreference").then(setCodePreference);
-  });
-
   return (
     <>
-      {!isBuffer && emptyRoom && state === AppState.ROOM && (
+      {!isBuffer && emptyRoom && appState === AppState.ROOM && (
         <LoadingPanel numberOfUsers={peers.length} />
       )}
       <div
@@ -71,20 +64,8 @@ const EditorPanel = () => {
                 <div className="relative top-1/2 -translate-y-1/2 flexlayout__splitter flexlayout__splitter_horz w-full h-[2px] hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[2px] after:bg-[--color-splitter] cursor-ns-resize" />
               </div>
             }
-            onResize={(_e, data) =>
-              setCodePreference({
-                ...codePreference,
-                height: data.size.height,
-              })
-            }
-            onResizeStop={(_e, data) => {
-              setChromeStorage({
-                codePreference: {
-                  ...codePreference,
-                  height: data.size.height,
-                },
-              });
-            }}
+            onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
+            onResizeStop={onResizeStop}
           >
             <div className="relative h-full flex flex-col grow gap-y-2 w-full">
               <EditorToolBar />
