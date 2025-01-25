@@ -1,9 +1,3 @@
-import React from "react";
-import { ResizableBox } from "react-resizable";
-import { useOnMount } from "@cb/hooks";
-import { getChromeStorage, setChromeStorage } from "@cb/services";
-import { ExtensionStorage } from "@cb/types";
-import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 import { VerticalHandle } from "@cb/components/panel/Handle";
 import { CodeBuddyPreference } from "@cb/constants";
@@ -13,7 +7,6 @@ import { getChromeStorage, setChromeStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-
 interface AppPanelProps {
   children?: React.ReactNode;
 }
