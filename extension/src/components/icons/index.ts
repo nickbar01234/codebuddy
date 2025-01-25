@@ -9,3 +9,4 @@ export { MenuIcon } from "@cb/components/icons/MenuIcon";
 export { PasteCodeIcon } from "@cb/components/icons/PasteCodeIcon";
 export { ResetIcon } from "@cb/components/icons/ResetIcon";
 export { UserIcon } from "@cb/components/icons/UserIcon";
+export { SignOutIcon } from "@cb/components/icons/SignOutIcon";

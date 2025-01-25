@@ -1,6 +1,7 @@
 export * from "./services";
 export * from "./peers";
 export * from "./window";
+export * from "./user-session";
 export type {
   MessagePayload,
   ExtractMessage,
@@ -47,4 +48,5 @@ export interface LocalStorage {
     peer: string;
   };
   lastActivePeer: string;
+  email: string;
 }

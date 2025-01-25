@@ -1,30 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CodeBuddyPreference } from "@cb/constants";
 import { setChromeStorage } from "@cb/services";
-import {
-  ExtractMessage,
-  ServiceRequest,
-  Status,
-  WindowMessage,
-} from "@cb/types";
-
-const handleCookieRequest = async (): Promise<Status> => {
-  const maybeCookie = await chrome.cookies.get({
-    name: "LEETCODE_SESSION",
-    url: "https://leetcode.com/",
-  });
-
-  if (maybeCookie == null) {
-    return { status: "UNAUTHENTICATED" };
-  }
-
-  const sessionBase64 = maybeCookie.value.split(".")[1]; // Leetcode uses . to separate base64
-  const session = JSON.parse(atob(sessionBase64));
-  return {
-    status: "AUTHENTICATED",
-    user: { id: session.identity, username: session.username },
-  };
-};
+import { ExtractMessage, ServiceRequest, WindowMessage } from "@cb/types";
 
 /**
  * Initialize default settings
@@ -184,13 +161,6 @@ const cleanEditor = async () => {
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
     switch (request.action) {
-      case "cookie": {
-        handleCookieRequest().then((res) => {
-          sendResponse(res);
-        });
-        break;
-      }
-
       case "getValue": {
         chrome.scripting
           .executeScript({

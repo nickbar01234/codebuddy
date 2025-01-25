@@ -5,16 +5,16 @@ import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
-import useDevMode from "@cb/hooks/useDevMode";
+import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import React from "react";
 import { Toaster } from "sonner";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 
-export const RootNavigator = () => {
+export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { activePeer } = usePeerSelection();
-  useDevMode();
+  useDevSetupRoom();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {

@@ -28,6 +28,10 @@ export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
     : (JSON.parse(maybeItem) as LocalStorage[K]);
 };
 
+export const removeLocalStorage = <K extends keyof LocalStorage>(key: K) => {
+  localStorage.removeItem(LOCAL_STORAGE + key);
+};
+
 export const setLocalStorage = <K extends keyof LocalStorage>(
   key: K,
   value: LocalStorage[K]

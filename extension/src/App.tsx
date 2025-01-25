@@ -1,52 +1,19 @@
 import React from "react";
-import { RootNavigator } from "@cb/components/navigator/Navigator";
+import RootNavigator from "@cb/components/navigator/RootNavigator";
 import { AppPanel } from "@cb/components/panel";
-import { RTCProvider } from "@cb/context/RTCProvider";
-import { AppStateProvider } from "@cb/context/AppStateProvider";
-import { useOnMount } from "@cb/hooks";
-import { getLocalStorage, sendServiceRequest } from "@cb/services";
-import { Status } from "@cb/types";
-import { PeerSelectionProvider } from "./context/PeerSelectionProvider";
+import SessionProvider from "./context/SessionProvider";
 import { WindowProvider } from "./context/WindowProvider";
 
 const App = () => {
-  const [status, setStatus] = React.useState<Status>({
-    status: "UNAUTHENTICATED",
-  });
-
-  useOnMount(() => {
-    sendServiceRequest({ action: "cookie" }).then((status) => {
-      const fakeUser = getLocalStorage("test");
-      if (status.status === "AUTHENTICATED") {
-        setStatus(status);
-      } else if (fakeUser != undefined) {
-        const { peer } = fakeUser;
-        setStatus({
-          status: "AUTHENTICATED",
-          user: { username: peer, id: peer },
-        });
-      }
-    });
-  });
-
-  if (status.status === "AUTHENTICATED") {
-    return (
-      <WindowProvider>
-        <AppStateProvider user={status.user}>
-          <RTCProvider>
-            <PeerSelectionProvider>
-              <AppPanel>
-                <RootNavigator />
-              </AppPanel>
-            </PeerSelectionProvider>
-          </RTCProvider>
-        </AppStateProvider>
-      </WindowProvider>
-    );
-  } else {
-    // TODO(nickbar01234) - Handle unauthenticated
-    return null;
-  }
+  return (
+    <WindowProvider>
+      <AppPanel>
+        <SessionProvider>
+          <RootNavigator />
+        </SessionProvider>
+      </AppPanel>
+    </WindowProvider>
+  );
 };
 
 export default App;
