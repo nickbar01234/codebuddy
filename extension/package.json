@@ -9,6 +9,7 @@
     "build": "pnpm run \"/^build:.*/\"",
     "dev:build": "pnpm run build --mode development",
     "dev": "pnpm run dev:build && concurrently --kill-others \"node script/dev.mjs\" \"pnpm run dev:build --watch\"",
+    "dev:1": "USERS=1 pnpm run dev",
     "dev:3": "USERS=3 pnpm run dev",
     "dev:4": "USERS=4 pnpm run dev"
   },

@@ -57,9 +57,11 @@ const setup = async () => {
   });
   await Promise.all(asyncBrowsers);
 
-  // Waits for first person to create and setup room. Everyone else can join simultaneously
-  await setupRoom(PAGES[0].page, true);
-  await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
+  if (NUM_USERS > 1) {
+    // Waits for first person to create and setup room. Everyone else can join simultaneously
+    await setupRoom(PAGES[0].page, true);
+    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
+  }
 };
 
 const reload = _.debounce(() => {

@@ -8,10 +8,10 @@ const useDevMode = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
 
   useOnMount(() => {
+    if (import.meta.env.MODE !== "development") {
+      return;
+    }
     const unsafeResetRoom = async (roomId: string) => {
-      if (import.meta.env.MODE !== "development") {
-        throw new Error("Cannot reset room in production mode");
-      }
       await updateDoc(db.room(roomId).ref(), { usernames: [] });
     };
     const onWindowMessage = (message: MessageEvent) => {
