@@ -1,6 +1,7 @@
 import chokidar from "chokidar";
 import puppeteer from "puppeteer";
 import _ from "lodash";
+import { b } from "framer-motion/client";
 
 const EXTENSION_PATH = "./dist/";
 
@@ -17,18 +18,18 @@ const peers = [
     peer: "buddy",
     createRoom: false,
   },
-  {
-    peer: "observer",
-    createRoom: false,
-  },
-  {
-    peer: "dundun",
-    createRoom: false,
-  },
+  // {
+  //   peer: "observer",
+  //   createRoom: false,
+  // },
+  // {
+  //   peer: "dundun",
+  //   createRoom: false,
+  // },
 ];
 
 const setup = async () => {
-  const createBrowser = async (peer, createRoom) => {
+  const createBrowser = async (peer) => {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: null,
@@ -49,17 +50,25 @@ const setup = async () => {
       );
     }, peer);
     await page.goto(TARGET_QUESTION);
-    await page.evaluate((createRoom) => {
-      if (createRoom) {
-        window.postMessage({ action: "createRoom", roomId: "CODE_BUDDY_TEST" });
-      } else {
-        window.postMessage({ action: "joinRoom", roomId: "CODE_BUDDY_TEST" });
-      }
-    }, createRoom);
+
     return { browser, page };
   };
+
   for (const { peer, createRoom } of peers) {
-    pages.push(await createBrowser(peer, createRoom));
+    createBrowser(peer).then(({ browser, page }) => {
+      pages.push({ browser, page });
+      page.evaluate(async (createRoom) => {
+        if (createRoom) {
+          window.postMessage({
+            action: "createRoom",
+            roomId: "CODE_BUDDY_TEST",
+          });
+        } else {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          window.postMessage({ action: "joinRoom", roomId: "CODE_BUDDY_TEST" });
+        }
+      }, createRoom);
+    });
   }
 };
 
