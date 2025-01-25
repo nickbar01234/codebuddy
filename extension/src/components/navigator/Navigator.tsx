@@ -1,14 +1,15 @@
+import { CaretRightIcon } from "@cb/components/icons";
+import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import React from "react";
-import { Toaster } from "sonner";
-import { CaretRightIcon } from "@cb/components/icons";
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
-import { getLocalStorage } from "@cb/services";
 import useDevMode from "@cb/hooks/useDevMode";
+import { getLocalStorage } from "@cb/services";
+import React from "react";
+import { Toaster } from "sonner";
+import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const RootNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -28,7 +29,7 @@ export const RootNavigator = () => {
     setDisplayMenu(false);
   };
 
-  const currRoomId = getLocalStorage("curRoomId");
+  const currentTabInfo = getLocalStorage("tabs");
 
   return (
     <div
@@ -47,7 +48,7 @@ export const RootNavigator = () => {
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
-          {activePeer?.id && (
+          {state === AppState.ROOM && activePeer?.id && (
             <React.Fragment>
               <CaretRightIcon />{" "}
               <UserDropdown
@@ -63,11 +64,15 @@ export const RootNavigator = () => {
         />
       </div>
       <div className="h-full w-full relative overflow-hidden">
-        {state === AppState.HOME && currRoomId != undefined && (
-          <div className="absolute inset-0 h-full w-full flex justify-center items-center">
-            <LoadingPanel numberOfUsers={currRoomId.numberOfUsers} />
-          </div>
-        )}
+        <div className="absolute inset-0 h-full w-full flex justify-center items-center">
+          {state === AppState.LOADING ? (
+            <LoadingPanel
+              numberOfUsers={Object.keys(currentTabInfo?.peers ?? 0).length}
+            />
+          ) : state === AppState.REJOINING ? (
+            <RejoinPrompt />
+          ) : null}
+        </div>
         <EditorPanel />
       </div>
     </div>

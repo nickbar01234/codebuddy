@@ -7,20 +7,17 @@ const EXTENSION_PATH = "./dist/";
 const EXTENSION_HOST = "https://leetcode.com/problems/";
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 
-const pages = [];
-const peers = [
-  {
-    peer: "code",
-    createRoom: true,
-  },
-  {
-    peer: "buddy",
-    createRoom: false,
-  },
-];
+// eslint-disable-next-line no-undef
+const NUM_USERS = process.env.USERS ?? 2;
+
+const USERNAMES = ["code", "buddy", "dev", "mode"];
+const PAGES = Array.from({ length: NUM_USERS });
+const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
+  peer: USERNAMES[idx],
+}));
 
 const setup = async () => {
-  const createBrowser = async (peer, createRoom) => {
+  const createBrowser = async (peer) => {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: null,
@@ -29,6 +26,7 @@ const setup = async () => {
         `--load-extension=${EXTENSION_PATH}`,
         "--start-maximized",
       ],
+      devtools: true,
     });
     const page = await browser.newPage();
     await page.goto(EXTENSION_HOST);
@@ -41,6 +39,10 @@ const setup = async () => {
       );
     }, peer);
     await page.goto(TARGET_QUESTION);
+    return { browser, page };
+  };
+
+  const setupRoom = async (page, createRoom) => {
     await page.evaluate((createRoom) => {
       if (createRoom) {
         window.postMessage({ action: "createRoom", roomId: "CODE_BUDDY_TEST" });
@@ -48,16 +50,23 @@ const setup = async () => {
         window.postMessage({ action: "joinRoom", roomId: "CODE_BUDDY_TEST" });
       }
     }, createRoom);
-    return { browser, page };
   };
-  for (const { peer, createRoom } of peers) {
-    pages.push(await createBrowser(peer, createRoom));
+
+  const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {
+    PAGES[idx] = await createBrowser(peer);
+  });
+  await Promise.all(asyncBrowsers);
+
+  if (NUM_USERS > 1) {
+    // Waits for first person to create and setup room. Everyone else can join simultaneously
+    await setupRoom(PAGES[0].page, true);
+    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
   }
 };
 
-const reload = _.throttle(() => {
+const reload = _.debounce(() => {
   console.log("Detected build");
-  pages.forEach(async ({ browser, page }) => {
+  PAGES.forEach(async ({ page }) => {
     try {
       await page.evaluate(() => {
         window.postMessage({ action: "reloadExtension" });
@@ -67,15 +76,17 @@ const reload = _.throttle(() => {
       console.error(e);
     }
   });
-}, 5000);
+}, 2000);
 
-setup().then(() => {
-  chokidar
-    .watch(EXTENSION_PATH, { awaitWriteFinish: true })
-    .on("change", reload);
-});
+setup()
+  .then(() => {
+    chokidar
+      .watch(EXTENSION_PATH, { awaitWriteFinish: true })
+      .on("change", reload);
+  })
+  .catch((e) => console.error("Failed with", e));
 
 // eslint-disable-next-line no-undef
 process.on("SIGINT", () => {
-  pages.forEach(({ browser }) => browser.close());
+  PAGES.forEach(({ browser }) => browser.close());
 });

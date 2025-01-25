@@ -5,10 +5,12 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
+import { Peer, PeerInformation, TestCase } from "@cb/types";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { Peer, PeerInformation, TestCase } from "@cb/types";
+
+const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
 interface PeerSelectionContext {
   peers: Peer[];
@@ -19,7 +21,7 @@ interface PeerSelectionContext {
   activeUserInformation: PeerInformation | undefined;
   pasteCode: () => void;
   setCode: (changeUser: boolean) => void;
-  loading: boolean;
+  isBuffer: boolean;
 }
 
 export const PeerSelectionContext = React.createContext(
@@ -37,7 +39,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
-  const [loading, setLoading] = React.useState<boolean>(true);
+  const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -167,52 +169,81 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     [activePeer, replacePeer]
   );
 
-  React.useEffect(() => {
-    if (!loading) {
-      console.log("Setting tabs", roomId, peers);
-      setLocalStorage("tabs", { roomId, peers });
-    }
-  }, [peers, loading, roomId]);
+  const getLocalStorageForIndividualPeers = React.useCallback(
+    (peerId: string) => {
+      return (getLocalStorage("tabs")?.peers ?? {})[peerId];
+    },
+    []
+  );
+
+  const setLocalStorageForIndividualPeers = React.useCallback(
+    (peer: Peer) => {
+      const currentTab = getLocalStorage("tabs") ?? {
+        roomId: roomId ?? "",
+        peers: {},
+      };
+      (currentTab.peers as Record<string, Peer>)[peer.id] = {
+        ...peer,
+      };
+      setLocalStorage("tabs", currentTab);
+    },
+    [roomId]
+  );
 
   React.useEffect(() => {
-    const prevInfo = getLocalStorage("tabs");
+    for (const peer of peers) {
+      setLocalStorageForIndividualPeers(peer);
+      if (peer.active && !isBuffer) {
+        setLocalStorage("lastActivePeer", peer.id);
+      }
+    }
+  }, [peers, roomId, setLocalStorageForIndividualPeers, isBuffer]);
+
+  React.useEffect(() => {
     setPeers((prev) =>
       Object.keys(informations).map((peerInfo) => {
-        const prevPeersTab = prevInfo?.peers ?? [];
-        const prevRoomId = prevInfo?.roomId;
+        const prevPeer = getLocalStorageForIndividualPeers(peerInfo);
         const peerTab = prev.find((peer) => peer.id === peerInfo) ?? {
           id: peerInfo,
           active: false,
-          viewable:
-            prevRoomId == roomId &&
-            (prevPeersTab.some(
-              (peer: Peer) => peer.id === peerInfo && peer.viewable
-            ) ??
-              false),
+          viewable: (prevPeer && prevPeer.viewable) || false,
           tests: [],
         };
         const tests = groupTestCases(informations[peerInfo]);
         if (tests.length > 0) {
-          const lastSelectedTest = peerTab.tests.findIndex(
+          // Check if peerTab has selected?
+          // Otherwise, fallback to prevPeer
+          // If prevPeer doesn't exist, select index 0
+          const currentSelectedTest = peerTab.tests.findIndex(
             (test) => test.selected
           );
-          const selectedTest = lastSelectedTest == -1 ? 0 : lastSelectedTest;
+          const lastSelectedTest = prevPeer
+            ? prevPeer.tests.findIndex((test: TestCase) => test.selected)
+            : -1;
+          const selectedTest = Math.max(
+            currentSelectedTest,
+            lastSelectedTest,
+            0
+          );
           tests[selectedTest].selected = true;
         }
-        setLoading(false);
-        // console.log("Test cases", tests);
         return { ...peerTab, tests };
       })
     );
-  }, [informations, groupTestCases, roomId]);
-
-  React.useEffect(() => {
-    if (activePeer == undefined && peers.length > 0) {
-      setActivePeerId(peers[0].id);
-    }
-  }, [peers, activePeer, setActivePeerId]);
+  }, [informations, groupTestCases, getLocalStorageForIndividualPeers]);
 
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
+
+  React.useEffect(() => {
+    if ((activePeer === undefined || isBuffer) && peers.length > 0) {
+      const lastActivePeer = getLocalStorage("lastActivePeer");
+      if (lastActivePeer && peers.some((peer) => peer.id === lastActivePeer)) {
+        setActivePeerId(lastActivePeer);
+      } else {
+        setActivePeerId(peers[0].id);
+      }
+    }
+  }, [peers, activePeer, setActivePeerId, isBuffer]);
 
   React.useEffect(() => {
     if (activeUserInformation != undefined) {
@@ -244,6 +275,14 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       });
   });
 
+  useOnMount(() => {
+    const setPastActive = setTimeout(() => {
+      setIsBuffer(false);
+    }, TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE);
+
+    return () => clearTimeout(setPastActive);
+  });
+
   return (
     <PeerSelectionContext.Provider
       value={{
@@ -254,8 +293,8 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         selectTest,
         activeUserInformation,
         pasteCode,
-        loading,
         setCode,
+        isBuffer,
       }}
     >
       {children}

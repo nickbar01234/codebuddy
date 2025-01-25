@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { CodeBuddyPreference } from "@cb/constants";
 import { setChromeStorage } from "@cb/services";
 import {
+  ExtractMessage,
   ServiceRequest,
   Status,
-  ExtractMessage,
   WindowMessage,
 } from "@cb/types";
-import { CodeBuddyPreference } from "@cb/constants";
 
 const handleCookieRequest = async (): Promise<Status> => {
   const maybeCookie = await chrome.cookies.get({
@@ -58,18 +58,27 @@ const getValue = async () => {
 
 const setValue = async (value: string) => {
   const monaco = (window as any).monaco;
-  const lcCodeEditor = monaco.editor
+  const myEditor = monaco.editor
     .getEditors()
     .filter((e: any) => e.id !== "CodeBuddy")
-    .map((e: any) => e.getModel())
-    .find((m: any) => m.getLanguageId() !== "plaintext");
-  lcCodeEditor.setValue(value);
+    .find((m: any) => m.getModel().getLanguageId() !== "plaintext");
+  try {
+    const fullRange = myEditor.getModel().getFullModelRange();
+    myEditor.executeEdits(null, [
+      {
+        range: fullRange,
+        text: value,
+      },
+    ]);
+    myEditor.pushUndoStop();
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 const setupCodeBuddyModel = async (id: string) => {
   // TODO(nickbar01234): This timeout is weird, should send an appropriate response for client to retry
   await new Promise((resolve) => setTimeout(resolve, 2000));
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;
   console.log("Setting up CodeBuddy model");
   if (
@@ -77,7 +86,7 @@ const setupCodeBuddyModel = async (id: string) => {
       .getEditors()
       .find((editor: any) => editor.id === "CodeBuddy") == undefined
   ) {
-    console.log("No Editor Found");
+    // console.log("No Editor Found");
     const buddyEditor = await monaco.editor.create(
       document.getElementById(id),
       {
@@ -118,6 +127,7 @@ const setValueModel = async (
     "code" | "language" | "changes" | "changeUser" | "editorId"
   >
 ) => {
+  // console.log("using setValueModel");
   const { code, language, changes, changeUser } = args;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const monaco = (window as any).monaco;

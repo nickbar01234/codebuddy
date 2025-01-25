@@ -1,11 +1,11 @@
-import { UserIcon } from "@cb/components/icons";
-import { Ripple } from "@cb/components/ui/Ripple";
+import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { CodeBuddyPreference } from "@cb/constants";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useOnMount, usePeerSelection } from "@cb/hooks/index";
 import useWindowDimensions from "@cb/hooks/useWindowDimensions";
 import { getChromeStorage, setChromeStorage } from "@cb/services";
 import { ExtensionStorage } from "@cb/types";
+import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
@@ -18,7 +18,7 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { peers, activePeer, unblur, setActivePeerId, selectTest, loading } =
+  const { peers, activePeer, unblur, setActivePeerId, selectTest, isBuffer } =
     usePeerSelection();
   const { state } = React.useContext(appStateContext);
   const { height } = useWindowDimensions();
@@ -29,6 +29,7 @@ const EditorPanel = () => {
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
+  const emptyRoom = peers.length === 0;
 
   useOnMount(() => {
     getChromeStorage("codePreference").then(setCodePreference);
@@ -36,26 +37,16 @@ const EditorPanel = () => {
 
   return (
     <>
-      {!loading && peers.length == 0 && state === AppState.ROOM && (
-        <div className="flex flex-col items-center justify-center h-full w-full">
-          <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
-            <div
-              className={
-                "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
-              }
-            >
-              <UserIcon />
-            </div>
-            <Ripple />
-          </div>
-        </div>
+      {!isBuffer && emptyRoom && state === AppState.ROOM && (
+        <LoadingPanel numberOfUsers={peers.length} />
       )}
       <div
-        className="flex flex-col h-full justify-between"
-        style={{ visibility: peers.length === 0 ? "hidden" : "visible" }} // dont know why but it does not trigger rerender when joining the room for the first time
+        className={cn("flex flex-col relative h-full w-full", {
+          hidden: emptyRoom,
+        })}
       >
         {/* todo(nickbar01234): Fix styling */}
-        {!canViewCode && peers.length != 0 && (
+        {!canViewCode && (
           <button
             className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 font-bold py-2 px-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-lg z-50"
             onClick={unblur}
@@ -151,11 +142,13 @@ const EditorPanel = () => {
             <React.Fragment key={id}>
               {/* Leetcode className flexlayout__tab_button_* */}
               <div
-                className={`relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50 ${
-                  active
-                    ? "flexlayout__tab_button-selected medium"
-                    : "flexlayout__tab_button--unselected normal"
-                }`}
+                className={cn(
+                  `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
+                  {
+                    "flexlayout__tab_button-selected medium": active,
+                    "flexlayout__tab_button--unselected normal": !active,
+                  }
+                )}
                 onClick={() => setActivePeerId(id)}
               >
                 {id}

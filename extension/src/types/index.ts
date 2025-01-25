@@ -39,15 +39,12 @@ export interface ExtensionStorage {
 }
 
 export interface LocalStorage {
-  curRoomId: {
-    roomId: string;
-    numberOfUsers: number;
-  };
   tabs: {
-    roomId: string | null;
-    peers: Peer[];
+    roomId: string;
+    peers: Record<string, Peer>;
   };
   test?: {
     peer: string;
   };
+  lastActivePeer: string;
 }
