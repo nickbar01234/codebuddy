@@ -7,9 +7,11 @@
     "build:service_worker": "tsc -p ./src/services/tsconfig.json && TYPE=service_worker vite build",
     "build:content_script": "tsc && TYPE=content_script vite build",
     "build": "pnpm run \"/^build:.*/\"",
-    "dev": "concurrently --kill-others \"node script/dev.mjs\" \"pnpm run build:content_script --watch --mode development\" \"pnpm run build:service_worker --watch --mode development\"",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "dev:build": "pnpm run build --mode development",
+    "dev": "pnpm run dev:build && concurrently --kill-others \"node script/dev.mjs\" \"pnpm run dev:build --watch\"",
+    "dev:1": "USERS=1 pnpm run dev",
+    "dev:3": "USERS=3 pnpm run dev",
+    "dev:4": "USERS=4 pnpm run dev"
   },
   "dependencies": {
     "@tsparticles/engine": "^3.5.0",
