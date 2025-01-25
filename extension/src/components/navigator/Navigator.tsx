@@ -45,6 +45,7 @@ export const RootNavigator = () => {
           duration: 10 * 1000,
         }}
       />
+
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
@@ -63,8 +64,8 @@ export const RootNavigator = () => {
           setDisplayMenu={setDisplayMenu}
         />
       </div>
-      <div className="h-full w-full relative overflow-hidden">
-        <div className="absolute inset-0 h-full w-full flex justify-center items-center">
+      <div className="flex-grow w-full relative overflow-hidden">
+        <div className="absolute inset-0 z-0 h-full w-full flex justify-center items-center">
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={Object.keys(currentTabInfo?.peers ?? 0).length}
@@ -73,6 +74,7 @@ export const RootNavigator = () => {
             <RejoinPrompt />
           ) : null}
         </div>
+
         <EditorPanel />
       </div>
     </div>

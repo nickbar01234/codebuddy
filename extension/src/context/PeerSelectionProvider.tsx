@@ -9,9 +9,6 @@ import { Peer, PeerInformation, TestCase } from "@cb/types";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-
-const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
-
 interface PeerSelectionContext {
   peers: Peer[];
   activePeer: Peer | undefined;
@@ -21,7 +18,6 @@ interface PeerSelectionContext {
   activeUserInformation: PeerInformation | undefined;
   pasteCode: () => void;
   setCode: (changeUser: boolean) => void;
-  isBuffer: boolean;
 }
 
 export const PeerSelectionContext = React.createContext(
@@ -35,11 +31,10 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { informations, roomId } = useRTC();
+  const { informations, roomId, isBuffer } = useRTC();
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
-  const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
   const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
@@ -275,14 +270,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       });
   });
 
-  useOnMount(() => {
-    const setPastActive = setTimeout(() => {
-      setIsBuffer(false);
-    }, TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE);
-
-    return () => clearTimeout(setPastActive);
-  });
-
   return (
     <PeerSelectionContext.Provider
       value={{
@@ -294,7 +281,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         activeUserInformation,
         pasteCode,
         setCode,
-        isBuffer,
       }}
     >
       {children}

@@ -51,7 +51,7 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-
+const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 3.5;
 const HEARTBEAT_INTERVAL = 30_000; // ms
 const CHECK_ALIVE_INTERVAL = 30_000; // ms
 const TIMEOUT = 120; // seconds;
@@ -69,6 +69,7 @@ export interface RTCContext {
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
   joiningBackRoom: (join: boolean) => Promise<void>;
+  isBuffer: boolean;
 }
 
 interface RTCProviderProps {
@@ -99,13 +100,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const pcs = React.useRef<Record<string, Connection>>({});
   const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [roomId, setRoomId] = React.useState<null | string>(null);
-  const { state: appState } = useAppState();
+  const { state: appState, setState: setAppState } = useAppState();
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
+  const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
 
   useOnMount(() => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
@@ -351,6 +353,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const createRoom = async ({ roomId }: CreateRoom) => {
+    clearLocalStorage();
     const questionId = getQuestionIdFromUrl(window.location.href);
     const roomRef =
       roomId == undefined ? db.rooms().ref() : db.rooms().doc(roomId).ref();
@@ -363,6 +366,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     setRoomId(roomRef.id);
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
+    setAppState(AppState.ROOM);
   };
 
   const createOffer = React.useCallback(
@@ -522,18 +526,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
         );
       }
       localStorage.removeItem("refresh");
+      setAppState(AppState.ROOM);
       return true;
     },
-    [username, onmessage]
+    [username, onmessage, setAppState]
   );
 
   const leaveRoom = React.useCallback(
     async (roomId: string, reload = false) => {
       console.log("Leaving room", roomId);
-      if (!reload) {
-        console.log("Cleaning up local storage");
-        clearLocalStorage();
-      }
 
       try {
         await updateDoc(db.room(roomId).ref(), {
@@ -552,8 +553,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setPeerState({});
       setPeerState({});
       pcs.current = {};
+      if (!reload) {
+        console.log("Cleaning up local storage");
+        clearLocalStorage();
+        setAppState(AppState.HOME);
+      }
     },
-    [username]
+    [username, setAppState]
   );
 
   // modify to accept many peers.
@@ -607,6 +613,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (refreshInfo == undefined) return;
       const prevRoomId = refreshInfo.roomId;
       await leaveRoom(prevRoomId, join);
+      if (join) {
+        setAppState(AppState.LOADING);
+      } else {
+        setAppState(AppState.HOME);
+      }
       // todo(nickbar01234): Dummy fix to mitigate a race
       // 1. User A reload and triggers leave room
       // 2. User B detects that A leaves the room and attempts to delete peer from local state
@@ -619,8 +630,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }, 1500);
       }
     },
-    [joinRoom, leaveRoom]
+    [joinRoom, leaveRoom, setAppState]
   );
+
+  // React.useEffect(() => {
+  //   if (roomId != null) {
+  //     setAppState(AppState.ROOM);
+  //   } else {
+  //     setAppState(AppState.HOME);
+  //   }
+  // }, [roomId, setAppState, informations, isBuffer]);
+
+  console.log("current app state: ", appState);
 
   React.useEffect(() => {
     const connection = async () => {
@@ -675,10 +696,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    if (appState === AppState.LOADING && refreshInfo?.roomId) {
+    if (!roomId && appState === AppState.LOADING && refreshInfo?.roomId) {
       joiningBackRoom(true);
     }
-  }, [joiningBackRoom, appState]);
+  }, [joiningBackRoom, appState, roomId]);
 
   React.useEffect(() => {
     receiveHeartBeatRef.current = receiveHeartBeat;
@@ -761,6 +782,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
     return () => window.removeEventListener("message", onWindowMessage);
   });
 
+  useOnMount(() => {
+    const setPastActive = setTimeout(() => {
+      setIsBuffer(false);
+    }, TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE);
+
+    return () => clearTimeout(setPastActive);
+  });
+
   return (
     <RTCContext.Provider
       value={{
@@ -772,6 +801,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         informations,
         peerState,
         joiningBackRoom,
+        isBuffer,
       }}
     >
       {props.children}
