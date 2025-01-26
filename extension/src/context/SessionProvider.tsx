@@ -42,17 +42,6 @@ const SessionProvider = (props: SessionProviderProps) => {
     }
   });
 
-  useOnMount(() => {
-    const interval = setInterval(() => {
-      setAuthenticationStatus((prev) =>
-        prev.status === Status.AUTHENTICATED
-          ? { ...prev }
-          : { status: Status.UNAUTHENTICATED }
-      );
-    }, 2000);
-    return () => clearInterval(interval);
-  });
-
   return <Provider value={{ auth: authenticationStatus }}>{children}</Provider>;
 };
 
