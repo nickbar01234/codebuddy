@@ -12,7 +12,7 @@ interface WindowContext {
   codePreference: ExtensionStorage["codePreference"];
   setCodePreferenceHeight: (height: number) => void;
   onResizeStop: () => void;
-  toggle: () => void;
+  toggleWidth: () => void;
 }
 
 export const windowContext = createContext({} as WindowContext);
@@ -44,7 +44,7 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
   const { width, height } = windowDimensions;
   const prevWidth = React.useRef(width);
   const prevHeight = React.useRef(height);
-  const toggle = () => {
+  const toggleWidth = () => {
     setAppPreference((prev) => ({
       ...prev,
       isCollapsed: !prev.isCollapsed,
@@ -110,7 +110,7 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
             height: height,
           })),
         onResizeStop: () => setChromeStorage({ appPreference, codePreference }),
-        toggle,
+        toggleWidth,
       }}
     >
       {props.children}
