@@ -26,9 +26,7 @@ const RenderButton = ({
   return (
     <button
       type="button"
-      onClick={() => {
-        joiningBackRoom(isYes);
-      }}
+      onClick={() => joiningBackRoom(isYes)}
       className={cn(
         "px-4 py-2 rounded-lg transition-colors flex items-center justify-center",
         {

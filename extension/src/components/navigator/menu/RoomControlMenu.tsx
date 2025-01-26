@@ -10,7 +10,6 @@ import {
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { clearLocalStorage } from "@cb/services";
-import { cn } from "@cb/utils/cn";
 import React from "react";
 
 interface MenuItem {
@@ -129,14 +128,9 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   return (
     <div>
       <button
-        className={cn(
-          "hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1",
-          {
-            // // todo(nickbar01234): Fix this?
-            // hidden:
-            //   appState === AppState.REJOINING || appState === AppState.LOADING,
-          }
-        )}
+        className={
+          "hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
+        }
         id="headlessui-menu-button-:r3q:"
         type="button"
         aria-haspopup="true"
