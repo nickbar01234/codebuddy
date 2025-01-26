@@ -12,6 +12,7 @@ interface WindowContext {
   codePreference: ExtensionStorage["codePreference"];
   setCodePreferenceHeight: (height: number) => void;
   onResizeStop: () => void;
+  toggle: () => void;
 }
 
 export const windowContext = createContext({} as WindowContext);
@@ -33,10 +34,6 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
     getWindowDimensions()
   );
 
-  const { width, height } = windowDimensions;
-  const prevWidth = React.useRef(width);
-  const prevHeight = React.useRef(height);
-
   const [appPreference, setAppPreference] = React.useState<
     ExtensionStorage["appPreference"]
   >(CodeBuddyPreference.appPreference);
@@ -44,6 +41,22 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
     ExtensionStorage["codePreference"]
   >(CodeBuddyPreference.codePreference);
 
+  const { width, height } = windowDimensions;
+  const prevWidth = React.useRef(width);
+  const prevHeight = React.useRef(height);
+  const toggle = () => {
+    setAppPreference((prev) => ({
+      ...prev,
+      isCollapsed: !prev.isCollapsed,
+    }));
+    setChromeStorage({
+      appPreference: {
+        ...appPreference,
+        isCollapsed: appPreference.isCollapsed,
+      },
+      codePreference,
+    });
+  };
   React.useEffect(() => {
     const oldRatio = appPreference.width / prevWidth.current;
     // console.log("resizing", width, appPreference.width, oldRatio);
@@ -97,6 +110,7 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
             height: height,
           })),
         onResizeStop: () => setChromeStorage({ appPreference, codePreference }),
+        toggle,
       }}
     >
       {props.children}
