@@ -50,7 +50,9 @@ const EditorPanel = () => {
         )}
         <div
           data-view-code={canViewCode}
-          className="data-[view-code=false]:blur h-full w-full"
+          className={cn("h-full w-full", {
+            blur: !canViewCode,
+          })}
         >
           <ResizableBox
             height={codePreference.height}
@@ -117,27 +119,27 @@ const EditorPanel = () => {
               </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
-          {peers.map(({ id, active }) => (
-            <React.Fragment key={id}>
-              {/* Leetcode className flexlayout__tab_button_* */}
-              <div
-                className={cn(
-                  `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
-                  {
-                    "flexlayout__tab_button-selected medium": active,
-                    "flexlayout__tab_button--unselected normal": !active,
-                  }
-                )}
-                onClick={() => setActivePeerId(id)}
-              >
-                {id}
-              </div>
-              {/* Leetcode className flexlayout__tabset_tab_divider */}
-              <div className="flexlayout__tabset_tab_divider" />
-            </React.Fragment>
-          ))}
+          <div className="flex z-[100] sticky bottom-0 items-center w-full bg-layer-3 dark:bg-dark-layer-3 h-10 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm opacity-100 self-end">
+            {peers.map(({ id, active }) => (
+              <React.Fragment key={id}>
+                {/* Leetcode className flexlayout__tab_button_* */}
+                <div
+                  className={cn(
+                    `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
+                    {
+                      "flexlayout__tab_button-selected medium": active,
+                      "flexlayout__tab_button--unselected normal": !active,
+                    }
+                  )}
+                  onClick={() => setActivePeerId(id)}
+                >
+                  {id}
+                </div>
+                {/* Leetcode className flexlayout__tabset_tab_divider */}
+                <div className="flexlayout__tabset_tab_divider" />
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       </div>
     </>
