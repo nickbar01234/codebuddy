@@ -6,11 +6,13 @@ import {
   MenuIcon,
   PlusIcon,
   ResetIcon,
+  SignOutIcon,
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { auth } from "@cb/db";
 import { useRTC } from "@cb/hooks/index";
 import { clearLocalStorage } from "@cb/services";
-import { cn } from "@cb/utils/cn";
+import { signOut } from "firebase/auth/web-extension";
 import React from "react";
 
 interface MenuItem {
@@ -35,8 +37,24 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const items: MenuItem[] = React.useMemo(() => {
+    let controls: MenuItem[] = [
+      {
+        display: "Sign Out",
+        icon: <SignOutIcon />,
+        onClick: async () => leaveRoom(roomId).then(() => signOut(auth)),
+      },
+      {
+        display: "Reset Extension",
+        icon: <ResetIcon />,
+        onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
+          e.stopPropagation();
+          clearLocalStorage();
+          setDisplayMenu(false);
+        },
+      },
+    ];
     if (appState === AppState.HOME) {
-      return [
+      controls = [
         {
           display: "Create Room",
           icon: <PlusIcon />,
@@ -65,18 +83,10 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
             }
           },
         },
-        {
-          display: "Reset Extension",
-          icon: <ResetIcon />,
-          onClick: (e: React.MouseEvent<Element, MouseEvent>) => {
-            e.stopPropagation();
-            clearLocalStorage();
-            setDisplayMenu(false);
-          },
-        },
+        ...controls,
       ];
     } else if (appState === AppState.ROOM) {
-      return [
+      controls = [
         {
           display: "Copy room ID",
           icon: <CopyIcon />,
@@ -96,10 +106,10 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
             if (roomId) leaveRoom(roomId);
           },
         },
+        ...controls,
       ];
     }
-
-    return [];
+    return controls;
   }, [appState, createRoom, setDisplayMenu, setAppState, roomId, leaveRoom]);
 
   React.useEffect(() => {
@@ -143,14 +153,7 @@ export const RoomControlMenu: React.FC<RoomControlMenuProps> = ({
   return (
     <div>
       <button
-        className={cn(
-          "hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1",
-          {
-            // todo(nickbar01234): Fix this?
-            hidden:
-              appState === AppState.REJOINING || appState === AppState.LOADING,
-          }
-        )}
+        className="hover:text-label-1 dark:hover:text-dark-label-1 flex cursor-pointer items-center justify-center rounded-md w-6 h-6 hover:bg-fill-secondary p-1"
         id="headlessui-menu-button-:r3q:"
         type="button"
         aria-haspopup="true"

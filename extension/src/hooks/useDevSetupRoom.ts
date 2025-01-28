@@ -4,7 +4,7 @@ import { sendServiceRequest } from "@cb/services";
 import db from "@cb/db";
 import { updateDoc } from "firebase/firestore";
 
-const useDevMode = () => {
+const useDevSetupRoom = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
 
   useOnMount(() => {
@@ -46,4 +46,4 @@ const useDevMode = () => {
   });
 };
 
-export default useDevMode;
+export default useDevSetupRoom;

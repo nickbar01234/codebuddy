@@ -1,7 +1,7 @@
-import { useOnMount } from "@cb/hooks";
-import { getLocalStorage } from "@cb/services";
-import { User } from "@cb/types";
 import React from "react";
+import { getLocalStorage } from "@cb/services";
+import { useOnMount } from "@cb/hooks";
+import { AppUser } from "@cb/types";
 
 enum AppState {
   HOME, // Home screen
@@ -12,11 +12,11 @@ enum AppState {
 
 interface AppStateProviderProps {
   children?: React.ReactNode;
-  user: User;
+  user: AppUser;
 }
 
 interface AppStateContext {
-  user: User;
+  user: AppUser;
   state: AppState;
   setState: React.Dispatch<React.SetStateAction<AppState>>;
 }

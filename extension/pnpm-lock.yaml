@@ -17,9 +17,9 @@ importers:
       '@tsparticles/slim':
         specifier: ^3.5.0
         version: 3.5.0
-      chokidar:
-        specifier: ^4.0.3
-        version: 4.0.3
+      '@types/lodash':
+        specifier: ^4.17.14
+        version: 4.17.14
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -78,6 +78,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
+      chokidar:
+        specifier: ^4.0.3
+        version: 4.0.3
       chokidar-cli:
         specifier: ^3.0.0
         version: 3.0.0
@@ -906,6 +909,9 @@ packages:
 
   '@types/har-format@1.2.15':
     resolution: {integrity: sha512-RpQH4rXLuvTXKR0zqHq3go0RVXYv/YVqv4TnPH95VbwUxZdQlK1EtcMvQvMpDngHbt13Csh9Z4qT9AbkiQH5BA==}
+
+  '@types/lodash@4.17.14':
+    resolution: {integrity: sha512-jsxagdikDiDBeIRaPYtArcT8my4tN1og7MtMRquFT3XNA6axxyHDRUemqDz/taRDdOUn0GnGHRCuff4q48sW9A==}
 
   '@types/node@20.13.0':
     resolution: {integrity: sha512-FM6AOb3khNkNIXPnHFDYaHerSv8uN22C91z098AnGccVu+Pcdhi+pNUFDi0iLmPIsVE0JBD0KVS7mzUYt4nRzQ==}
@@ -3303,6 +3309,8 @@ snapshots:
   '@types/filewriter@0.0.33': {}
 
   '@types/har-format@1.2.15': {}
+
+  '@types/lodash@4.17.14': {}
 
   '@types/node@20.13.0':
     dependencies:

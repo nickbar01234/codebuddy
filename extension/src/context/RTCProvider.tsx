@@ -63,7 +63,7 @@ interface CreateRoom {
 export interface RTCContext {
   createRoom: (args: CreateRoom) => void;
   joinRoom: (roomId: string) => Promise<boolean>;
-  leaveRoom: (roomId: string) => Promise<void>;
+  leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
@@ -528,7 +528,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const leaveRoom = React.useCallback(
-    async (roomId: string, reload = false) => {
+    async (roomId: string | null, reload = false) => {
+      if (roomId == null) return;
       console.log("Leaving room", roomId);
       if (!reload) {
         console.log("Cleaning up local storage");
@@ -727,7 +728,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         subtree: true,
       });
     });
-    return observer.disconnect;
+    return () => observer.disconnect();
   });
 
   useOnMount(() => {
