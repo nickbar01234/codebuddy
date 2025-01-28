@@ -1,10 +1,10 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { CodeBuddyPreference } from "@cb/constants";
-import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { useOnMount, usePeerSelection } from "@cb/hooks/index";
-import useWindowDimensions from "@cb/hooks/useWindowDimensions";
-import { getChromeStorage, setChromeStorage } from "@cb/services";
-import { ExtensionStorage } from "@cb/types";
+import { AppState } from "@cb/context/AppStateProvider";
+import {
+  useAppState,
+  usePeerSelection,
+  useWindowDimensions,
+} from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
@@ -20,24 +20,17 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { peers, activePeer, unblur, setActivePeerId, selectTest, isBuffer } =
     usePeerSelection();
-  const { state } = React.useContext(appStateContext);
-  const { height } = useWindowDimensions();
-
-  const [codePreference, setCodePreference] = React.useState<
-    ExtensionStorage["codePreference"]
-  >(CodeBuddyPreference.codePreference);
+  const { state: appState } = useAppState();
+  const { setCodePreferenceHeight, onResizeStop, codePreference, height } =
+    useWindowDimensions();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
-  useOnMount(() => {
-    getChromeStorage("codePreference").then(setCodePreference);
-  });
-
   return (
     <>
-      {!isBuffer && emptyRoom && state === AppState.ROOM && (
+      {!isBuffer && emptyRoom && appState === AppState.ROOM && (
         <LoadingPanel numberOfUsers={peers.length} />
       )}
       <div
@@ -57,7 +50,9 @@ const EditorPanel = () => {
         )}
         <div
           data-view-code={canViewCode}
-          className="data-[view-code=false]:blur h-full w-full"
+          className={cn("h-full w-full", {
+            blur: !canViewCode,
+          })}
         >
           <ResizableBox
             height={codePreference.height}
@@ -71,20 +66,8 @@ const EditorPanel = () => {
                 <div className="relative top-1/2 -translate-y-1/2 flexlayout__splitter flexlayout__splitter_horz w-full h-[2px] hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[2px] after:bg-[--color-splitter] cursor-ns-resize" />
               </div>
             }
-            onResize={(_e, data) =>
-              setCodePreference({
-                ...codePreference,
-                height: data.size.height,
-              })
-            }
-            onResizeStop={(_e, data) => {
-              setChromeStorage({
-                codePreference: {
-                  ...codePreference,
-                  height: data.size.height,
-                },
-              });
-            }}
+            onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
+            onResizeStop={onResizeStop}
           >
             <div className="relative h-full flex flex-col grow gap-y-2 w-full">
               <EditorToolBar />
@@ -136,27 +119,27 @@ const EditorPanel = () => {
               </div>
             </div>
           </div>
-        </div>
-        <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
-          {peers.map(({ id, active }) => (
-            <React.Fragment key={id}>
-              {/* Leetcode className flexlayout__tab_button_* */}
-              <div
-                className={cn(
-                  `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
-                  {
-                    "flexlayout__tab_button-selected medium": active,
-                    "flexlayout__tab_button--unselected normal": !active,
-                  }
-                )}
-                onClick={() => setActivePeerId(id)}
-              >
-                {id}
-              </div>
-              {/* Leetcode className flexlayout__tabset_tab_divider */}
-              <div className="flexlayout__tabset_tab_divider" />
-            </React.Fragment>
-          ))}
+          <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
+            {peers.map(({ id, active }) => (
+              <React.Fragment key={id}>
+                {/* Leetcode className flexlayout__tab_button_* */}
+                <div
+                  className={cn(
+                    `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
+                    {
+                      "flexlayout__tab_button-selected medium": active,
+                      "flexlayout__tab_button--unselected normal": !active,
+                    }
+                  )}
+                  onClick={() => setActivePeerId(id)}
+                >
+                  {id}
+                </div>
+                {/* Leetcode className flexlayout__tabset_tab_divider */}
+                <div className="flexlayout__tabset_tab_divider" />
+              </React.Fragment>
+            ))}
+          </div>
         </div>
       </div>
     </>

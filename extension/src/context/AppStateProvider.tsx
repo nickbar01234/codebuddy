@@ -1,7 +1,7 @@
+import { useOnMount } from "@cb/hooks";
+import { getLocalStorage } from "@cb/services";
 import { User } from "@cb/types";
 import React from "react";
-import { getLocalStorage } from "@cb/services";
-import { useOnMount } from "@cb/hooks";
 
 enum AppState {
   HOME, // Home screen
@@ -54,4 +54,4 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
   );
 };
 
-export { appStateContext, AppState };
+export { AppState, appStateContext };
