@@ -39,6 +39,7 @@ import React from "react";
 import { toast } from "sonner";
 import { additionalServers } from "./additionalServers";
 import { AppState } from "./AppStateProvider";
+import useResource from "@cb/hooks/useResource";
 
 const servers = {
   iceServers: [
@@ -97,7 +98,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     user: { username },
   } = useAppState();
   const pcs = React.useRef<Record<string, Connection>>({});
-  const unsubscribeRef = React.useRef<null | Unsubscribe>(null);
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const { state: appState } = useAppState();
   const [informations, setInformations] = React.useState<
@@ -106,6 +106,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
+
+  const {
+    register: registerSnapshot,
+    get: getSnapshot,
+    cleanup: cleanupSnapshot,
+  } = useResource<Unsubscribe>();
 
   useOnMount(() => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
@@ -411,7 +417,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         { merge: true }
       );
 
-      onSnapshot(meRef, (doc) => {
+      const unsubscribe = onSnapshot(meRef, (doc) => {
         const maybeData = doc.data();
         if (maybeData == undefined) return;
 
@@ -426,8 +432,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
           pc.addIceCandidate(new RTCIceCandidate(candidate));
         });
       });
+
+      registerSnapshot(peer, unsubscribe, (prev) => prev());
     },
-    [username, onmessage]
+    [username, onmessage, registerSnapshot]
   );
 
   const joinRoom = React.useCallback(
@@ -464,57 +472,62 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: arrayUnion(username),
       });
 
-      onSnapshot(db.connections(roomId, username).ref(), (snapshot) => {
-        snapshot.docChanges().forEach(async (change) => {
-          if (change.type === "removed") {
-            return;
-          }
+      const unsubscribe = onSnapshot(
+        db.connections(roomId, username).ref(),
+        (snapshot) => {
+          snapshot.docChanges().forEach(async (change) => {
+            if (change.type === "removed") {
+              return;
+            }
 
-          const data = change.doc.data();
-          const peer = data.username;
+            const data = change.doc.data();
+            const peer = data.username;
 
-          if (peer == undefined) {
-            return;
-          }
+            if (peer == undefined) {
+              return;
+            }
 
-          const themRef = db.connections(roomId, username).doc(peer);
-          const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
-          if (pcs.current[peer] == undefined) {
-            pcs.current[peer] = {
-              username: peer,
-              pc: pc,
-              channel: pc.createDataChannel("channel"),
-              lastSeen: getUnixTs(),
-            };
-            pc.ondatachannel = (event) => {
-              pcs.current[peer].channel = event.channel;
-              pcs.current[peer].channel.onmessage = onmessage(peer);
-              pcs.current[peer].channel.onopen = onOpen.current(peer);
-            };
-            pc.onicecandidate = async (event) => {
-              if (event.candidate) {
-                await updateDoc(themRef, {
-                  answerCandidates: arrayUnion(event.candidate.toJSON()),
-                });
-              }
-            };
-          }
+            const themRef = db.connections(roomId, username).doc(peer);
+            const pc = pcs.current[peer]?.pc ?? new RTCPeerConnection(servers);
+            if (pcs.current[peer] == undefined) {
+              pcs.current[peer] = {
+                username: peer,
+                pc: pc,
+                channel: pc.createDataChannel("channel"),
+                lastSeen: getUnixTs(),
+              };
+              pc.ondatachannel = (event) => {
+                pcs.current[peer].channel = event.channel;
+                pcs.current[peer].channel.onmessage = onmessage(peer);
+                pcs.current[peer].channel.onopen = onOpen.current(peer);
+              };
+              pc.onicecandidate = async (event) => {
+                if (event.candidate) {
+                  await updateDoc(themRef, {
+                    answerCandidates: arrayUnion(event.candidate.toJSON()),
+                  });
+                }
+              };
+            }
 
-          if (data.offer != undefined && pc.remoteDescription == null) {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(data.offer)
-            );
+            if (data.offer != undefined && pc.remoteDescription == null) {
+              await pc.setRemoteDescription(
+                new RTCSessionDescription(data.offer)
+              );
 
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            await updateDoc(themRef, { answer: answer });
-          }
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              await updateDoc(themRef, { answer: answer });
+            }
 
-          data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
-            pc.addIceCandidate(new RTCIceCandidate(candidate));
+            data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
+              pc.addIceCandidate(new RTCIceCandidate(candidate));
+            });
           });
-        });
-      });
+        }
+      );
+
+      registerSnapshot(username, unsubscribe, (prev) => prev());
 
       if (getLocalStorage("tabs")?.roomId !== roomId.toString()) {
         toast.success(
@@ -524,7 +537,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       localStorage.removeItem("refresh");
       return true;
     },
-    [username, onmessage]
+    [username, onmessage, registerSnapshot]
   );
 
   const leaveRoom = React.useCallback(
@@ -548,13 +561,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
       }
+
+      cleanupSnapshot();
       setRoomId(null);
       setInformations({});
       setPeerState({});
-      setPeerState({});
       pcs.current = {};
     },
-    [username]
+    [username, cleanupSnapshot]
   );
 
   // modify to accept many peers.
@@ -624,11 +638,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   React.useEffect(() => {
-    const connection = async () => {
-      if (roomId == null) return;
-      if (unsubscribeRef.current != null) {
-        unsubscribeRef.current();
-      }
+    if (roomId != null && getSnapshot(roomId) == undefined) {
       const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
         const data = snapshot.data();
         if (data == undefined) return;
@@ -648,20 +658,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
           createOffer(roomId, peer);
         });
       });
-
-      unsubscribeRef.current = unsubscribe;
-    };
-
-    if (roomId != null) {
-      connection();
-      console.log("unsubscribed");
-      return () => {
-        if (unsubscribeRef.current != null) {
-          unsubscribeRef.current();
-        }
-      };
+      registerSnapshot(roomId, unsubscribe, (prev) => prev());
     }
-  }, [roomId, username, createOffer]);
+  }, [roomId, username, createOffer, getSnapshot, registerSnapshot]);
 
   React.useEffect(() => {
     deleteMeRef.current = deleteMe;
