@@ -1,0 +1,16 @@
+{
+  "functions": {
+    "predeploy": "pnpm --prefix functions run build",
+    "source": "functions"
+  },
+  "emulators": {
+    "ui": {
+      "enabled": true,
+      "port": 3000
+    },
+    "firestore": {
+      "port": 3002
+    },
+    "singleProjectMode": true
+  }
+}

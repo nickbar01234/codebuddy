@@ -19,3 +19,6 @@ lerna-debug.log*
 draft.ts
 *.sh
 *.bat
+
+# Firebase
+.firebaserc

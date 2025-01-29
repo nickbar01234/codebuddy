@@ -1,0 +1,25 @@
+{
+  "name": "functions",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc"
+  },
+  "main": "lib/index.js",
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "eslint": "^9.19.0",
+    "globals": "^15.14.0",
+    "typescript": "~5.6.2",
+    "typescript-eslint": "^8.22.0"
+  },
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.4.5",
+    "firebase-admin": "^13.0.2",
+    "firebase-functions": "^6.3.0"
+  },
+  "engines": {
+    "node": "22"
+  }
+}
