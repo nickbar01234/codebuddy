@@ -8,16 +8,17 @@ interface Resource<T> {
   unsubscribe: Unsubscribe<T>;
 }
 
-const useResource = <T>() => {
+interface UseResourceProps {
+  name?: string;
+}
+
+const useResource = <T>({ name }: UseResourceProps) => {
   const resourceRef = React.useRef<Record<string, Resource<T> | undefined>>({});
 
   const register = React.useRef(
     (key: string, value: T, unsubscribe: (resource: T) => void) => {
-      const previous = resourceRef.current[key];
+      evict(key);
       resourceRef.current[key] = { value, unsubscribe };
-      if (previous != undefined) {
-        unsubscribe(previous.value);
-      }
     }
   ).current;
 
@@ -38,12 +39,13 @@ const useResource = <T>() => {
     if (resource != undefined) {
       const { value, unsubscribe } = resource;
       unsubscribe(value);
+      delete resourceRef.current[key];
     }
   }).current;
 
   const cleanup = React.useRef(() => {
     const resources = Object.keys(resourceRef.current);
-    console.log("Cleaning up", resources);
+    console.log(`Cleaning up ${name ?? "resource"}`, resources);
     resources.forEach(evict);
   }).current;
 

@@ -111,7 +111,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     register: registerSnapshot,
     get: getSnapshot,
     cleanup: cleanupSnapshot,
-  } = useResource<Unsubscribe>();
+  } = useResource<Unsubscribe>({ name: "snapshot" });
 
   useOnMount(() => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
