@@ -7,6 +7,7 @@ import { onDocumentDeleted } from "firebase-functions/firestore";
 initializeApp();
 
 const db = getFirestore();
+
 export const cleanup = onDocumentDeleted("rooms/{roomId}", async (event) => {
   const {
     params: { roomId },
