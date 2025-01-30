@@ -76,7 +76,12 @@ export const AppNavigator = () => {
         </div>
         <EditorPanel />
       </div>
-      <div className="flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end">
+      <div
+        className={cn(
+          "flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end",
+          { hidden: peers.length === 0 }
+        )}
+      >
         {peers.map(({ id, active }) => (
           <React.Fragment key={id}>
             {/* Leetcode className flexlayout__tab_button_* */}

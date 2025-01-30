@@ -77,7 +77,10 @@ const EditorPanel = () => {
               />
             </div>
           </ResizableBox>
-          <div className="w-full h-full overflow-auto">
+          <div
+            className="relative w-full overflow-auto"
+            style={{ height: height - codePreference.height - 128 }}
+          >
             <div className="mx-5 my-4 flex flex-col space-y-4">
               <div className="flex w-full flex-row items-start justify-between gap-4">
                 <div className="flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll hide-scrollbar">
