@@ -10,10 +10,11 @@ import { getLocalStorage } from "@cb/services";
 import React from "react";
 import { Toaster } from "sonner";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
+import { cn } from "@cb/utils/cn";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
-  const { activePeer } = usePeerSelection();
+  const { peers, activePeer, setActivePeerId } = usePeerSelection();
   useDevSetupRoom();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
@@ -74,6 +75,32 @@ export const AppNavigator = () => {
           ) : null}
         </div>
         <EditorPanel />
+      </div>
+      <div
+        className={cn(
+          "flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end",
+          { hidden: peers.length === 0 }
+        )}
+      >
+        {peers.map(({ id, active }) => (
+          <React.Fragment key={id}>
+            {/* Leetcode className flexlayout__tab_button_* */}
+            <div
+              className={cn(
+                `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
+                {
+                  "flexlayout__tab_button-selected medium": active,
+                  "flexlayout__tab_button--unselected normal": !active,
+                }
+              )}
+              onClick={() => setActivePeerId(id)}
+            >
+              {id}
+            </div>
+            {/* Leetcode className flexlayout__tabset_tab_divider */}
+            <div className="flexlayout__tabset_tab_divider" />
+          </React.Fragment>
+        ))}
       </div>
     </div>
   );
