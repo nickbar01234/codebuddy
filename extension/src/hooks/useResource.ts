@@ -22,8 +22,6 @@ const useResource = <T>({ name }: UseResourceProps) => {
     }
   ).current;
 
-  const get = React.useRef((key: string) => resourceRef.current[key]).current;
-
   const set = React.useRef((key: string, cb: (resource: T) => T) => {
     if (resourceRef.current[key] != undefined) {
       const { unsubscribe, value } = resourceRef.current[key] as Resource<T>;
@@ -33,6 +31,17 @@ const useResource = <T>({ name }: UseResourceProps) => {
       };
     }
   }).current;
+
+  const get = React.useRef(
+    (): Record<string, T | undefined> =>
+      Object.keys(resourceRef.current).reduce(
+        (acc, key) => ({
+          ...acc,
+          [key]: resourceRef.current[key]?.value,
+        }),
+        {}
+      )
+  ).current;
 
   const evict = React.useRef((key: string) => {
     const resource = resourceRef.current[key];
@@ -47,6 +56,7 @@ const useResource = <T>({ name }: UseResourceProps) => {
     const resources = Object.keys(resourceRef.current);
     console.log(`Cleaning up ${name ?? "resource"}`, resources);
     resources.forEach(evict);
+    resourceRef.current = {};
   }).current;
 
   useOnMount(() => {
