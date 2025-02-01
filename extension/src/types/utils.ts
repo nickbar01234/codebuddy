@@ -16,6 +16,12 @@ export type ExtractMessage<
 
 export type MessagePayload<T extends GenericMessage> = Omit<T, "action">;
 
+// https://stackoverflow.com/a/57103940/19129136
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DistributiveOmit<T, K extends keyof any> = T extends any
+  ? Omit<T, K>
+  : never;
+
 export interface LeetCodeContentChange {
   range: {
     startLineNumber: number;
@@ -27,4 +33,11 @@ export interface LeetCodeContentChange {
   text: string;
   rangeOffset: number;
   forceMoveMarkers: boolean;
+}
+
+export interface Connection {
+  username: string;
+  pc: RTCPeerConnection;
+  channel: RTCDataChannel;
+  lastSeen: number;
 }
