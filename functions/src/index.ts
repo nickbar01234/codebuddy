@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
-import { onDocumentDeleted } from "firebase-functions/firestore";
+import {
+  onDocumentCreated,
+  onDocumentDeleted,
+} from "firebase-functions/firestore";
 
 initializeApp();
 
@@ -19,3 +22,14 @@ export const cleanup = onDocumentDeleted("rooms/{roomId}", async (event) => {
     logger.error("Failed to delete subcollections", roomId, e);
   }
 });
+
+export const setExpirationDate = onDocumentCreated(
+  "rooms/{roomId}",
+  (change) => {
+    const expiredAt = Timestamp.now().toDate();
+    expiredAt.setDate(expiredAt.getDate() + 1);
+    change.data?.ref.update({
+      expiredAt,
+    });
+  }
+);

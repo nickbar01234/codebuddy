@@ -6,7 +6,6 @@ import {
   getDoc,
   getFirestore,
   setDoc,
-  serverTimestamp,
   DocumentReference,
   WithFieldValue,
 } from "firebase/firestore";
@@ -37,7 +36,7 @@ export const getRoom = (id: string) => getDoc(getRoomRef(id));
 export const setRoom = (
   ref: DocumentReference<Room, Room>,
   data: Partial<WithFieldValue<Room>>
-) => setDoc(ref, { ...data, timestamp: serverTimestamp() }, { merge: true });
+) => setDoc(ref, data, { merge: true });
 
 export const getRoomPeerConnectionRefs = (id: string, username: string) =>
   collection(getRoomRef(id), username).withConverter(peerConnectionConverter);
