@@ -590,6 +590,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (roomId != null && getSnapshot()[roomId] == undefined) {
       const unsubscribe = onSnapshot(getRoomRef(roomId), (snapshot) => {
         const data = snapshot.data();
+        // todo(nickbar01234): Clear and report room if deleted?
         if (data == undefined) return;
 
         const usernames = data.usernames;
