@@ -1,0 +1,11 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "rooms",
+      "fieldPath": "expiredAt",
+      "ttl": true,
+      "indexes": []
+    }
+  ]
+}
