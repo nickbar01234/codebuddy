@@ -1,8 +1,7 @@
 import { WindowMessage } from "types/window";
 import { useOnMount, useRTC } from ".";
 import { sendServiceRequest } from "@cb/services";
-import db from "@cb/db";
-import { setDoc } from "firebase/firestore";
+import { getRoomRef, setRoom } from "@cb/db";
 
 const useDevSetupRoom = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
@@ -11,9 +10,10 @@ const useDevSetupRoom = () => {
     if (import.meta.env.MODE !== "development") {
       return;
     }
-    const unsafeResetRoom = async (roomId: string) => {
-      await setDoc(db.room(roomId).ref(), { usernames: [] }, { merge: true });
-    };
+
+    const unsafeResetRoom = (roomId: string) =>
+      setRoom(getRoomRef(roomId), { usernames: [] });
+
     const onWindowMessage = (message: MessageEvent) => {
       // todo(nickbar01234): Uniquely identify that this is test browser
       if (message.data.action != undefined) {

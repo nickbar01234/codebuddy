@@ -4,89 +4,58 @@ import {
   deleteDoc,
   doc,
   getDoc,
-  getDocs,
   getFirestore,
   setDoc,
   serverTimestamp,
+  DocumentReference,
+  WithFieldValue,
 } from "firebase/firestore";
 
 import { firebaseOptions } from "@cb/constants";
-import { peerConnectionConverter, roomConverter } from "@cb/db/converter";
+import {
+  PeerConnection,
+  peerConnectionConverter,
+  Room,
+  roomConverter,
+} from "@cb/db/converter";
 import { getAuth } from "firebase/auth";
 
 const app = initializeApp(firebaseOptions);
+
+export const auth = getAuth(app);
+
 export const firestore = getFirestore(app);
 
-const entry = () => {
-  const rooms = () => {
-    const roomRef = doc(collection(firestore, "rooms")).withConverter(
-      roomConverter
-    );
-    return {
-      ref: () => roomRef,
-      doc: (roomId: string) => room(roomId),
-    };
-  };
+export const getRoomRef = (id?: string) =>
+  doc(
+    collection(firestore, "rooms"),
+    ...[id].filter((segment) => segment != undefined)
+  ).withConverter(roomConverter);
 
-  const room = (id: string) => {
-    const ref = doc(firestore, "rooms", id).withConverter(roomConverter);
-    return {
-      ref: () => ref,
-      doc: () => getDoc(ref),
-    };
-  };
+export const getRoom = (id: string) => getDoc(getRoomRef(id));
 
-  const usernamesCollection = (roomId: string) => {
-    const roomRef = room(roomId).ref();
-    const usernamesCollection = collection(
-      firestore,
-      roomRef.path,
-      "usernames"
-    );
-    return {
-      ref: () => usernamesCollection,
-      doc: async () => await getDocs(usernamesCollection),
-      addUser: (username: string) => addUsername(roomId, username),
-      deleteUser: (username: string) => deleteUsername(roomId, username),
-    };
-  };
+export const setRoom = (
+  ref: DocumentReference<Room, Room>,
+  data: Partial<WithFieldValue<Room>>
+) => setDoc(ref, { ...data, timestamp: serverTimestamp() }, { merge: true });
 
-  const addUsername = async (roomId: string, username: string) => {
-    const usernamesCollectionRef = usernamesCollection(roomId).ref();
-    const userDocRef = doc(usernamesCollectionRef, username);
-    await setDoc(userDocRef, {
-      createdAt: serverTimestamp(),
-    });
-  };
+export const getRoomPeerConnectionRefs = (id: string, username: string) =>
+  collection(getRoomRef(id), username).withConverter(peerConnectionConverter);
 
-  const deleteUsername = async (roomId: string, username: string) => {
-    const usernamesCollectionRef = usernamesCollection(roomId).ref();
-    const userDocRef = doc(usernamesCollectionRef, username);
-    await deleteDoc(userDocRef);
-  };
+export const getRoomPeerConnectionRef = (
+  id: string,
+  peer: string,
+  username: string
+) =>
+  doc(getRoomPeerConnectionRefs(id, peer), username).withConverter(
+    peerConnectionConverter
+  );
 
-  const connections = (roomId: string, username: string) => {
-    const roomRef = room(roomId).ref();
-    const userCollection = collection(
-      firestore,
-      roomRef.path,
-      username
-    ).withConverter(peerConnectionConverter);
-    return {
-      ref: () => userCollection,
-      doc: (other: string) => doc(userCollection, other),
-    };
-  };
+export const setRoomPeerConnection = (
+  ref: DocumentReference<PeerConnection, PeerConnection>,
+  data: Partial<WithFieldValue<PeerConnection>>
+) => setDoc(ref, data, { merge: true });
 
-  return {
-    rooms: rooms,
-    room: room,
-    usernamesCollection: usernamesCollection,
-    connections: connections,
-  };
-};
-
-const db = entry();
-
-export default db;
-export const auth = getAuth(app);
+export const deleteRoomPeerConnection = (
+  ref: DocumentReference<PeerConnection, PeerConnection>
+) => deleteDoc(ref);
