@@ -2,7 +2,15 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import db, { firestore } from "@cb/db";
+import {
+  firestore,
+  getRoom,
+  getRoomPeerConnectionRef,
+  getRoomPeerConnectionRefs,
+  getRoomRef,
+  setRoom,
+  setRoomPeerConnection,
+} from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
 import {
   clearLocalStorage,
@@ -30,9 +38,7 @@ import {
   deleteDoc,
   getDocs,
   onSnapshot,
-  setDoc,
   Unsubscribe,
-  updateDoc,
   writeBatch,
 } from "firebase/firestore";
 import React from "react";
@@ -311,13 +317,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async ({ roomId }: CreateRoom) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
-    const roomRef =
-      roomId == undefined ? db.rooms().ref() : db.rooms().doc(roomId).ref();
-    await setDoc(
-      roomRef,
-      { questionId, usernames: arrayUnion(username) },
-      { merge: true }
-    );
+    const roomRef = getRoomRef(roomId);
+    await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
     console.log("Created room");
     setRoomId(roomRef.id);
     navigator.clipboard.writeText(roomRef.id);
@@ -327,8 +328,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const createOffer = React.useCallback(
     async (roomId: string, peer: string) => {
       console.log("Create Offer to", peer);
-      const meRef = db.connections(roomId, peer).doc(username);
-
+      const meRef = getRoomPeerConnectionRef(roomId, peer, username);
       const pc = new RTCPeerConnection(servers);
 
       const channel = pc.createDataChannel("channel");
@@ -348,13 +348,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
-          await setDoc(
-            meRef,
-            {
-              offerCandidates: arrayUnion(event.candidate.toJSON()),
-            },
-            { merge: true }
-          );
+          setRoomPeerConnection(meRef, {
+            offerCandidates: arrayUnion(event.candidate.toJSON()),
+          });
         }
       };
 
@@ -365,14 +361,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         sdp: offerDescription.sdp,
         type: offerDescription.type,
       };
-      await setDoc(
-        meRef,
-        {
-          username: username,
-          offer: offer,
-        },
-        { merge: true }
-      );
+      await setRoomPeerConnection(meRef, {
+        username: username,
+        offer: offer,
+      });
 
       const unsubscribe = onSnapshot(meRef, (doc) => {
         const maybeData = doc.data();
@@ -404,7 +396,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
 
-      const roomDoc = await db.room(roomId).doc();
+      const roomDoc = await getRoom(roomId);
       if (!roomDoc.exists()) {
         toast.error("Room does not exist");
         return false;
@@ -425,12 +417,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-      await updateDoc(db.room(roomId).ref(), {
+      await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
 
       const unsubscribe = onSnapshot(
-        db.connections(roomId, username).ref(),
+        getRoomPeerConnectionRefs(roomId, username),
         (snapshot) => {
           snapshot.docChanges().forEach(async (change) => {
             if (change.type === "removed") {
@@ -444,7 +436,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
               return;
             }
 
-            const themRef = db.connections(roomId, username).doc(peer);
+            const themRef = getRoomPeerConnectionRef(roomId, username, peer);
             const pc =
               getConnection()[peer]?.pc ?? new RTCPeerConnection(servers);
             if (getConnection()[peer] == undefined) {
@@ -464,7 +456,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
               };
               pc.onicecandidate = async (event) => {
                 if (event.candidate) {
-                  await updateDoc(themRef, {
+                  await setRoomPeerConnection(themRef, {
                     answerCandidates: arrayUnion(event.candidate.toJSON()),
                   });
                 }
@@ -478,7 +470,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
               const answer = await pc.createAnswer();
               await pc.setLocalDescription(answer);
-              await updateDoc(themRef, { answer: answer });
+              await setRoomPeerConnection(themRef, { answer: answer });
             }
 
             data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
@@ -511,11 +503,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
-        await updateDoc(db.room(roomId).ref(), {
+        await setRoom(getRoomRef(roomId), {
           usernames: arrayRemove(username),
         });
 
-        const myAnswers = await getDocs(db.connections(roomId, username).ref());
+        const myAnswers = await getDocs(
+          getRoomPeerConnectionRefs(roomId, username)
+        );
         myAnswers.docs.forEach(async (doc) => {
           deleteDoc(doc.ref);
         });
@@ -539,9 +533,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
       peers
-        .map((peer) => db.connections(roomId, username).doc(peer))
+        .map((peer) => getRoomPeerConnectionRef(roomId, username, peer))
         .forEach((docRef) => batch.delete(docRef));
-      batch.update(db.room(roomId).ref(), {
+      batch.update(getRoomRef(roomId), {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
@@ -562,9 +556,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const deleteMe = React.useCallback(async () => {
     if (roomId) {
-      await updateDoc(db.room(roomId).ref(), {
-        usernames: arrayRemove(username),
-      });
+      await setRoom(getRoomRef(roomId), { usernames: arrayRemove(username) });
       console.log("Before Reloading", roomId);
     }
   }, [roomId, username]);
@@ -596,7 +588,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (roomId != null && getSnapshot()[roomId] == undefined) {
-      const unsubscribe = onSnapshot(db.room(roomId).ref(), (snapshot) => {
+      const unsubscribe = onSnapshot(getRoomRef(roomId), (snapshot) => {
         const data = snapshot.data();
         if (data == undefined) return;
 

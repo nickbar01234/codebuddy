@@ -7,6 +7,7 @@ import {
 export interface Room {
   questionId: string;
   usernames: string[];
+  timestamp?: Date;
 }
 
 export interface PeerConnection {
