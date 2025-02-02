@@ -12,7 +12,7 @@ interface UseDevAuthenticateProps {
 
 const AUTHENTICATION_DELAY = 2000;
 
-const useDevAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
+const useAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
   const unsubscribeRef = React.useRef<Unsubscribe>();
 
   useOnMount(() => {
@@ -56,4 +56,4 @@ const useDevAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
   });
 };
 
-export default useDevAuthenticate;
+export default useAuthenticate;

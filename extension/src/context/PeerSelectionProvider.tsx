@@ -5,10 +5,11 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
-import { Peer, PeerInformation, TestCase } from "@cb/types";
+import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
+import { poll } from "@cb/utils/poll";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
@@ -114,7 +115,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   const pasteCode = React.useCallback(() => {
     if (activeUserInformation != undefined) {
       sendServiceRequest({
-        action: "setValue",
+        action: "pasteCode",
         value: activeUserInformation.code?.code.value ?? "",
       });
     }
@@ -259,20 +260,14 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   }, [setCode]);
 
   useOnMount(() => {
-    waitForElement(".monaco-editor", 2000)
-      .then(() =>
+    poll({
+      fn: () =>
         sendServiceRequest({
           action: "setupCodeBuddyModel",
           id: EDITOR_NODE_ID,
-        })
-      )
-      .then(() => {
-        // console.log("Created Model");
-        setCodeRef.current(true);
-      })
-      .catch((error) => {
-        console.error("Error during the process:", error);
-      });
+        }),
+      until: (response) => response.status === ResponseStatus.SUCCESS,
+    }).catch((e) => console.error("Error when setting up CodeBuddy model", e));
   });
 
   useOnMount(() => {

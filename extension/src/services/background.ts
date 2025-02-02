@@ -12,12 +12,6 @@ chrome.runtime.onInstalled.addListener((details) => {
   }
 });
 
-/**
- * TODO(nickbar01234) - Redesign authentication flow
- *
- * @docs https://stackoverflow.com/a/61056192
- */
-
 const getValue = async () => {
   const monaco = (window as any).monaco;
 
@@ -33,7 +27,7 @@ const getValue = async () => {
   };
 };
 
-const setValue = async (value: string) => {
+const pasteCode = async (value: string) => {
   const monaco = (window as any).monaco;
   const myEditor = monaco.editor
     .getEditors()
@@ -54,48 +48,68 @@ const setValue = async (value: string) => {
 };
 
 const setupCodeBuddyModel = async (id: string) => {
-  // TODO(nickbar01234): This timeout is weird, should send an appropriate response for client to retry
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  const monaco = (window as any).monaco;
-  console.log("Setting up CodeBuddy model");
-  if (
-    monaco.editor
-      .getEditors()
-      .find((editor: any) => editor.id === "CodeBuddy") == undefined
-  ) {
-    // console.log("No Editor Found");
-    const buddyEditor = await monaco.editor.create(
-      document.getElementById(id),
-      {
-        readOnly: true,
-        scrollBeyondLastLine: false,
-        automaticLayout: true,
-        minimap: { enabled: false },
-      }
-    );
-    buddyEditor.id = "CodeBuddy";
-    console.log("Finished setting up CodeBuddy model");
+  const windowAsAny = window as any;
+  if (windowAsAny.monaco == undefined) {
+    // ResponseStatus.FAIL
+    return {
+      status: 1,
+    };
+  } else {
+    const monaco = windowAsAny.monaco;
+    console.log("Setting up CodeBuddy model");
+    if (
+      monaco.editor
+        .getEditors()
+        .find((editor: any) => editor.id === "CodeBuddy") == undefined
+    ) {
+      // console.log("No Editor Found");
+      const buddyEditor = await monaco.editor.create(
+        document.getElementById(id),
+        {
+          readOnly: true,
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          minimap: { enabled: false },
+        }
+      );
+      buddyEditor.id = "CodeBuddy";
+      console.log("Finished setting up CodeBuddy model");
+    }
+    return {
+      // ResponseStatus.SUCCESS
+      status: 0,
+    };
   }
 };
 
 const setupLeetCodeModel = async () => {
-  // TODO(nickbar01234): This timeout is weird, should send an appropriate response for client to retry
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-  const monaco = (window as any).monaco;
-  const leetCodeEditor = monaco.editor
-    .getEditors()
-    .filter((e: any) => e.id !== "CodeBuddy")
-    .map((e: any) => e.getModel())
-    .find((m: any) => m.getLanguageId() !== "plaintext");
-  leetCodeEditor.onDidChangeContent((event: any) => {
-    // todo(nickbar01234): Don't have a good way to include function from a different file yet
-    // Ideally, we should do the same pattern as services/index.ts
-    const leetCodeOnChange: WindowMessage = {
-      action: "leetCodeOnChange",
-      changes: event.changes[0],
+  const windowAsAny = window as any;
+  if (windowAsAny.monaco == undefined) {
+    // ResponseStatus.FAIL
+    return {
+      status: 1,
     };
-    window.postMessage(leetCodeOnChange);
-  });
+  } else {
+    console.log("Setting up LeetCode model");
+    const leetCodeEditor = windowAsAny.monaco.editor
+      .getEditors()
+      .filter((e: any) => e.id !== "CodeBuddy")
+      .map((e: any) => e.getModel())
+      .find((m: any) => m.getLanguageId() !== "plaintext");
+    leetCodeEditor.onDidChangeContent((event: any) => {
+      // todo(nickbar01234): Don't have a good way to include function from a different file yet
+      // Ideally, we should do the same pattern as services/index.ts
+      const leetCodeOnChange: WindowMessage = {
+        action: "leetCodeOnChange",
+        changes: event.changes[0],
+      };
+      window.postMessage(leetCodeOnChange);
+    });
+    return {
+      // ResponseStatus.SUCCESS
+      status: 0,
+    };
+  }
 };
 
 const setValueModel = async (
@@ -146,18 +160,6 @@ const setValueModel = async (
   console.log("Applied Changes");
 };
 
-const cleanEditor = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const monaco = (window as any).monaco;
-  const editor = monaco.editor
-    .getEditors()
-    .find((e: any) => e.id === "CodeBuddy");
-  if (editor != undefined) {
-    await editor.dispose().catch(console.error);
-  }
-  console.log("Cleaned Editor");
-};
-
 chrome.runtime.onMessage.addListener(
   (request: ServiceRequest, sender, sendResponse) => {
     switch (request.action) {
@@ -175,17 +177,15 @@ chrome.runtime.onMessage.addListener(
         break;
       }
 
-      case "setValue": {
+      case "pasteCode": {
         chrome.scripting
           .executeScript({
             target: { tabId: sender.tab?.id ?? 0 },
-            func: setValue,
+            func: pasteCode,
             args: [request.value],
             world: "MAIN",
           })
-          .then(() => {
-            sendResponse();
-          });
+          .then(sendResponse);
         break;
       }
 
@@ -197,8 +197,9 @@ chrome.runtime.onMessage.addListener(
             args: [request.id],
             world: "MAIN",
           })
-          .then(() => {
-            sendResponse();
+          .then((result) => {
+            console.log(result);
+            sendResponse(result[0].result);
           });
         break;
       }
@@ -211,7 +212,7 @@ chrome.runtime.onMessage.addListener(
             args: [],
             world: "MAIN",
           })
-          .then(sendResponse);
+          .then((result) => sendResponse(result[0].result));
         break;
       }
 
@@ -234,15 +235,6 @@ chrome.runtime.onMessage.addListener(
           .then(() => {
             sendResponse();
           });
-        break;
-      }
-
-      case "cleanEditor": {
-        chrome.scripting.executeScript({
-          target: { tabId: sender.tab?.id ?? 0 },
-          func: cleanEditor,
-          world: "MAIN",
-        });
         break;
       }
 
