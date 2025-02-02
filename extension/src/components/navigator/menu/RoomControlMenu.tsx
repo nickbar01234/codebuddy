@@ -140,7 +140,7 @@ export const RoomControlMenu = () => {
         <RoomControlDropdownMenuItem
           onSelect={() => leaveRoom(roomId).then(() => signOut(auth))}
         >
-          <span className="flex gap-2">
+          <span className="flex gap-2 items-center">
             <SignOutIcon /> <span>Sign Out</span>
           </span>
         </RoomControlDropdownMenuItem>
@@ -150,7 +150,7 @@ export const RoomControlMenu = () => {
             e.stopPropagation();
           }}
         >
-          <span className="flex gap-2">
+          <span className="flex gap-2 items-center">
             <ResetIcon /> <span>Reset Extension</span>
           </span>
         </RoomControlDropdownMenuItem>
