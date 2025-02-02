@@ -15,7 +15,6 @@ import { signOut } from "firebase/auth/web-extension";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@cb/lib/components/ui/dropdown-menu";
 import React from "react";
@@ -27,6 +26,7 @@ import {
   DialogTitle,
 } from "@cb/lib/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
+import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
 const _RoomControlMenu = () => {
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
@@ -53,8 +53,7 @@ const _RoomControlMenu = () => {
     case AppState.HOME:
       return (
         <>
-          <DropdownMenuItem
-            className="focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer"
+          <RoomControlDropdownMenuItem
             onSelect={(e) => {
               e.stopPropagation();
               setAppState(AppState.ROOM);
@@ -64,11 +63,8 @@ const _RoomControlMenu = () => {
             <span className="flex gap-2 items-center">
               <PlusIcon /> Create Room
             </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="relative focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer"
-            onSelect={(e) => e.preventDefault()}
-          >
+          </RoomControlDropdownMenuItem>
+          <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Dialog>
               <DialogTrigger>
                 <span className="flex gap-2 items-center">
@@ -95,16 +91,15 @@ const _RoomControlMenu = () => {
                 />
               </DialogContent>
             </Dialog>
-          </DropdownMenuItem>
+          </RoomControlDropdownMenuItem>
         </>
       );
 
     case AppState.ROOM:
       return (
         <>
-          <DropdownMenuItem
-            className="focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer"
-            onClick={(e) => {
+          <RoomControlDropdownMenuItem
+            onSelect={(e) => {
               e.stopPropagation();
               navigator.clipboard.writeText(roomId ?? "");
             }}
@@ -112,10 +107,9 @@ const _RoomControlMenu = () => {
             <span className="flex gap-2 items-center">
               <CopyIcon /> Copy Room ID
             </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            className="focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer"
-            onClick={(e) => {
+          </RoomControlDropdownMenuItem>
+          <RoomControlDropdownMenuItem
+            onSelect={(e) => {
               e.stopPropagation();
               setAppState(AppState.HOME);
               if (roomId) leaveRoom(roomId);
@@ -124,7 +118,7 @@ const _RoomControlMenu = () => {
             <span className="flex gap-2 items-center">
               <LeaveIcon /> Leave Room
             </span>
-          </DropdownMenuItem>
+          </RoomControlDropdownMenuItem>
         </>
       );
 
@@ -143,16 +137,14 @@ export const RoomControlMenu = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="absolute right-0 top-2 shadow-level3 dark:shadow-dark-level3 rounded-lg border border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 w-max flex flex-col">
         <_RoomControlMenu />
-        <DropdownMenuItem
-          className="focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer"
+        <RoomControlDropdownMenuItem
           onSelect={() => leaveRoom(roomId).then(() => signOut(auth))}
         >
           <span className="flex gap-2">
             <SignOutIcon /> <span>Sign Out</span>
           </span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer"
+        </RoomControlDropdownMenuItem>
+        <RoomControlDropdownMenuItem
           onSelect={(e) => {
             clearLocalStorage();
             e.stopPropagation();
@@ -161,7 +153,7 @@ export const RoomControlMenu = () => {
           <span className="flex gap-2">
             <ResetIcon /> <span>Reset Extension</span>
           </span>
-        </DropdownMenuItem>
+        </RoomControlDropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
