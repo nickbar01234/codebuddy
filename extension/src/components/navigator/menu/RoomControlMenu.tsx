@@ -26,6 +26,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@cb/lib/components/ui/dialog";
+import { DialogDescription } from "@radix-ui/react-dialog";
 
 const _RoomControlMenu = () => {
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
@@ -78,6 +79,9 @@ const _RoomControlMenu = () => {
                 <DialogHeader className="text-2xl">
                   <DialogTitle>Input Room ID</DialogTitle>
                 </DialogHeader>
+                <DialogDescription className="hidden">
+                  Input room ID
+                </DialogDescription>
                 <input
                   className="w-full cursor-text rounded-lg border px-3 py-[5px] bg-fill-3 dark:bg-dark-fill-3 border-transparent"
                   placeholder="Enter room ID"
