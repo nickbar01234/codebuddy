@@ -8,8 +8,8 @@ interface GetValueRequest extends GenericMessage {
   action: "getValue";
 }
 
-interface SetValueRequest extends GenericMessage {
-  action: "setValue";
+interface PastCodeRequest extends GenericMessage {
+  action: "pasteCode";
   value: string;
 }
 
@@ -31,22 +31,26 @@ interface SetOtherEditorRequest extends GenericMessage {
   editorId: string;
 }
 
-interface CleanEditorRequest extends GenericMessage {
-  action: "cleanEditor";
-}
-
 interface ReloadExtensionRequest extends GenericMessage {
   action: "reloadExtension";
 }
 
 export type ServiceRequest =
   | GetValueRequest
-  | SetValueRequest
+  | PastCodeRequest
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
-  | CleanEditorRequest
   | SetupLeetCodeModel
   | ReloadExtensionRequest;
+
+export enum ResponseStatus {
+  SUCCESS,
+  FAIL,
+}
+
+interface ServiceGenericResponse {
+  status: ResponseStatus;
+}
 
 export type ServiceResponse = GenericResponse<
   ServiceRequest,
@@ -55,11 +59,10 @@ export type ServiceResponse = GenericResponse<
       value: string;
       language: string;
     };
-    setValue: void;
-    setupCodeBuddyModel: void;
-    setupLeetCodeModel: void;
+    pasteCode: void;
+    setupCodeBuddyModel: ServiceGenericResponse;
+    setupLeetCodeModel: ServiceGenericResponse;
     setValueOtherEditor: void;
-    cleanEditor: void;
     reloadExtension: void;
   }
 >;

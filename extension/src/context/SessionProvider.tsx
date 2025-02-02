@@ -7,7 +7,7 @@ import {
   signInWithEmailLink,
 } from "firebase/auth/web-extension";
 import { getLocalStorage, removeLocalStorage } from "@cb/services";
-import useDevAuthenticate from "@cb/hooks/useAuthenticate";
+import useAuthenticate from "@cb/hooks/useAuthenticate";
 
 interface SessionProviderProps {
   children?: React.ReactNode;
@@ -26,7 +26,7 @@ const SessionProvider = (props: SessionProviderProps) => {
   const [authenticationStatus, setAuthenticationStatus] =
     React.useState<AuthenticationStatus>({ status: Status.LOADING });
 
-  useDevAuthenticate({
+  useAuthenticate({
     authenticate: setAuthenticationStatus,
   });
 

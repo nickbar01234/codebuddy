@@ -24,6 +24,7 @@ import {
   PeerInformation,
   PeerMessage,
   PeerState,
+  ResponseStatus,
   WindowMessage,
 } from "@cb/types";
 import {
@@ -48,6 +49,7 @@ import { AppState } from "./AppStateProvider";
 import useResource from "@cb/hooks/useResource";
 import { Connection } from "types/utils";
 import { withPayload } from "@cb/utils/messages";
+import { poll } from "@cb/utils/poll";
 
 const servers = {
   iceServers: [
@@ -689,8 +691,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
   });
 
   useOnMount(() => {
-    sendServiceRequest({ action: "setupLeetCodeModel" });
+    poll({
+      fn: () => sendServiceRequest({ action: "setupLeetCodeModel" }),
+      until: (response) => response.status === ResponseStatus.SUCCESS,
+    });
+  });
 
+  useOnMount(() => {
     const onWindowMessage = (message: MessageEvent) => {
       // todo(nickbar01234): Should attach an ID to message so that it's identifiable only by us.
       if (message.data.action != undefined) {
