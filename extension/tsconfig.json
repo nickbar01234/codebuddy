@@ -31,6 +31,7 @@
       "@cb/context/*": ["./context/*"],
       "@cb/db": ["./db/index.ts"],
       "@cb/db/*": ["./db/*"],
+      "@cb/lib/*": ["./lib/*"],
       "@cb/constants": ["./constants/index.ts"],
       "@cb/constants/*": ["./constants/*"]
     }
