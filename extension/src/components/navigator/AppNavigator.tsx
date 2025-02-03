@@ -22,21 +22,10 @@ export const AppNavigator = () => {
     e.stopPropagation();
     setUserDropdownOpen(!isUserDropdownOpen);
   };
-
-  const [displayMenu, setDisplayMenu] = React.useState(false);
-
-  const onPanelClick = () => {
-    setUserDropdownOpen(false);
-    setDisplayMenu(false);
-  };
-
   const currentTabInfo = getLocalStorage("tabs");
 
   return (
-    <div
-      className="h-full w-full relative flex flex-col"
-      onClick={onPanelClick}
-    >
+    <div className="h-full w-full relative flex flex-col">
       <Toaster
         richColors
         expand
@@ -46,7 +35,7 @@ export const AppNavigator = () => {
           duration: 10 * 1000,
         }}
       />
-      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-y-2">
+      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-2">
         <div className="flex items-center">
           <h2 className="font-medium">CodeBuddy</h2>
           {state === AppState.ROOM && activePeer?.id && (
@@ -59,10 +48,7 @@ export const AppNavigator = () => {
             </React.Fragment>
           )}
         </div>
-        <RoomControlMenu
-          displayMenu={displayMenu}
-          setDisplayMenu={setDisplayMenu}
-        />
+        <RoomControlMenu />
       </div>
       <div className="h-full w-full relative overflow-hidden">
         <div className="absolute inset-0 h-full w-full flex justify-center items-center">
