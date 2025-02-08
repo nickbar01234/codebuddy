@@ -1,12 +1,10 @@
 import { WindowMessage } from "types/window";
-import { useAppState, useOnMount, useRTC } from ".";
+import { useOnMount, useRTC } from ".";
 import { sendServiceRequest } from "@cb/services";
 import { getRoomRef, setRoom } from "@cb/db";
-import { AppState } from "@cb/context/AppStateProvider";
 
 const useDevSetupRoom = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
-  const { setState: setAppState } = useAppState();
 
   useOnMount(() => {
     if (import.meta.env.MODE !== "development") {
@@ -25,8 +23,6 @@ const useDevSetupRoom = () => {
             unsafeResetRoom(windowMessage.roomId).then(() =>
               createRoom({ roomId: windowMessage.roomId })
             );
-            // todo(nickbar01234): Removed when AppState is refactor
-            setAppState(AppState.ROOM);
             break;
           }
 
@@ -34,8 +30,6 @@ const useDevSetupRoom = () => {
             leaveRoom(windowMessage.roomId).then(() =>
               joinRoom(windowMessage.roomId)
             );
-            // todo(nickbar01234): Removed when AppState is refactor
-            setAppState(AppState.ROOM);
             break;
           }
 

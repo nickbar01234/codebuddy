@@ -129,6 +129,15 @@ const _RoomControlMenu = () => {
 
 export const RoomControlMenu = () => {
   const { roomId, leaveRoom } = useRTC();
+  const { setState: setAppState } = React.useContext(appStateContext);
+
+  React.useEffect(() => {
+    if (roomId != null) {
+      setAppState(AppState.ROOM);
+    } else {
+      setAppState(AppState.HOME);
+    }
+  }, [roomId, setAppState]);
 
   return (
     <DropdownMenu>
