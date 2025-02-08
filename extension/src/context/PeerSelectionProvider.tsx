@@ -6,7 +6,6 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
-import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
 import { poll } from "@cb/utils/poll";
@@ -194,7 +193,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => {
     for (const peer of peers) {
       setLocalStorageForIndividualPeers(peer);
-      if (peer.active && !isBuffer) {
+      if (peer.active) {
         setLocalStorage("lastActivePeer", peer.id);
       }
     }
@@ -236,7 +235,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => setActivePeer(findActivePeer()), [findActivePeer]);
 
   React.useEffect(() => {
-    if ((activePeer === undefined || isBuffer) && peers.length > 0) {
+    if (activePeer === undefined && !isBuffer && peers.length > 0) {
       const lastActivePeer = getLocalStorage("lastActivePeer");
       if (lastActivePeer && peers.some((peer) => peer.id === lastActivePeer)) {
         setActivePeerId(lastActivePeer);

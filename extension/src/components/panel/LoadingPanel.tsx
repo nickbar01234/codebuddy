@@ -32,11 +32,7 @@ export function LoadingPanel({ numberOfUsers = 0 }: { numberOfUsers: number }) {
   return numberOfUsers === 0 ? (
     <div className="flex flex-col items-center justify-center h-full w-full">
       <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
-        <div
-          className={
-            "z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]"
-          }
-        >
+        <div className="z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]">
           <UserIcon />
         </div>
         <Ripple />
@@ -44,9 +40,7 @@ export function LoadingPanel({ numberOfUsers = 0 }: { numberOfUsers: number }) {
     </div>
   ) : (
     <div
-      className={
-        "relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg bg-background p-10 shadow-xl"
-      }
+      className="relative flex h-full w-full items-center justify-center overflow-hidden rounded-lg p-10 shadow-xl"
       ref={containerRef}
     >
       <div className="flex size-full max-w-lg flex-row items-stretch justify-between gap-10">
