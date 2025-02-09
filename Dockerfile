@@ -12,7 +12,6 @@ RUN apt-get update && \
   apt-get install -y openjdk-${JAVA_VERSION}-jre bash && \
   npm install -g pnpm@${PNPM_VERSION} && \
   pnpm install -g firebase-tools@${FIREBASE_VERSION} typescript && \
-  firebase setup:emulators:firestore && \
   firebase -V && \
   java --version
 
