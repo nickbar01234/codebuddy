@@ -5,6 +5,5 @@
 
 cd "$FUNCTIONS_DIR" && pnpm dev
 # https://firebase.google.com/docs/emulator-suite/connect_firestore#choose_a_firebase_project
-firebase use demo-codebuddy-development
-cd "$FIREBASE_DIR" && firebase emulators:start --import="$DATA_DIR" --export-on-exit
+cd "$FIREBASE_DIR" && firebase emulators:start --project demo-code-buddy-development --import="$DATA_DIR" --export-on-exit
 
