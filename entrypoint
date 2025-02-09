@@ -3,10 +3,12 @@
 # Not setting this because firebase complains since we're not authenticated
 # set -e -o pipefail
 
-DATA_DIR="$1"
+echo "first $FIREBASE_DIR"
+echo "second $FUNCTIONS_DIR"
+echo "third $DATA_DIR"
 
+cd "$FUNCTIONS_DIR" && pnpm dev
 # https://firebase.google.com/docs/emulator-suite/connect_firestore#choose_a_firebase_project
-cd "functions" && pnpm dev
 firebase use demo-codebuddy-development
-firebase emulators:start --import="$DATA_DIR" --export-on-exit
+cd "$FIREBASE_DIR" && firebase emulators:start --import="$DATA_DIR" --export-on-exit
 

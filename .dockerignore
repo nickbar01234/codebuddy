@@ -1,4 +1,3 @@
 .*
 !firebase
-node_modules
-lib
+!entrypoint.sh
