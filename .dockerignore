@@ -1,0 +1,4 @@
+.*
+!firebase
+node_modules
+lib

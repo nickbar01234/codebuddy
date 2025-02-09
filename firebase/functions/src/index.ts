@@ -26,10 +26,12 @@ export const cleanup = onDocumentDeleted("rooms/{roomId}", async (event) => {
 export const setExpirationDate = onDocumentCreated(
   "rooms/{roomId}",
   (change) => {
-    const expiredAt = Timestamp.now().toDate();
-    expiredAt.setDate(expiredAt.getDate() + 1);
-    change.data?.ref.update({
-      expiredAt,
-    });
+    if (change.data?.exists) {
+      const expiredAt = Timestamp.now().toDate();
+      expiredAt.setDate(expiredAt.getDate() + 1);
+      change.data?.ref.update({
+        expiredAt,
+      });
+    }
   }
 );

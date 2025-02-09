@@ -1,0 +1,23 @@
+services:
+  firebase:
+    container_name: firebase
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # See firebase.json
+      - 3000:3000
+      - 3001:3001
+      - 3002:3002
+    volumes:
+      - firebase:/opt/mnt/data
+      - ./firebase:/opt/services/firebase
+      # Ignoring local node_modules
+      - /opt/services/firebase/functions/node_modules
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1
+volumes:
+  firebase:
