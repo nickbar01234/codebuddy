@@ -36,7 +36,7 @@ export const AppNavigator = () => {
           duration: 10 * 1000,
         }}
       />
-      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-2">
+      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-2">
         <div className="flex items-center">
           <Header />
           {state === AppState.ROOM && activePeer?.id && (

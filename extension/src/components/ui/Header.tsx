@@ -8,7 +8,7 @@ const Header = ({ className, ...props }: HeaderProps) => {
 
   return (
     <div className={cn("flex gap-1 items-center", className)} {...props}>
-      <div className="h-6 w-6">
+      <div className="h-5 w-5">
         <img src={lightLogo} className="dark:hidden" alt="CodeBuddy logo" />
         <img
           src={darkLogo}
