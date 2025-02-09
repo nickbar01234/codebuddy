@@ -22,3 +22,7 @@ draft.ts
 
 # Firebase
 .firebaserc
+
+# Docker
+# todo(nickbar01234): This is an artifact from directly mounting the code to docker
+.pnpm-store
