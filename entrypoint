@@ -3,10 +3,6 @@
 # Not setting this because firebase complains since we're not authenticated
 # set -e -o pipefail
 
-echo "first $FIREBASE_DIR"
-echo "second $FUNCTIONS_DIR"
-echo "third $DATA_DIR"
-
 cd "$FUNCTIONS_DIR" && pnpm dev
 # https://firebase.google.com/docs/emulator-suite/connect_firestore#choose_a_firebase_project
 firebase use demo-codebuddy-development
