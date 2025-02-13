@@ -609,6 +609,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         addedPeers.forEach((peer) => {
           createOffer(roomId, peer);
         });
+
+        removedPeers.forEach((peer) => {
+          toast.error(`${peer} has left the room`);
+        });
       });
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
     }
