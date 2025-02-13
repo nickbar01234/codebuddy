@@ -1,0 +1,30 @@
+services:
+  firebase:
+    container_name: firebase
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      # See firebase.json
+      - 3000:3000
+      - 3001:3001
+      - 3002:3002
+    environment:
+      # Used by entrypoint
+      - DATA_DIR=/app/mnt/data
+      - FIREBASE_DIR=/app/var/conf
+      - FUNCTIONS_DIR=/app/services/functions
+    volumes:
+      - firebase:/app/mnt/data
+      - ./entrypoint:/usr/local/bin/entrypoint
+      - ./firebase:/app/var/conf
+      - ./functions:/app/services/functions
+      # Ignoring local node_modules
+      - /app/services/functions/node_modules
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: 1
+volumes:
+  firebase:
