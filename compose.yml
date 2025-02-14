@@ -12,15 +12,13 @@ services:
     environment:
       # Used by entrypoint
       - DATA_DIR=/app/mnt/data
-      - FIREBASE_DIR=/app/var/conf
-      - FUNCTIONS_DIR=/app/services/functions
+      - FIREBASE_DIR=/app/services/firebase
     volumes:
       - firebase:/app/mnt/data
       - ./entrypoint:/usr/local/bin/entrypoint
-      - ./firebase:/app/var/conf
-      - ./functions:/app/services/functions
+      - ./firebase:/app/services/firebase
       # Ignoring local node_modules
-      - /app/services/functions/node_modules
+      - /app/services/firebase/functions/node_modules
     deploy:
       resources:
         limits:

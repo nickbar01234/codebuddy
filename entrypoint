@@ -3,7 +3,12 @@
 # Not setting this because firebase complains since we're not authenticated
 # set -e -o pipefail
 
-cd "$FUNCTIONS_DIR" && pnpm dev
+FUNCTIONS_DIR="$FIREBASE_DIR/functions"
+CONFIG_PATH="$FIREBASE_DIR/firebase.json"
 # https://firebase.google.com/docs/emulator-suite/connect_firestore#choose_a_firebase_project
-cd "$FIREBASE_DIR" && firebase emulators:start --project demo-code-buddy-development --import="$DATA_DIR" --export-on-exit
+DEMO="demo-code-buddy-development"
+
+cd "$FUNCTIONS_DIR" && pnpm dev
+firebase emulators:start --project "$DEMO" --import="$DATA_DIR" --export-on-exit --config "$CONFIG_PATH"
+
 
