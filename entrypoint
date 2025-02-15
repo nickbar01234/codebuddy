@@ -7,8 +7,35 @@ FUNCTIONS_DIR="$FIREBASE_DIR/functions"
 CONFIG_PATH="$FIREBASE_DIR/firebase.json"
 # https://firebase.google.com/docs/emulator-suite/connect_firestore#choose_a_firebase_project
 DEMO="demo-code-buddy-development"
+# https://github.com/firebase/firebase-tools/issues/3092#issuecomment-1126822493
+# Per comment, we can't write to volume mounted by Docker
+STORAGE="$DATA_DIR/firebase"
+
+loopPid=0
+pid=0
+
+# Trap SIGTERM to shutdown Firebase cleanly https://stackoverflow.com/a/65507904/19129136
+cleanup() {
+  echo "Exporting and shutting down firebase emulator"
+  # todo(nickbar01234): Can't get --export-on-exit to work properly. This method is more manual but good enough
+  firebase emulators:export --project "$DEMO" --config "$CONFIG_PATH" --force "$STORAGE"
+  pkill -P "$pid"
+  wait "$pid"
+  exit 0
+}
+
+trap "cleanup" SIGTERM
+
+mkdir -p "$STORAGE"
 
 cd "$FUNCTIONS_DIR" && pnpm dev
-firebase emulators:start --project "$DEMO" --import="$DATA_DIR" --export-on-exit --config "$CONFIG_PATH"
+exec firebase emulators:start --project "$DEMO" --import="$STORAGE" --config "$CONFIG_PATH" &
+pid="$!"
+# Spins forever
+tail -f /dev/null &
+loopPid="$!"
+wait "$loopPid"
+
+exit 1
 
 
