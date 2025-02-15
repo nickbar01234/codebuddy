@@ -14,7 +14,7 @@ services:
       - DATA_DIR=/app/mnt/data
       - FIREBASE_DIR=/app/services/firebase
     volumes:
-      - firebase:/app/mnt/data
+      - db:/app/mnt/data
       - ./entrypoint:/usr/local/bin/entrypoint
       - ./firebase:/app/services/firebase
       # Ignoring local node_modules
@@ -25,4 +25,4 @@ services:
           memory: 1G
           cpus: 1
 volumes:
-  firebase:
+  db:
