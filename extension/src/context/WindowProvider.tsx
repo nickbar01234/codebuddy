@@ -33,6 +33,8 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
   const [windowDimensions, setWindowDimensions] = React.useState(
     getWindowDimensions()
   );
+  const { width, height } = windowDimensions;
+  const windowDimensionsRef = React.useRef(windowDimensions);
 
   const [appPreference, setAppPreference] = React.useState<
     ExtensionStorage["appPreference"]
@@ -41,9 +43,6 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
     ExtensionStorage["codePreference"]
   >(CodeBuddyPreference.codePreference);
 
-  const { width, height } = windowDimensions;
-  const prevWidth = React.useRef(width);
-  const prevHeight = React.useRef(height);
   const toggleWidth = () => {
     setAppPreference((prev) => ({
       ...prev,
@@ -57,26 +56,29 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
       codePreference,
     });
   };
-  React.useEffect(() => {
-    const oldRatio = appPreference.width / prevWidth.current;
-    // console.log("resizing", width, appPreference.width, oldRatio);
-    setAppPreference((prev) => ({
-      ...prev,
-      width: width * oldRatio,
-      isCollapsed: width * oldRatio <= MIN_WIDTH,
-    }));
-    prevWidth.current = width;
-  }, [width, appPreference.width]);
 
   React.useEffect(() => {
-    const oldRatio = codePreference.height / prevHeight.current;
-    // console.log("resizing", height, codePreference.height, oldRatio);
-    setCodePreference((prev) => ({
-      ...prev,
-      height: height * oldRatio,
-    }));
-    prevHeight.current = height;
-  }, [height, codePreference.height]);
+    setAppPreference((prev) => {
+      const oldRatio = prev.width / windowDimensionsRef.current.width;
+      return {
+        ...prev,
+        width: width * oldRatio,
+        isCollapsed: width * oldRatio <= MIN_WIDTH,
+      };
+    });
+    windowDimensionsRef.current.width = width;
+  }, [width]);
+
+  React.useEffect(() => {
+    setCodePreference((prev) => {
+      const oldRatio = prev.height / windowDimensionsRef.current.height;
+      return {
+        ...prev,
+        height: height * oldRatio,
+      };
+    });
+    windowDimensionsRef.current.height = height;
+  }, [height]);
 
   useOnMount(() => {
     getChromeStorage("appPreference").then(setAppPreference);
