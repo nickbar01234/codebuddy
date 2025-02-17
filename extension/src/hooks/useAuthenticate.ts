@@ -5,6 +5,10 @@ import { AuthenticationStatus, Status } from "@cb/types";
 import React from "react";
 import _ from "lodash";
 import { Unsubscribe } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth/web-extension";
 
 interface UseDevAuthenticateProps {
   authenticate: (session: AuthenticationStatus) => void;
@@ -23,18 +27,13 @@ const useAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
     const user = getLocalStorage("test");
     if (user != undefined) {
       const { peer } = user;
-      authenticate({
-        status: Status.AUTHENTICATED,
-        user: { username: peer },
-      });
+      createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD").finally(() =>
+        signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
+      );
     }
   });
 
   useOnMount(() => {
-    if (import.meta.env.MODE === "development") {
-      return;
-    }
-
     _.delay(() => {
       unsubscribeRef.current = auth.onAuthStateChanged((user) => {
         if (user == null) {

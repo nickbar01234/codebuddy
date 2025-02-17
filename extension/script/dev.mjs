@@ -10,7 +10,12 @@ const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 // eslint-disable-next-line no-undef
 const NUM_USERS = process.env.USERS ?? 2;
 
-const USERNAMES = ["code", "buddy", "dev", "mode"];
+const USERNAMES = [
+  "code@code.com",
+  "buddy@buddy.com",
+  "dev@dev.com",
+  "mode@mode.com",
+];
 const PAGES = Array.from({ length: NUM_USERS });
 const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
   peer: USERNAMES[idx],
