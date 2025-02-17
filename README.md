@@ -75,3 +75,8 @@ Alternatively, if you prefer to manually unpack and load:
 3. Run `firebase projects:list` and note down your project ID.
 4. Make a copy of `.firebaserc.tpl` and rename to `.firebaserc`. Replace `PROJECT_ID` with your project id.
 5. Run `firebase emulators:start` for local development.
+
+mkdir -p ./certs
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+ -keyout ./certs/selfsigned.key \
+ -out ./certs/selfsigned.crt

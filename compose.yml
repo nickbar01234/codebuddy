@@ -4,12 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      # See firebase.json
-      - 3000:3000
-      - 3001:3001
-      - 3002:3002
-      - 3003:3003
     environment:
       # Used by entrypoint
       - DATA_DIR=/app/mnt/data
@@ -24,6 +18,23 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: 1
+          cpus: "1"
+    networks:
+      - net
+  nginx:
+    image: nginx
+    restart: always
+    ports:
+      - "443:443"
+    volumes:
+      - ./certs:/etc/nginx/certs
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - net
+
 volumes:
   db:
+
+networks:
+  net:
+    external: true
