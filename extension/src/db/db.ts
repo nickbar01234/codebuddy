@@ -13,7 +13,7 @@ const firestore = getFirestore(app);
 
 if (import.meta.env.MODE === "development") {
   // See firebase.json
-  const BASE_URL = getLocalStorage("firebaseURL") ?? "http://localhost:9099";
+  const BASE_URL = getLocalStorage("firebaseURL") ?? "http://127.0.0.1:9099";
   console.log("Using Firebase Emulator at", BASE_URL);
   const AUTH_URL = `${BASE_URL}`;
   connectAuthEmulator(auth, AUTH_URL);
