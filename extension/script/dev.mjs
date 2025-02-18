@@ -1,9 +1,11 @@
 import chokidar from "chokidar";
 import puppeteer from "puppeteer";
 import _ from "lodash";
+import ngrok from "@ngrok/ngrok";
+import dotenv from "dotenv";
+dotenv.config();
 
 const EXTENSION_PATH = "./dist/";
-
 const EXTENSION_HOST = "https://leetcode.com/problems/";
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 
@@ -22,6 +24,11 @@ const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
 }));
 
 const setup = async () => {
+  const connection = await ngrok.forward({
+    addr: 8080, // eslint-disable-next-line no-undef
+    authtoken: process.env.NGROK_AUTHTOKEN,
+  });
+  console.log("ngrok url: ", connection.url());
   const createBrowser = async (peer) => {
     const browser = await puppeteer.launch({
       headless: false,
@@ -43,6 +50,9 @@ const setup = async () => {
         })
       );
     }, peer);
+    await page.evaluate((url) => {
+      localStorage.setItem("codebuddyfirebaseURL", JSON.stringify(url));
+    }, connection.url());
     await page.goto(TARGET_QUESTION);
     return { browser, page };
   };
@@ -92,6 +102,7 @@ setup()
   .catch((e) => console.error("Failed with", e));
 
 // eslint-disable-next-line no-undef
-process.on("SIGINT", () => {
+process.on("SIGINT", async () => {
   PAGES.forEach(({ browser }) => browser.close());
+  await ngrok.disconnect();
 });

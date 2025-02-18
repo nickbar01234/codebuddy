@@ -49,4 +49,5 @@ export interface LocalStorage {
   };
   lastActivePeer: string;
   email: string;
+  firebaseURL: string;
 }

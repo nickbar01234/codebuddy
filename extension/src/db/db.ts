@@ -1,4 +1,5 @@
 import { firebaseOptions } from "@cb/constants";
+import { getLocalStorage } from "@cb/services";
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { connectAuthEmulator } from "firebase/auth/web-extension";
@@ -12,7 +13,9 @@ const firestore = getFirestore(app);
 
 if (import.meta.env.MODE === "development") {
   // See firebase.json
-  const AUTH_URL = "https://0.0.0.0:3003";
+  const BASE_URL = getLocalStorage("firebaseURL") ?? "http://localhost:9099";
+  console.log("Using Firebase Emulator at", BASE_URL);
+  const AUTH_URL = `${BASE_URL}`;
   connectAuthEmulator(auth, AUTH_URL);
 }
 
