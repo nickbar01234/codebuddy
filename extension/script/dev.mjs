@@ -25,6 +25,8 @@ const setup = async () => {
         `--disable-extensions-except=${EXTENSION_PATH}`,
         `--load-extension=${EXTENSION_PATH}`,
         "--start-maximized",
+        // todo(nickbar01234): Figure out nginx and ngrok so that cors doesn't break
+        "--disable-web-security",
       ],
       devtools: true,
     });
