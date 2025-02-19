@@ -3,6 +3,7 @@ import puppeteer from "puppeteer";
 import _ from "lodash";
 import ngrok from "@ngrok/ngrok";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const EXTENSION_PATH = "./dist/";
@@ -37,6 +38,8 @@ const setup = async () => {
         `--disable-extensions-except=${EXTENSION_PATH}`,
         `--load-extension=${EXTENSION_PATH}`,
         "--start-maximized",
+        // todo(nickbar01234): Figure out nginx and ngrok so that cors doesn't break
+        "--disable-web-security",
       ],
       devtools: true,
     });

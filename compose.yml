@@ -19,6 +19,9 @@ services:
         limits:
           memory: 1G
           cpus: "1"
+    ports:
+      # See firebase.json
+      - 3000:3000
     networks:
       - net
   nginx:
@@ -36,4 +39,3 @@ volumes:
 
 networks:
   net:
-    external: true
