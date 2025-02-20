@@ -11,6 +11,7 @@ import React from "react";
 import { Toaster } from "sonner";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 import { cn } from "@cb/utils/cn";
+import Header from "@cb/components/ui/Header";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -37,7 +38,7 @@ export const AppNavigator = () => {
       />
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-2">
         <div className="flex items-center">
-          <h2 className="font-medium">CodeBuddy</h2>
+          <Header />
           {state === AppState.ROOM && activePeer?.id && (
             <React.Fragment>
               <CaretRightIcon />{" "}
