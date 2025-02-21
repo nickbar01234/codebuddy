@@ -84,10 +84,8 @@ const setupCodeBuddyModel = async (id: string) => {
 
 const setupLeetCodeModel = async () => {
   const windowAsAny = window as any;
-  console.log('1');
   if (windowAsAny.monaco == undefined) {
     // ResponseStatus.FAIL
-    console.log('NO MONACO');
     return {
       status: 1,
     };
