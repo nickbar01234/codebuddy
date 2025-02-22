@@ -7,7 +7,11 @@ import {
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
-const LOCAL_STORAGE: Array<keyof LocalStorage> = ["tabs", "lastActivePeer"];
+const LOCAL_STORAGE: Array<keyof LocalStorage> = [
+  "tabs",
+  "lastActivePeer",
+  "signIn",
+];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
   request: T
@@ -29,7 +33,7 @@ export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
 };
 
 export const removeLocalStorage = <K extends keyof LocalStorage>(key: K) => {
-  localStorage.removeItem(LOCAL_STORAGE + key);
+  localStorage.removeItem(LOCAL_STORAGE_PREFIX + key);
 };
 
 export const setLocalStorage = <K extends keyof LocalStorage>(

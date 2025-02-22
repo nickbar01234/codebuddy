@@ -48,5 +48,9 @@ export interface LocalStorage {
     peer: string;
   };
   lastActivePeer: string;
-  email: string;
+  signIn: {
+    email: string;
+    url: string;
+    tabId: number;
+  };
 }
