@@ -1,3 +1,4 @@
+import { LocalStorage } from ".";
 import type {
   GenericMessage,
   GenericResponse,
@@ -35,13 +36,24 @@ interface ReloadExtensionRequest extends GenericMessage {
   action: "reloadExtension";
 }
 
+interface GetActiveTabIdRequest extends GenericMessage {
+  action: "getActiveTabId";
+}
+
+interface CloseSignInTabRequest extends GenericMessage {
+  action: "closeSignInTab";
+  signIn: LocalStorage["signIn"];
+}
+
 export type ServiceRequest =
   | GetValueRequest
   | PastCodeRequest
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
   | SetupLeetCodeModel
-  | ReloadExtensionRequest;
+  | ReloadExtensionRequest
+  | GetActiveTabIdRequest
+  | CloseSignInTabRequest;
 
 export enum ResponseStatus {
   SUCCESS,
@@ -64,5 +76,7 @@ export type ServiceResponse = GenericResponse<
     setupLeetCodeModel: ServiceGenericResponse;
     setValueOtherEditor: void;
     reloadExtension: void;
+    getActiveTabId: number;
+    closeSignInTab: ServiceGenericResponse;
   }
 >;
