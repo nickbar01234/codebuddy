@@ -29,7 +29,7 @@ export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
 };
 
 export const removeLocalStorage = <K extends keyof LocalStorage>(key: K) => {
-  localStorage.removeItem(LOCAL_STORAGE + key);
+  localStorage.removeItem(LOCAL_STORAGE_PREFIX + key);
 };
 
 export const setLocalStorage = <K extends keyof LocalStorage>(
@@ -39,8 +39,5 @@ export const setLocalStorage = <K extends keyof LocalStorage>(
   localStorage.setItem(LOCAL_STORAGE_PREFIX + key, JSON.stringify(value));
 };
 
-export const clearLocalStorage = () => {
-  LOCAL_STORAGE.map((key) => LOCAL_STORAGE_PREFIX + key).forEach((key) =>
-    localStorage.removeItem(key)
-  );
-};
+export const clearLocalStorage = () =>
+  LOCAL_STORAGE.forEach(removeLocalStorage);
