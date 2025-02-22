@@ -8,6 +8,7 @@ import { usePeerSelection } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import React from "react";
+import { Toaster } from "sonner";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 import { cn } from "@cb/utils/cn";
 import Header from "@cb/components/ui/Header";
@@ -26,6 +27,15 @@ export const AppNavigator = () => {
 
   return (
     <div className="h-full w-full relative flex flex-col">
+      <Toaster
+        richColors
+        expand
+        closeButton
+        visibleToasts={5}
+        toastOptions={{
+          duration: 10 * 1000,
+        }}
+      />
       <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-2">
         <div className="flex items-center">
           <Header />

@@ -5,7 +5,7 @@ import {
   sendSignInLinkToEmail,
 } from "firebase/auth/web-extension";
 import { auth } from "@cb/db";
-import { sendServiceRequest, setLocalStorage } from "@cb/services";
+import { setLocalStorage } from "@cb/services";
 
 interface SignInInit {
   status: "INIT";
@@ -45,12 +45,8 @@ export const useSignInWithEmailLink = () => {
 
   const onEmailSubmit = () =>
     sendSignInLinkToEmail(auth, email, actionCodeSettings)
-      .then(async () => {
-        setLocalStorage("signIn", {
-          email,
-          url: actionCodeSettings.url,
-          tabId: await sendServiceRequest({ action: "getActiveTabId" }),
-        });
+      .then(() => {
+        setLocalStorage("email", email);
         setStatus({ status: "SENT" });
       })
       .catch((error: any) => {
