@@ -73,8 +73,8 @@ const setupCodeBuddyModel = async (id: string) => {
         }
       );
       buddyEditor.id = "CodeBuddy";
-      console.log("Finished setting up CodeBuddy model");
     }
+    console.log("Finished setting up CodeBuddy model");
     return {
       // ResponseStatus.SUCCESS
       status: 0,
@@ -96,6 +96,10 @@ const setupLeetCodeModel = async () => {
       .filter((e: any) => e.id !== "CodeBuddy")
       .map((e: any) => e.getModel())
       .find((m: any) => m.getLanguageId() !== "plaintext");
+      if (!leetCodeEditor) {
+        console.error("LeetCode editor model not found");
+        return { status: 1 };
+      }
     leetCodeEditor.onDidChangeContent((event: any) => {
       // todo(nickbar01234): Don't have a good way to include function from a different file yet
       // Ideally, we should do the same pattern as services/index.ts
@@ -105,6 +109,7 @@ const setupLeetCodeModel = async () => {
       };
       window.postMessage(leetCodeOnChange);
     });
+    console.log("Finished setting up LeetCode model");
     return {
       // ResponseStatus.SUCCESS
       status: 0,
