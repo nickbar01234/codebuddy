@@ -27,12 +27,22 @@ import {
 } from "@cb/lib/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
+import {throttle} from "lodash";
 
 const _RoomControlMenu = () => {
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const { state: appState, setState: setAppState } =
     React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
+
+  const createRoomThrottled = React.useCallback(
+    throttle((e) => {
+      e.stopPropagation();
+      setAppState(AppState.ROOM);
+      createRoom({});
+    }, 1000),
+    [] 
+  );
 
   const onJoinRoom = async (
     e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>
@@ -54,11 +64,7 @@ const _RoomControlMenu = () => {
       return (
         <>
           <RoomControlDropdownMenuItem
-            onSelect={(e) => {
-              e.stopPropagation();
-              setAppState(AppState.ROOM);
-              createRoom({});
-            }}
+            onSelect={createRoomThrottled}
           >
             <span className="flex gap-2 items-center">
               <PlusIcon /> Create Room
