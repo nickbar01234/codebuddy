@@ -62,9 +62,7 @@ const _RoomControlMenu = () => {
     case AppState.HOME:
       return (
         <>
-          <RoomControlDropdownMenuItem
-            onSelect={createRoomThrottled}
-          >
+          <RoomControlDropdownMenuItem onSelect={createRoomThrottled}>
             <span className="flex gap-2 items-center">
               <PlusIcon /> Create Room
             </span>
