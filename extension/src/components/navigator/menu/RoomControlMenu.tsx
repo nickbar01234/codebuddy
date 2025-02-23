@@ -27,7 +27,7 @@ import {
 } from "@cb/lib/components/ui/dialog";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
-import {throttle} from "lodash";
+import useThrottleFn from "@cb/hooks/useThrottleFn";
 
 const _RoomControlMenu = () => {
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
@@ -35,14 +35,13 @@ const _RoomControlMenu = () => {
     React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
-  const createRoomThrottled = React.useCallback(
-    throttle((e) => {
-      e.stopPropagation();
-      setAppState(AppState.ROOM);
-      createRoom({});
-    }, 1000),
-    [] 
-  );
+  const createRoomThrottled = useThrottleFn((e) => {
+    e.stopPropagation();
+    setAppState(AppState.ROOM);
+    createRoom({});
+  }, 1000);
+
+  // todo: other buttons' throttling functions
 
   const onJoinRoom = async (
     e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>
