@@ -39,7 +39,7 @@ const _RoomControlMenu = () => {
     e.stopPropagation();
     setAppState(AppState.ROOM);
     createRoom({});
-  }, 1000);
+  }, 1000, [createRoom]);
 
   // todo: other buttons' throttling functions
 

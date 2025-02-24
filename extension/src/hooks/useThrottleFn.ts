@@ -1,12 +1,8 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { throttle } from 'lodash';
 
-const useThrottleFn = (callback: (...args: any[]) => void, delay: number) => {
-    const throttledFn = useRef(throttle(callback, delay)).current;
-
-    return useCallback((...args: any[]) => {
-        throttledFn(...args);
-    }, []);
+const useThrottleFn = (callback: (...args: any[]) => void, delay: number, deps: any[] = []) => {
+    return useCallback(throttle(callback, delay), [delay, ...deps]);
 };
 
 export default useThrottleFn;
