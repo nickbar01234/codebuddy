@@ -41,8 +41,18 @@ const _RoomControlMenu = () => {
       setAppState(AppState.ROOM);
       createRoom({});
     }, 1000),
-    [createRoom]
+    [createRoom, setAppState]
   );
+
+  const leaveRoomThrottled = React.useCallback(
+    throttle((e) => {
+      e.stopPropagation();
+      setAppState(AppState.HOME);
+      if (roomId) leaveRoom(roomId);
+    }, 1000),
+    [leaveRoom, setAppState, roomId]
+  );
+
 
   // todo: other buttons' throttling functions
 
@@ -55,6 +65,13 @@ const _RoomControlMenu = () => {
       setAppState(AppState.ROOM);
     }
   };
+  const joinRoomThrottled = React.useCallback(
+    throttle((e) => {
+      e.stopPropagation();
+      onJoinRoom(e as React.KeyboardEvent<Element>);
+    }, 1000),
+    [onJoinRoom]
+  );
 
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -90,8 +107,7 @@ const _RoomControlMenu = () => {
                   onChange={onChangeRoomIdInput}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      e.stopPropagation();
-                      onJoinRoom(e as React.KeyboardEvent<Element>);
+                      joinRoomThrottled(e);
                     } // Trigger the join room action
                   }}
                 />
@@ -115,11 +131,7 @@ const _RoomControlMenu = () => {
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem
-            onSelect={(e) => {
-              e.stopPropagation();
-              setAppState(AppState.HOME);
-              if (roomId) leaveRoom(roomId);
-            }}
+            onSelect={leaveRoomThrottled}
           >
             <span className="flex gap-2 items-center">
               <LeaveIcon /> Leave Room
@@ -145,6 +157,19 @@ export const RoomControlMenu = () => {
     }
   }, [roomId, setAppState]);
 
+  const signOutThrottled = React.useCallback(
+    throttle(() => leaveRoom(roomId).then(() => signOut(auth)), 1000),
+    [leaveRoom, roomId]
+  );
+
+  const resetExtensionThrottled = React.useCallback(
+    throttle((e) => {
+      clearLocalStorage();
+      e.stopPropagation();
+    }, 1000),
+    []
+  );
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -153,17 +178,14 @@ export const RoomControlMenu = () => {
       <DropdownMenuContent className="absolute right-0 top-2 shadow-level3 dark:shadow-dark-level3 rounded-lg border border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 w-max flex flex-col">
         <_RoomControlMenu />
         <RoomControlDropdownMenuItem
-          onSelect={() => leaveRoom(roomId).then(() => signOut(auth))}
+          onSelect={signOutThrottled}
         >
           <span className="flex gap-2 items-center">
             <SignOutIcon /> <span>Sign Out</span>
           </span>
         </RoomControlDropdownMenuItem>
         <RoomControlDropdownMenuItem
-          onSelect={(e) => {
-            clearLocalStorage();
-            e.stopPropagation();
-          }}
+          onSelect={resetExtensionThrottled}
         >
           <span className="flex gap-2 items-center">
             <ResetIcon /> <span>Reset Extension</span>
