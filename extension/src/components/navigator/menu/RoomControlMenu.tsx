@@ -53,9 +53,6 @@ const _RoomControlMenu = () => {
     [leaveRoom, setAppState, roomId]
   );
 
-
-  // todo: other buttons' throttling functions
-
   const onJoinRoom = async (
     e: React.MouseEvent<Element, MouseEvent> | React.KeyboardEvent<Element>
   ) => {
