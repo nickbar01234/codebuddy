@@ -1,7 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CodeBuddyPreference } from "@cb/constants";
 import { setChromeStorage } from "@cb/services";
-import { ExtractMessage, ServiceRequest, WindowMessage } from "@cb/types";
+import {
+  ExtractMessage,
+  ResponseStatus,
+  ServiceRequest,
+  ServiceResponse,
+  WindowMessage,
+} from "@cb/types";
+
+const servicePayload = <T extends ServiceRequest["action"]>(
+  payload: ServiceResponse[T]
+) => payload;
 
 /**
  * Initialize default settings
@@ -96,10 +106,10 @@ const setupLeetCodeModel = async () => {
       .filter((e: any) => e.id !== "CodeBuddy")
       .map((e: any) => e.getModel())
       .find((m: any) => m.getLanguageId() !== "plaintext");
-      if (!leetCodeEditor) {
-        console.error("LeetCode editor model not found");
-        return { status: 1 };
-      }
+    if (!leetCodeEditor) {
+      console.error("LeetCode editor model not found");
+      return { status: 1 };
+    }
     leetCodeEditor.onDidChangeContent((event: any) => {
       // todo(nickbar01234): Don't have a good way to include function from a different file yet
       // Ideally, we should do the same pattern as services/index.ts
@@ -203,7 +213,6 @@ chrome.runtime.onMessage.addListener(
             world: "MAIN",
           })
           .then((result) => {
-            console.log(result);
             sendResponse(result[0].result);
           });
         break;
@@ -243,8 +252,31 @@ chrome.runtime.onMessage.addListener(
         break;
       }
 
-      case "reloadExtension": {
-        chrome.runtime.reload();
+      case "getActiveTabId": {
+        // Per https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts, we don't have access to
+        // chrome API. So using background as a proxy
+        sendResponse(sender.tab?.id ?? -1);
+        break;
+      }
+
+      case "closeSignInTab": {
+        const {
+          signIn: { url, tabId },
+        } = request;
+        chrome.tabs
+          .get(tabId)
+          .then(async (tab) => {
+            const response = servicePayload<"closeSignInTab">({
+              status: tab.url?.startsWith(url)
+                ? ResponseStatus.SUCCESS
+                : ResponseStatus.FAIL,
+            });
+            if (response.status === ResponseStatus.SUCCESS) {
+              await chrome.tabs.remove(tabId);
+            }
+            sendResponse(response);
+          })
+          .catch(console.error);
         break;
       }
 
