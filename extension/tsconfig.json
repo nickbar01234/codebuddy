@@ -37,6 +37,6 @@
     }
   },
   "include": ["./src", "./src/services/index.ts"],
-  "exclude": ["./src/services/**/*.ts"],
+  "exclude": ["./src/services/**/*.ts", "./**/*.spec.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
