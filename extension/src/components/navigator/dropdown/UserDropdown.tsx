@@ -24,7 +24,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             data-dropdown-toggle="dropdown"
             className={cn(
               "font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center relative",
-              peers.length > 2 ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary" : "cursor-default"
+              peers.length >= 2 ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary" : "cursor-default"
             )}
             type="button"
             onClick={toggle}
@@ -66,8 +66,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
         </div>
         
         <div className={cn(
-          "absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 -left-1/2",
-          isOpen && peers.length > 2 ? "block" : "hidden")}>
+          "absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 -transform-x-1/2",
+          isOpen && peers.length >= 2 ? "block" : "hidden")}>
           <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
             {peers.map((peer) => (
               <li key={peer.id}>
