@@ -60,10 +60,12 @@ const setup = async () => {
   if (NUM_USERS > 1) {
     // Waits for first person to create and setup room. Everyone else can join simultaneously
     await setupRoom(PAGES[0].page, true);
-    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
+    for (let i = 1; i < NUM_USERS; i++) {
+      await setupRoom(PAGES[i].page, false);
+    }
+    // await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
   }
 };
-
 const reload = _.debounce(() => {
   console.log("Detected build");
   PAGES.forEach(async ({ page }) => {
