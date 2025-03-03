@@ -1,15 +1,16 @@
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import SignInPanel from "@cb/components/panel/SignInPanel";
-import { AppStateProvider } from "@cb/context/AppStateProvider";
-import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
-import { RTCProvider } from "@cb/context/RTCProvider";
-import { useSession } from "@cb/hooks/index";
 import { Status } from "@cb/types";
+import SignInPanel from "@cb/components/panel/SignInPanel";
+import useDevReload from "@cb/hooks/useDevReload";
+import { useSession } from "@cb/hooks/index";
+import { RTCProvider } from "@cb/context/RTCProvider";
+import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
 import { AppNavigator } from "./AppNavigator";
+import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import { AppStateProvider } from "@cb/context/AppStateProvider";
 
 const RootNavigator = () => {
   const { auth } = useSession();
-  // useDevReload();
+  useDevReload();
 
   switch (auth.status) {
     case Status.AUTHENTICATED:
