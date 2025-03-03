@@ -1,5 +1,6 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
+import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 
@@ -8,13 +9,13 @@ interface UserDropdownProps {
   toggle: (e: React.MouseEvent<Element, MouseEvent>) => void;
 }
 
-const GREENTHRESHOLD = 1150;
-const YELLOWTHRESHOLD = 1300;
+const GREENTHRESHOLD = HEARTBEAT_INTERVAL + 10;
+const YELLOWTHRESHOLD = HEARTBEAT_INTERVAL * 1.25 + 10;
 
 const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { activePeer, peers, setActivePeerId } = usePeerSelection();
   const { peerState } = useRTC();
-  const ping = Math.round(peerState[activePeer?.id ?? ""]?.latency);
+  const ping = peerState[activePeer?.id ?? ""]?.latency * 1000;
   const signalStrength = getStatus(ping);
   return (
     activePeer && (
@@ -24,7 +25,9 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             data-dropdown-toggle="dropdown"
             className={cn(
               "font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center relative",
-              peers.length >= 2 ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary" : "cursor-default"
+              peers.length >= 2
+                ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary"
+                : "cursor-default"
             )}
             type="button"
             onClick={toggle}
@@ -64,10 +67,13 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             </span>
           </div>
         </div>
-        
-        <div className={cn(
-          "absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 -transform-x-1/2",
-          isOpen && peers.length >= 2 ? "block" : "hidden")}>
+
+        <div
+          className={cn(
+            "absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 -transform-x-1/2",
+            isOpen && peers.length >= 2 ? "block" : "hidden"
+          )}
+        >
           <ul className="py-2 text-sm text-gray-700 dark:text-gray-200">
             {peers.map((peer) => (
               <li key={peer.id}>
