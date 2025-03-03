@@ -272,10 +272,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
         console.log("Message from " + peer, payload);
         const { action, timestamp } = payload;
-        setConnection(peer, (resource) => ({
-          ...resource,
-          lastSeen: timestamp,
-        }));
 
         switch (action) {
           case "code": {
@@ -313,7 +309,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
             console.error("Unknown payload", payload);
             break;
         }
+        setConnection(peer, (resource) => ({
+          ...resource,
+          lastSeen: timestamp,
+        }));
       },
+
     [receiveCode, receiveTests, receiveHeartBeat, setConnection]
   );
 
