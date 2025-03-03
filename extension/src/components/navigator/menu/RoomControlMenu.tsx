@@ -44,7 +44,6 @@ const _RoomControlMenu = ({
   inputRoomId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setInputRoomId(e.target.value);
@@ -102,9 +101,7 @@ const _RoomControlMenu = ({
               <CopyIcon /> Copy Room ID
             </span>
           </RoomControlDropdownMenuItem>
-          <RoomControlDropdownMenuItem
-            onSelect={onLeaveRoom}
-          >
+          <RoomControlDropdownMenuItem onSelect={onLeaveRoom}>
             <span className="flex gap-2 items-center">
               <LeaveIcon /> Leave Room
             </span>
@@ -140,13 +137,18 @@ export const RoomControlMenu = () => {
   }, [createRoom, setAppState]);
 
   const joinRoomThrottled = React.useMemo(() => {
-    return throttle(async (reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>) => {
-      reactEvent.stopPropagation();
-      const haveJoined = await joinRoom(inputRoomId);
-      if (haveJoined) {
-        setAppState(AppState.ROOM);
-      }
-    }, 1000);
+    return throttle(
+      async (
+        reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
+      ) => {
+        reactEvent.stopPropagation();
+        const haveJoined = await joinRoom(inputRoomId);
+        if (haveJoined) {
+          setAppState(AppState.ROOM);
+        }
+      },
+      1000
+    );
   }, [joinRoom, inputRoomId, setAppState]);
 
   const signOutThrottled = React.useMemo(() => {
@@ -178,7 +180,7 @@ export const RoomControlMenu = () => {
         <MenuIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="absolute right-0 top-2 shadow-level3 dark:shadow-dark-level3 rounded-lg border border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 w-max flex flex-col">
-      <_RoomControlMenu
+        <_RoomControlMenu
           appState={appState}
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
@@ -186,16 +188,12 @@ export const RoomControlMenu = () => {
           inputRoomId={inputRoomId}
           setInputRoomId={setInputRoomId}
         />
-        <RoomControlDropdownMenuItem
-          onSelect={signOutThrottled}
-        >
+        <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
           <span className="flex gap-2 items-center">
             <SignOutIcon /> <span>Sign Out</span>
           </span>
         </RoomControlDropdownMenuItem>
-        <RoomControlDropdownMenuItem
-          onSelect={resetExtensionThrottled}
-        >
+        <RoomControlDropdownMenuItem onSelect={resetExtensionThrottled}>
           <span className="flex gap-2 items-center">
             <ResetIcon /> <span>Reset Extension</span>
           </span>
