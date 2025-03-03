@@ -1,35 +1,20 @@
-import { initializeApp } from "firebase/app";
+import { firestore } from "@cb/db/setup";
 import {
   collection,
   deleteDoc,
   doc,
   getDoc,
-  getFirestore,
   setDoc,
   DocumentReference,
   WithFieldValue,
-  connectFirestoreEmulator,
 } from "firebase/firestore";
 
-import { firebaseOptions } from "@cb/constants";
 import {
   PeerConnection,
   peerConnectionConverter,
   Room,
   roomConverter,
 } from "@cb/db/converter";
-import { getAuth } from "firebase/auth";
-
-const app = initializeApp(firebaseOptions);
-
-export const auth = getAuth(app);
-
-export const firestore = getFirestore(app);
-
-const env = (import.meta as any).env;
-if (env.MODE === "development") {
-  connectFirestoreEmulator(firestore, "localhost", 3001);
-}
 
 export const getRoomRef = (id?: string) =>
   doc(
