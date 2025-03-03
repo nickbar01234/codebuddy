@@ -1,6 +1,6 @@
 import React from "react";
 import { AuthenticationStatus, ResponseStatus, Status } from "@cb/types";
-import { auth } from "@cb/db";
+import { auth } from "@cb/db/setup";
 import { useOnMount } from "@cb/hooks";
 import {
   isSignInWithEmailLink,

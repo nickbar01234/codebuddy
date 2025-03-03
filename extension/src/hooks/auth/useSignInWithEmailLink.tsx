@@ -4,7 +4,7 @@ import {
   ActionCodeSettings,
   sendSignInLinkToEmail,
 } from "firebase/auth/web-extension";
-import { auth } from "@cb/db";
+import { auth } from "@cb/db/setup";
 import { sendServiceRequest, setLocalStorage } from "@cb/services";
 
 interface SignInInit {
