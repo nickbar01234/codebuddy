@@ -8,6 +8,7 @@ import {
   setDoc,
   DocumentReference,
   WithFieldValue,
+  connectFirestoreEmulator,
 } from "firebase/firestore";
 
 import { firebaseOptions } from "@cb/constants";
@@ -24,6 +25,11 @@ const app = initializeApp(firebaseOptions);
 export const auth = getAuth(app);
 
 export const firestore = getFirestore(app);
+
+const env = (import.meta as any).env;
+if (env.MODE === "development") {
+  connectFirestoreEmulator(firestore, "localhost", 3001);
+}
 
 export const getRoomRef = (id?: string) =>
   doc(
