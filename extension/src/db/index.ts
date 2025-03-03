@@ -7,6 +7,7 @@ import {
   setDoc,
   DocumentReference,
   WithFieldValue,
+  connectFirestoreEmulator,
 } from "firebase/firestore";
 
 import {
@@ -15,6 +16,11 @@ import {
   Room,
   roomConverter,
 } from "@cb/db/converter";
+
+const env = (import.meta as any).env;
+if (env.MODE === "development") {
+  connectFirestoreEmulator(firestore, "localhost", 3001);
+}
 
 export const getRoomRef = (id?: string) =>
   doc(
