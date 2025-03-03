@@ -279,7 +279,10 @@ chrome.runtime.onMessage.addListener(
           .catch(console.error);
         break;
       }
-
+      case "reloadExtension": {
+        chrome.runtime.reload();
+        break;
+      }
       default:
         console.error(`Unhandled request ${request}`);
         break;

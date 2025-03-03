@@ -1,7 +1,6 @@
+import { getRoomRef, setRoom } from "@cb/db";
 import { WindowMessage } from "types/window";
 import { useOnMount, useRTC } from ".";
-import { sendServiceRequest } from "@cb/services";
-import { getRoomRef, setRoom } from "@cb/db";
 
 const useDevSetupRoom = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
@@ -30,11 +29,6 @@ const useDevSetupRoom = () => {
             leaveRoom(windowMessage.roomId).then(() =>
               joinRoom(windowMessage.roomId)
             );
-            break;
-          }
-
-          case "reloadExtension": {
-            sendServiceRequest({ action: "reloadExtension" });
             break;
           }
         }
