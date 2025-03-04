@@ -8,6 +8,6 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "**/*.{tsx,ts}": "prettier --write --ignore-unknown"
+    "**/*.{tsx,ts}": "prettier --write --ignore-unknown --alow-empty"
   }
 }
