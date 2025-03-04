@@ -1,14 +1,13 @@
 {
-	"devDependencies": {
-		"husky": "^9.1.7",
-		"lint-staged": "^15.4.3",
-		"prettier": "3.5.3"
-	},
-	"scripts": {
-		"prepare": "husky"
-	},
-	"lint-staged": {
-			"**/*": "prettier --write --ignore-unknown"
-		}
-	
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^15.4.3",
+    "prettier": "3.5.3"
+  },
+  "scripts": {
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "**/*.{tsx,ts}": "prettier --write --ignore-unknown"
+  }
 }
