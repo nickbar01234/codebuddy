@@ -2,7 +2,7 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import { firestore } from "@cb/db/setup";
+import { firestore } from "@cb/db";
 import {
   getRoom,
   getRoomPeerConnectionRef,

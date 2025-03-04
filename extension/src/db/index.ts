@@ -16,7 +16,7 @@ import {
   roomConverter,
 } from "@cb/db/converter";
 
-export { auth };
+export { firestore, auth };
 
 export const getRoomRef = (id?: string) =>
   doc(
