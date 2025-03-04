@@ -1,29 +1,22 @@
-import { initializeApp } from "firebase/app";
+import { firestore, auth } from "@cb/db/setup";
 import {
   collection,
   deleteDoc,
   doc,
   getDoc,
-  getFirestore,
   setDoc,
   DocumentReference,
   WithFieldValue,
 } from "firebase/firestore";
 
-import { firebaseOptions } from "@cb/constants";
 import {
   PeerConnection,
   peerConnectionConverter,
   Room,
   roomConverter,
 } from "@cb/db/converter";
-import { getAuth } from "firebase/auth";
 
-const app = initializeApp(firebaseOptions);
-
-export const auth = getAuth(app);
-
-export const firestore = getFirestore(app);
+export { firestore, auth };
 
 export const getRoomRef = (id?: string) =>
   doc(
