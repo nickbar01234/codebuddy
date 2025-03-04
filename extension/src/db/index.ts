@@ -17,11 +17,6 @@ import {
   roomConverter,
 } from "@cb/db/converter";
 
-const env = (import.meta as any).env;
-if (env.MODE === "development") {
-  connectFirestoreEmulator(firestore, "localhost", 3001);
-}
-
 export const getRoomRef = (id?: string) =>
   doc(
     collection(firestore, "rooms"),
