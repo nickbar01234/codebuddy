@@ -6,17 +6,17 @@ import {} from "@cb/db/converter";
 import { getAuth } from "firebase/auth";
 
 const env = (import.meta as any).env;
-const devValue = "demo-code-buddy-development";
+const DEV_VALUE = "demo-code-buddy-development";
 
 export const firebaseOptions: FirebaseOptions =
   env.MODE === "development"
     ? {
-        apiKey: devValue,
-        authDomain: devValue,
-        projectId: devValue,
-        storageBucket: devValue,
-        messagingSenderId: devValue,
-        appId: devValue,
+        apiKey: DEV_VALUE,
+        authDomain: DEV_VALUE,
+        projectId: DEV_VALUE,
+        storageBucket: DEV_VALUE,
+        messagingSenderId: DEV_VALUE,
+        appId: DEV_VALUE,
       }
     : {
         apiKey: env.VITE_API_KEY,
