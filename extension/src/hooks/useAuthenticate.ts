@@ -1,4 +1,4 @@
-import { auth } from "@cb/db/setup";
+import { auth } from "@cb/db";
 import { useOnMount } from ".";
 import { getLocalStorage } from "@cb/services";
 import { AuthenticationStatus, Status } from "@cb/types";

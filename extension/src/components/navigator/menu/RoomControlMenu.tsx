@@ -8,7 +8,7 @@ import {
   SignOutIcon,
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { auth } from "@cb/db/setup";
+import { auth } from "@cb/db";
 import { useRTC } from "@cb/hooks/index";
 import { clearLocalStorage } from "@cb/services";
 import { signOut } from "firebase/auth/web-extension";
