@@ -1,8 +1,6 @@
 import { FirebaseOptions } from "firebase/app";
 import { initializeApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-
-import {} from "@cb/db/converter";
 import { getAuth } from "firebase/auth";
 
 const env = (import.meta as any).env;
