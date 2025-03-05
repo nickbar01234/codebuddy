@@ -98,7 +98,7 @@ function getStatus(ping: number) {
     red: { bg: "bg-red-500", text: "text-red-500", level: 1, title: "Error" },
     green: {
       bg: "bg-green-500",
-      text: "text-green-500",
+      text: "text-grSeen-500",
       level: 3,
       title: "Good",
     },
@@ -109,7 +109,7 @@ function getStatus(ping: number) {
       title: "Okay",
     },
   };
-  console.log("Test husky");
+  console.log("Test husky again");
   return { status, ...statusMapping[status] };
 }
 export default UserDropdown;
