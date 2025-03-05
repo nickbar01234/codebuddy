@@ -109,7 +109,6 @@ function getStatus(ping: number) {
       title: "Okay",
     },
   };
-  console.log("Test husky again");
   return { status, ...statusMapping[status] };
 }
 export default UserDropdown;
