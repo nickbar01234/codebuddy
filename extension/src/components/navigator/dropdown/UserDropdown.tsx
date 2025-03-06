@@ -24,7 +24,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           <button
             data-dropdown-toggle="dropdown"
             className={cn(
-              "font-medium rounded-lg text-sm px-3 py-2 text-center inline-flex items-center relative",
+              "relative inline-flex items-center rounded-lg px-3 py-2 text-center text-sm font-medium",
               peers.length >= 2
                 ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary"
                 : "cursor-default"
@@ -35,17 +35,17 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             {activePeer.id} {peers.length > 1 && <CaretDownIcon />}
           </button>
 
-          <div className="bar group h-full flex items-center justify-center relative">
+          <div className="bar group relative flex h-full items-center justify-center">
             <i
               className={cn(
-                "bar group-hover has-tooltip inline-flex items-end justify-end w-auto h-[24px] p-[4px] z-50 icon__signal-strength"
+                "bar group-hover has-tooltip icon__signal-strength z-50 inline-flex h-[24px] w-auto items-end justify-end p-[4px]"
               )}
             >
               {Array.from({ length: 3 }).map((_, i) => (
                 <span
                   key={i}
                   className={cn(
-                    `bar-${i + 1} inline-block w-[6px] ml-[2px] rounded-[2px]`,
+                    `bar-${i + 1} ml-[2px] inline-block w-[6px] rounded-[2px]`,
                     signalStrength.bg,
                     i + 1 > signalStrength.level && "opacity-20"
                   )}
@@ -54,12 +54,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             </i>
             <span
               className={cn(
-                `shadow-lg whitespace-nowrap text-xs font-bold
-                   left-full  absolute z-50 ml-1  w-min
-                   invisible
-                    -translate-x-4 text-nowrap
-                  transition-all group-hover:visible group-hover:translate-x-0 
-                  group-hover:opacity-100`,
+                `invisible absolute left-full z-50 ml-1 w-min -translate-x-4 whitespace-nowrap text-nowrap text-xs font-bold shadow-lg transition-all group-hover:visible group-hover:translate-x-0 group-hover:opacity-100`,
                 signalStrength.text
               )}
             >
@@ -70,7 +65,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
 
         <div
           className={cn(
-            "absolute z-50 bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 -transform-x-1/2",
+            "bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 -transform-x-1/2 absolute z-50 w-44 divide-gray-100 rounded-lg shadow dark:bg-gray-700",
             isOpen && peers.length >= 2 ? "block" : "hidden"
           )}
         >
@@ -79,7 +74,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
               <li key={peer.id}>
                 <a
                   onClick={() => setActivePeerId(peer.id)}
-                  className="block px-4 py-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3"
+                  className="text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-3 dark:hover:bg-dark-fill-3 block px-4 py-2"
                 >
                   {peer.id}
                 </a>
@@ -110,7 +105,6 @@ function getStatus(ping: number) {
       title: "Okay",
     },
   };
-
   return { status, ...statusMapping[status] };
 }
 export default UserDropdown;

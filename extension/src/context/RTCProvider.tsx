@@ -2,8 +2,8 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
+import { firestore } from "@cb/db";
 import {
-  firestore,
   getRoom,
   getRoomPeerConnectionRef,
   getRoomPeerConnectionRefs,
@@ -250,7 +250,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   });
 
   const onmessage = React.useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (peer: string) =>
       function (event: MessageEvent) {
         const payload: PeerMessage = JSON.parse(event.data ?? {});

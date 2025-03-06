@@ -10,7 +10,12 @@ const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 // eslint-disable-next-line no-undef
 const NUM_USERS = process.env.USERS ?? 2;
 
-const USERNAMES = ["code", "buddy", "dev", "mode"];
+const USERNAMES = [
+  "code@gmail.com",
+  "buddy@hotmail.com",
+  "dev@outlook.com",
+  "mode@yahoo.com",
+];
 const PAGES = Array.from({ length: NUM_USERS });
 const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
   peer: USERNAMES[idx],
@@ -25,6 +30,8 @@ const setup = async () => {
         `--disable-extensions-except=${EXTENSION_PATH}`,
         `--load-extension=${EXTENSION_PATH}`,
         "--start-maximized",
+        // todo(nickbar01234): Figure out nginx and ngrok so that cors doesn't break
+        "--disable-web-security",
       ],
       devtools: true,
     });
