@@ -64,7 +64,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
 
         <div
           className={cn(
-            "bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 -transform-x-1/2 absolute z-50 w-44 divide-gray-100 rounded-lg shadow dark:bg-gray-700",
+            "bg-layer-3 dark:bg-dark-layer-3 border-divider-4 dark:border-dark-divider-4 shadow-level1 dark:shadow-dark-level1 -transform-x-1/2 absolute z-50 w-44 divide-gray-100 rounded-lg shadow",
             isOpen && peers.length >= 2 ? "block" : "hidden"
           )}
         >
