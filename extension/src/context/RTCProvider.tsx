@@ -152,29 +152,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
   });
 
-  const replacePeerState = React.useCallback(
-    (
-      peer: string,
-      override: ((state: PeerState) => PeerState) | Partial<PeerState>
-    ) => {
-      if (peer != undefined) {
-        const delegate = (state: PeerState) => {
-          return typeof override === "function"
-            ? override(state)
-            : { ...state, ...override };
-        };
-        setPeerState((prev) =>
-          Object.fromEntries(
-            Object.entries(prev).map(([key, value]) =>
-              key === peer ? [key, delegate(value)] : [key, value]
-            )
-          )
-        );
-      }
-    },
-    []
-  );
-
   const sendMessageToAll = React.useRef((fn: ReturnType<typeof withPayload>) =>
     Object.entries(getConnection()).forEach(([peer, connection]) =>
       fn(peer, connection)
