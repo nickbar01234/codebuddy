@@ -64,8 +64,8 @@ const servers = {
 const CODE_MIRROR_CONTENT = ".cm-content";
 
 export const HEARTBEAT_INTERVAL = 15000; // ms
-export const CHECK_ALIVE_INTERVAL = 1000; // ms
-export const TIMEOUT = 100; // seconds;
+const CHECK_ALIVE_INTERVAL = 1000; // ms
+const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
   roomId?: string;
@@ -633,25 +633,30 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
 
     const checkAliveInterval = setInterval(() => {
-      const currentPeers = Object.entries(getConnection());
+      const currentPeers = getConnection();
 
       const timeOutPeers: string[] = [];
-
-      currentPeers.forEach(([peer, connection]) => {
-        replacePeerState(peer, (peerHeartBeat) => {
+      setPeerState((prev) => {
+        const newPeers = Object.fromEntries(
+          Object.entries(prev).map(([peer, peerHeartBeat]) => {
           const { latency } = peerHeartBeat;
-          const curlastSeen = connection?.lastSeen ?? 0;
+          const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
           const newSample = getUnixTs() - curlastSeen;
           if (newSample > TIMEOUT) {
             timeOutPeers.push(peer);
           }
           const newLatency = calculateNewRTT(latency, newSample);
-          return {
-            ...peerHeartBeat,
-            latency: newLatency,
-          };
-        });
+            return [
+            peer,
+            {
+              ...peerHeartBeat,
+              latency: newLatency,
+            },
+          ]})
+        );
+        return newPeers;
       });
+
       // Note that this race is thereotically possible
       // Time 1: User A detected B is dead and attempt to delete peer
       // User A thread to delete peer is delayed
