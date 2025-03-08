@@ -12,6 +12,7 @@ import {
   setRoomPeerConnection,
 } from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
+import useResource from "@cb/hooks/useResource";
 import {
   clearLocalStorage,
   getLocalStorage,
@@ -33,6 +34,8 @@ import {
   waitForElement,
 } from "@cb/utils";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
+import { withPayload } from "@cb/utils/messages";
+import { poll } from "@cb/utils/poll";
 import {
   arrayRemove,
   arrayUnion,
@@ -44,12 +47,9 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
+import { Connection } from "types/utils";
 import { additionalServers } from "./additionalServers";
 import { AppState } from "./AppStateProvider";
-import useResource from "@cb/hooks/useResource";
-import { Connection } from "types/utils";
-import { withPayload } from "@cb/utils/messages";
-import { poll } from "@cb/utils/poll";
 
 const servers = {
   iceServers: [
@@ -63,9 +63,9 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 
-const HEARTBEAT_INTERVAL = 30_000; // ms
-const CHECK_ALIVE_INTERVAL = 30_000; // ms
-const TIMEOUT = 120; // seconds;
+export const HEARTBEAT_INTERVAL = 15000; // ms
+const CHECK_ALIVE_INTERVAL = 1000; // ms
+const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
   roomId?: string;
@@ -152,29 +152,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
   });
 
-  const replacePeerState = React.useCallback(
-    (
-      peer: string,
-      override: ((state: PeerState) => PeerState) | Partial<PeerState>
-    ) => {
-      if (peer != undefined) {
-        const delegate = (state: PeerState) => {
-          return typeof override === "function"
-            ? override(state)
-            : { ...state, ...override };
-        };
-        setPeerState((prev) =>
-          Object.fromEntries(
-            Object.entries(prev).map(([key, value]) =>
-              key === peer ? [key, delegate(value)] : [key, value]
-            )
-          )
-        );
-      }
-    },
-    []
-  );
-
   const sendMessageToAll = React.useRef((fn: ReturnType<typeof withPayload>) =>
     Object.entries(getConnection()).forEach(([peer, connection]) =>
       fn(peer, connection)
@@ -202,22 +179,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       ).innerText.split("\n"),
     })
   ).current;
-
-  const receiveHeartBeat = React.useCallback(
-    (peer: string) => {
-      replacePeerState(peer, (peerHeartBeat) => {
-        const { latency } = peerHeartBeat;
-        const curlastSeen = getConnection()[peer]?.lastSeen ?? 0;
-        const newSample = getUnixTs() - curlastSeen;
-        const newLatency = calculateNewRTT(latency, newSample);
-        return {
-          ...peerHeartBeat,
-          latency: newLatency,
-        };
-      });
-    },
-    [replacePeerState, getConnection]
-  );
 
   const receiveCode = React.useCallback(
     (payload: ExtractMessage<PeerMessage, "code">, peer: string) => {
@@ -271,10 +232,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
         console.log("Message from " + peer, payload);
         const { action, timestamp } = payload;
-        setConnection(peer, (resource) => ({
-          ...resource,
-          lastSeen: timestamp,
-        }));
 
         switch (action) {
           case "code": {
@@ -288,7 +245,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
 
           case "heartbeat": {
-            receiveHeartBeat(peer);
             break;
           }
 
@@ -312,8 +268,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
             console.error("Unknown payload", payload);
             break;
         }
+        setConnection(peer, (resource) => ({
+          ...resource,
+          lastSeen: timestamp,
+        }));
       },
-    [receiveCode, receiveTests, receiveHeartBeat, setConnection]
+
+    [receiveCode, receiveTests, setConnection]
   );
 
   const createRoom = async ({ roomId }: CreateRoom) => {
@@ -562,7 +523,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username]);
 
-  const receiveHeartBeatRef = React.useRef(receiveHeartBeat);
   const deletePeersRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
 
@@ -643,10 +603,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [joiningBackRoom, appState]);
 
   React.useEffect(() => {
-    receiveHeartBeatRef.current = receiveHeartBeat;
-  }, [receiveHeartBeat]);
-
-  React.useEffect(() => {
     deletePeersRef.current = deletePeers;
   }, [deletePeers]);
 
@@ -654,13 +610,29 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
 
     const checkAliveInterval = setInterval(() => {
-      const timeOutPeers = Object.entries(getConnection())
-        .filter(
-          ([_, connection]) =>
-            connection == undefined ||
-            getUnixTs() - connection.lastSeen > TIMEOUT
-        )
-        .map((entry) => entry[0]);
+      const currentPeers = getConnection();
+
+      const timeOutPeers: string[] = [];
+      setPeerState((prev) => {
+        const newPeers = Object.fromEntries(
+          Object.entries(prev).map(([peer, peerHeartBeat]) => {
+          const { latency } = peerHeartBeat;
+          const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
+          const newSample = getUnixTs() - curlastSeen;
+          if (newSample > TIMEOUT) {
+            timeOutPeers.push(peer);
+          }
+          const newLatency = calculateNewRTT(latency, newSample);
+            return [
+            peer,
+            {
+              ...peerHeartBeat,
+              latency: newLatency,
+            },
+          ]})
+        );
+        return newPeers;
+      });
 
       // Note that this race is thereotically possible
       // Time 1: User A detected B is dead and attempt to delete peer

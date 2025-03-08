@@ -1,5 +1,6 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
+import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 
@@ -8,13 +9,13 @@ interface UserDropdownProps {
   toggle: (e: React.MouseEvent<Element, MouseEvent>) => void;
 }
 
-const GREENTHRESHOLD = 1150;
-const YELLOWTHRESHOLD = 1300;
+const GREENTHRESHOLD = HEARTBEAT_INTERVAL + 10;
+const YELLOWTHRESHOLD = HEARTBEAT_INTERVAL * 1.25 + 10;
 
 const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { activePeer, peers, setActivePeerId } = usePeerSelection();
   const { peerState } = useRTC();
-  const ping = Math.round(peerState[activePeer?.id ?? ""]?.latency);
+  const ping = peerState[activePeer?.id ?? ""]?.latency * 1000;
   const signalStrength = getStatus(ping);
   return (
     activePeer && (
