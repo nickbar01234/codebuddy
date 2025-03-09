@@ -19,10 +19,41 @@ export default function QuestionSelector() {
                         3000,
                         iframeDoc as Document
                     ).then((element) => {
-                        const questions =
-                            iframe.contentWindow?.document.querySelectorAll(
-                                "div[role='row']"
-                            ) as NodeListOf<HTMLDivElement>;
+                        const table = iframeDoc.querySelector(
+                            "div[role='table']"
+                        ) as HTMLDivElement;
+                        // iframeDoc.body.style.display = "none";
+                        const allNodes = iframeDoc.body.childNodes;
+                        allNodes.forEach((node) => {
+                            if (node.nodeType === 1) {
+                                // If the node is an element
+
+                                console.log(node);
+                                // Check if the node is the div with role='table'
+                                if (
+                                    node instanceof HTMLDivElement &&
+                                    node.getAttribute("role") === "table"
+                                ) {
+                                    console.log("found table");
+                                    const grandParent =
+                                        node.parentElement?.parentElement;
+                                    if (grandParent) {
+                                        grandParent.style.display = "block";
+                                        grandParent.style.position = "absolute";
+                                        grandParent.style.top = "0";
+                                        grandParent.style.left = "0";
+                                        grandParent.style.width = "100%";
+                                    }
+                                } else {
+                                    (node as HTMLElement).style.display =
+                                        "none";
+                                }
+                            }
+                        });
+
+                        const questions = iframeDoc.querySelectorAll(
+                            "div[role='row']"
+                        ) as NodeListOf<HTMLDivElement>;
                         if (questions != null) {
                             for (let i = 0; i < questions.length; i++) {
                                 waitForElement(
