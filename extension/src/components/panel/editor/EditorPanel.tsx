@@ -76,13 +76,13 @@ const EditorPanel = () => {
                         onResizeStop={onResizeStop}
                     >
                         <QuestionSelector />
-                        {/* <div className="relative h-full flex flex-col grow gap-y-2 w-full">
-              <EditorToolBar />
-              <div
-                id={EDITOR_NODE_ID}
-                className="w-full overflow-hidden h-full"
-              />
-            </div> */}
+                        <div className="relative flex h-full w-full grow flex-col gap-y-2">
+                            <EditorToolBar />
+                            <div
+                                id={EDITOR_NODE_ID}
+                                className="h-full w-full overflow-hidden"
+                            />
+                        </div>
                     </ResizableBox>
                     <div
                         className="relative w-full overflow-auto"

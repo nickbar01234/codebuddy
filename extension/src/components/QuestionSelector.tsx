@@ -6,7 +6,6 @@ export default function QuestionSelector() {
     const [question, setQuestion] = React.useState<string>("");
 
     useOnMount(() => {
-        console.log("mounted");
         waitForElement("#leetcode_question", 2000).then((element) => {
             const iframe = element as HTMLIFrameElement;
             iframe.onload = async () => {
@@ -25,21 +24,16 @@ export default function QuestionSelector() {
                         const table = listOfTable[2];
 
                         const grandParent = table?.parentElement?.parentElement;
-                        console.log("Grandparent:", grandParent);
 
                         if (grandParent) {
-                            console.log("Found grandParent");
-
                             let current: HTMLElement | null = grandParent;
                             while (current) {
-                                console.log("Current element:", current);
                                 current.style.display = "block";
 
                                 if (current.parentElement) {
                                     Array.from(
                                         current.parentElement.children
                                     ).forEach((sibling) => {
-                                        console.log(sibling);
                                         if (sibling !== current) {
                                             (
                                                 sibling as HTMLElement
@@ -93,7 +87,7 @@ export default function QuestionSelector() {
             src="https://leetcode.com/problemset/"
             title="LeetCode Question"
             id="leetcode_question"
-            className="z-100 h-full w-full overflow-auto border-none"
+            className="z-100 h-full w-full"
             sandbox="allow-scripts allow-same-origin"
         ></iframe>
     );
