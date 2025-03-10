@@ -75,7 +75,7 @@ const EditorPanel = () => {
                         }
                         onResizeStop={onResizeStop}
                     >
-                        <QuestionSelector />
+                        {/* <QuestionSelector /> */}
                         <div className="relative flex h-full w-full grow flex-col gap-y-2">
                             <EditorToolBar />
                             <div

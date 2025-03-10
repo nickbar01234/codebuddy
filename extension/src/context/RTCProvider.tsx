@@ -290,7 +290,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const createRoom = async ({ roomId }: CreateRoom) => {
         const questionId = getQuestionIdFromUrl(window.location.href);
         const roomRef = getRoomRef(roomId);
-        await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
+        await setRoom(roomRef, {
+            questionId: [questionId],
+            usernames: arrayUnion(username),
+        });
         console.log("Created room");
         setRoomId(roomRef.id);
         navigator.clipboard.writeText(roomRef.id);
@@ -378,10 +381,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 return false;
             }
             const roomQuestionId = roomDoc.data().questionId;
-            if (questionId !== roomQuestionId) {
-                const questionUrl = constructUrlFromQuestionId(roomQuestionId);
-                toast.error("The room you join is on this question:", {
-                    description: questionUrl,
+            if (
+                roomQuestionId.length === 0 ||
+                roomQuestionId[0] !== questionId
+            ) {
+                const listOfQuestions = roomQuestionId.map((id) =>
+                    constructUrlFromQuestionId(id)
+                );
+                toast.error("The room you join begin on this question:", {
+                    description: listOfQuestions.join(", "),
                 });
                 return false;
             }
