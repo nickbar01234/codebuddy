@@ -4,8 +4,13 @@ import {
     SnapshotOptions,
 } from "firebase/firestore";
 
+export interface QuestionState {
+    currentUsers: string[];
+    finishedUsers: string[];
+}
+
 export interface Room {
-    questionId: string[];
+    questionMap: Record<string, QuestionState>;
     usernames: string[];
 }
 
@@ -29,7 +34,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
         const data = snapshot.data(options)! ?? {};
         return {
             ...data,
-            questionId: data.questionId ?? [],
+            questionMap: data.questionMap ?? [],
             usernames: data.usernames ?? [],
         };
     },

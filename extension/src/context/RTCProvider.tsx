@@ -291,7 +291,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const questionId = getQuestionIdFromUrl(window.location.href);
         const roomRef = getRoomRef(roomId);
         await setRoom(roomRef, {
-            questionId: [questionId],
+            questionMap: {
+                [questionId]: {
+                    currentUsers: [],
+                    finishedUsers: [],
+                },
+            },
             usernames: arrayUnion(username),
         });
         console.log("Created room");
@@ -380,7 +385,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 toast.error("Room does not exist");
                 return false;
             }
-            const roomQuestionId = roomDoc.data().questionId;
+            const roomQuestionId = Object.keys(roomDoc.data().questionMap);
             if (
                 roomQuestionId.length === 0 ||
                 roomQuestionId[0] !== questionId
