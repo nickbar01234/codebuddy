@@ -8,6 +8,7 @@ export default function QuestionSelector() {
     useOnMount(() => {
         waitForElement("#leetcode_question", 2000).then((element) => {
             const iframe = element as HTMLIFrameElement;
+
             iframe.onload = async () => {
                 const iframeDoc =
                     iframe.contentDocument ||
@@ -18,6 +19,10 @@ export default function QuestionSelector() {
                         3000,
                         iframeDoc as Document
                     ).then((element) => {
+                        const style = document.createElement("style");
+                        style.textContent = "a { pointer-events: none; }";
+                        iframeDoc.head.appendChild(style);
+
                         const listOfTable = iframeDoc.querySelectorAll(
                             "div[role='table']"
                         ) as NodeListOf<HTMLDivElement>;
@@ -44,12 +49,6 @@ export default function QuestionSelector() {
 
                                 current = current.parentElement;
                             }
-
-                            // Apply positioning to the grandParent
-                            grandParent.style.position = "absolute";
-                            grandParent.style.top = "0";
-                            grandParent.style.left = "0";
-                            grandParent.style.width = "100%";
                         }
 
                         const questions = iframeDoc.querySelectorAll(
@@ -67,6 +66,23 @@ export default function QuestionSelector() {
                                     if (link) {
                                         const questionTitle =
                                             link as HTMLAnchorElement;
+
+                                        const plusIcon =
+                                            document.createElement("span");
+                                        plusIcon.innerHTML = "+";
+                                        plusIcon.style.position = "absolute";
+                                        plusIcon.style.left = "25px";
+                                        plusIcon.style.top = "50%";
+                                        plusIcon.style.transform =
+                                            "translateY(-50%)";
+                                        plusIcon.style.marginLeft = "8px";
+                                        plusIcon.style.cursor = "pointer";
+                                        plusIcon.style.fontSize = "20px";
+                                        plusIcon.style.fontWeight = "bold";
+                                        questions[i].style.position =
+                                            "relative";
+                                        questions[i].prepend(plusIcon);
+
                                         questions[i].addEventListener(
                                             "click",
                                             (e) => {

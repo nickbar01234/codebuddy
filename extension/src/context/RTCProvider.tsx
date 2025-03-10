@@ -240,7 +240,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         (peer: string) =>
             function (event: MessageEvent) {
                 const payload: PeerMessage = JSON.parse(event.data ?? {});
-                console.log("Message from " + peer, payload);
+                // console.log("Message from " + peer, payload);
                 const { action, timestamp } = payload;
 
                 switch (action) {
