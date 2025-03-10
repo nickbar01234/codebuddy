@@ -54,14 +54,14 @@ const _RoomControlMenu = ({
       return (
         <>
           <RoomControlDropdownMenuItem onSelect={onCreateRoom}>
-            <span className="flex gap-2 items-center">
+            <span className="flex items-center gap-2">
               <PlusIcon /> Create Room
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Dialog>
               <DialogTrigger>
-                <span className="flex gap-2 items-center">
+                <span className="flex items-center gap-2">
                   <CodeIcon /> Join Room
                 </span>
               </DialogTrigger>
@@ -73,7 +73,7 @@ const _RoomControlMenu = ({
                   Input room ID
                 </DialogDescription>
                 <input
-                  className="w-full cursor-text rounded-lg border px-3 py-[5px] bg-fill-3 dark:bg-dark-fill-3 border-transparent"
+                  className="bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[5px]"
                   placeholder="Enter room ID"
                   onChange={onChangeRoomIdInput}
                   onKeyDown={(e) => {
@@ -97,12 +97,12 @@ const _RoomControlMenu = ({
               navigator.clipboard.writeText(inputRoomId ?? "");
             }}
           >
-            <span className="flex gap-2 items-center">
+            <span className="flex items-center gap-2">
               <CopyIcon /> Copy Room ID
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={onLeaveRoom}>
-            <span className="flex gap-2 items-center">
+            <span className="flex items-center gap-2">
               <LeaveIcon /> Leave Room
             </span>
           </RoomControlDropdownMenuItem>
@@ -179,22 +179,22 @@ export const RoomControlMenu = () => {
       <DropdownMenuTrigger>
         <MenuIcon />
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="absolute right-0 top-2 shadow-level3 dark:shadow-dark-level3 rounded-lg border border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 w-max flex flex-col">
+      <DropdownMenuContent className="shadow-level3 dark:shadow-dark-level3 border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 absolute right-0 top-2 flex w-max flex-col rounded-lg border">
         <_RoomControlMenu
           appState={appState}
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
           onLeaveRoom={leaveRoomThrottled}
-          inputRoomId={inputRoomId}
+          inputRoomId={roomId ?? inputRoomId}
           setInputRoomId={setInputRoomId}
         />
         <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
-          <span className="flex gap-2 items-center">
+          <span className="flex items-center gap-2">
             <SignOutIcon /> <span>Sign Out</span>
           </span>
         </RoomControlDropdownMenuItem>
         <RoomControlDropdownMenuItem onSelect={resetExtensionThrottled}>
-          <span className="flex gap-2 items-center">
+          <span className="flex items-center gap-2">
             <ResetIcon /> <span>Reset Extension</span>
           </span>
         </RoomControlDropdownMenuItem>
