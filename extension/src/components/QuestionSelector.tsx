@@ -19,37 +19,44 @@ export default function QuestionSelector() {
                         3000,
                         iframeDoc as Document
                     ).then((element) => {
-                        const table = iframeDoc.querySelector(
+                        const listOfTable = iframeDoc.querySelectorAll(
                             "div[role='table']"
-                        ) as HTMLDivElement;
-                        // iframeDoc.body.style.display = "none";
-                        const allNodes = iframeDoc.body.childNodes;
-                        allNodes.forEach((node) => {
-                            if (node.nodeType === 1) {
-                                // If the node is an element
+                        ) as NodeListOf<HTMLDivElement>;
+                        const table = listOfTable[2];
 
-                                console.log(node);
-                                // Check if the node is the div with role='table'
-                                if (
-                                    node instanceof HTMLDivElement &&
-                                    node.getAttribute("role") === "table"
-                                ) {
-                                    console.log("found table");
-                                    const grandParent =
-                                        node.parentElement?.parentElement;
-                                    if (grandParent) {
-                                        grandParent.style.display = "block";
-                                        grandParent.style.position = "absolute";
-                                        grandParent.style.top = "0";
-                                        grandParent.style.left = "0";
-                                        grandParent.style.width = "100%";
-                                    }
-                                } else {
-                                    (node as HTMLElement).style.display =
-                                        "none";
+                        const grandParent = table?.parentElement?.parentElement;
+                        console.log("Grandparent:", grandParent);
+
+                        if (grandParent) {
+                            console.log("Found grandParent");
+
+                            let current: HTMLElement | null = grandParent;
+                            while (current) {
+                                console.log("Current element:", current);
+                                current.style.display = "block";
+
+                                if (current.parentElement) {
+                                    Array.from(
+                                        current.parentElement.children
+                                    ).forEach((sibling) => {
+                                        console.log(sibling);
+                                        if (sibling !== current) {
+                                            (
+                                                sibling as HTMLElement
+                                            ).style.display = "none";
+                                        }
+                                    });
                                 }
+
+                                current = current.parentElement;
                             }
-                        });
+
+                            // Apply positioning to the grandParent
+                            grandParent.style.position = "absolute";
+                            grandParent.style.top = "0";
+                            grandParent.style.left = "0";
+                            grandParent.style.width = "100%";
+                        }
 
                         const questions = iframeDoc.querySelectorAll(
                             "div[role='row']"
