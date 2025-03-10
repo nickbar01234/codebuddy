@@ -1,10 +1,12 @@
 import React from "react";
 import { useOnMount } from "@cb/hooks";
-import { waitForElement } from "@cb/utils";
+import { constructUrlFromQuestionId, waitForElement } from "@cb/utils";
 
-export default function QuestionSelector() {
-    const [question, setQuestion] = React.useState<string>("");
-
+export default function QuestionSelector({
+    handleQuestionSelect,
+}: {
+    handleQuestionSelect: (questionLink: string) => void;
+}) {
     useOnMount(() => {
         waitForElement("#leetcode_question", 2000).then((element) => {
             const iframe = element as HTMLIFrameElement;
@@ -87,6 +89,15 @@ export default function QuestionSelector() {
                                             "click",
                                             (e) => {
                                                 console.log(questionTitle.href);
+                                                const questionId =
+                                                    constructUrlFromQuestionId(
+                                                        questionTitle.href
+                                                    );
+                                                handleQuestionSelect(
+                                                    questionId
+                                                );
+                                                e.preventDefault();
+                                                e.stopPropagation();
                                             }
                                         );
                                     }
