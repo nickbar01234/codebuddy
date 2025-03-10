@@ -11,6 +11,7 @@ export interface QuestionState {
 
 export interface Room {
     questionMap: Record<string, QuestionState>;
+    nextQuestion: string;
     usernames: string[];
 }
 
@@ -34,6 +35,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
         const data = snapshot.data(options)! ?? {};
         return {
             ...data,
+            nextQuestion: data.nextQuestion ?? "",
             questionMap: data.questionMap ?? [],
             usernames: data.usernames ?? [],
         };

@@ -3,6 +3,7 @@ import { AppState } from "@cb/context/AppStateProvider";
 import {
     useAppState,
     usePeerSelection,
+    useRTC,
     useWindowDimensions,
 } from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
@@ -10,6 +11,7 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
 import QuestionSelector from "@cb/components/QuestionSelector";
+import { ROOMSTATE } from "@cb/context/RTCProvider";
 
 export interface TabMetadata {
     id: string;
@@ -24,6 +26,7 @@ const EditorPanel = () => {
     const { state: appState } = useAppState();
     const { setCodePreferenceHeight, onResizeStop, codePreference, height } =
         useWindowDimensions();
+    const { roomState, handleChooseQuestion } = useRTC();
 
     const canViewCode = activePeer?.viewable ?? false;
     const activeTest = activePeer?.tests.find((test) => test.selected);
@@ -75,14 +78,28 @@ const EditorPanel = () => {
                         }
                         onResizeStop={onResizeStop}
                     >
-                        {/* <QuestionSelector /> */}
-                        <div className="relative flex h-full w-full grow flex-col gap-y-2">
+                        <div
+                            className={cn(
+                                "relative flex h-full w-full grow flex-col gap-y-2",
+                                { hidden: roomState === ROOMSTATE.CODE }
+                            )}
+                        >
                             <EditorToolBar />
                             <div
                                 id={EDITOR_NODE_ID}
                                 className="h-full w-full overflow-hidden"
                             />
                         </div>
+                        {roomState === ROOMSTATE.CHOOSE && (
+                            <QuestionSelector
+                                handleQuestionSelect={handleChooseQuestion}
+                            />
+                        )}
+                        {roomState === ROOMSTATE.WAIT && (
+                            <div className="relative flex h-full w-full grow flex-col gap-y-2">
+                                <div> WAITING FOR OTHER TO FINISH</div>
+                            </div>
+                        )}
                     </ResizableBox>
                     <div
                         className="relative w-full overflow-auto"

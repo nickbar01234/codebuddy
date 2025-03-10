@@ -2,8 +2,8 @@ import {
     LEETCODE_SUBMISSION_RESULT,
     LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import { firestore } from "@cb/db";
 import {
+    firestore,
     getRoom,
     getRoomPeerConnectionRef,
     getRoomPeerConnectionRefs,
@@ -17,6 +17,7 @@ import {
     clearLocalStorage,
     getLocalStorage,
     sendServiceRequest,
+    setLocalStorage,
 } from "@cb/services";
 import {
     EventType,
@@ -83,10 +84,18 @@ export interface RTCContext {
     informations: Record<string, PeerInformation>;
     peerState: Record<string, PeerState>;
     joiningBackRoom: (join: boolean) => Promise<void>;
+    roomState: ROOMSTATE | null;
+    handleChooseQuestion: (questionId: string) => void;
 }
 
 interface RTCProviderProps {
     children: React.ReactNode;
+}
+
+export enum ROOMSTATE {
+    CODE,
+    CHOOSE,
+    WAIT,
 }
 
 export const RTCContext = React.createContext({} as RTCContext);
@@ -105,6 +114,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
         {}
     );
+    const [roomState, setRoomState] = React.useState<ROOMSTATE | null>(null);
+    const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
+        null
+    );
+    console.log("chooseQuestion", chooseQuestion);
 
     const {
         register: registerConnection,
@@ -130,24 +144,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
                     }
 
                     waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-                        .then(() =>
-                            sendMessageToAll(
-                                withPayload({
-                                    action: "event",
-                                    event: EventType.SUBMIT_SUCCESS,
-                                    eventMessage: `User ${username} passed all test cases`,
-                                })
-                            )
-                        )
-                        .catch(() =>
-                            sendMessageToAll(
-                                withPayload({
-                                    action: "event",
-                                    event: EventType.SUBMIT_FAILURE,
-                                    eventMessage: `User ${username} failed some test cases`,
-                                })
-                            )
-                        );
+                        .then(() => handleSucessfulSubmissionRef.current())
+                        .catch(() => handleFailedSubmissionRef.current());
                 };
             })
             .catch((error) => {
@@ -297,11 +295,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
                     finishedUsers: [],
                 },
             },
+            nextQuestion: "",
             usernames: arrayUnion(username),
         });
         console.log("Created room");
         setRoomId(roomRef.id);
         navigator.clipboard.writeText(roomRef.id);
+        setRoomState(ROOMSTATE.CODE);
         toast.success(`Room ID ${roomRef.id} copied to clipboard`);
     };
 
@@ -388,7 +388,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
             const roomQuestionId = Object.keys(roomDoc.data().questionMap);
             if (
                 roomQuestionId.length === 0 ||
-                roomQuestionId[0] !== questionId
+                !roomQuestionId.includes(questionId)
             ) {
                 const listOfQuestions = roomQuestionId.map((id) =>
                     constructUrlFromQuestionId(id)
@@ -409,6 +409,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
             await setRoom(getRoomRef(roomId), {
                 usernames: arrayUnion(username),
             });
+            const nextQuestion = roomDoc.data().nextQuestion;
+            if (nextQuestion !== "") {
+                setChooseQuestion(nextQuestion);
+            }
 
             const unsubscribe = onSnapshot(
                 getRoomPeerConnectionRefs(roomId, username),
@@ -536,8 +540,56 @@ export const RTCProvider = (props: RTCProviderProps) => {
         },
         [username, cleanupSnapshot, cleanupConnection]
     );
+    const handleSucessfulSubmission = React.useCallback(async () => {
+        if (roomId == null) return;
 
-    // modify to accept many peers.
+        const questionId = getQuestionIdFromUrl(window.location.href);
+        sendMessageToAll(
+            withPayload({
+                action: "event",
+                event: EventType.SUBMIT_SUCCESS,
+                eventMessage: `User ${username} passed all test cases for ${questionId}`,
+            })
+        );
+        await setRoom(getRoomRef(roomId), {
+            questionMap: {
+                [questionId]: {
+                    currentUsers: arrayRemove(username),
+                    finishedUsers: arrayUnion(username),
+                },
+            },
+        });
+        const roomDoc = await getRoom(roomId);
+        const roomData = roomDoc.data();
+        if (!roomData) return;
+        const questionMap = roomData.questionMap;
+        const nextQuestion = roomData.nextQuestion;
+        const finsishedUsers = questionMap[questionId]?.finishedUsers;
+        if (nextQuestion === "") {
+            if (
+                finsishedUsers &&
+                finsishedUsers.length !== 0 &&
+                username === finsishedUsers[0]
+            ) {
+                setRoomState(ROOMSTATE.CHOOSE);
+            }
+        } else {
+            setRoomState(ROOMSTATE.WAIT);
+        }
+    }, [username, roomId]);
+
+    const handleFailedSubmission = React.useCallback(async () => {
+        if (roomId == null) return;
+        const questionId = getQuestionIdFromUrl(window.location.href);
+        sendMessageToAll(
+            withPayload({
+                action: "event",
+                event: EventType.SUBMIT_FAILURE,
+                eventMessage: `User ${username} failed some test cases for ${questionId}`,
+            })
+        );
+    }, [username, roomId]);
+
     const deletePeers = React.useCallback(
         async (peers: string[]) => {
             if (roomId == null) return;
@@ -574,8 +626,24 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
     }, [roomId, username]);
 
+    const handleChooseQuestion = React.useCallback(
+        async (questionId: string) => {
+            if (roomId == null) return;
+            await setRoom(getRoomRef(roomId), {
+                nextQuestion: questionId,
+            });
+            setChooseQuestion(questionId);
+            setRoomState(ROOMSTATE.WAIT);
+        },
+        [roomId]
+    );
+
     const deletePeersRef = React.useRef(deletePeers);
     const deleteMeRef = React.useRef(deleteMe);
+    const handleSucessfulSubmissionRef = React.useRef(
+        handleSucessfulSubmission
+    );
+    const handleFailedSubmissionRef = React.useRef(handleFailedSubmission);
 
     const joiningBackRoom = React.useCallback(
         async (join: boolean) => {
@@ -604,9 +672,31 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 const data = snapshot.data();
                 // todo(nickbar01234): Clear and report room if deleted?
                 if (data == undefined) return;
-
                 const usernames = data.usernames;
                 if (!usernames.includes(username)) return;
+
+                // const nextQuestion = data.nextQuestion;
+                // const questionId = getQuestionIdFromUrl(window.location.href);
+                // const finishedUsers =
+                //     data.questionMap[questionId]?.finishedUsers;
+                // console.log(finishedUsers);
+                // if (nextQuestion !== "") {
+                //     toast.info(
+                //         "The next chosen question is " +
+                //             constructUrlFromQuestionId(nextQuestion)
+                //     );
+                // } else if (
+                //     finishedUsers.every((user) => usernames.includes(user)) &&
+                //     nextQuestion !== ""
+                // ) {
+                //     toast.info(
+                //         "All users have finished the question. " +
+                //             "Navigating to the next question: " +
+                //             constructUrlFromQuestionId(nextQuestion)
+                //     );
+                //     setChooseQuestion(nextQuestion);
+                // }
+
                 const removedPeers = Object.keys(getConnection()).filter(
                     (username) => !usernames.includes(username)
                 );
@@ -648,6 +738,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     React.useEffect(() => {
         const refreshInfo = getLocalStorage("tabs");
+        console.log("Joining back room", appState, refreshInfo?.roomId);
         if (appState === AppState.LOADING && refreshInfo?.roomId) {
             joiningBackRoom(true);
         }
@@ -656,6 +747,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
     React.useEffect(() => {
         deletePeersRef.current = deletePeers;
     }, [deletePeers]);
+
+    React.useEffect(() => {
+        handleSucessfulSubmissionRef.current = handleSucessfulSubmission;
+    }, [handleSucessfulSubmission]);
+
+    React.useEffect(() => {
+        handleFailedSubmissionRef.current = handleFailedSubmission;
+    }, [handleFailedSubmission]);
+
+    React.useEffect(() => {
+        if (roomState == null) return;
+        setLocalStorage("roomState", roomState.toString());
+    }, [roomState]);
+
+    useOnMount(() => {
+        const roomState = getLocalStorage("roomState");
+        if (roomState != undefined) {
+            setRoomState(parseInt(roomState));
+        }
+    });
 
     useOnMount(() => {
         const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
@@ -769,6 +880,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 informations,
                 peerState,
                 joiningBackRoom,
+                roomState,
+                handleChooseQuestion,
             }}
         >
             {props.children}
