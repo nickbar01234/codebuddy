@@ -52,6 +52,7 @@ import { toast } from "sonner";
 import { Connection } from "types/utils";
 import { additionalServers } from "./additionalServers";
 import { AppState } from "./AppStateProvider";
+import { finished } from "stream";
 
 const servers = {
   iceServers: [
@@ -224,8 +225,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       ...prev,
       [peer]: {
         latency: 0,
-        deviation: 0,
-        connected: true,
+        finished: false,
       },
     }));
   });
@@ -392,6 +392,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
+      setChooseQuestion(roomQuestionId);
       await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
@@ -465,29 +466,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         );
       }
       const prevRoomState = getLocalStorage("roomState");
-      const nextQuestion = getLocalStorage("chooseQuestion");
-      if (nextQuestion != undefined && nextQuestion !== "") {
-        setChooseQuestion(nextQuestion);
-      }
-
       console.log("JOIN ROOM", prevRoomState);
-
-      if (
-        prevRoomState != undefined &&
-        prevRoomState != ROOMSTATE.CODE.toString() &&
-        prevRoomState != ROOMSTATE.NAVIGATE.toString()
-      ) {
+      if (prevRoomState) {
         setRoomState(parseInt(prevRoomState));
-        console.log("AT WAIT in join room");
-        setRoom(getRoomRef(roomId), {
-          finishedUsers: arrayUnion(username),
-        });
-      } else {
-        console.log("AT JOIN");
-        setRoomState(ROOMSTATE.CODE);
-        setRoom(getRoomRef(roomId), {
-          finishedUsers: arrayRemove(username),
-        });
       }
 
       return true;
@@ -567,13 +548,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
       peers
         .map((peer) => getRoomPeerConnectionRef(roomId, username, peer))
         .forEach((docRef) => batch.delete(docRef));
-      const roomDoc = await getRoom(roomId);
-      const roomData = roomDoc.data();
-      if (!roomData) return;
       //   console.log("AT DELETE PEERS", peers);
       batch.update(getRoomRef(roomId), {
         usernames: arrayRemove(...peers),
-        finishedUsers: arrayRemove(...peers),
       });
       await batch.commit();
       setInformations((prev) =>
@@ -685,9 +662,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
           roomDoc.questionId !== getQuestionIdFromUrl(window.location.href);
         const finishedUsers = roomDoc.finishedUsers;
         console.log("finishedUsers", getUnixTs(), finishedUsers, usernames);
+        setPeerState((prev) => {
+          const updatedState = { ...prev };
 
+          finishedUsers.forEach((peer) => {
+            if (updatedState[peer]) {
+              updatedState[peer] = { ...updatedState[peer], finished: true };
+            }
+          });
+
+          return updatedState;
+        });
         if (!nextQuestionChosen) {
-          if (finishedUsers.length !== 0 && username === finishedUsers[0]) {
+          if (finishedUsers.length !== 0 && finishedUsers.includes(username)) {
             setRoomState(ROOMSTATE.CHOOSE);
           }
         } else {
@@ -699,9 +686,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
             );
             setChooseQuestion(roomDoc.questionId);
             setRoomState(ROOMSTATE.NAVIGATE);
-            deleteMeRef.current();
           } else if (finishedUsers.includes(username)) {
-            console.log("TO WAIT");
             setRoomState(ROOMSTATE.WAIT);
           }
         }

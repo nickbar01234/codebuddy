@@ -28,26 +28,47 @@ const EditorPanel = () => {
   const { state: appState, setState: setAppState } = useAppState();
   const { setCodePreferenceHeight, onResizeStop, codePreference, height } =
     useWindowDimensions();
-  const { roomState, chooseQuestion, handleChooseQuestion, joiningBackRoom } =
-    useRTC();
+  const {
+    roomState,
+    chooseQuestion,
+    handleChooseQuestion,
+    joiningBackRoom,
+    peerState,
+  } = useRTC();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
+  const unfinishedPeers = React.useMemo(
+    () =>
+      Object.entries(peerState)
+        .filter(([_, state]) => !state.finished)
+        .map(([peerId, state]) => ({ peerId, ...state })),
+    [peerState]
+  );
 
   return (
-    <>
+    <div
+      className={cn("relative z-50 flex h-full w-full grow flex-col gap-y-2", {
+        hidden: appState !== AppState.ROOM,
+      })}
+    >
       {roomState === ROOMSTATE.WAIT && (
-        <div className="relative flex h-full w-full grow flex-col gap-y-2">
-          <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-            Waiting for other to finish
-          </h1>
-        </div>
+        <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+          Waiting for other to finish
+          {unfinishedPeers.length === 0 ? (
+            <p>All peers are finished. But no question has been chosen</p>
+          ) : (
+            <ul>
+              {unfinishedPeers.map(({ peerId, latency }) => (
+                <li key={peerId}> {peerId}</li>
+              ))}
+            </ul>
+          )}
+        </h1>
       )}
       {roomState === ROOMSTATE.CHOOSE && (
-        <div className="relative z-50 flex h-full w-full grow flex-col gap-y-2">
-          <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
-        </div>
+        <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
       )}
 
       {roomState === ROOMSTATE.NAVIGATE && chooseQuestion && (
@@ -180,7 +201,7 @@ const EditorPanel = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
