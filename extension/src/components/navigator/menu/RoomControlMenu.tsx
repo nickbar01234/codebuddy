@@ -34,14 +34,14 @@ const _RoomControlMenu = ({
   onCreateRoom,
   onJoinRoom,
   onLeaveRoom,
-  inputRoomId,
+  roomId,
   setInputRoomId,
 }: {
   appState: AppState;
   onCreateRoom: (e: Event) => void;
   onJoinRoom: (e: React.MouseEvent | React.KeyboardEvent) => void;
   onLeaveRoom: (e: Event) => void;
-  inputRoomId: string;
+  roomId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +94,7 @@ const _RoomControlMenu = ({
           <RoomControlDropdownMenuItem
             onSelect={(e) => {
               e.stopPropagation();
-              navigator.clipboard.writeText(inputRoomId ?? "");
+              navigator.clipboard.writeText(roomId ?? "");
             }}
           >
             <span className="flex items-center gap-2">
@@ -185,7 +185,7 @@ export const RoomControlMenu = () => {
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
           onLeaveRoom={leaveRoomThrottled}
-          inputRoomId={roomId ?? inputRoomId}
+          roomId={roomId ?? inputRoomId}
           setInputRoomId={setInputRoomId}
         />
         <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
