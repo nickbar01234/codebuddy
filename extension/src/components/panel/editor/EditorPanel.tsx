@@ -1,18 +1,18 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import QuestionSelector from "@cb/components/QuestionSelector";
 import { AppState } from "@cb/context/AppStateProvider";
+import { ROOMSTATE } from "@cb/context/RTCProvider";
 import {
   useAppState,
   usePeerSelection,
   useRTC,
   useWindowDimensions,
 } from "@cb/hooks/index";
+import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
-import QuestionSelector from "@cb/components/QuestionSelector";
-import { ROOMSTATE } from "@cb/context/RTCProvider";
-import { constructUrlFromQuestionId } from "@cb/utils";
 
 export interface TabMetadata {
   id: string;
@@ -92,11 +92,11 @@ const EditorPanel = () => {
             {roomState === ROOMSTATE.WAIT && (
               <div className="relative flex h-full w-full grow flex-col gap-y-2">
                 <div> WAITING FOR OTHER TO FINISH</div>
-                <div>
-                  {chooseQuestion
-                    ? constructUrlFromQuestionId(chooseQuestion)
-                    : "No question selected"}
-                </div>
+                {chooseQuestion != "" && chooseQuestion && (
+                  <a href={constructUrlFromQuestionId(chooseQuestion)}>
+                    {chooseQuestion}
+                  </a>
+                )}
               </div>
             )}
           </ResizableBox>
