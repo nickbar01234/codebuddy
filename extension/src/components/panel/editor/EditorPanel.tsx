@@ -1,5 +1,6 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import QuestionSelector from "@cb/components/QuestionSelector";
+import { RenderButton } from "@cb/components/ui/RenderButton";
 import { AppState } from "@cb/context/AppStateProvider";
 import { ROOMSTATE } from "@cb/context/RTCProvider";
 import {
@@ -8,7 +9,7 @@ import {
   useRTC,
   useWindowDimensions,
 } from "@cb/hooks/index";
-import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
+import { constructUrlFromQuestionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
@@ -24,10 +25,11 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { peers, activePeer, unblur, selectTest, isBuffer } =
     usePeerSelection();
-  const { state: appState } = useAppState();
+  const { state: appState, setState: setAppState } = useAppState();
   const { setCodePreferenceHeight, onResizeStop, codePreference, height } =
     useWindowDimensions();
-  const { roomState, chooseQuestion, handleChooseQuestion } = useRTC();
+  const { roomState, chooseQuestion, handleChooseQuestion, joiningBackRoom } =
+    useRTC();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
@@ -91,12 +93,34 @@ const EditorPanel = () => {
             )}
             {roomState === ROOMSTATE.WAIT && (
               <div className="relative flex h-full w-full grow flex-col gap-y-2">
-                <div> WAITING FOR OTHER TO FINISH</div>
-                {chooseQuestion != "" && chooseQuestion && (
-                  <a href={constructUrlFromQuestionId(chooseQuestion)}>
-                    {chooseQuestion}
-                  </a>
-                )}
+                <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+                  Waiting for other to finish
+                </h1>
+              </div>
+            )}
+
+            {roomState === ROOMSTATE.NAVIGATE && chooseQuestion && (
+              <div className="relative flex h-full w-full grow flex-col gap-y-2">
+                <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+                  Do you want to go on to next question?
+                </h1>
+
+                <RenderButton
+                  label="YES"
+                  isYes={true}
+                  onClick={() => {
+                    window.location.href =
+                      constructUrlFromQuestionId(chooseQuestion);
+                  }}
+                />
+                <RenderButton
+                  label="NO"
+                  isYes={false}
+                  onClick={() => {
+                    joiningBackRoom(false);
+                    setAppState(AppState.ROOM);
+                  }}
+                />
               </div>
             )}
           </ResizableBox>

@@ -13,6 +13,7 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "signIn",
   "test",
   "roomState",
+  "chooseQuestion",
 ];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
