@@ -373,7 +373,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
       const roomQuestionId = roomDoc.data().questionId;
-      if (roomQuestionId !== questionId) {
+      const prevQuestionId = getLocalStorage("chooseQuestion");
+      if (
+        roomQuestionId !== questionId &&
+        prevQuestionId &&
+        prevQuestionId !== questionId
+      ) {
         toast.error("The room you join is on this question:", {
           description: roomQuestionId,
         });
@@ -626,10 +631,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // 3. User A join rooms before (2) is completed
       // 4. User B haven't finished cleaning A from local state
       // 5. User A doesn't receive an offer
+
       if (join) {
-        setTimeout(() => {
-          joinRoom(prevRoomId);
-        }, 1500);
+        const prevQuestionId = getLocalStorage("chooseQuestion");
+        if (
+          prevQuestionId != null &&
+          prevQuestionId !== getQuestionIdFromUrl(window.location.href)
+        ) {
+          setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
+          window.location.href = constructUrlFromQuestionId(prevQuestionId);
+        } else {
+          setTimeout(() => {
+            joinRoom(prevRoomId);
+          }, 1500);
+        }
       }
     },
     [joinRoom, leaveRoom]
