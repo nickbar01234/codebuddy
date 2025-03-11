@@ -3,15 +3,9 @@ import {
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from "firebase/firestore";
-
-export interface QuestionState {
-  currentUsers: string[];
-  finishedUsers: string[];
-}
-
 export interface Room {
-  questionMap: Record<string, QuestionState>;
-  nextQuestion: string;
+  finishedUsers: string[];
+  questionId: string;
   usernames: string[];
 }
 
@@ -35,8 +29,8 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     const data = snapshot.data(options)! ?? {};
     return {
       ...data,
-      nextQuestion: data.nextQuestion ?? "",
-      questionMap: data.questionMap ?? [],
+      finishedUsers: data.finishedUsers ?? [],
+      questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
     };
   },

@@ -285,13 +285,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
     const roomRef = getRoomRef(roomId);
     await setRoom(roomRef, {
-      questionMap: {
-        [questionId]: {
-          currentUsers: [username],
-          finishedUsers: [],
-        },
-      },
-      nextQuestion: "",
+      questionId: questionId,
+      finishedUsers: [],
       usernames: arrayUnion(username),
     });
     console.log("Created room");
@@ -377,13 +372,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Room does not exist");
         return false;
       }
-      const roomQuestionId = Object.keys(roomDoc.data().questionMap);
-      if (roomQuestionId.length === 0 || !roomQuestionId.includes(questionId)) {
-        const listOfQuestions = roomQuestionId.map((id) =>
-          constructUrlFromQuestionId(id)
-        );
-        toast.error("The room you join begin on this question:", {
-          description: listOfQuestions.join(", "),
+      const roomQuestionId = roomDoc.data().questionId;
+      if (roomQuestionId !== questionId) {
+        toast.error("The room you join is on this question:", {
+          description: roomQuestionId,
         });
         return false;
       }
@@ -481,26 +473,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
         prevRoomState != ROOMSTATE.NAVIGATE.toString()
       ) {
         setRoomState(parseInt(prevRoomState));
+        console.log("AT WAIT in join room");
         setRoom(getRoomRef(roomId), {
-          questionMap: {
-            ...roomDoc.data().questionMap,
-            [questionId]: {
-              currentUsers: arrayRemove(username),
-              finishedUsers: arrayUnion(username),
-            },
-          },
+          finishedUsers: arrayUnion(username),
         });
       } else {
         console.log("AT JOIN");
         setRoomState(ROOMSTATE.CODE);
         setRoom(getRoomRef(roomId), {
-          questionMap: {
-            ...roomDoc.data().questionMap,
-            [questionId]: {
-              currentUsers: arrayUnion(username),
-              finishedUsers: arrayRemove(username),
-            },
-          },
+          finishedUsers: arrayRemove(username),
         });
       }
 
@@ -556,13 +537,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const roomData = roomDoc.data();
     if (!roomData) return;
     await setRoom(getRoomRef(roomId), {
-      questionMap: {
-        ...roomData.questionMap,
-        [questionId]: {
-          currentUsers: arrayRemove(username),
-          finishedUsers: arrayUnion(username),
-        },
-      },
+      finishedUsers: arrayUnion(username),
     });
   }, [username, roomId]);
 
@@ -593,13 +568,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       //   console.log("AT DELETE PEERS", peers);
       batch.update(getRoomRef(roomId), {
         usernames: arrayRemove(...peers),
-        questionMap: {
-          ...roomData.questionMap,
-          [getQuestionIdFromUrl(window.location.href)]: {
-            currentUsers: arrayRemove(...peers),
-            finishedUsers: arrayRemove(...peers),
-          },
-        },
+        finishedUsers: arrayRemove(...peers),
       });
       await batch.commit();
       setInformations((prev) =>
@@ -628,12 +597,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const handleChooseQuestion = React.useCallback(
     async (questionURL: string) => {
-      const questionId = getQuestionIdFromUrl(questionURL);
+      const chosenQuestionId = getQuestionIdFromUrl(questionURL);
       console.log("Choose question URL", questionURL);
-      toast.info("You have selected question " + questionId);
+      toast.info("You have selected question " + chosenQuestionId);
       if (roomId == null) return;
       await setRoom(getRoomRef(roomId), {
-        nextQuestion: questionId,
+        questionId: chosenQuestionId,
       });
       setRoomState(ROOMSTATE.WAIT);
     },
@@ -658,25 +627,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // 4. User B haven't finished cleaning A from local state
       // 5. User A doesn't receive an offer
       if (join) {
-        const navigate =
-          getLocalStorage("roomState") === ROOMSTATE.NAVIGATE.toString();
-        setTimeout(async () => {
-          if (navigate) {
-            const roomDoc = await getRoom(prevRoomId);
-            const roomData = roomDoc.data();
-            if (!roomData) return;
-            await setRoom(getRoomRef(prevRoomId), {
-              nextQuestion: "",
-              questionMap: {
-                ...roomData.questionMap,
-                [getQuestionIdFromUrl(window.location.href)]: {
-                  currentUsers: arrayUnion(username),
-                  finishedUsers: arrayRemove(username),
-                },
-              },
-            });
-          }
-          await joinRoom(prevRoomId);
+        setTimeout(() => {
+          joinRoom(prevRoomId);
         }, 1500);
       }
     },
@@ -714,49 +666,29 @@ export const RTCProvider = (props: RTCProviderProps) => {
         const roomDoc = currentRoom.data();
         if (!roomDoc) return;
 
-        const nextQuestion = roomDoc.nextQuestion;
-        const questionId = getQuestionIdFromUrl(window.location.href);
-        const finishedUsers = roomDoc.questionMap[questionId]?.finishedUsers;
-        const currentUsers = roomDoc.questionMap[questionId]?.currentUsers;
-        console.log(
-          "finishedUsers",
-          getUnixTs(),
-          currentUsers,
-          finishedUsers,
-          usernames
-        );
+        const nextQuestionChosen =
+          roomDoc.questionId !== getQuestionIdFromUrl(window.location.href);
+        const finishedUsers = roomDoc.finishedUsers;
+        console.log("finishedUsers", getUnixTs(), finishedUsers, usernames);
 
-        if (
-          finishedUsers &&
-          finishedUsers.length + currentUsers.length == usernames.length
-        ) {
-          if (nextQuestion === "") {
-            if (finishedUsers.length !== 0 && username === finishedUsers[0]) {
-              setRoomState(ROOMSTATE.CHOOSE);
-            }
-          } else {
-            if (usernames.every((user) => finishedUsers.includes(user))) {
-              toast.info(
-                "All users have finished the question. " +
-                  "Navigating to the next question: " +
-                  constructUrlFromQuestionId(nextQuestion)
-              );
-
-              setChooseQuestion(nextQuestion);
-              setRoomState(ROOMSTATE.NAVIGATE);
-            } else if (finishedUsers.includes(username)) {
-              console.log("TO WAIT");
-              setRoomState(ROOMSTATE.WAIT);
-            }
+        if (!nextQuestionChosen) {
+          if (finishedUsers.length !== 0 && username === finishedUsers[0]) {
+            setRoomState(ROOMSTATE.CHOOSE);
           }
-        }
-
-        if (
-          currentUsers &&
-          usernames.every((user) => currentUsers.includes(user)) &&
-          nextQuestion === ""
-        ) {
-          setRoomState(ROOMSTATE.CODE);
+        } else {
+          if (usernames.every((user) => finishedUsers.includes(user))) {
+            toast.info(
+              "All users have finished the question. " +
+                "Navigating to the next question: " +
+                constructUrlFromQuestionId(roomDoc.questionId)
+            );
+            setChooseQuestion(roomDoc.questionId);
+            setRoomState(ROOMSTATE.NAVIGATE);
+            deleteMeRef.current();
+          } else if (finishedUsers.includes(username)) {
+            console.log("TO WAIT");
+            setRoomState(ROOMSTATE.WAIT);
+          }
         }
       });
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
