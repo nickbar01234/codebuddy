@@ -51,11 +51,8 @@ const setup = async () => {
 
   const setupRoom = async (page, createRoom) => {
     await page.evaluate((createRoom) => {
-      if (createRoom) {
-        window.postMessage({ action: "createRoom", roomId: "CODE_BUDDY_TEST" });
-      } else {
-        window.postMessage({ action: "joinRoom", roomId: "CODE_BUDDY_TEST" });
-      }
+      const message = createRoom ? ({action: "createRoom", roomId: "CODE_BUDDY_TEST"}) : ({action: "joinRoom", roomId: "CODE_BUDDY_TEST"});
+      localStorage.setItem("roomMessage", JSON.stringify(message));
     }, createRoom);
   };
 
@@ -64,10 +61,13 @@ const setup = async () => {
   });
   await Promise.all(asyncBrowsers);
 
-  if (NUM_USERS > 1) {
-    // Waits for first person to create and setup room. Everyone else can join simultaneously
+  if (NUM_USERS > 1){
     await setupRoom(PAGES[0].page, true);
-    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
+      setTimeout(async () => {
+        await Promise.all(
+          PAGES.slice(1).map(({ page }) => setupRoom(page, false))
+        );
+      }, 5000);
   }
 };
 

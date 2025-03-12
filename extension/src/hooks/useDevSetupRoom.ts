@@ -1,5 +1,4 @@
 import { getRoomRef, setRoom } from "@cb/db";
-import { WindowMessage } from "types/window";
 import { useOnMount, useRTC } from ".";
 
 const useDevSetupRoom = () => {
@@ -12,31 +11,24 @@ const useDevSetupRoom = () => {
 
     const unsafeResetRoom = (roomId: string) =>
       setRoom(getRoomRef(roomId), { usernames: [] });
-
-    const onWindowMessage = (message: MessageEvent) => {
-      // todo(nickbar01234): Uniquely identify that this is test browser
-      if (message.data.action != undefined) {
-        const windowMessage = message.data as WindowMessage;
-        switch (windowMessage.action) {
-          case "createRoom": {
-            unsafeResetRoom(windowMessage.roomId).then(() =>
-              createRoom({ roomId: windowMessage.roomId })
-            );
-            break;
-          }
-
-          case "joinRoom": {
-            leaveRoom(windowMessage.roomId).then(() =>
-              joinRoom(windowMessage.roomId)
-            );
-            break;
-          }
+    const storedMessage = localStorage.getItem("roomMessage");
+    if (storedMessage) {
+      const message = JSON.parse(storedMessage);
+      switch (message.action) {
+        case "createRoom": {
+          unsafeResetRoom(message.roomId).then(() =>
+            createRoom({ roomId: message.roomId })
+          );
+          console.log("Create room case useDevsetup");
+          break;
+        }
+        case "joinRoom": {
+          leaveRoom(message.roomId).then(() => joinRoom(message.roomId));
+          console.log("join room case use dev set up room");
+          break;
         }
       }
-    };
-
-    window.addEventListener("message", onWindowMessage);
-    return () => window.removeEventListener("message", onWindowMessage);
+    }
   });
 };
 

@@ -27,13 +27,19 @@ const useAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
     const user = getLocalStorage("test");
     if (user != undefined) {
       const { peer } = user;
-      createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
-        .catch((error) => {
-          if (error.code !== "auth/email-already-in-use") {
-            console.error(error);
-          }
+      signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
+        .then(() => {
+          console.log("User logged in", user);
         })
-        .finally(() => signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD"));
+        .catch((error) => {
+          if (error.code === "auth/user-not-found") {
+            createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD").then(
+              () => {
+                console.log("User created", user);
+              }
+            );
+          }
+        });
     }
   });
 
