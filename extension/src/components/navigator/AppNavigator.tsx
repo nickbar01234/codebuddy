@@ -4,7 +4,7 @@ import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection } from "@cb/hooks/index";
+import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import React from "react";
@@ -15,6 +15,7 @@ import Header from "@cb/components/ui/Header";
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { peers, activePeer, setActivePeerId } = usePeerSelection();
+  const { roomId } = useRTC();
   useDevSetupRoom();
 
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
@@ -25,8 +26,8 @@ export const AppNavigator = () => {
   const currentTabInfo = getLocalStorage("tabs");
 
   return (
-    <div className="h-full w-full relative flex flex-col">
-      <div className="flex justify-between items-center w-full bg-[--color-tabset-tabbar-background] h-9 rounded-t-lg p-2 overflow-y-hidden overflow-x-scroll hide-scrollbar gap-2">
+    <div className="relative flex h-full w-full flex-col">
+      <div className="hide-scrollbar flex h-9 w-full items-center justify-between gap-2 overflow-y-hidden overflow-x-scroll rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
         <div className="flex items-center">
           <Header />
           {state === AppState.ROOM && activePeer?.id && (
@@ -41,11 +42,13 @@ export const AppNavigator = () => {
         </div>
         <RoomControlMenu />
       </div>
-      <div className="h-full w-full relative overflow-hidden">
-        <div className="absolute inset-0 h-full w-full flex justify-center items-center">
+      <div className="relative h-full w-full overflow-hidden">
+        <div className="absolute inset-0 flex h-full w-full items-center justify-center">
           {state === AppState.LOADING ? (
             <LoadingPanel
-              numberOfUsers={Object.keys(currentTabInfo?.peers ?? 0).length}
+              numberOfUsers={
+                Object.keys(currentTabInfo?.rooms[roomId]?.peers ?? 0).length
+              }
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
@@ -55,7 +58,7 @@ export const AppNavigator = () => {
       </div>
       <div
         className={cn(
-          "flex items-center w-full bg-[--color-tabset-tabbar-background] h-12 rounded-b-lg p-2 overflow-x-auto overflow-y-hidden text-sm self-end",
+          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-b-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
           { hidden: peers.length === 0 }
         )}
       >
@@ -64,7 +67,7 @@ export const AppNavigator = () => {
             {/* Leetcode className flexlayout__tab_button_* */}
             <div
               className={cn(
-                `relative flexlayout__tab_button flexlayout__tab_button_top hover:z-50`,
+                `flexlayout__tab_button flexlayout__tab_button_top relative hover:z-50`,
                 {
                   "flexlayout__tab_button-selected medium": active,
                   "flexlayout__tab_button--unselected normal": !active,

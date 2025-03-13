@@ -2,7 +2,7 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import { firestore, getGroupRef } from "@cb/db";
+import { firestore, getGroup, getGroupRef, setGroup } from "@cb/db";
 import {
   getRoom,
   getRoomPeerConnectionRef,
@@ -284,11 +284,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const newGroupRef = getGroupRef(groupId);
     const newGroupId = newGroupRef.id;
     const roomRef = getRoomRef(newGroupId, roomId);
+    await setGroup(newGroupRef, {
+      questions: arrayUnion(roomId),
+    });
     await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
-    console.log("Created room");
+    console.log("Created room", newGroupId);
     setGroupId(newGroupId);
-    navigator.clipboard.writeText(roomRef.id);
-    toast.success(`Room ID ${roomRef.id} copied to clipboard`);
+    navigator.clipboard.writeText(newGroupId);
+    toast.success(`Room ID ${newGroupId} copied to clipboard`);
   };
 
   const createOffer = React.useCallback(
@@ -359,6 +362,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
       console.log("Joining room", groupId);
       if (!groupId) {
         toast.error("Please enter room ID");
+        return false;
+      }
+      const groupDoc = await getGroup(groupId);
+      if (!groupDoc.exists()) {
+        toast.error("Group does not exist");
+        return false;
+      }
+      const groupData = groupDoc.data();
+      if (!groupData.questions.includes(roomId)) {
+        toast.error("This group does not contain this question");
         return false;
       }
 
@@ -522,7 +535,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      console.log("Removed peers", peers);
+      // console.log("Removed peers", peers);
     },
     [groupId, username, evictConnection]
   );
@@ -658,7 +671,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // Time 3: deletePeers is executed
       // User A gets kicked out
       // In practice, we delay the user before joining room, so it should be fine? :)
-      console.log("Dead peers", timeOutPeers);
+      // console.log("Dead peers", timeOutPeers);
       deletePeersRef.current(timeOutPeers);
     }, CHECK_ALIVE_INTERVAL);
     return () => {
