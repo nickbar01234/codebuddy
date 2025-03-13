@@ -1,6 +1,7 @@
 import { getRoomRef, setRoom } from "@cb/db";
 import { WindowMessage } from "types/window";
 import { useOnMount, useRTC } from ".";
+import { getQuestionIdFromUrl } from "@cb/utils";
 
 const useDevSetupRoom = () => {
   const { createRoom, joinRoom, leaveRoom } = useRTC();
@@ -10,8 +11,10 @@ const useDevSetupRoom = () => {
       return;
     }
 
-    const unsafeResetRoom = (roomId: string) =>
-      setRoom(getRoomRef(roomId), { usernames: [] });
+    const unsafeResetRoom = (groupId: string) =>
+      setRoom(getRoomRef(groupId, getQuestionIdFromUrl(window.location.href)), {
+        usernames: [],
+      });
 
     const onWindowMessage = (message: MessageEvent) => {
       // todo(nickbar01234): Uniquely identify that this is test browser
@@ -19,15 +22,15 @@ const useDevSetupRoom = () => {
         const windowMessage = message.data as WindowMessage;
         switch (windowMessage.action) {
           case "createRoom": {
-            unsafeResetRoom(windowMessage.roomId).then(() =>
-              createRoom({ roomId: windowMessage.roomId })
+            unsafeResetRoom(windowMessage.groupId).then(() =>
+              createRoom({ roomId: windowMessage.groupId })
             );
             break;
           }
 
           case "joinRoom": {
-            leaveRoom(windowMessage.roomId).then(() =>
-              joinRoom(windowMessage.roomId)
+            leaveRoom(windowMessage.groupId).then(() =>
+              joinRoom(windowMessage.groupId)
             );
             break;
           }
