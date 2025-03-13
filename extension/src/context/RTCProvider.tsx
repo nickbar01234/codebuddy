@@ -63,9 +63,9 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 
-export const HEARTBEAT_INTERVAL = 15000; // ms
+export const HEARTBEAT_INTERVAL = 1000; // ms
 const CHECK_ALIVE_INTERVAL = 1000; // ms
-const TIMEOUT = 100; // seconds;
+const TIMEOUT = 30; // seconds;
 
 interface CreateRoom {
   groupId?: string;
@@ -535,7 +535,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      // console.log("Removed peers", peers);
+      console.log("Removed peers", peers);
     },
     [groupId, username, evictConnection]
   );
@@ -661,18 +661,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
             ];
           })
         );
+        // Note that this race is thereotically possible
+        // Time 1: User A detected B is dead and attempt to delete peer
+        // User A thread to delete peer is delayed
+        // Time 2: User A rejoins
+        // Time 3: deletePeers is executed
+        // User A gets kicked out
+        // In practice, we delay the user before joining room, so it should be fine? :)
+        // console.log("Dead peers", timeOutPeers);
+        if (timeOutPeers.length > 0) {
+          console.log("Deleting peers", timeOutPeers);
+          deletePeersRef.current(timeOutPeers);
+        }
         return newPeers;
       });
-
-      // Note that this race is thereotically possible
-      // Time 1: User A detected B is dead and attempt to delete peer
-      // User A thread to delete peer is delayed
-      // Time 2: User A rejoins
-      // Time 3: deletePeers is executed
-      // User A gets kicked out
-      // In practice, we delay the user before joining room, so it should be fine? :)
-      // console.log("Dead peers", timeOutPeers);
-      deletePeersRef.current(timeOutPeers);
     }, CHECK_ALIVE_INTERVAL);
     return () => {
       clearInterval(checkAliveInterval);
