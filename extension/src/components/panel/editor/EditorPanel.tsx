@@ -22,8 +22,7 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { peers, activePeer, unblur, selectTest, isBuffer } =
-    usePeerSelection();
+  const { peers, activePeer, unblur, selectTest } = usePeerSelection();
   const { state: appState, setState: setAppState } = useAppState();
   const {
     setCodePreferenceHeight,
@@ -36,6 +35,7 @@ const EditorPanel = () => {
     chooseQuestion,
     handleChooseQuestion,
     joiningBackRoom,
+    handleNavigateToNextQuestion,
     peerState,
   } = useRTC();
 
@@ -83,9 +83,7 @@ const EditorPanel = () => {
           <RenderButton
             label="YES"
             isYes={true}
-            onClick={() => {
-              window.location.href = constructUrlFromQuestionId(chooseQuestion);
-            }}
+            onClick={handleNavigateToNextQuestion}
           />
           <RenderButton
             label="NO"

@@ -2,12 +2,15 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import { firestore, getGroup, getGroupRef, setGroup } from "@cb/db";
 import {
+  firestore,
+  getGroup,
+  getGroupRef,
   getRoom,
   getRoomPeerConnectionRef,
   getRoomPeerConnectionRefs,
   getRoomRef,
+  setGroup,
   setRoom,
   setRoomPeerConnection,
 } from "@cb/db";
@@ -16,7 +19,6 @@ import useResource from "@cb/hooks/useResource";
 import {
   clearLocalStorage,
   getLocalStorage,
-  removeLocalStorage,
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
@@ -52,7 +54,6 @@ import { toast } from "sonner";
 import { Connection } from "types/utils";
 import { additionalServers } from "./additionalServers";
 import { AppState } from "./AppStateProvider";
-import { finished } from "stream";
 
 const servers = {
   iceServers: [
@@ -86,6 +87,7 @@ export interface RTCContext {
   joiningBackRoom: (join: boolean) => Promise<void>;
   roomState: ROOMSTATE | null;
   handleChooseQuestion: (questionId: string) => void;
+  handleNavigateToNextQuestion: () => void;
   chooseQuestion: string | null;
 }
 
@@ -295,6 +297,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       questionId: questionId,
       finishedUsers: [],
       usernames: arrayUnion(username),
+      nextQuestion: "",
     });
     console.log("Created room", newGroupId);
     setGroupId(newGroupId);
@@ -407,7 +410,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("This room is already at max capacity.");
         return false;
       }
-      // console.log("Joining room", groupId);
+
       setGroupId(groupId);
       setChooseQuestion(roomQuestionId);
       await setRoom(getRoomRef(groupId, roomId), {
@@ -492,7 +495,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (prevRoomState) {
         setRoomState(parseInt(prevRoomState));
       }
-
       return true;
     },
     [username, onmessage, registerSnapshot, registerConnection, getConnection]
@@ -532,6 +534,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
   const handleSucessfulSubmission = React.useCallback(async () => {
     if (roomId == null) return;
+    if (!groupId) return;
 
     const questionId = getQuestionIdFromUrl(window.location.href);
     sendMessageToAll(
@@ -541,10 +544,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         eventMessage: `User ${username} passed all test cases for ${questionId}`,
       })
     );
-    const roomDoc = await getRoom(roomId);
+    const roomDoc = await getRoom(groupId, roomId);
     const roomData = roomDoc.data();
     if (!roomData) return;
-    await setRoom(getRoomRef(roomId), {
+    await setRoom(getRoomRef(groupId, roomId), {
       finishedUsers: arrayUnion(username),
     });
   }, [username, roomId]);
@@ -602,12 +605,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const handleChooseQuestion = React.useCallback(
     async (questionURL: string) => {
+      if (!groupId) return;
       const chosenQuestionId = getQuestionIdFromUrl(questionURL);
       console.log("Choose question URL", questionURL);
       toast.info("You have selected question " + chosenQuestionId);
       if (roomId == null) return;
-      await setRoom(getRoomRef(roomId), {
-        questionId: chosenQuestionId,
+      await setRoom(getRoomRef(groupId, roomId), {
+        nextQuestion: chosenQuestionId,
       });
       setRoomState(ROOMSTATE.WAIT);
     },
@@ -623,8 +627,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     async (join: boolean) => {
       const refreshInfo = getLocalStorage("tabs");
       if (refreshInfo == undefined) return;
-      const prevRoomId = refreshInfo.groupId;
-      await leaveRoom(prevRoomId, join);
+      const prevGroupId = refreshInfo.groupId;
+      await leaveRoom(prevGroupId, join);
       // todo(nickbar01234): Dummy fix to mitigate a race
       // 1. User A reload and triggers leave room
       // 2. User B detects that A leaves the room and attempts to delete peer from local state
@@ -642,13 +646,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
           window.location.href = constructUrlFromQuestionId(prevQuestionId);
         } else {
           setTimeout(() => {
-            joinRoom(prevRoomId);
+            joinRoom(prevGroupId);
           }, 1500);
         }
       }
     },
     [joinRoom, leaveRoom]
   );
+
+  const handleNavigateToNextQuestion = React.useCallback(async () => {
+    if (!chooseQuestion) return;
+    window.location.href = constructUrlFromQuestionId(chooseQuestion);
+  }, [chooseQuestion]);
 
   React.useEffect(() => {
     if (groupId != null && getSnapshot()[groupId] == undefined) {
@@ -678,12 +687,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
             toast.error(`${peer} has left the room`);
           });
 
-          const currentRoom = await getRoom(roomId);
+          const currentRoom = await getRoom(groupId, roomId);
           const roomDoc = currentRoom.data();
           if (!roomDoc) return;
 
-          const nextQuestionChosen =
-            roomDoc.questionId !== getQuestionIdFromUrl(window.location.href);
+          const nextQuestionChosen = roomDoc.nextQuestion !== "";
           const finishedUsers = roomDoc.finishedUsers;
           console.log("finishedUsers", getUnixTs(), finishedUsers, usernames);
           setPeerState((prev) => {
@@ -883,6 +891,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         roomState,
         handleChooseQuestion,
         chooseQuestion,
+        handleNavigateToNextQuestion,
       }}
     >
       {props.children}
