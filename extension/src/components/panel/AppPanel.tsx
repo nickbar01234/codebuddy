@@ -9,21 +9,25 @@ interface AppPanelProps {
 }
 
 export const AppPanel = (props: AppPanelProps) => {
-  const { appPreference, setAppWidth, onResizeStop, toggleWidth } =
-    useWindowDimensions();
+  const {
+    preference: { appPreference },
+    setAppWidth,
+    onResizeStop,
+    toggleWidth,
+  } = useWindowDimensions();
 
   return (
     <ResizableBox
       width={appPreference.isCollapsed ? MIN_WIDTH : appPreference.width}
       axis="x"
       resizeHandles={["w"]}
-      className="h-full flex relative"
+      className="relative flex h-full"
       handle={<div onDoubleClick={toggleWidth}>{VerticalHandle}</div>}
       minConstraints={[MIN_WIDTH, 0]}
       onResize={(_e, data) => setAppWidth(data.size.width)}
       onResizeStop={onResizeStop}
     >
-      <div className="w-full box-border ml-2 rounded-lg bg-layer-1 dark:bg-dark-layer-1 h-full">
+      <div className="bg-layer-1 dark:bg-dark-layer-1 ml-2 box-border h-full w-full rounded-lg">
         {appPreference.isCollapsed && <CollapsedPanel />}
         <div
           data-collapsed={appPreference.isCollapsed}
