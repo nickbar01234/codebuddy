@@ -95,6 +95,6 @@ export default function QuestionSelector() {
       id="leetcode_question"
       className="z-100 h-full w-full"
       sandbox="allow-scripts allow-same-origin"
-    ></iframe>
+    />
   );
 }

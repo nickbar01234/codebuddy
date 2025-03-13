@@ -9,7 +9,6 @@ import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
-import QuestionSelector from "@cb/components/QuestionSelector";
 
 export interface TabMetadata {
   id: string;
@@ -70,7 +69,6 @@ const EditorPanel = () => {
             onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
             onResizeStop={onResizeStop}
           >
-            <QuestionSelector />
             <div className="relative flex h-full w-full grow flex-col gap-y-2">
               <EditorToolBar />
               <div
