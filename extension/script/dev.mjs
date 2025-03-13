@@ -52,9 +52,12 @@ const setup = async () => {
   const setupRoom = async (page, createRoom) => {
     await page.evaluate((createRoom) => {
       if (createRoom) {
-        window.postMessage({ action: "createRoom", roomId: "CODE_BUDDY_TEST" });
+        window.postMessage({
+          action: "createRoom",
+          groupId: "CODE_BUDDY_TEST",
+        });
       } else {
-        window.postMessage({ action: "joinRoom", roomId: "CODE_BUDDY_TEST" });
+        window.postMessage({ action: "joinRoom", groupId: "CODE_BUDDY_TEST" });
       }
     }, createRoom);
   };

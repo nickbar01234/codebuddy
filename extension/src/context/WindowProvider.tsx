@@ -1,15 +1,14 @@
 import { CodeBuddyPreference } from "@cb/constants";
 import { useOnMount } from "@cb/hooks";
-import { getChromeStorage, setChromeStorage } from "@cb/services";
-import { ExtensionStorage } from "@cb/types";
+import { getLocalStorage, setLocalStorage } from "@cb/services";
+import { Preference } from "@cb/types";
 import React, { createContext } from "react";
 
 interface WindowContext {
   width: number;
   height: number;
-  appPreference: ExtensionStorage["appPreference"];
+  preference: Preference;
   setAppWidth: (width: number) => void;
-  codePreference: ExtensionStorage["codePreference"];
   setCodePreferenceHeight: (height: number) => void;
   onResizeStop: () => void;
   toggleWidth: () => void;
@@ -36,53 +35,56 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
   const { width, height } = windowDimensions;
   const windowDimensionsRef = React.useRef(windowDimensions);
 
-  const [appPreference, setAppPreference] = React.useState<
-    ExtensionStorage["appPreference"]
-  >(CodeBuddyPreference.appPreference);
-  const [codePreference, setCodePreference] = React.useState<
-    ExtensionStorage["codePreference"]
-  >(CodeBuddyPreference.codePreference);
+  const [preference, setPreference] = React.useState(CodeBuddyPreference);
 
   const toggleWidth = () => {
-    setAppPreference((prev) => ({
-      ...prev,
-      isCollapsed: !prev.isCollapsed,
-    }));
-    setChromeStorage({
-      appPreference: {
-        ...appPreference,
-        isCollapsed: appPreference.isCollapsed,
-      },
-      codePreference,
+    setPreference((prev) => {
+      const updated = {
+        ...prev,
+        appPreference: {
+          ...prev.appPreference,
+          isCollapsed: !prev.appPreference.isCollapsed,
+        },
+      };
+      setLocalStorage("preference", updated);
+      return updated;
     });
   };
 
   React.useEffect(() => {
-    setAppPreference((prev) => {
-      const oldRatio = prev.width / windowDimensionsRef.current.width;
+    setPreference((prev) => {
+      const oldRatio =
+        prev.appPreference.width / windowDimensionsRef.current.width;
       return {
         ...prev,
-        width: width * oldRatio,
-        isCollapsed: width * oldRatio <= MIN_WIDTH,
+        appPreference: {
+          width: width * oldRatio,
+          isCollapsed: width * oldRatio <= MIN_WIDTH,
+        },
       };
     });
     windowDimensionsRef.current.width = width;
   }, [width]);
 
   React.useEffect(() => {
-    setCodePreference((prev) => {
-      const oldRatio = prev.height / windowDimensionsRef.current.height;
+    setPreference((prev) => {
+      const oldRatio =
+        prev.codePreference.height / windowDimensionsRef.current.height;
       return {
         ...prev,
-        height: height * oldRatio,
+        codePreference: {
+          height: height * oldRatio,
+        },
       };
     });
     windowDimensionsRef.current.height = height;
   }, [height]);
 
   useOnMount(() => {
-    getChromeStorage("appPreference").then(setAppPreference);
-    getChromeStorage("codePreference").then(setCodePreference);
+    const preference = getLocalStorage("preference");
+    if (preference != undefined) {
+      setPreference(preference);
+    }
   });
 
   useOnMount(() => {
@@ -98,20 +100,23 @@ export const WindowProvider = (props: { children?: React.ReactNode }) => {
       value={{
         height: windowDimensions.height,
         width: windowDimensions.width,
-        appPreference: appPreference,
+        preference,
         setAppWidth: (width) =>
-          setAppPreference((prev) => ({
+          setPreference((prev) => ({
             ...prev,
-            width: width,
-            isCollapsed: width <= MIN_WIDTH,
+            appPreference: {
+              width: width,
+              isCollapsed: width <= MIN_WIDTH,
+            },
           })),
-        codePreference: codePreference,
         setCodePreferenceHeight: (height) =>
-          setCodePreference((prev) => ({
+          setPreference((prev) => ({
             ...prev,
-            height: height,
+            codePreference: {
+              height: height,
+            },
           })),
-        onResizeStop: () => setChromeStorage({ appPreference, codePreference }),
+        onResizeStop: () => setLocalStorage("preference", preference),
         toggleWidth,
       }}
     >

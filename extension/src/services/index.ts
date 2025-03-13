@@ -1,5 +1,5 @@
 import {
-  ExtensionStorage,
+  Preference,
   LocalStorage,
   ServiceRequest,
   ServiceResponse,
@@ -13,19 +13,12 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "signIn",
   "roomState",
   "chooseQuestion",
+  "preference",
 ];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
   request: T
 ): Promise<ServiceResponse[T["action"]]> => chrome.runtime.sendMessage(request);
-
-export const setChromeStorage = (items: Partial<ExtensionStorage>) =>
-  chrome.storage.sync.set(items);
-
-export const getChromeStorage = <K extends keyof ExtensionStorage>(key: K) =>
-  chrome.storage.sync.get(key).then((pref) => pref[key]) as Promise<
-    ExtensionStorage[K]
-  >;
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);

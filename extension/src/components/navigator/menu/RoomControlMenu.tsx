@@ -34,14 +34,14 @@ const _RoomControlMenu = ({
   onCreateRoom,
   onJoinRoom,
   onLeaveRoom,
-  inputRoomId,
+  groupId,
   setInputRoomId,
 }: {
   appState: AppState;
   onCreateRoom: (e: Event) => void;
   onJoinRoom: (e: React.MouseEvent | React.KeyboardEvent) => void;
   onLeaveRoom: (e: Event) => void;
-  inputRoomId: string;
+  groupId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,8 +94,7 @@ const _RoomControlMenu = ({
           <RoomControlDropdownMenuItem
             onSelect={(e) => {
               e.stopPropagation();
-              console.log("Copying room ID", inputRoomId);
-              navigator.clipboard.writeText(inputRoomId ?? "");
+              navigator.clipboard.writeText(groupId ?? "");
             }}
           >
             <span className="flex items-center gap-2">
@@ -116,18 +115,18 @@ const _RoomControlMenu = ({
 };
 
 export const RoomControlMenu = () => {
-  const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
+  const { createRoom, joinRoom, groupId, leaveRoom } = useRTC();
   const { state: appState, setState: setAppState } =
     React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   React.useEffect(() => {
-    if (roomId != null) {
+    if (groupId != null) {
       setAppState(AppState.ROOM);
     } else {
       setAppState(AppState.HOME);
     }
-  }, [roomId, setAppState]);
+  }, [groupId, setAppState]);
 
   const createRoomThrottled = React.useMemo(() => {
     return throttle((event: Event) => {
@@ -154,9 +153,9 @@ export const RoomControlMenu = () => {
 
   const signOutThrottled = React.useMemo(() => {
     return throttle(() => {
-      leaveRoom(roomId).then(() => signOut(auth));
+      leaveRoom(groupId).then(() => signOut(auth));
     }, 1000);
-  }, [leaveRoom, roomId]);
+  }, [leaveRoom, groupId]);
 
   const resetExtensionThrottled = React.useMemo(() => {
     return throttle((event: Event) => {
@@ -169,12 +168,12 @@ export const RoomControlMenu = () => {
     return throttle((event: Event) => {
       event.stopPropagation?.();
       setAppState(AppState.HOME);
-      if (roomId) {
-        leaveRoom(roomId);
+      if (groupId) {
+        leaveRoom(groupId);
       }
     }, 1000);
-  }, [roomId, leaveRoom, setAppState]);
-
+  }, [groupId, leaveRoom, setAppState]);
+  // console.log("groupId", groupId);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -186,7 +185,7 @@ export const RoomControlMenu = () => {
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
           onLeaveRoom={leaveRoomThrottled}
-          inputRoomId={roomId ?? ""}
+          groupId={groupId ?? inputRoomId}
           setInputRoomId={setInputRoomId}
         />
         <RoomControlDropdownMenuItem onSelect={signOutThrottled}>

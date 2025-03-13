@@ -11,20 +11,20 @@ initializeApp();
 
 const db = getFirestore();
 
-export const cleanup = onDocumentDeleted("rooms/{roomId}", async (event) => {
+export const cleanup = onDocumentDeleted("groups/{groupId}", async (event) => {
   const {
-    params: { roomId },
+    params: { groupId },
   } = event;
   try {
-    logger.info("Deleting subcollections", roomId);
-    await db.recursiveDelete(db.doc(`rooms/${roomId}`));
+    logger.info("Deleting subcollections", groupId);
+    await db.recursiveDelete(db.doc(`groups/${groupId}`));
   } catch (e: any) {
-    logger.error("Failed to delete subcollections", roomId, e);
+    logger.error("Failed to delete subcollections", groupId, e);
   }
 });
 
 export const setExpirationDate = onDocumentCreated(
-  "rooms/{roomId}",
+  "groups/{groupId}",
   (change) => {
     if (change.data?.exists) {
       const expiredAt = Timestamp.now().toDate();

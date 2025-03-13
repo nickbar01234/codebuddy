@@ -37,7 +37,7 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
     )[0] as PerformanceNavigationTiming;
     const navigate =
       getLocalStorage("roomState") == ROOMSTATE.NAVIGATE.toString();
-    if (refreshInfo?.roomId)
+    if (refreshInfo?.groupId)
       if (maybeReload.type === "reload" || navigate) {
         setState(AppState.LOADING);
       } else {

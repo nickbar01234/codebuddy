@@ -6,7 +6,7 @@ interface LeetCodeOnChangeMessage extends GenericMessage {
 }
 
 interface RoomMessage {
-  roomId: string;
+  groupId: string;
 }
 
 interface CreateRoomMessage extends RoomMessage, GenericMessage {
