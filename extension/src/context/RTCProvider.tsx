@@ -76,6 +76,7 @@ export interface RTCContext {
   joinRoom: (groupId: string) => Promise<boolean>;
   leaveRoom: (groupId: string | null) => Promise<void>;
   groupId: string | null;
+  roomId: string;
   setGroupId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
@@ -280,11 +281,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async ({ groupId }: CreateRoom) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
-    const newGroup = getGroupRef;
-    const roomRef = getRoomRef(groupId, roomId);
+    const newGroupRef = getGroupRef(groupId);
+    const newGroupId = newGroupRef.id;
+    const roomRef = getRoomRef(newGroupId, roomId);
     await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
     console.log("Created room");
-    setGroupId(roomRef.id);
+    setGroupId(newGroupId);
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -292,7 +294,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const createOffer = React.useCallback(
     async (groupId: string, peer: string) => {
       console.log("Create Offer to", peer);
-      const meRef = getRoomPeerConnectionRef(groupId, peer, username);
+      const meRef = getRoomPeerConnectionRef(groupId, roomId, peer, username);
       const pc = new RTCPeerConnection(servers);
 
       const channel = pc.createDataChannel("channel");
@@ -360,7 +362,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
 
-      const roomDoc = await getRoom(groupId);
+      const roomDoc = await getRoom(groupId, roomId);
       if (!roomDoc.exists()) {
         toast.error("Room does not exist");
         return false;
@@ -381,12 +383,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", groupId);
       setGroupId(groupId);
-      await setRoom(getRoomRef(groupId), {
+      await setRoom(getRoomRef(groupId, roomId), {
         usernames: arrayUnion(username),
       });
 
       const unsubscribe = onSnapshot(
-        getRoomPeerConnectionRefs(groupId, username),
+        getRoomPeerConnectionRefs(groupId, roomId, username),
         (snapshot) => {
           snapshot.docChanges().forEach(async (change) => {
             if (change.type === "removed") {
@@ -400,7 +402,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
               return;
             }
 
-            const themRef = getRoomPeerConnectionRef(groupId, username, peer);
+            const themRef = getRoomPeerConnectionRef(
+              groupId,
+              roomId,
+              username,
+              peer
+            );
             const pc =
               getConnection()[peer]?.pc ?? new RTCPeerConnection(servers);
             if (getConnection()[peer] == undefined) {
@@ -467,12 +474,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
-        await setRoom(getRoomRef(groupId), {
+        await setRoom(getRoomRef(groupId, roomId), {
           usernames: arrayRemove(username),
         });
 
         const myAnswers = await getDocs(
-          getRoomPeerConnectionRefs(groupId, username)
+          getRoomPeerConnectionRefs(groupId, roomId, username)
         );
         myAnswers.docs.forEach(async (doc) => {
           deleteDoc(doc.ref);
@@ -497,9 +504,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
       peers
-        .map((peer) => getRoomPeerConnectionRef(groupId, username, peer))
+        .map((peer) =>
+          getRoomPeerConnectionRef(groupId, roomId, username, peer)
+        )
         .forEach((docRef) => batch.delete(docRef));
-      batch.update(getRoomRef(groupId), {
+      batch.update(getRoomRef(groupId, roomId), {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
@@ -520,7 +529,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const deleteMe = React.useCallback(async () => {
     if (groupId) {
-      await setRoom(getRoomRef(groupId), { usernames: arrayRemove(username) });
+      await setRoom(getRoomRef(groupId, roomId), {
+        usernames: arrayRemove(username),
+      });
       console.log("Before Reloading", groupId);
     }
   }, [groupId, username]);
@@ -551,30 +562,33 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     if (groupId != null && getSnapshot()[groupId] == undefined) {
-      const unsubscribe = onSnapshot(getRoomRef(groupId), (snapshot) => {
-        const data = snapshot.data();
-        // todo(nickbar01234): Clear and report room if deleted?
-        if (data == undefined) return;
+      const unsubscribe = onSnapshot(
+        getRoomRef(groupId, roomId),
+        (snapshot) => {
+          const data = snapshot.data();
+          // todo(nickbar01234): Clear and report room if deleted?
+          if (data == undefined) return;
 
-        const usernames = data.usernames;
-        if (!usernames.includes(username)) return;
-        const removedPeers = Object.keys(getConnection()).filter(
-          (username) => !usernames.includes(username)
-        );
-        const addedPeers = usernames
-          .slice(data.usernames.indexOf(username) + 1)
-          .filter((username) => !getConnection()[username]);
+          const usernames = data.usernames;
+          if (!usernames.includes(username)) return;
+          const removedPeers = Object.keys(getConnection()).filter(
+            (username) => !usernames.includes(username)
+          );
+          const addedPeers = usernames
+            .slice(data.usernames.indexOf(username) + 1)
+            .filter((username) => !getConnection()[username]);
 
-        deletePeersRef.current(removedPeers);
+          deletePeersRef.current(removedPeers);
 
-        addedPeers.forEach((peer) => {
-          createOffer(groupId, peer);
-        });
+          addedPeers.forEach((peer) => {
+            createOffer(groupId, peer);
+          });
 
-        removedPeers.forEach((peer) => {
-          toast.error(`${peer} has left the room`);
-        });
-      });
+          removedPeers.forEach((peer) => {
+            toast.error(`${peer} has left the room`);
+          });
+        }
+      );
       registerSnapshot(groupId, unsubscribe, (prev) => prev());
     }
   }, [
@@ -710,11 +724,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
         createRoom,
         joinRoom,
         leaveRoom,
-        groupId: groupId,
+        groupId,
         setGroupId,
         informations,
         peerState,
         joiningBackRoom,
+        roomId,
       }}
     >
       {props.children}

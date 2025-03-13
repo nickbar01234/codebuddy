@@ -35,7 +35,7 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
       "navigation"
     )[0] as PerformanceNavigationTiming;
 
-    if (refreshInfo?.roomId)
+    if (refreshInfo?.groupId)
       setState(
         maybeReload.type === "reload" ? AppState.LOADING : AppState.REJOINING
       );
