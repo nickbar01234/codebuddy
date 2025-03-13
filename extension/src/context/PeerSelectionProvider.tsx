@@ -215,12 +215,15 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   React.useEffect(() => {
     for (const peer of peers) {
+      if (!isBuffer) {
+        console.log("IS BUFFER DONE");
+      }
       setLocalStorageForIndividualPeers(peer);
-      if (peer.active && roomId) {
+      if (peer.active) {
         setLocalStorage("lastActivePeer", peer.id);
       }
     }
-  }, [peers, groupId, setLocalStorageForIndividualPeers]);
+  }, [peers, groupId, setLocalStorageForIndividualPeers, isBuffer]);
 
   React.useEffect(() => {
     setPeers((prev) =>

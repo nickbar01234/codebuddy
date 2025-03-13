@@ -8,12 +8,11 @@ import {
   useRTC,
   useWindowDimensions,
 } from "@cb/hooks/index";
-import { constructUrlFromQuestionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import { LoadingPanel } from "../LoadingPanel";
 import EditorToolBar from "./EditorToolBar";
-
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -22,7 +21,8 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { peers, activePeer, unblur, selectTest } = usePeerSelection();
+  const { peers, activePeer, unblur, selectTest, isBuffer } =
+    usePeerSelection();
   const { state: appState, setState: setAppState } = useAppState();
   const {
     setCodePreferenceHeight,
@@ -56,6 +56,9 @@ const EditorPanel = () => {
         hidden: appState !== AppState.ROOM,
       })}
     >
+      {!isBuffer && emptyRoom && appState === AppState.ROOM && (
+        <LoadingPanel numberOfUsers={peers.length} />
+      )}
       {roomState === ROOMSTATE.WAIT && (
         <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
           Waiting for other to finish
@@ -97,7 +100,7 @@ const EditorPanel = () => {
       )}
       <div
         className={cn("relative flex h-full w-full flex-col justify-between", {
-          hidden: emptyRoom,
+          hidden: emptyRoom || roomState !== ROOMSTATE.CODE,
         })}
       >
         {/* todo(nickbar01234): Fix styling */}

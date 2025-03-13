@@ -370,7 +370,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const joinRoom = React.useCallback(
     async (groupId: string): Promise<boolean> => {
-      const questionId = getQuestionIdFromUrl(window.location.href);
       console.log("Joining room", groupId);
       if (!groupId) {
         toast.error("Please enter room ID");
@@ -393,12 +392,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
       const roomQuestionId = roomDoc.data().questionId;
-      const prevQuestionId = getLocalStorage("chooseQuestion");
-      if (
-        roomQuestionId !== questionId &&
-        prevQuestionId &&
-        prevQuestionId !== questionId
-      ) {
+      if (roomQuestionId !== roomId) {
         toast.error("The room you join is on this question:", {
           description: roomQuestionId,
         });
@@ -550,10 +544,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await setRoom(getRoomRef(groupId, roomId), {
       finishedUsers: arrayUnion(username),
     });
-  }, [username, roomId]);
+  }, [username, groupId]);
 
   const handleFailedSubmission = React.useCallback(async () => {
     if (roomId == null) return;
+    if (!groupId) return;
     const questionId = getQuestionIdFromUrl(window.location.href);
     sendMessageToAll(
       withPayload({
@@ -562,7 +557,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         eventMessage: `User ${username} failed some test cases for ${questionId}`,
       })
     );
-  }, [username, roomId]);
+  }, [username, groupId]);
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
@@ -609,13 +604,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
       const chosenQuestionId = getQuestionIdFromUrl(questionURL);
       console.log("Choose question URL", questionURL);
       toast.info("You have selected question " + chosenQuestionId);
-      if (roomId == null) return;
+      if (groupId == null) return;
       await setRoom(getRoomRef(groupId, roomId), {
         nextQuestion: chosenQuestionId,
       });
+      await setGroup(getGroupRef(groupId), {
+        questions: arrayUnion(chosenQuestionId),
+      });
       setRoomState(ROOMSTATE.WAIT);
     },
-    [roomId]
+    [groupId]
   );
 
   const deletePeersRef = React.useRef(deletePeers);
@@ -656,6 +654,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (!chooseQuestion) return;
+    setLocalStorage("roomState", ROOMSTATE.CODE.toString());
     window.location.href = constructUrlFromQuestionId(chooseQuestion);
   }, [chooseQuestion]);
 
@@ -680,7 +679,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           await deletePeersRef.current(removedPeers);
 
           for (const peer of addedPeers) {
-            await createOffer(roomId, peer);
+            await createOffer(groupId, peer);
           }
 
           removedPeers.forEach((peer) => {
@@ -702,7 +701,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 updatedState[peer] = { ...updatedState[peer], finished: true };
               }
             });
-
             return updatedState;
           });
           if (!nextQuestionChosen) {
