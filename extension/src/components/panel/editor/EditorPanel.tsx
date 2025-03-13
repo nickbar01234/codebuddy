@@ -1,4 +1,3 @@
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import QuestionSelector from "@cb/components/QuestionSelector";
 import { RenderButton } from "@cb/components/ui/RenderButton";
 import { AppState } from "@cb/context/AppStateProvider";
