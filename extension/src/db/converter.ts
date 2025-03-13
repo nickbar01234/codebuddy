@@ -23,7 +23,6 @@ export interface Group {
   questions: string[];
 }
 
-// --- Converters ---
 export const roomConverter: FirestoreDataConverter<Room, Room> = {
   toFirestore: (data: Room) => data,
   fromFirestore: (

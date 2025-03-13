@@ -23,7 +23,7 @@ const useDevSetupRoom = () => {
         switch (windowMessage.action) {
           case "createRoom": {
             unsafeResetRoom(windowMessage.groupId).then(() =>
-              createRoom({ roomId: windowMessage.groupId })
+              createRoom({ groupId: windowMessage.groupId })
             );
             break;
           }
