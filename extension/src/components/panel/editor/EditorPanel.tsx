@@ -97,14 +97,16 @@ const EditorPanel = () => {
       )}
 
       <div
-        className={cn("relative flex h-full w-full flex-col justify-between", {
-          blur: isBuffer,
-        })}
-      >
-        {!isBuffer && emptyRoom && (
-          <LoadingPanel numberOfUsers={peers.length} />
-          // <div>NO BUDDYYYY HEREEEE</div>
+        className={cn(
+          "relative flex h-full w-full flex-col justify-between",
+          {}
         )}
+      >
+        {isBuffer ||
+          (!isBuffer && emptyRoom && (
+            <LoadingPanel numberOfUsers={peers.length} />
+            // <div>NO BUDDYYYY HEREEEE</div>
+          ))}
         <div
           className={cn(
             "relative flex h-full w-full flex-col justify-between",
