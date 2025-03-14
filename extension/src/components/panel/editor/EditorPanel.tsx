@@ -62,15 +62,11 @@ const EditorPanel = () => {
       {roomState === ROOMSTATE.WAIT && (
         <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
           Waiting for other to finish
-          {unfinishedPeers.length === 0 ? (
-            <p>All peers are finished. But no question has been chosen</p>
-          ) : (
-            <ul>
-              {unfinishedPeers.map(({ peerId, latency }) => (
-                <li key={peerId}> {peerId}</li>
-              ))}
-            </ul>
-          )}
+          <ul>
+            {unfinishedPeers.map(({ peerId, latency }) => (
+              <li key={peerId}> {peerId}</li>
+            ))}
+          </ul>
         </h1>
       )}
       {roomState === ROOMSTATE.CHOOSE && (

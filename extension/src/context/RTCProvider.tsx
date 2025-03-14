@@ -637,7 +637,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: [],
         nextQuestion: "",
       });
-      setRoomState(ROOMSTATE.WAIT);
     },
     [groupId, roomId]
   );
@@ -667,7 +666,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
           prevQuestionId !== getQuestionIdFromUrl(window.location.href)
         ) {
           setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
-          window.location.href = constructUrlFromQuestionId(prevQuestionId);
+          history.pushState(
+            null,
+            "",
+            constructUrlFromQuestionId(prevQuestionId)
+          );
+          location.reload();
         } else {
           setTimeout(() => {
             joinRoom(prevGroupId);
@@ -681,7 +685,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (!chooseQuestion) return;
     setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
-    window.location.href = constructUrlFromQuestionId(chooseQuestion);
+    setLocalStorage("chooseQuestion", chooseQuestion);
+    history.pushState(null, "", constructUrlFromQuestionId(chooseQuestion));
+    location.reload();
+    // window.location.href = constructUrlFromQuestionId(chooseQuestion);
   }, [chooseQuestion]);
 
   React.useEffect(() => {
@@ -797,11 +804,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (roomState == null) return;
     setLocalStorage("roomState", roomState.toString());
   }, [roomState]);
-
-  React.useEffect(() => {
-    if (chooseQuestion == null) return;
-    setLocalStorage("chooseQuestion", chooseQuestion);
-  });
 
   useOnMount(() => {
     const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
