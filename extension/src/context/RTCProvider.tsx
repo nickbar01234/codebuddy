@@ -118,7 +118,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
-  const roomId = getQuestionIdFromUrl(window.location.href);
+  const roomId = React.useMemo(
+    () => getQuestionIdFromUrl(window.location.href),
+    []
+  );
   const [roomState, setRoomState] = React.useState<ROOMSTATE | null>(null);
   const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
     null
@@ -365,7 +368,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       registerSnapshot(peer, unsubscribe, (prev) => prev());
     },
-    [username, onmessage, registerSnapshot, registerConnection]
+    [username, onmessage, registerSnapshot, registerConnection, roomId]
   );
 
   const joinRoom = React.useCallback(
@@ -488,10 +491,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
       console.log("JOIN ROOM", prevRoomState);
       if (prevRoomState) {
         setRoomState(parseInt(prevRoomState));
+      } else {
+        setRoomState(ROOMSTATE.CODE);
       }
       return true;
     },
-    [username, onmessage, registerSnapshot, registerConnection, getConnection]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      getConnection,
+      roomId,
+    ]
   );
 
   const leaveRoom = React.useCallback(
@@ -524,7 +536,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setInformations({});
       setPeerState({});
     },
-    [username, cleanupSnapshot, cleanupConnection]
+    [username, cleanupSnapshot, cleanupConnection, roomId]
   );
   const handleSucessfulSubmission = React.useCallback(async () => {
     if (roomId == null) return;
@@ -544,7 +556,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await setRoom(getRoomRef(groupId, roomId), {
       finishedUsers: arrayUnion(username),
     });
-  }, [username, groupId]);
+  }, [username, groupId, roomId, sendMessageToAll]);
 
   const handleFailedSubmission = React.useCallback(async () => {
     if (roomId == null) return;
@@ -557,7 +569,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         eventMessage: `User ${username} failed some test cases for ${questionId}`,
       })
     );
-  }, [username, groupId]);
+  }, [username, groupId, roomId, sendMessageToAll]);
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
@@ -586,7 +598,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       );
       // console.log("Removed peers", peers);
     },
-    [groupId, username, evictConnection]
+    [groupId, username, evictConnection, roomId]
   );
 
   const deleteMe = React.useCallback(async () => {
@@ -596,7 +608,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
       console.log("Before Reloading", groupId);
     }
-  }, [groupId, username]);
+  }, [groupId, username, roomId]);
 
   const handleChooseQuestion = React.useCallback(
     async (questionURL: string) => {
@@ -613,7 +625,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
       setRoomState(ROOMSTATE.WAIT);
     },
-    [groupId]
+    [groupId, roomId]
   );
 
   const deletePeersRef = React.useRef(deletePeers);
@@ -734,6 +746,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     getSnapshot,
     registerSnapshot,
     getConnection,
+    roomId,
   ]);
 
   React.useEffect(() => {

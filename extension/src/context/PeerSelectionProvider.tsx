@@ -188,7 +188,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       }
       return currentPeers[peerId];
     },
-    []
+    [roomId]
   );
 
   const setLocalStorageForIndividualPeers = React.useCallback(
@@ -210,7 +210,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       };
       setLocalStorage("tabs", currentInfo);
     },
-    [groupId]
+    [groupId, roomId]
   );
 
   React.useEffect(() => {
@@ -277,6 +277,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       setCode(changeUser);
       setChangeUser(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePeer?.id, activeUserInformation, setCode]); // not including changeUser
 
   React.useEffect(() => {
