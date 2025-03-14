@@ -1,52 +1,52 @@
-import * as React from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { cn } from "@cb/utils/cn";
+import React, { useState } from "react";
+import { cn } from "@cb/utils/cn"; // Using your cn function
 
-const Tabs = TabsPrimitive.Root;
+type TabItem = {
+  label: React.ReactNode; // React component label
+  content: React.ReactNode;
+};
 
-const TabsList = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.List>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn(
-      "bg-muted text-muted-foreground inline-flex h-9 items-center justify-center rounded-lg p-1",
-      className
-    )}
-    {...props}
-  />
-));
-TabsList.displayName = TabsPrimitive.List.displayName;
+interface TabsProps {
+  tabs: TabItem[];
+  className?: string; // Optional className for the outermost div
+}
 
-const TabsTrigger = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Trigger
-    ref={ref}
-    className={cn(
-      "ring-offset-background focus-visible:ring-ring data-[state=active]:bg-background data-[state=active]:text-foreground inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:shadow",
-      className
-    )}
-    {...props}
-  />
-));
-TabsTrigger.displayName = TabsPrimitive.Trigger.displayName;
+export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
 
-const TabsContent = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content
-    ref={ref}
-    className={cn(
-      "ring-offset-background focus-visible:ring-ring mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-      className
-    )}
-    {...props}
-  />
-));
-TabsContent.displayName = TabsPrimitive.Content.displayName;
-
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+  return (
+    <div className={cn("h-full w-full", className)}>
+      <div className="flex">
+        {tabs.map((tab, index) => (
+          <button
+            key={index}
+            onClick={() => setActiveIndex(index)}
+            className={cn(
+              "px-4 py-2 text-sm font-medium transition-all",
+              index === activeIndex
+                ? "text-black after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:bg-orange-500"
+                : "text-gray-500 hover:text-gray-700"
+            )}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div className="relative mt-1">
+        {tabs.map((tab, index) => (
+          <div
+            key={index}
+            className={cn(
+              "absolute left-0 top-0 w-full transition-opacity duration-300",
+              index === activeIndex
+                ? "visible opacity-100"
+                : "invisible opacity-0"
+            )}
+          >
+            {tab.content}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
