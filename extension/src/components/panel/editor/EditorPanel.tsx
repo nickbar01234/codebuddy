@@ -92,7 +92,7 @@ const EditorPanel = () => {
                       isYes={false}
                       onClick={() => {
                         joiningBackRoom(false);
-                        setAppState(AppState.ROOM);
+                        setAppState(AppState.HOME);
                       }}
                     />
                   </div>

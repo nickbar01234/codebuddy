@@ -524,16 +524,22 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
-        await setRoom(getRoomRef(groupId, roomId), {
-          usernames: arrayRemove(username),
-        });
+        const groupDoc = (await getGroup(groupId)).data();
+        if (!groupDoc) return;
+        const batch = writeBatch(firestore);
+        await Promise.all(
+          groupDoc.questions.map(async (curQuestionId) => {
+            batch.update(getRoomRef(groupId, curQuestionId), {
+              usernames: arrayRemove(username),
+            });
 
-        const myAnswers = await getDocs(
-          getRoomPeerConnectionRefs(groupId, roomId, username)
+            const myAnswers = await getDocs(
+              getRoomPeerConnectionRefs(groupId, curQuestionId, username)
+            );
+            myAnswers.docs.forEach((doc) => batch.delete(doc.ref));
+          })
         );
-        myAnswers.docs.forEach(async (doc) => {
-          deleteDoc(doc.ref);
-        });
+        await batch.commit();
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
       }
@@ -673,8 +679,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
           );
           location.reload();
         } else {
-          setTimeout(() => {
-            joinRoom(prevGroupId);
+          setTimeout(async () => {
+            const join = await joinRoom(prevGroupId);
+            if (!join) {
+              toast.error("Failed to join room");
+            }
           }, 1500);
         }
       }
