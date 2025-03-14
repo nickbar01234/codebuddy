@@ -55,44 +55,46 @@ const EditorPanel = () => {
         hidden: appState !== AppState.ROOM,
       })}
     >
-      <div className="flex w-full items-center justify-center rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
-        {roomState === ROOMSTATE.WAIT && (
-          <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-            Waiting for other to finish
-            <ul>
-              {unfinishedPeers.map(({ peerId, latency }) => (
-                <li key={peerId}> {peerId}</li>
-              ))}
-            </ul>
-          </h1>
-        )}
-        {roomState === ROOMSTATE.CHOOSE && (
-          <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
-        )}
-
-        {roomState === ROOMSTATE.DECISION && (
-          <div className="flex w-full flex-col">
+      {roomState !== ROOMSTATE.CODE && (
+        <div className="flex w-full items-center justify-center rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
+          {roomState === ROOMSTATE.WAIT && (
             <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-              Do you want to go on to next question?
+              Waiting for other to finish
+              <ul>
+                {unfinishedPeers.map(({ peerId, latency }) => (
+                  <li key={peerId + latency}> {peerId} </li>
+                ))}
+              </ul>
             </h1>
-            <div className="flex justify-center gap-4">
-              <RenderButton
-                label="YES"
-                isYes={true}
-                onClick={handleNavigateToNextQuestion}
-              />
-              <RenderButton
-                label="NO"
-                isYes={false}
-                onClick={() => {
-                  joiningBackRoom(false);
-                  setAppState(AppState.ROOM);
-                }}
-              />
+          )}
+          {roomState === ROOMSTATE.CHOOSE && (
+            <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
+          )}
+
+          {roomState === ROOMSTATE.DECISION && (
+            <div className="flex w-full flex-col">
+              <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+                Do you want to go on to next question?
+              </h1>
+              <div className="flex justify-center gap-4">
+                <RenderButton
+                  label="YES"
+                  isYes={true}
+                  onClick={handleNavigateToNextQuestion}
+                />
+                <RenderButton
+                  label="NO"
+                  isYes={false}
+                  onClick={() => {
+                    joiningBackRoom(false);
+                    setAppState(AppState.ROOM);
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <div
         className={cn(

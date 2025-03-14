@@ -19,7 +19,7 @@ export default function QuestionSelector({
             "div[role='rowgroup']",
             3000,
             iframeDoc as Document
-          ).then((element) => {
+          ).then(() => {
             const style = document.createElement("style");
             style.textContent = "a { pointer-events: none; }";
             iframeDoc.head.appendChild(style);
@@ -59,7 +59,7 @@ export default function QuestionSelector({
                   "a",
                   3000,
                   questions[i] as unknown as Document
-                ).then((element) => {
+                ).then(() => {
                   const link = questions[i].querySelector("a");
                   if (link) {
                     const questionTitle = link as HTMLAnchorElement;
