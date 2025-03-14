@@ -99,6 +99,7 @@ export enum ROOMSTATE {
   CODE,
   CHOOSE,
   WAIT,
+  DECISION,
   NAVIGATE,
 }
 
@@ -126,7 +127,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
     null
   );
-  // console.log("chooseQuestion", chooseQuestion);
 
   const {
     register: registerConnection,
@@ -389,19 +389,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
 
-      const roomDoc = await getRoom(groupId, roomId);
-      if (!roomDoc.exists()) {
+      const currentRoom = await getRoom(groupId, roomId);
+      if (!currentRoom.exists()) {
         toast.error("Room does not exist");
         return false;
       }
-      const roomQuestionId = roomDoc.data().questionId;
+      const roomDoc = currentRoom.data();
+      const roomQuestionId = roomDoc.questionId;
       if (roomQuestionId !== roomId) {
         toast.error("The room you join is on this question:", {
           description: roomQuestionId,
         });
         return false;
       }
-      const usernames = roomDoc.data().usernames;
+      const usernames = roomDoc.usernames;
       if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
@@ -409,7 +410,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       setGroupId(groupId);
-      setChooseQuestion(roomQuestionId);
       await setRoom(getRoomRef(groupId, roomId), {
         usernames: arrayUnion(username),
       });
@@ -489,7 +489,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       const prevRoomState = getLocalStorage("roomState");
       console.log("JOIN ROOM", prevRoomState);
-      if (prevRoomState) {
+      if (prevRoomState && prevRoomState != ROOMSTATE.NAVIGATE.toString()) {
         setRoomState(parseInt(prevRoomState));
       } else {
         setRoomState(ROOMSTATE.CODE);
@@ -542,12 +542,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (roomId == null) return;
     if (!groupId) return;
 
-    const questionId = getQuestionIdFromUrl(window.location.href);
     sendMessageToAll(
       withPayload({
         action: "event",
         event: EventType.SUBMIT_SUCCESS,
-        eventMessage: `User ${username} passed all test cases for ${questionId}`,
+        eventMessage: `User ${username} passed all test cases for ${roomId}`,
       })
     );
     const roomDoc = await getRoom(groupId, roomId);
@@ -561,12 +560,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const handleFailedSubmission = React.useCallback(async () => {
     if (roomId == null) return;
     if (!groupId) return;
-    const questionId = getQuestionIdFromUrl(window.location.href);
+
     sendMessageToAll(
       withPayload({
         action: "event",
         event: EventType.SUBMIT_FAILURE,
-        eventMessage: `User ${username} failed some test cases for ${questionId}`,
+        eventMessage: `User ${username} failed some test cases for ${roomId}`,
       })
     );
   }, [username, groupId, roomId, sendMessageToAll]);
@@ -623,6 +622,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await setGroup(getGroupRef(groupId), {
         questions: arrayUnion(chosenQuestionId),
       });
+      const newRoomRef = getRoomRef(groupId, chosenQuestionId);
+      await setRoom(newRoomRef, {
+        questionId: chosenQuestionId,
+        finishedUsers: [],
+        usernames: [],
+        nextQuestion: "",
+      });
       setRoomState(ROOMSTATE.WAIT);
     },
     [groupId, roomId]
@@ -666,7 +672,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (!chooseQuestion) return;
-    setLocalStorage("roomState", ROOMSTATE.CODE.toString());
+    setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
     window.location.href = constructUrlFromQuestionId(chooseQuestion);
   }, [chooseQuestion]);
 
@@ -727,10 +733,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
               toast.info(
                 "All users have finished the question. " +
                   "Navigating to the next question: " +
-                  constructUrlFromQuestionId(roomDoc.questionId)
+                  constructUrlFromQuestionId(roomDoc.nextQuestion)
               );
-              setChooseQuestion(roomDoc.questionId);
-              setRoomState(ROOMSTATE.NAVIGATE);
+              setChooseQuestion(roomDoc.nextQuestion);
+              setRoomState(ROOMSTATE.DECISION);
             } else if (finishedUsers.includes(username)) {
               setRoomState(ROOMSTATE.WAIT);
             }

@@ -193,10 +193,14 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const setLocalStorageForIndividualPeers = React.useCallback(
     (peer: Peer) => {
+      if (!groupId) {
+        return;
+      }
       const currentInfo = getLocalStorage("tabs") ?? {
         groupId: groupId ?? "",
         rooms: {},
       };
+
       const currentRoom = currentInfo.rooms[roomId ?? ""];
       if (!currentRoom) {
         currentInfo.rooms[roomId ?? ""] = {

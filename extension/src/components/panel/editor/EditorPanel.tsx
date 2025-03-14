@@ -32,7 +32,6 @@ const EditorPanel = () => {
   } = useWindowDimensions();
   const {
     roomState,
-    chooseQuestion,
     handleChooseQuestion,
     joiningBackRoom,
     handleNavigateToNextQuestion,
@@ -77,7 +76,7 @@ const EditorPanel = () => {
         <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
       )}
 
-      {roomState === ROOMSTATE.NAVIGATE && chooseQuestion && (
+      {roomState === ROOMSTATE.DECISION && (
         <div className="relative flex h-full w-full grow flex-col gap-y-2">
           <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
             Do you want to go on to next question?

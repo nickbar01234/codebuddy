@@ -13,9 +13,8 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{ts,tsx,md,html,css}": [
-      "prettier --write --config .prettierrc",
-      "eslint --fix"
+    "*.{ts,tsx,md,html,css,cjs}": [
+      "prettier --write --config .prettierrc"
     ]
   }
 }
