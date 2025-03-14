@@ -57,6 +57,7 @@ const EditorPanel = () => {
     >
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
         <LoadingPanel numberOfUsers={peers.length} />
+        // <div>NO BUDDYYYY HEREEEE</div>
       )}
       {roomState === ROOMSTATE.WAIT && (
         <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">

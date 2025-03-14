@@ -1,9 +1,4 @@
-import {
-  Preference,
-  LocalStorage,
-  ServiceRequest,
-  ServiceResponse,
-} from "@cb/types";
+import { LocalStorage, ServiceRequest, ServiceResponse } from "@cb/types";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution

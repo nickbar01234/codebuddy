@@ -1,5 +1,5 @@
 import { useOnMount } from "@cb/hooks";
-import { constructUrlFromQuestionId, waitForElement } from "@cb/utils";
+import { waitForElement } from "@cb/utils";
 
 export default function QuestionSelector({
   handleQuestionSelect,

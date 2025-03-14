@@ -50,7 +50,8 @@ export const AppNavigator = () => {
                 Object.keys(currentTabInfo?.rooms[roomId]?.peers ?? 0).length
               }
             />
-          ) : state === AppState.REJOINING ? (
+          ) : // <div> LOADING OUTSIDE IN APP NAVIGATORR</div>
+          state === AppState.REJOINING ? (
             <RejoinPrompt />
           ) : null}
         </div>

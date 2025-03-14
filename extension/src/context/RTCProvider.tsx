@@ -487,10 +487,18 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${groupId}.`
         );
       }
-      const prevRoomState = getLocalStorage("roomState");
-      console.log("JOIN ROOM", prevRoomState);
-      if (prevRoomState && prevRoomState != ROOMSTATE.NAVIGATE.toString()) {
-        setRoomState(parseInt(prevRoomState));
+      const navigate =
+        getLocalStorage("roomState") == ROOMSTATE.NAVIGATE.toString();
+      const finished = roomDoc.finishedUsers.includes(username);
+      const nextQuestionChosen = roomDoc.nextQuestion !== "";
+      if (navigate) {
+        setRoomState(ROOMSTATE.CODE);
+      } else if (finished && !nextQuestionChosen) {
+        setRoomState(ROOMSTATE.CHOOSE);
+      } else if (finished && nextQuestionChosen) {
+        setRoomState(ROOMSTATE.DECISION);
+      } else if (finished) {
+        setRoomState(ROOMSTATE.WAIT);
       } else {
         setRoomState(ROOMSTATE.CODE);
       }
