@@ -80,7 +80,7 @@ const EditorPanel = () => {
               tabs={[
                 {
                   label: (
-                    <div className="flex">
+                    <div className="flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected">
                       <CodeXml className="mr-2 h-4 w-4 text-green-500" />
                       Code
                     </div>
@@ -97,7 +97,7 @@ const EditorPanel = () => {
                 },
                 {
                   label: (
-                    <div className="flex">
+                    <div className="flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected">
                       <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
                       Test
                     </div>

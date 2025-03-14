@@ -25,12 +25,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
           >
             <div
               className={
-                (cn(
-                  "flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected m-5 rounded-md"
-                ),
-                index === activeIndex
-                  ? "bg-[--color-tabset-tabbar-background] after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full"
-                  : "")
+                (cn("m-1 h-full w-full rounded-lg"),
+                index === activeIndex ? "border-b-2 border-orange-500" : "")
               }
             >
               {tab.label}
