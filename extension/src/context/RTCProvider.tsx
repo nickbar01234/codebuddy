@@ -686,6 +686,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (!chooseQuestion) return;
     setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
     setLocalStorage("chooseQuestion", chooseQuestion);
+    await deleteMeRef.current();
     history.pushState(null, "", constructUrlFromQuestionId(chooseQuestion));
     location.reload();
     // window.location.href = constructUrlFromQuestionId(chooseQuestion);

@@ -98,7 +98,7 @@ export default function QuestionSelector({
       src="https://leetcode.com/problemset/"
       title="LeetCode Question"
       id="leetcode_question"
-      className="z-100 h-full w-full"
+      className="z-100 h-full min-h-96 w-full"
       sandbox="allow-scripts allow-same-origin"
     ></iframe>
   );
