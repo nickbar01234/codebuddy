@@ -16,19 +16,25 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
 
   return (
     <div className={cn("h-full w-full", className)}>
-      <div className="flex">
+      <div className="">
         {tabs.map((tab, index) => (
           <button
             key={index}
             onClick={() => setActiveIndex(index)}
-            className={cn(
-              "px-4 py-2 text-sm font-medium transition-all",
-              index === activeIndex
-                ? "text-black after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:bg-orange-500"
-                : "text-gray-500 hover:text-gray-700"
-            )}
+            className={cn("px-4 py-2 text-sm font-medium transition-all")}
           >
-            {tab.label}
+            <div
+              className={
+                (cn(
+                  "flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected m-5 rounded-md"
+                ),
+                index === activeIndex
+                  ? "bg-[--color-tabset-tabbar-background] after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full"
+                  : "")
+              }
+            >
+              {tab.label}
+            </div>
           </button>
         ))}
       </div>
