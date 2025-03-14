@@ -11,9 +11,9 @@ const App = () => {
         richColors
         expand
         closeButton
-        visibleToasts={5}
+        visibleToasts={3}
         toastOptions={{
-          duration: 10 * 1000,
+          duration: 1.5 * 1000,
         }}
       />
       <AppPanel>

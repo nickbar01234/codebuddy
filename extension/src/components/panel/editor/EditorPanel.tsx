@@ -13,6 +13,7 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import { LoadingPanel } from "../LoadingPanel";
 import EditorToolBar from "./EditorToolBar";
+import { Skeleton } from "@cb/components/ui/Skeleton";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -56,42 +57,48 @@ const EditorPanel = () => {
       })}
     >
       {roomState !== ROOMSTATE.CODE && (
-        <div className="flex w-full items-center justify-center rounded-t-lg p-2">
-          {roomState === ROOMSTATE.WAIT && (
-            <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-              Waiting for other to finish
-              <ul>
-                {unfinishedPeers.map(({ peerId, latency }) => (
-                  <li key={peerId + latency}> {peerId} </li>
-                ))}
-              </ul>
-            </h1>
-          )}
-          {roomState === ROOMSTATE.CHOOSE && (
-            <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
-          )}
+        <div className="flex h-[40vh] w-full items-center justify-center rounded-t-lg p-2">
+          {isBuffer ? (
+            <Skeleton className="h-full w-full" />
+          ) : (
+            <>
+              {roomState === ROOMSTATE.WAIT && (
+                <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+                  Waiting for other to finish
+                  <ul>
+                    {unfinishedPeers.map(({ peerId, latency }) => (
+                      <li key={peerId + latency}> {peerId} </li>
+                    ))}
+                  </ul>
+                </h1>
+              )}
+              {roomState === ROOMSTATE.CHOOSE && (
+                <QuestionSelector handleQuestionSelect={handleChooseQuestion} />
+              )}
 
-          {roomState === ROOMSTATE.DECISION && (
-            <div className="flex w-full flex-col">
-              <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-                Do you want to go on to next question?
-              </h1>
-              <div className="flex justify-center gap-4">
-                <RenderButton
-                  label="YES"
-                  isYes={true}
-                  onClick={handleNavigateToNextQuestion}
-                />
-                <RenderButton
-                  label="NO"
-                  isYes={false}
-                  onClick={() => {
-                    joiningBackRoom(false);
-                    setAppState(AppState.ROOM);
-                  }}
-                />
-              </div>
-            </div>
+              {roomState === ROOMSTATE.DECISION && (
+                <div className="flex w-full flex-col">
+                  <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+                    Do you want to go on to next question?
+                  </h1>
+                  <div className="flex justify-center gap-4">
+                    <RenderButton
+                      label="YES"
+                      isYes={true}
+                      onClick={handleNavigateToNextQuestion}
+                    />
+                    <RenderButton
+                      label="NO"
+                      isYes={false}
+                      onClick={() => {
+                        joiningBackRoom(false);
+                        setAppState(AppState.ROOM);
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -102,15 +109,16 @@ const EditorPanel = () => {
           {}
         )}
       >
-        {isBuffer ||
-          (!isBuffer && emptyRoom && (
-            <LoadingPanel numberOfUsers={peers.length} />
-            // <div>NO BUDDYYYY HEREEEE</div>
-          ))}
+        {isBuffer && emptyRoom && <Skeleton className="h-full w-full" />}
+        {!isBuffer && emptyRoom && (
+          <LoadingPanel numberOfUsers={peers.length} />
+          // <div>NO BUDDYYYY HEREEEE</div>
+        )}
         <div
           className={cn(
             "relative flex h-full w-full flex-col justify-between",
             {
+              "max-h-[55vh]": roomState !== ROOMSTATE.CODE,
               hidden: emptyRoom,
             }
           )}
@@ -146,11 +154,19 @@ const EditorPanel = () => {
               onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
               onResizeStop={onResizeStop}
             >
-              <div className="relative flex h-full w-full grow flex-col gap-y-2">
+              {isBuffer && <Skeleton className="h-full w-full" />}
+              <div
+                className={cn(
+                  "relative flex h-full w-full grow flex-col gap-y-2",
+                  {
+                    hidden: isBuffer,
+                  }
+                )}
+              >
                 <EditorToolBar />
                 <div
                   id={EDITOR_NODE_ID}
-                  className="h-full w-full overflow-hidden"
+                  className={cn("h-full w-full overflow-hidden")}
                 />
               </div>
             </ResizableBox>
@@ -158,46 +174,50 @@ const EditorPanel = () => {
               className="relative w-full overflow-auto"
               style={{ height: height - codePreference.height - 128 }}
             >
-              <div className="mx-5 my-4 flex flex-col space-y-4">
-                <div className="flex w-full flex-row items-start justify-between gap-4">
-                  <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
-                    {activePeer?.tests.map((test, idx) => (
-                      <div key={idx} onClick={() => selectTest(idx)}>
-                        {test.selected ? (
-                          <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">
-                            Case {idx + 1}
-                          </button>
-                        ) : (
-                          <button className="hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent relative inline-flex items-center whitespace-nowrap rounded-lg bg-transparent px-4 py-1 font-medium focus:outline-none">
-                            Case {idx + 1}
-                          </button>
-                        )}
-                      </div>
-                    ))}
+              {isBuffer ? (
+                <Skeleton className="h-full w-full bg-[--color-tabset-tabbar-background]" />
+              ) : (
+                <div className="mx-5 my-4 flex flex-col space-y-4">
+                  <div className="flex w-full flex-row items-start justify-between gap-4">
+                    <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
+                      {activePeer?.tests.map((test, idx) => (
+                        <div key={idx} onClick={() => selectTest(idx)}>
+                          {test.selected ? (
+                            <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">
+                              Case {idx + 1}
+                            </button>
+                          ) : (
+                            <button className="hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent relative inline-flex items-center whitespace-nowrap rounded-lg bg-transparent px-4 py-1 font-medium focus:outline-none">
+                              Case {idx + 1}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex h-full w-full flex-col space-y-2">
-                      {activeTest?.test.map((assignment, idx) => (
-                        <React.Fragment key={idx}>
-                          <div className="text-label-3 dark:text-dark-label-3 text-xs font-medium">
-                            {assignment.variable} =
-                          </div>
-                          <div className="font-menlo bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[10px]">
-                            <div
-                              className="font-menlo placeholder:text-label-4 dark:placeholder:text-dark-label-4 sentry-unmask w-full resize-none whitespace-pre-wrap break-words outline-none"
-                              contentEditable="true"
-                            >
-                              {assignment.value}
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex h-full w-full flex-col space-y-2">
+                        {activeTest?.test.map((assignment, idx) => (
+                          <React.Fragment key={idx}>
+                            <div className="text-label-3 dark:text-dark-label-3 text-xs font-medium">
+                              {assignment.variable} =
                             </div>
-                          </div>
-                        </React.Fragment>
-                      )) ?? null}
+                            <div className="font-menlo bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[10px]">
+                              <div
+                                className="font-menlo placeholder:text-label-4 dark:placeholder:text-dark-label-4 sentry-unmask w-full resize-none whitespace-pre-wrap break-words outline-none"
+                                contentEditable="true"
+                              >
+                                {assignment.value}
+                              </div>
+                            </div>
+                          </React.Fragment>
+                        )) ?? null}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
