@@ -56,7 +56,7 @@ const EditorPanel = () => {
       })}
     >
       {roomState !== ROOMSTATE.CODE && (
-        <div className="flex w-full items-center justify-center rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
+        <div className="flex w-full items-center justify-center rounded-t-lg p-2">
           {roomState === ROOMSTATE.WAIT && (
             <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
               Waiting for other to finish
@@ -115,7 +115,7 @@ const EditorPanel = () => {
           )}
         >
           {/* todo(nickbar01234): Fix styling */}
-          {!canViewCode && (
+          {!canViewCode && !isBuffer && (
             <button
               className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
               onClick={unblur}
