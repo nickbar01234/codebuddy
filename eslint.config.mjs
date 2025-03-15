@@ -19,7 +19,13 @@ export default tseslint.config(
     },
   },
   {
-    files: ["extension/src/**/*.{js,ts,tsx}"],
+    files: ["firebase/function/**/*.{ts,js}"],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+  {
+    files: ["extension/src/**/*.{js,jsx,ts,tsx}"],
     ...react.configs.flat.recommended,
     plugins: {
       "react-hooks": reactHooks,
@@ -31,9 +37,7 @@ export default tseslint.config(
     },
     languageOptions: {
       ...react.configs.flat.recommended.languageOptions,
-      globals: {
-        ...globals.browser,
-      },
+      globals: globals.browser,
     },
   }
 );
