@@ -26,10 +26,12 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
     <div className={cn("h-full w-full", className)}>
       <div className="flex">
         {activePeer?.id && (
-          <UserDropdown
-            isOpen={isUserDropdownOpen}
-            toggle={toggleUserDropdown}
-          />
+          <div className="flex items-center">
+            <UserDropdown
+              isOpen={isUserDropdownOpen}
+              toggle={toggleUserDropdown}
+            />
+          </div>
         )}
 
         {tabs.map((tab, index) => (
