@@ -3,16 +3,13 @@ import { useOnMount } from "@cb/hooks";
 import { waitForElement } from "@cb/utils";
 
 export default function QuestionSelector() {
-  const [question, setQuestion] = React.useState<string>("");
-
   useOnMount(() => {
     waitForElement("#leetcode_question", 2000).then((element) => {
       const iframe = element as HTMLIFrameElement;
 
       iframe.onload = async () => {
         const iframeDoc =
-          iframe.contentDocument ||
-          (iframe.contentWindow && iframe.contentWindow.document);
+          iframe.contentDocument ?? iframe.contentWindow?.document;
         if (iframeDoc) {
           waitForElement(
             "div[role='rowgroup']",
