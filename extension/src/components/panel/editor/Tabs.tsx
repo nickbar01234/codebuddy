@@ -1,22 +1,37 @@
+import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { usePeerSelection } from "@cb/hooks/index";
+import { cn } from "@cb/utils/cn";
 import React, { useState } from "react";
-import { cn } from "@cb/utils/cn"; // Using your cn function
 
 type TabItem = {
-  label: React.ReactNode; // React component label
+  label: React.ReactNode;
   content: React.ReactNode;
 };
 
 interface TabsProps {
   tabs: TabItem[];
-  className?: string; // Optional className for the outermost div
+  className?: string;
 }
 
 export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
+  const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
+    e.stopPropagation();
+    setUserDropdownOpen(!isUserDropdownOpen);
+  };
+  const { activePeer } = usePeerSelection();
 
   return (
     <div className={cn("h-full w-full", className)}>
-      <div className="">
+      <div className="flex">
+        {activePeer?.id && (
+          <UserDropdown
+            isOpen={isUserDropdownOpen}
+            toggle={toggleUserDropdown}
+          />
+        )}
+
         {tabs.map((tab, index) => (
           <button
             key={index}

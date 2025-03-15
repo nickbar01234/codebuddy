@@ -1,5 +1,5 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { Tabs } from "@cb/components/ui/Tabs";
+import { Tabs } from "@cb/components/panel/editor/Tabs";
 import { AppState } from "@cb/context/AppStateProvider";
 import {
   useAppState,
