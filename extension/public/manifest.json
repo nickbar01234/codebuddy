@@ -11,14 +11,7 @@
     "128": "./icons/128.png"
   },
   "host_permissions": ["https://leetcode.com/problems/*"],
-  "permissions": [
-    "storage",
-    "webNavigation",
-    "cookies",
-    "scripting",
-    "tabs",
-    "activeTab"
-  ],
+  "permissions": ["scripting", "tabs", "activeTab"],
   "content_scripts": [
     {
       "js": ["assets/index.js"],
