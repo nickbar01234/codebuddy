@@ -43,7 +43,6 @@ import { poll } from "@cb/utils/poll";
 import {
   arrayRemove,
   arrayUnion,
-  deleteDoc,
   getDocs,
   onSnapshot,
   Unsubscribe,
@@ -550,7 +549,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setInformations({});
       setPeerState({});
     },
-    [username, cleanupSnapshot, cleanupConnection, roomId]
+    [username, cleanupSnapshot, cleanupConnection]
   );
   const handleSucessfulSubmission = React.useCallback(async () => {
     if (roomId == null) return;
