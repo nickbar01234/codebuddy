@@ -1,32 +1,32 @@
 import { getRoomRef, setRoom } from "@cb/db";
-import { useOnMount, useRTC } from ".";
+import { useAppState, useOnMount, useRTC } from ".";
+import { arrayRemove, arrayUnion } from "firebase/firestore";
+import { getLocalStorage } from "@cb/services";
 
 const useDevSetupRoom = () => {
-  const { createRoom, joinRoom, leaveRoom } = useRTC();
+  const { joinRoom } = useRTC();
+  const { user } = useAppState();
 
   useOnMount(() => {
     if (import.meta.env.MODE !== "development") {
       return;
     }
 
-    const unsafeResetRoom = (roomId: string) =>
-      setRoom(getRoomRef(roomId), { usernames: [] });
-    const storedMessage = localStorage.getItem("roomMessage");
+    const storedMessage = getLocalStorage("tabs");
+    console.log("storedMessage", storedMessage);
     if (storedMessage) {
-      const message = JSON.parse(storedMessage);
-      switch (message.action) {
-        case "createRoom": {
-          unsafeResetRoom(message.roomId).then(() =>
-            createRoom({ roomId: message.roomId })
-          );
-          console.log("Create room case useDevsetup");
-          break;
-        }
-        case "joinRoom": {
-          leaveRoom(message.roomId).then(() => joinRoom(message.roomId));
-          console.log("join room case use dev set up room");
-          break;
-        }
+      if (storedMessage.roomId) {
+        setRoom(getRoomRef(storedMessage.roomId), {
+          usernames: arrayUnion(user.username),
+          questionId: "two-sum",
+        })
+          .then(() =>
+            setRoom(getRoomRef(storedMessage.roomId), {
+              usernames: arrayRemove(user.username),
+              questionId: "two-sum",
+            })
+          )
+          .then(() => joinRoom(storedMessage.roomId));
       }
     }
   });
