@@ -53,7 +53,7 @@ const setup = async () => {
   const setupRoom = async (page, roomId) => {
     await page.evaluate((roomId) => {
       const message = {roomId, peers: {}}
-      localStorage.setItem("codebuddytabs", JSON.stringify(message));
+      localStorage.setItem("codebuddyroomMessage", JSON.stringify(message));
     }, roomId);
   };
 

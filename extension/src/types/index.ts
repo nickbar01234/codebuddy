@@ -54,4 +54,7 @@ export interface LocalStorage {
     tabId: number;
   };
   preference: Preference;
+  roomMessage: {
+    roomId: string;
+  };
 }
