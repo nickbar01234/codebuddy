@@ -1,45 +1,41 @@
-import { getRoomRef, setRoom } from "@cb/db";
-import { WindowMessage } from "types/window";
-import { useOnMount, useRTC } from ".";
+import { getGroupRef, getRoomRef, setGroup, setRoom } from "@cb/db";
+import { useAppState, useOnMount, useRTC } from ".";
+import { arrayRemove, arrayUnion } from "firebase/firestore";
+import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 
 const useDevSetupRoom = () => {
-  const { createRoom, joinRoom, leaveRoom } = useRTC();
+  const { joinRoom } = useRTC();
+  const { user } = useAppState();
 
   useOnMount(() => {
     if (import.meta.env.MODE !== "development") {
       return;
     }
 
-    const unsafeResetRoom = (groupId: string) =>
-      setRoom(getRoomRef(groupId, getQuestionIdFromUrl(window.location.href)), {
-        usernames: [],
+    const setupRoom = async () => {
+      const test = getLocalStorage("test");
+      const groupId = test?.groupId;
+      const roomId = getQuestionIdFromUrl(window.location.href);
+      const groupRef = getGroupRef(groupId);
+      await setGroup(groupRef, {
+        questions: arrayUnion(roomId),
       });
-
-    const onWindowMessage = (message: MessageEvent) => {
-      // todo(nickbar01234): Uniquely identify that this is test browser
-      if (message.data.action != undefined) {
-        const windowMessage = message.data as WindowMessage;
-        switch (windowMessage.action) {
-          case "createRoom": {
-            unsafeResetRoom(windowMessage.groupId).then(() =>
-              createRoom({ groupId: windowMessage.groupId })
-            );
-            break;
-          }
-
-          case "joinRoom": {
-            leaveRoom(windowMessage.groupId).then(() =>
-              joinRoom(windowMessage.groupId)
-            );
-            break;
-          }
+      if (test != undefined && groupId != undefined) {
+        setLocalStorage("test", { peer: test?.peer });
+        try {
+          await setRoom(getRoomRef(groupId, roomId), {
+            usernames: arrayRemove(user.username),
+            questionId: getQuestionIdFromUrl(window.location.href),
+          });
+          joinRoom(groupId);
+        } catch (error) {
+          console.log("error when removing", error);
         }
       }
     };
 
-    window.addEventListener("message", onWindowMessage);
-    return () => window.removeEventListener("message", onWindowMessage);
+    setupRoom();
   });
 };
 
