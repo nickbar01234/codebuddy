@@ -46,6 +46,7 @@ export interface LocalStorage {
   };
   test?: {
     peer: string;
+    roomId?: string;
   };
   lastActivePeer: string;
   signIn: {
