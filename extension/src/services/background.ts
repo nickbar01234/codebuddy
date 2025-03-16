@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { CodeBuddyPreference } from "@cb/constants";
-import { setChromeStorage } from "@cb/services";
 import {
   ExtractMessage,
   ResponseStatus,
@@ -12,15 +10,6 @@ import {
 const servicePayload = <T extends ServiceRequest["action"]>(
   payload: ServiceResponse[T]
 ) => payload;
-
-/**
- * Initialize default settings
- */
-chrome.runtime.onInstalled.addListener((details) => {
-  if (details.reason === chrome.runtime.OnInstalledReason.INSTALL) {
-    setChromeStorage({ ...CodeBuddyPreference });
-  }
-});
 
 const getValue = async () => {
   const monaco = (window as any).monaco;

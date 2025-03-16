@@ -34,7 +34,7 @@ export interface Peer {
   tests: TestCase[];
 }
 
-export interface ExtensionStorage {
+export interface Preference {
   appPreference: AppPreference;
   codePreference: CodePreference;
 }
@@ -46,6 +46,7 @@ export interface LocalStorage {
   };
   test?: {
     peer: string;
+    roomId?: string;
   };
   lastActivePeer: string;
   signIn: {
@@ -53,4 +54,5 @@ export interface LocalStorage {
     url: string;
     tabId: number;
   };
+  preference: Preference;
 }

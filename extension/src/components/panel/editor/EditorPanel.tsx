@@ -21,8 +21,12 @@ const EditorPanel = () => {
   const { peers, activePeer, unblur, selectTest, isBuffer } =
     usePeerSelection();
   const { state: appState } = useAppState();
-  const { setCodePreferenceHeight, onResizeStop, codePreference, height } =
-    useWindowDimensions();
+  const {
+    setCodePreferenceHeight,
+    onResizeStop,
+    preference: { codePreference },
+    height,
+  } = useWindowDimensions();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
