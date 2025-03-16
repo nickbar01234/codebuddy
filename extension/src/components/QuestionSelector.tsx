@@ -28,21 +28,25 @@ export default function QuestionSelector() {
             const grandParent = table?.parentElement?.parentElement;
 
             if (grandParent) {
-              let current: HTMLElement | null = grandParent;
+              let current: HTMLElement | null = grandParent; // Start from the given grandParent element
+
               while (current) {
-                current.style.display = "block";
+                // Loop until there are no more parent elements
+                current.style.display = "block"; // Make the current element visible
 
                 if (current.parentElement) {
+                  // Check if the current element has a parent
                   Array.from(current.parentElement.children).forEach(
                     (sibling) => {
                       if (sibling !== current) {
+                        // Hide all sibling elements except the current one
                         (sibling as HTMLElement).style.display = "none";
                       }
                     }
                   );
                 }
 
-                current = current.parentElement;
+                current = current.parentElement; // Move up to the next parent in the hierarchy
               }
             }
 
