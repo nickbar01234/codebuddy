@@ -63,7 +63,7 @@ const setup = async () => {
   await Promise.all(asyncBrowsers);
 
   if (NUM_USERS > 1){
-    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, false)));
+    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, true)));
   }
 };
 
