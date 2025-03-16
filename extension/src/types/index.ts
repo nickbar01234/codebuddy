@@ -51,6 +51,7 @@ export interface LocalStorage {
   };
   test?: {
     peer: string;
+    groupId?: string;
   };
   lastActivePeer: string;
   signIn: {
