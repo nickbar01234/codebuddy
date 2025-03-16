@@ -212,7 +212,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const onOpen = React.useRef((peer: string) => async () => {
     console.log("Data Channel is open for " + peer);
-    setConnection(peer, (resource) => ({ ...resource, lastSeen: getUnixTs() }));
+    setConnection(peer, (resource) => ({
+      ...resource,
+      lastSeen: getUnixTs(),
+    }));
 
     getCodeMessagePayload({}).then((fn) => fn(peer, getConnection()[peer]));
     getTestsMessagePayload()(peer, getConnection()[peer]);
@@ -230,7 +233,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     (peer: string) =>
       function (event: MessageEvent) {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
-        console.log("Message from " + peer, payload);
+        // console.log("Message from " + peer, payload);
         const { action, timestamp } = payload;
 
         switch (action) {
@@ -432,7 +435,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
               const answer = await pc.createAnswer();
               await pc.setLocalDescription(answer);
-              await setRoomPeerConnection(themRef, { answer: answer });
+              await setRoomPeerConnection(themRef, {
+                answer: answer,
+              });
             }
 
             data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
@@ -511,14 +516,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      console.log("Removed peers", peers);
+      // console.log("Removed peers", peers);
     },
     [roomId, username, evictConnection]
   );
 
   const deleteMe = React.useCallback(async () => {
     if (roomId) {
-      await setRoom(getRoomRef(roomId), { usernames: arrayRemove(username) });
+      await setRoom(getRoomRef(roomId), {
+        usernames: arrayRemove(username),
+      });
       console.log("Before Reloading", roomId);
     }
   }, [roomId, username]);
@@ -616,20 +623,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setPeerState((prev) => {
         const newPeers = Object.fromEntries(
           Object.entries(prev).map(([peer, peerHeartBeat]) => {
-          const { latency } = peerHeartBeat;
-          const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
-          const newSample = getUnixTs() - curlastSeen;
-          if (newSample > TIMEOUT) {
-            timeOutPeers.push(peer);
-          }
-          const newLatency = calculateNewRTT(latency, newSample);
+            const { latency } = peerHeartBeat;
+            const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
+            const newSample = getUnixTs() - curlastSeen;
+            if (newSample > TIMEOUT) {
+              timeOutPeers.push(peer);
+            }
+            const newLatency = calculateNewRTT(latency, newSample);
             return [
-            peer,
-            {
-              ...peerHeartBeat,
-              latency: newLatency,
-            },
-          ]})
+              peer,
+              {
+                ...peerHeartBeat,
+                latency: newLatency,
+              },
+            ];
+          })
         );
         return newPeers;
       });
@@ -641,7 +649,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // Time 3: deletePeers is executed
       // User A gets kicked out
       // In practice, we delay the user before joining room, so it should be fine? :)
-      console.log("Dead peers", timeOutPeers);
+      // console.log("Dead peers", timeOutPeers);
       deletePeersRef.current(timeOutPeers);
     }, CHECK_ALIVE_INTERVAL);
     return () => {
