@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "tailwindcss";
@@ -10,8 +11,8 @@ export default defineConfig(() => {
     process.env.TYPE === "content_script"
       ? "./src/index.tsx"
       : process.env.TYPE === "service_worker"
-      ? "./src/services/background.ts"
-      : null;
+        ? "./src/services/background.ts"
+        : null;
 
   if (input == null) {
     throw new Error("Invalid entry point");
@@ -43,6 +44,9 @@ export default defineConfig(() => {
           },
         },
       },
+    },
+    test: {
+      environment: "jsdom",
     },
   };
 });
