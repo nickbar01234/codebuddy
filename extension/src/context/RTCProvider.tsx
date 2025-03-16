@@ -103,7 +103,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
     {}
   );
-  const roomId = getQuestionIdFromUrl(window.location.href);
+  const roomId = React.useMemo(
+    () => getQuestionIdFromUrl(window.location.href),
+    []
+  );
 
   const {
     register: registerConnection,
@@ -353,7 +356,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       registerSnapshot(peer, unsubscribe, (prev) => prev());
     },
-    [username, onmessage, registerSnapshot, registerConnection]
+    [username, onmessage, registerSnapshot, registerConnection, roomId]
   );
 
   const joinRoom = React.useCallback(
@@ -474,7 +477,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
       localStorage.removeItem("refresh");
       return true;
     },
-    [username, onmessage, registerSnapshot, registerConnection, getConnection]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      getConnection,
+      roomId,
+    ]
   );
 
   const leaveRoom = React.useCallback(
@@ -507,7 +517,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setInformations({});
       setPeerState({});
     },
-    [username, cleanupSnapshot, cleanupConnection]
+    [username, cleanupSnapshot, cleanupConnection, roomId]
   );
 
   // modify to accept many peers.
@@ -537,7 +547,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       );
       console.log("Removed peers", peers);
     },
-    [groupId, username, evictConnection]
+    [groupId, username, evictConnection, roomId]
   );
 
   const deleteMe = React.useCallback(async () => {
@@ -547,7 +557,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       });
       console.log("Before Reloading", groupId);
     }
-  }, [groupId, username]);
+  }, [groupId, username, roomId]);
 
   const deletePeersRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
@@ -611,6 +621,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     getSnapshot,
     registerSnapshot,
     getConnection,
+    roomId,
   ]);
 
   React.useEffect(() => {

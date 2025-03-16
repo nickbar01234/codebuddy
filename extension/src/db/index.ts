@@ -74,8 +74,3 @@ export const setRoomPeerConnection = (
 export const deleteRoomPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>
 ) => deleteDoc(ref);
-
-export const checkRoomExist = async (roomId: string) => {
-  const roomDoc = await getRoom(roomId);
-  return roomDoc.exists();
-};
