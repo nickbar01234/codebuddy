@@ -20,7 +20,7 @@ const PAGES = Array.from({ length: NUM_USERS });
 const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
   peer: USERNAMES[idx],
 }));
-const ROOMID = `CODE_BUDDY_TEST_${Date.now()}`
+const ROOM_ID = `CODE_BUDDY_TEST_${Date.now()}`;
 
 const setup = async () => {
   const createBrowser = async (peer) => {
@@ -38,33 +38,26 @@ const setup = async () => {
     });
     const page = await browser.newPage();
     await page.goto(EXTENSION_HOST);
-    await page.evaluate((peer) => {
-      localStorage.setItem(
-        "codebuddytest",
-        JSON.stringify({
-          peer: peer,
-        })
-      );
-    }, peer);
+    await page.evaluate(
+      (peer, roomId) => {
+        localStorage.setItem(
+          "codebuddytest",
+          JSON.stringify({
+            peer: peer,
+            roomId: roomId,
+          })
+        );
+      },
+      peer,
+      NUM_USERS > 1 ? ROOM_ID : undefined
+    );
     await page.goto(TARGET_QUESTION);
     return { browser, page };
   };
-  
-  const setupRoom = async (page, roomId) => {
-    await page.evaluate((roomId) => {
-      const message = {roomId, peers: {}}
-      localStorage.setItem("codebuddyroomMessage", JSON.stringify(message));
-    }, roomId);
-  };
-
   const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {
     PAGES[idx] = await createBrowser(peer);
   });
   await Promise.all(asyncBrowsers);
-
-  if (NUM_USERS > 1){
-    await Promise.all(PAGES.slice(1).map(({ page }) => setupRoom(page, true)));
-  }
 };
 
 const reload = _.debounce(() => {

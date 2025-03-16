@@ -46,6 +46,7 @@ export interface LocalStorage {
   };
   test?: {
     peer: string;
+    roomId?: string;
   };
   lastActivePeer: string;
   signIn: {
@@ -54,7 +55,4 @@ export interface LocalStorage {
     tabId: number;
   };
   preference: Preference;
-  roomMessage: {
-    roomId: string;
-  };
 }

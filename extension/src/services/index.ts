@@ -12,7 +12,6 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "lastActivePeer",
   "signIn",
   "preference",
-  "roomMessage",
 ];
 
 export const sendServiceRequest = <T extends ServiceRequest>(
