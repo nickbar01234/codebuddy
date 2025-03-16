@@ -50,35 +50,33 @@ export default function QuestionSelector() {
               "div[role='row']"
             ) as NodeListOf<HTMLDivElement>;
             if (questions != null) {
-              for (let i = 0; i < questions.length; i++) {
-                waitForElement(
-                  "a",
-                  3000,
-                  questions[i] as unknown as Document
-                ).then((element) => {
-                  const link = questions[i].querySelector("a");
-                  if (link) {
-                    const questionTitle = link as HTMLAnchorElement;
+              questions.forEach((question) => {
+                waitForElement("a", 3000, question as unknown as Document).then(
+                  (element) => {
+                    const link = question.querySelector("a");
+                    if (link) {
+                      const questionTitle = link as HTMLAnchorElement;
 
-                    const plusIcon = document.createElement("span");
-                    plusIcon.innerHTML = "+";
-                    plusIcon.style.position = "absolute";
-                    plusIcon.style.left = "25px";
-                    plusIcon.style.top = "50%";
-                    plusIcon.style.transform = "translateY(-50%)";
-                    plusIcon.style.marginLeft = "8px";
-                    plusIcon.style.cursor = "pointer";
-                    plusIcon.style.fontSize = "20px";
-                    plusIcon.style.fontWeight = "bold";
-                    questions[i].style.position = "relative";
-                    questions[i].prepend(plusIcon);
+                      const plusIcon = document.createElement("span");
+                      plusIcon.innerHTML = "+";
+                      plusIcon.style.position = "absolute";
+                      plusIcon.style.left = "25px";
+                      plusIcon.style.top = "50%";
+                      plusIcon.style.transform = "translateY(-50%)";
+                      plusIcon.style.marginLeft = "8px";
+                      plusIcon.style.cursor = "pointer";
+                      plusIcon.style.fontSize = "20px";
+                      plusIcon.style.fontWeight = "bold";
+                      question.style.position = "relative";
+                      question.prepend(plusIcon);
 
-                    questions[i].addEventListener("click", (e) => {
-                      console.log(questionTitle.href);
-                    });
+                      question.addEventListener("click", (e) => {
+                        console.log(questionTitle.href);
+                      });
+                    }
                   }
-                });
-              }
+                );
+              });
             }
           });
         }
