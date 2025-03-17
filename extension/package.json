@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "^16.2.0",
+    "@testing-library/react-hooks": "^8.0.1",
     "@types/chrome": "^0.0.268",
     "@types/node": "^20.13.0",
     "@types/react": "^18.2.66",
