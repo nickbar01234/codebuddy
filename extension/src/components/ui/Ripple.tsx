@@ -1,24 +1,34 @@
-import React from "react";
-interface RippleProps {
-  mainCircleSize?: number;
-  mainCircleOpacity?: number;
-  numCircles?: number;
-  className?: string;
-}
+import React, { useEffect, useRef, useState } from "react";
 
 export const Ripple = React.memo(function Ripple({
-  mainCircleSize = 210,
-  mainCircleOpacity = 0.24,
   numCircles = 8,
-}: RippleProps) {
+  mainCircleOpacity = 0.24,
+}: {
+  numCircles?: number;
+  mainCircleOpacity?: number;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [mainCircleSize, setMainCircleSize] = useState(210);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const height = containerRef.current.offsetHeight;
+        setMainCircleSize(height * 0.2); // Adjust the scaling factor as needed
+      }
+    };
+    updateSize();
+    window.addEventListener("resize", updateSize);
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
   return (
     <div
-      className={
-        "absolute inset-0 [mask-image:linear-gradient(to_bottom,white,transparent)]"
-      }
+      ref={containerRef}
+      className="absolute inset-0 [mask-image:linear-gradient(to_bottom,white,transparent)]"
     >
       {Array.from({ length: numCircles }, (_, i) => {
-        const size = mainCircleSize + i * 70;
+        const size = mainCircleSize + i * (mainCircleSize * 0.33);
         const opacity = mainCircleOpacity - i * 0.03;
         const animationDelay = `${i * 0.06}s`;
         const borderStyle = i === numCircles - 1 ? "dashed" : "solid";
@@ -27,7 +37,7 @@ export const Ripple = React.memo(function Ripple({
         return (
           <div
             key={i}
-            className={`absolute animate-ripple rounded-full bg-foreground/25 shadow-xl border [--i:${i}]`}
+            className={`animate-ripple bg-foreground/25 absolute rounded-full border shadow-xl [--i:${i}]`}
             style={
               {
                 width: `${size}px`,

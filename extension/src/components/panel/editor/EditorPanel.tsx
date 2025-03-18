@@ -34,22 +34,22 @@ const EditorPanel = () => {
   const emptyRoom = peers.length === 0;
   const { roomId, leaveRoom } = useRTC();
   const { state: appState, setState: setAppState } =
-  React.useContext(appStateContext);
+    React.useContext(appStateContext);
 
-    const leaveRoomThrottled = React.useMemo(() => {
-      return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
-        event.stopPropagation?.();
-        setAppState(AppState.HOME);
-        if (roomId) {
-          leaveRoom(roomId);
-        }
-      }, 1000);
-    }, [roomId, leaveRoom, setAppState]);
+  const leaveRoomThrottled = React.useMemo(() => {
+    return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation?.();
+      setAppState(AppState.HOME);
+      if (roomId) {
+        leaveRoom(roomId);
+      }
+    }, 1000);
+  }, [roomId, leaveRoom, setAppState]);
 
   return (
     <>
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
-        <CreateRoomLoadingPanel onLeaveRoom={leaveRoomThrottled}/>
+        <CreateRoomLoadingPanel onLeaveRoom={leaveRoomThrottled} />
       )}
       <div
         className={cn("relative flex h-full w-full flex-col justify-between", {
