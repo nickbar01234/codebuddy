@@ -1,5 +1,4 @@
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { AppState } from "@cb/context/AppStateProvider";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import {
   useAppState,
   usePeerSelection,
@@ -9,6 +8,9 @@ import { cn } from "@cb/utils/cn";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
+import CreateRoomLoadingPanel from "../CreateRoomLoadingPanel";
+import { throttle } from "lodash";
+import { useRTC } from "@cb/hooks/index";
 
 export interface TabMetadata {
   id: string;
@@ -20,7 +22,6 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { peers, activePeer, unblur, selectTest, isBuffer } =
     usePeerSelection();
-  const { state: appState } = useAppState();
   const {
     setCodePreferenceHeight,
     onResizeStop,
@@ -31,11 +32,24 @@ const EditorPanel = () => {
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
+  const { roomId, leaveRoom } = useRTC();
+  const { state: appState, setState: setAppState } =
+  React.useContext(appStateContext);
+
+    const leaveRoomThrottled = React.useMemo(() => {
+      return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation?.();
+        setAppState(AppState.HOME);
+        if (roomId) {
+          leaveRoom(roomId);
+        }
+      }, 1000);
+    }, [roomId, leaveRoom, setAppState]);
 
   return (
     <>
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
-        <LoadingPanel numberOfUsers={peers.length} />
+        <CreateRoomLoadingPanel onLeaveRoom={leaveRoomThrottled}/>
       )}
       <div
         className={cn("relative flex h-full w-full flex-col justify-between", {
