@@ -3,6 +3,15 @@ import { useRTC } from "@cb/hooks/index";
 import { CopyIcon } from "lucide-react";
 import { UserIcon } from "@cb/components/icons/UserIcon";
 import { Ripple } from "@cb/components/ui/Ripple";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@cb/lib/components/ui/dialog";
 
 const CreateRoomLoadingPanel = ({
   onLeaveRoom,
@@ -14,13 +23,38 @@ const CreateRoomLoadingPanel = ({
   return (
     <div className="flex h-full w-full flex-col items-center justify-center p-4">
       <div className="mb-24 ml-4 self-start">
-        <button
-          className="relative z-10 flex w-40 cursor-pointer items-center justify-center gap-3 rounded-lg border-2 border-gray-300 px-4 py-2 hover:bg-slate-300"
-          onClick={onLeaveRoom}
-        >
-          <LeaveIcon />
-          <span className="text-base font-medium">Leave Room</span>
-        </button>
+        <Dialog>
+          <DialogTrigger>
+            <button className="relative z-10 flex w-40 cursor-pointer items-center justify-center gap-3 rounded-lg border border-[#787880] px-4 py-2 hover:bg-slate-300">
+              <LeaveIcon />
+              <span className="text-base font-medium">Leave Room</span>
+            </button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-left text-xl">
+                Are you sure that you want to leave the room?
+              </DialogTitle>
+              <DialogDescription className="text-left font-medium">
+                You will be disconnected, and you may not be able to rejoin
+                unless invited again.
+              </DialogDescription>
+              <div className="mt-4 flex w-full items-center justify-end gap-2 self-end">
+                <button
+                  className="h-10 rounded-md px-4 py-2 hover:bg-slate-300"
+                  onClick={onLeaveRoom}
+                >
+                  <span className="text-sm font-medium">Yes</span>
+                </button>
+                <DialogClose asChild>
+                  <button className="h-10 rounded-md px-4 py-2 hover:bg-slate-300">
+                    <span className="text-sm font-medium">No</span>
+                  </button>
+                </DialogClose>
+              </div>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="relative flex flex-col items-center text-center">
@@ -30,7 +64,7 @@ const CreateRoomLoadingPanel = ({
         </span>
       </div>
 
-      <div className="relative flex h-[90%] w-full flex-col items-center justify-center overflow-hidden rounded-lg">
+      <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg">
         <div className="z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]">
           <UserIcon />
         </div>
