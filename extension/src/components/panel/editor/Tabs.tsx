@@ -1,7 +1,7 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { usePeerSelection } from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
-import { Separator } from "@cb/lib/components/ui/separator";
+import { Separator } from "@cb/components/ui/Separator";
 import React, { useState } from "react";
 
 type TabItem = {
