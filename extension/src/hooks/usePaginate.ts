@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   query as firestoreQuery,
   Query,
@@ -34,8 +34,11 @@ type HookProps<T> = {
   from?: QueryDocumentSnapshot<T>;
 };
 
-const addQuery = <T>(q: Query<T>, fun: (val: any) => QueryConstraint, value: any) =>
-  value ? firestoreQuery(q, fun(value)) : q;
+const addQuery = <T, U>(
+  q: Query<T>,
+  fun: (val: U) => QueryConstraint,
+  value: U
+) => (value ? firestoreQuery(q, fun(value)) : q);
 
 const usePaginate = <T>({
   query: baseQuery,
@@ -52,13 +55,13 @@ const usePaginate = <T>({
   const [count, setCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
 
-  const onRes = (res: QuerySnapshot<T>) => {
+  const onRes = useCallback((res: QuerySnapshot<T>) => {
     if (res.size) {
       setLastSnap((e) => [...e, res.docs[res.size - 1]]);
       setDocs(res.docs);
     }
     setLoading(false);
-  };
+  }, []);
 
   const onErr = (err: Error) => {
     setError(err);
@@ -76,11 +79,11 @@ const usePaginate = <T>({
   useEffect(() => {
     setLoading(true);
     getDocs(query).then(onRes).catch(onErr);
-  }, [query]);
+  }, [query, onRes]);
 
   const getLastEle = (array: any[]) => array[array.length - 1];
 
-  const getNext = () => {
+  const getNext = useCallback(() => {
     console.log("getNext clicked. Last Snapshot:", lastSnap);
     if (lastSnap.length) {
       let q = addQuery(baseQuery, startAfter, lastSnap[lastSnap.length - 1]); // Use only last item
@@ -89,9 +92,9 @@ const usePaginate = <T>({
     } else {
       console.warn("No last snapshot available. Cannot fetch next page.");
     }
-  };
+  }, [baseQuery, lastSnap, limit]);
 
-  const getPrevious = () => {
+  const getPrevious = useCallback(() => {
     if (lastSnap.length > 1) {
       const newArray = lastSnap.slice(0, -2);
       setLastSnap(newArray);
@@ -99,7 +102,7 @@ const usePaginate = <T>({
       q = addQuery(q, firestoreLimit, limit);
       setQuery(q);
     }
-  };
+  }, [baseQuery, lastSnap, limit]);
 
   const memoizedResult = useMemo(
     () => ({
@@ -116,7 +119,7 @@ const usePaginate = <T>({
       totalPages,
       count,
     }),
-    [docs, lastSnap, totalPages, error, count] // query causes re-rendering
+    [docs, lastSnap, totalPages, error, count, getNext, getPrevious, loading] // query causes re-rendering
   );
 
   return memoizedResult;
