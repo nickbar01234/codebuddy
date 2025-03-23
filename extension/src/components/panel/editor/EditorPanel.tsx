@@ -1,5 +1,11 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { Tabs } from "@cb/components/panel/editor/Tabs";
+// import { Tabs } from "@cb/components/panel/editor/Tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@cb/lib/components/ui/tabs";
 import { AppState } from "@cb/context/AppStateProvider";
 import {
   useAppState,
@@ -75,7 +81,75 @@ const EditorPanel = () => {
             onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
             onResizeStop={onResizeStop}
           >
-            <Tabs
+            <Tabs defaultValue="code" className="w-[400px]">
+              <TabsList>
+                <TabsTrigger value="code">
+                  <div className="flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected">
+                    <CodeXml className="mr-2 h-4 w-4 text-green-500" />
+                    Code
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="test">
+                  <div className="flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected">
+                    <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
+                    Test
+                  </div>
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="code">
+                <div className="h-full w-full">
+                  <EditorToolBar />
+                  <div
+                    id={EDITOR_NODE_ID}
+                    className="h-full min-h-[50vh] w-full overflow-hidden"
+                  />
+                </div>
+              </TabsContent>
+              <TabsContent value="test">
+                <div className="mx-5 my-4 flex h-full w-full flex-col space-y-4">
+                  <div className="flex w-full flex-row items-start justify-between gap-4">
+                    <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
+                      {activePeer?.tests.map((test, idx) => (
+                        <div key={idx} onClick={() => selectTest(idx)}>
+                          {test.selected ? (
+                            <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">
+                              Case {idx + 1}
+                            </button>
+                          ) : (
+                            <button className="hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent relative inline-flex items-center whitespace-nowrap rounded-lg bg-transparent px-4 py-1 font-medium focus:outline-none">
+                              Case {idx + 1}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex h-full w-full flex-col space-y-2">
+                        {activeTest?.test.map((assignment, idx) => (
+                          <React.Fragment key={idx}>
+                            <div className="text-label-3 dark:text-dark-label-3 text-xs font-medium">
+                              {assignment.variable} =
+                            </div>
+                            <div className="font-menlo bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[10px]">
+                              <div
+                                className="font-menlo placeholder:text-label-4 dark:placeholder:text-dark-label-4 sentry-unmask w-full resize-none whitespace-pre-wrap break-words outline-none"
+                                contentEditable="true"
+                              >
+                                {assignment.value}
+                              </div>
+                            </div>
+                          </React.Fragment>
+                        )) ?? null}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            {/* <Tabs
               className="relative flex h-full w-full grow flex-col"
               tabs={[
                 {
@@ -146,7 +220,7 @@ const EditorPanel = () => {
                   ),
                 },
               ]}
-            />
+            /> */}
           </ResizableBox>
           <div
             className="relative w-full overflow-auto"
