@@ -96,7 +96,11 @@ const EditorPanel = () => {
                   </div>
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="code">
+              <TabsContent
+                value="code"
+                forceMount
+                className={cn("data-[state=inactive]:hidden")}
+              >
                 <div className="h-full w-full">
                   <EditorToolBar />
                   <div
@@ -105,7 +109,11 @@ const EditorPanel = () => {
                   />
                 </div>
               </TabsContent>
-              <TabsContent value="test">
+              <TabsContent
+                value="test"
+                forceMount
+                className={cn("data-[state=inactive]:hidden")}
+              >
                 <div className="mx-5 my-4 flex h-full w-full flex-col space-y-4">
                   <div className="flex w-full flex-row items-start justify-between gap-4">
                     <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
