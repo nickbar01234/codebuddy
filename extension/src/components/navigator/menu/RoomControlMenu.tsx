@@ -29,6 +29,7 @@ import {
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 import { throttle } from "lodash";
+import { LeaveRoomDialog } from "@cb/components/ui/LeaveRoomDialog";
 
 const _RoomControlMenu = ({
   appState,
@@ -103,40 +104,14 @@ const _RoomControlMenu = ({
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <Dialog>
-              <DialogTrigger>
+            <LeaveRoomDialog
+              trigger={
                 <span className="flex items-center gap-2">
                   <LeaveIcon /> Leave Room
                 </span>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="text-left text-xl">
-                    Are you sure that you want to leave the room?
-                  </DialogTitle>
-                  <DialogDescription className="text-left font-medium">
-                    You will be disconnected, and you may not be able to rejoin
-                    unless invited again.
-                  </DialogDescription>
-                  <div className="mt-4 flex w-full items-center justify-end gap-2 self-end">
-                    <DialogClose asChild>
-                      <button
-                        className="h-10 rounded-md px-4 py-2 hover:bg-slate-300"
-                        onClick={onLeaveRoom}
-                      >
-                        <span className="text-sm font-medium">Yes</span>
-                      </button>
-                    </DialogClose>
-
-                    <DialogClose asChild>
-                      <button className="h-10 rounded-md px-4 py-2 hover:bg-slate-300">
-                        <span className="text-sm font-medium">No</span>
-                      </button>
-                    </DialogClose>
-                  </div>
-                </DialogHeader>
-              </DialogContent>
-            </Dialog>
+              }
+              onLeaveRoom={onLeaveRoom}
+            />
           </RoomControlDropdownMenuItem>
         </>
       );
