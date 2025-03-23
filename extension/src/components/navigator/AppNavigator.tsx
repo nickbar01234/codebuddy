@@ -39,7 +39,7 @@ export const AppNavigator = () => {
       </div>
       <div
         className={cn(
-          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-b-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
+          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
           { hidden: peers.length === 0 }
         )}
       >
