@@ -38,7 +38,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
           <button
             key={index}
             onClick={() => setActiveIndex(index)}
-            className={cn("px-4 py-2 text-sm font-medium transition-all")}
+            className={cn("py-2 text-sm font-medium transition-all")}
           >
             <div
               className={
