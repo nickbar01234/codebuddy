@@ -3,7 +3,7 @@ import { useOnMount } from ".";
 
 type Unsubscribe<T> = (resource: T) => void;
 
-interface Resource<T> {
+export interface Resource<T> {
   value: T;
   unsubscribe: Unsubscribe<T>;
 }

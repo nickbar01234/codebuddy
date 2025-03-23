@@ -217,7 +217,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const onOpen = React.useRef((peer: string) => async () => {
     console.log("Data Channel is open for " + peer);
-    setConnection(peer, (resource) => ({ ...resource, lastSeen: getUnixTs() }));
+    setConnection(peer, (resource) => ({
+      ...resource,
+      lastSeen: getUnixTs(),
+    }));
 
     getCodeMessagePayload({}).then((fn) => fn(peer, getConnection()[peer]));
     getTestsMessagePayload()(peer, getConnection()[peer]);
@@ -235,7 +238,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     (peer: string) =>
       function (event: MessageEvent) {
         const payload: PeerMessage = JSON.parse(event.data ?? {});
-        console.log("Message from " + peer, payload);
+        // console.log("Message from " + peer, payload);
         const { action, timestamp } = payload;
 
         switch (action) {
@@ -457,7 +460,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
               const answer = await pc.createAnswer();
               await pc.setLocalDescription(answer);
-              await setRoomPeerConnection(themRef, { answer: answer });
+              await setRoomPeerConnection(themRef, {
+                answer: answer,
+              });
             }
 
             data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
@@ -545,7 +550,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      console.log("Removed peers", peers);
+      // console.log("Removed peers", peers);
     },
     [groupId, username, evictConnection, roomId]
   );

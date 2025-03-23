@@ -3,14 +3,14 @@ import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
+import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
-import { cn } from "@cb/utils/cn";
-import Header from "@cb/components/ui/Header";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
