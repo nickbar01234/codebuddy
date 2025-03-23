@@ -1,5 +1,5 @@
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppState } from "@cb/context/AppStateProvider";
 import {
   useAppState,
@@ -90,8 +90,8 @@ const EditorPanel = () => {
             onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
             onResizeStop={onResizeStop}
           >
-            <Tabs defaultValue="code" className="w-[400px]">
-              <TabsList>
+            <Tabs defaultValue="code" className="h-full w-full">
+              <TabsList className="flex w-full justify-start gap-2">
                 {activePeer?.id && (
                   <UserDropdown
                     key={"user-dropdown"}
@@ -101,24 +101,25 @@ const EditorPanel = () => {
                 )}
                 <Separator
                   orientation="vertical"
-                  className="flexlayout__tabset_tab_divider mx-3 h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                 />
-                <TabsTrigger value="code">
-                  <div className="flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected border-transparent data-[state=active]:border-b-2 data-[state=active]:border-orange-500">
-                    <CodeXml className="mr-2 h-4 w-4 text-green-500" />
-                    Code
-                  </div>
+                <TabsTrigger
+                  value="code"
+                  className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                >
+                  <CodeXml className="mr-2 h-4 w-4 text-green-500" />
+                  Code
                 </TabsTrigger>
                 <Separator
                   orientation="vertical"
-                  className="flexlayout__tabset_tab_divider mx-3 h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                 />
-
-                <TabsTrigger value="test">
-                  <div className="flexlayout__tab_button flexlayout__tab_button_top flexlayout__tab_button--selected border-transparent data-[state=active]:border-b-2 data-[state=active]:border-orange-500">
-                    <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
-                    Test
-                  </div>
+                <TabsTrigger
+                  value="test"
+                  className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                >
+                  <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
+                  Test
                 </TabsTrigger>
               </TabsList>
               <TabsContent
