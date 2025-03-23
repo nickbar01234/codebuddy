@@ -292,6 +292,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const roomRef = getRoomRef(newGroupId, roomId);
     await setGroup(newGroupRef, {
       questions: arrayUnion(roomId),
+      users: arrayUnion(username),
     });
     await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
     console.log("Created room", newGroupId);
@@ -402,6 +403,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", groupId);
       setGroupId(groupId);
+      setGroup(getGroupRef(groupId), {
+        users: arrayUnion(username),
+      });
       await setRoom(getRoomRef(groupId, roomId), {
         usernames: arrayUnion(username),
       });
@@ -502,10 +506,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
+        await setGroup(getGroupRef(groupId), {
+          users: arrayRemove(username),
+        });
         await setRoom(getRoomRef(groupId, roomId), {
           usernames: arrayRemove(username),
         });
-
         const myAnswers = await getDocs(
           getRoomPeerConnectionRefs(groupId, roomId, username)
         );
@@ -525,7 +531,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [username, cleanupSnapshot, cleanupConnection, roomId]
   );
 
-  // modify to accept many peers.
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
       if (groupId == null) return;
@@ -538,6 +543,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         .forEach((docRef) => batch.delete(docRef));
       batch.update(getRoomRef(groupId, roomId), {
         usernames: arrayRemove(...peers),
+      });
+      batch.update(getGroupRef(groupId), {
+        users: arrayRemove(...peers),
       });
       await batch.commit();
       setInformations((prev) =>

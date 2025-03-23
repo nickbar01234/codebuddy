@@ -1,6 +1,7 @@
 import {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
+  serverTimestamp,
   SnapshotOptions,
 } from "firebase/firestore";
 
@@ -9,6 +10,7 @@ export interface Room {
   questionId: string;
   usernames: string[];
   nextQuestion: string;
+  createdAt: number;
 }
 
 export interface PeerConnection {
@@ -21,6 +23,7 @@ export interface PeerConnection {
 
 export interface Group {
   questions: string[];
+  users: string[];
 }
 
 export const roomConverter: FirestoreDataConverter<Room, Room> = {
@@ -35,7 +38,8 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
       finishedUsers: data.finishedUsers ?? [],
       questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
-      nextQuestion: data.nextQuestion ?? "", // Default to empty string if not present
+      nextQuestion: data.nextQuestion ?? "",
+      createdAt: data.createdAt ?? serverTimestamp(),
     };
   },
 };
@@ -64,7 +68,8 @@ export const groupConverter: FirestoreDataConverter<Group, Group> = {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,
-      questions: data.questions ?? [], // Default to empty array if questions is missing
+      questions: data.questions ?? [],
+      users: data.users ?? [],
     };
   },
 };
