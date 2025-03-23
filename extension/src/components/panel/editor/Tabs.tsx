@@ -25,15 +25,6 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
   return (
     <div className={cn("h-full w-full", className)}>
       <div className="flex">
-        {activePeer?.id && (
-          <div className="flex items-center">
-            <UserDropdown
-              isOpen={isUserDropdownOpen}
-              toggle={toggleUserDropdown}
-            />
-          </div>
-        )}
-
         {tabs.map((tab, index) => (
           <button
             key={index}
@@ -50,6 +41,14 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, className }) => {
             </div>
           </button>
         ))}
+        {activePeer?.id && (
+          <div className="flex items-center">
+            <UserDropdown
+              isOpen={isUserDropdownOpen}
+              toggle={toggleUserDropdown}
+            />
+          </div>
+        )}
       </div>
       <div className="relative mt-1">
         {tabs.map((tab, index) => (
