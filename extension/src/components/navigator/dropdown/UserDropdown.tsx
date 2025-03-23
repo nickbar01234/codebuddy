@@ -24,7 +24,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
           <button
             data-dropdown-toggle="dropdown"
             className={cn(
-              "relative inline-flex items-center rounded-lg pl-2 pr-1 text-center text-sm font-medium",
+              "relative inline-flex items-center rounded-lg px-2 text-center text-sm font-medium",
               peers.length >= 2
                 ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary"
                 : "cursor-default"
@@ -52,14 +52,6 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
                 ></span>
               ))}
             </i>
-            {/* <span
-              className={cn(
-                `invisible absolute left-full z-50 ml-[0.1rem] w-min -translate-x-4 whitespace-nowrap text-nowrap text-xs font-bold shadow-lg transition-all group-hover:visible group-hover:translate-x-0 group-hover:opacity-100`,
-                signalStrength.text
-              )}
-            >
-              {signalStrength.title}
-            </span> */}
           </div>
         </div>
 
@@ -86,23 +78,21 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
     )
   );
 };
+
 function getStatus(ping: number) {
   const status =
     ping < GREENTHRESHOLD ? "green" : ping < YELLOWTHRESHOLD ? "yellow" : "red";
-
   const statusMapping = {
-    red: { bg: "bg-red-500", text: "text-red-500", level: 1, title: "Error" },
+    red: { bg: "bg-red-500", text: "text-red-500", level: 1 },
     green: {
       bg: "bg-green-500",
       text: "text-green-500",
       level: 3,
-      title: "Good",
     },
     yellow: {
       bg: "bg-yellow-500",
       text: "text-yellow-500",
       level: 2,
-      title: "Weak",
     },
   };
   return { status, ...statusMapping[status] };
