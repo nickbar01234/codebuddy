@@ -47,7 +47,7 @@ const QuestionSelector = React.memo(() => {
 
       waitForElement(
         "div[role='columnheader']:first-child",
-        10_000,
+        TIMEOUT,
         iframeDoc
       ).then((element) => {
         // todo(nickbar01234): Append an empty cell to make padding somewhat consistent... we should fix this styling
