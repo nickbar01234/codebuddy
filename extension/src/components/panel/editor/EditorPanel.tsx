@@ -74,12 +74,6 @@ const EditorPanel = () => {
     [activePeer, activeTest, selectTest]
   );
 
-  const tabTriggerClasses =
-    "rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent";
-
-  const separatorClasses =
-    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]";
-
   return (
     <>
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
@@ -131,7 +125,9 @@ const EditorPanel = () => {
 
                 <Separator
                   orientation="vertical"
-                  className={separatorClasses}
+                  className={
+                    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  }
                 />
 
                 {tabsConfig.map((tab, index) => (
@@ -148,7 +144,9 @@ const EditorPanel = () => {
                     {index !== tabsConfig.length - 1 && (
                       <Separator
                         orientation="vertical"
-                        className={separatorClasses}
+                        className={
+                          "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                        }
                       />
                     )}
                   </React.Fragment>
