@@ -6,6 +6,7 @@ import {
   usePeerSelection,
   useWindowDimensions,
 } from "@cb/hooks/index";
+import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
   TabsContent,
@@ -16,8 +17,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import EditorToolBar from "./EditorToolBar";
-import { Separator } from "@cb/lib/components/ui/separator";
+import CodeTab from "./tab/CodeTab";
 import { TestTab } from "./tab/TestTab";
 
 export interface TabMetadata {
@@ -127,13 +127,7 @@ const EditorPanel = () => {
                 forceMount
                 className={cn("data-[state=inactive]:hidden")}
               >
-                <div className="h-full w-full">
-                  <EditorToolBar />
-                  <div
-                    id={EDITOR_NODE_ID}
-                    className="h-full min-h-[50vh] w-full overflow-hidden"
-                  />
-                </div>
+                <CodeTab />
               </TabsContent>
               <TabsContent
                 value="test"
