@@ -4,9 +4,42 @@ import {
   SnapshotOptions,
 } from "firebase/firestore";
 
+export interface BaseEvent {
+  type: string;
+  timestamp: number;
+}
+
+export interface SubmissionEvent extends BaseEvent {
+  type: "submission";
+  payload: {
+    username: string;
+    output: string;
+    status: "success" | "error";
+  };
+}
+
+export interface ConnectionEvent extends BaseEvent {
+  type: "connection";
+  payload: {
+    username: string;
+    status: "join" | "leave";
+  };
+}
+
+export interface MessageEvent extends BaseEvent {
+  type: "message";
+  payload: {
+    username: string;
+    message: string;
+    color: string;
+  };
+}
+export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
+
 export interface Room {
   questionId: string;
   usernames: string[];
+  activityLog: LogEvent[];
 }
 
 export interface PeerConnection {
@@ -31,6 +64,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
       ...data,
       questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
+      activityLog: data.activityLog ?? [],
     };
   },
 };

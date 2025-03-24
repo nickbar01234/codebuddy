@@ -17,9 +17,10 @@ import { cn } from "@cb/utils/cn";
 import { Activity, CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { ActivityLogTab } from "./tab/ActivityLogTab";
+import { ActivityLogTab } from "./tab/activity/ActivityLogTab";
 import CodeTab from "./tab/CodeTab";
 import { TestTab } from "./tab/TestTab";
+import { LogEvent } from "@cb/db/converter";
 
 export interface TabMetadata {
   id: string;
@@ -75,32 +76,7 @@ const EditorPanel = () => {
         value: "activity",
         label: "Activity",
         Icon: Activity,
-        Content: (
-          <ActivityLogTab
-            logEntries={[
-              {
-                type: "accepted",
-                message: "Buddy just submitted their code",
-                status: "[Accepted]",
-              },
-              {
-                type: "error",
-                message: "Code just submitted their code",
-                status: "[Time Limit Exceeded]",
-              },
-              { type: "join", message: "Dev just joined the room" },
-              {
-                type: "normal",
-                message: "Code: RAHHHhHHH can someone take a look at my code",
-              },
-              { type: "normal", message: "Buddy: um no sry", italic: true },
-              { type: "leave", message: "Buddy just left the room" },
-              { type: "normal", message: "Code: ???" },
-              { type: "normal", message: "Dev: lmao", italic: true },
-              { type: "normal", message: "5bigBooms: lmao", italic: true },
-            ]}
-          />
-        ),
+        Content: <ActivityLogTab logEntries={logEntries} />,
       },
     ],
     [activePeer, activeTest, selectTest]
@@ -210,3 +186,85 @@ const EditorPanel = () => {
 };
 
 export default EditorPanel;
+
+const logEntries: LogEvent[] = [
+  {
+    type: "submission",
+    payload: {
+      username: "Buddy",
+      output: "Accepted",
+      status: "success",
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "submission",
+    payload: {
+      username: "Code",
+      output: "Time limit exceeded",
+      status: "error",
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "connection",
+    payload: {
+      username: "Dev",
+      status: "join",
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "message",
+    payload: {
+      username: "Code",
+      message: "RAHHHhHHH can someone take a look at my code",
+      color: "#000000", // Default black color for normal message
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "message",
+    payload: {
+      username: "Buddy",
+      message: "um no sry",
+      color: "#000000", // Default black color for normal message
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "connection",
+    payload: {
+      username: "Buddy",
+      status: "leave",
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "message",
+    payload: {
+      username: "Code",
+      message: "???",
+      color: "#000000", // Default black color for normal message
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "message",
+    payload: {
+      username: "Dev",
+      message: "lmao",
+      color: "#000000", // Default black color for normal message
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+  {
+    type: "message",
+    payload: {
+      username: "5bigBooms",
+      message: "lmao",
+      color: "#000000", // Default black color for normal message
+    },
+    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+  },
+];
