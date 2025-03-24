@@ -11,6 +11,7 @@ import { getLocalStorage } from "@cb/services";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
+import HomePanel from "../panel/HomePanel";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -49,7 +50,10 @@ export const AppNavigator = () => {
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
-          ) : null}
+          ) : state === AppState.HOME ? (
+            <HomePanel />
+          ) : null
+          }
         </div>
         <EditorPanel />
       </div>
