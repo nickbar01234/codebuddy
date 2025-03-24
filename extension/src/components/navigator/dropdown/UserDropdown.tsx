@@ -79,7 +79,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
       </div>
     </div>
   ) : (
-    <Skeleton className="h-4 w-44" />
+    <Skeleton className="h-6 w-44 bg-[--color-tab-hover-background]" />
   );
 };
 
