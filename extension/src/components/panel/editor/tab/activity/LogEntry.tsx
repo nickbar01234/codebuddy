@@ -60,7 +60,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
           <div className="flex items-center gap-1">
             <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
             <span className={cn("font-bold", payload.color)}>
-              {payload.username} :
+              {payload.username}:
             </span>
             {payload.message}
           </div>
