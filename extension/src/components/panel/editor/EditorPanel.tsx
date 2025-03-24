@@ -50,6 +50,36 @@ const EditorPanel = () => {
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
+  const tabsConfig = React.useMemo(
+    () => [
+      {
+        value: "code",
+        label: "Code",
+        Icon: CodeXml,
+        Content: <CodeTab />,
+      },
+      {
+        value: "test",
+        label: "Test",
+        Icon: FlaskConical,
+        Content: (
+          <TestTab
+            activePeer={activePeer}
+            activeTest={activeTest}
+            selectTest={selectTest}
+          />
+        ),
+      },
+    ],
+    [activePeer, activeTest, selectTest]
+  );
+
+  const tabTriggerClasses =
+    "rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent";
+
+  const separatorClasses =
+    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]";
+
   return (
     <>
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
@@ -94,52 +124,47 @@ const EditorPanel = () => {
             <Tabs defaultValue="code" className="h-full w-full">
               <TabsList className="flex w-full justify-start gap-2">
                 <UserDropdown
-                  key={"user-dropdown"}
+                  key="user-dropdown"
                   isOpen={isUserDropdownOpen}
                   toggle={toggleUserDropdown}
                 />
 
                 <Separator
                   orientation="vertical"
-                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  className={separatorClasses}
                 />
-                <TabsTrigger
-                  value="code"
-                  className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                >
-                  <CodeXml className="mr-2 h-4 w-4 text-green-500" />
-                  Code
-                </TabsTrigger>
-                <Separator
-                  orientation="vertical"
-                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                />
-                <TabsTrigger
-                  value="test"
-                  className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                >
-                  <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
-                  Test
-                </TabsTrigger>
+
+                {tabsConfig.map((tab, index) => (
+                  <React.Fragment key={tab.value}>
+                    <TabsTrigger
+                      value={tab.value}
+                      className={
+                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                      }
+                    >
+                      <tab.Icon className="mr-2 h-4 w-4 text-green-500" />
+                      {tab.label}
+                    </TabsTrigger>
+                    {index !== tabsConfig.length - 1 && (
+                      <Separator
+                        orientation="vertical"
+                        className={separatorClasses}
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
               </TabsList>
-              <TabsContent
-                value="code"
-                forceMount
-                className={cn("data-[state=inactive]:hidden")}
-              >
-                <CodeTab />
-              </TabsContent>
-              <TabsContent
-                value="test"
-                forceMount
-                className={cn("data-[state=inactive]:hidden")}
-              >
-                <TestTab
-                  activePeer={activePeer}
-                  activeTest={activeTest}
-                  selectTest={selectTest}
-                />
-              </TabsContent>
+
+              {tabsConfig.map(({ value, Content }) => (
+                <TabsContent
+                  key={value}
+                  value={value}
+                  forceMount
+                  className={cn("data-[state=inactive]:hidden")}
+                >
+                  {Content}
+                </TabsContent>
+              ))}
             </Tabs>
           </ResizableBox>
           <div
