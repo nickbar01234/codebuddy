@@ -22,10 +22,13 @@ export const ActivityLogTab: React.FC<ActivityLogProps> = ({ logEntries }) => {
           <LogEntry key={index} entry={entry} />
         ))}
       </div>
-      <div className="item flex w-full items-center space-x-2 bg-[--color-tab-hover-background] p-2">
+      <div className="item flex w-full items-center space-x-2 p-1">
         <Input type="message" placeholder="Enter message" />
-        <Button type="submit">
-          <Send className="h-5 w-5" />
+        <Button
+          type="submit"
+          className="hover:bg-[--color-tab-hover-background]"
+        >
+          <Send className="h-5 w-5 text-black dark:text-white" />
         </Button>
       </div>
     </div>
