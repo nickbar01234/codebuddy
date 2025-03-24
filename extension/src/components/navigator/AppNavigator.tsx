@@ -1,5 +1,3 @@
-import { CaretRightIcon } from "@cb/components/icons";
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
@@ -18,11 +16,6 @@ export const AppNavigator = () => {
   const { roomId } = useRTC();
   useDevSetupRoom();
 
-  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
-  const toggleUserDropdown = (e: React.MouseEvent<Element, MouseEvent>) => {
-    e.stopPropagation();
-    setUserDropdownOpen(!isUserDropdownOpen);
-  };
   const currentTabInfo = getLocalStorage("tabs");
 
   return (
@@ -30,15 +23,6 @@ export const AppNavigator = () => {
       <div className="hide-scrollbar flex h-9 w-full items-center justify-between gap-2 overflow-y-hidden overflow-x-scroll rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
         <div className="flex items-center">
           <Header />
-          {state === AppState.ROOM && activePeer?.id && (
-            <React.Fragment>
-              <CaretRightIcon />{" "}
-              <UserDropdown
-                isOpen={isUserDropdownOpen}
-                toggle={toggleUserDropdown}
-              />
-            </React.Fragment>
-          )}
         </div>
         <RoomControlMenu />
       </div>
@@ -58,7 +42,7 @@ export const AppNavigator = () => {
       </div>
       <div
         className={cn(
-          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-b-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
+          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
           { hidden: peers.length === 0 }
         )}
       >
