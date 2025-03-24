@@ -14,9 +14,10 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { cn } from "@cb/utils/cn";
-import { CodeXml, FlaskConical } from "lucide-react";
+import { Activity, CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import { ActivityLogTab } from "./tab/ActivityLogTab";
 import CodeTab from "./tab/CodeTab";
 import { TestTab } from "./tab/TestTab";
 
@@ -67,6 +68,37 @@ const EditorPanel = () => {
             activePeer={activePeer}
             activeTest={activeTest}
             selectTest={selectTest}
+          />
+        ),
+      },
+      {
+        value: "activity",
+        label: "Activity",
+        Icon: Activity,
+        Content: (
+          <ActivityLogTab
+            logEntries={[
+              {
+                type: "accepted",
+                message: "Buddy just submitted their code",
+                status: "[Accepted]",
+              },
+              {
+                type: "error",
+                message: "Code just submitted their code",
+                status: "[Time Limit Exceeded]",
+              },
+              { type: "join", message: "Dev just joined the room" },
+              {
+                type: "normal",
+                message: "Code: RAHHHhHHH can someone take a look at my code",
+              },
+              { type: "normal", message: "Buddy: um no sry", italic: true },
+              { type: "leave", message: "Buddy just left the room" },
+              { type: "normal", message: "Code: ???" },
+              { type: "normal", message: "Dev: lmao", italic: true },
+              { type: "normal", message: "5bigBooms: lmao", italic: true },
+            ]}
           />
         ),
       },
