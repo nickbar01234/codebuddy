@@ -18,6 +18,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { peerState } = useRTC();
   const ping = peerState[activePeer?.id ?? ""]?.latency * 1000;
   const signalStrength = getStatus(ping);
+  const canDropdown = peers.length >= 2;
   return activePeer ? (
     <div>
       <div className="flex w-44 items-center">
@@ -27,8 +28,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             "relative inline-flex max-w-40 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg p-2 text-center text-sm font-medium",
             {
               "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary":
-                peers.length >= 2,
-              "cursor-default": peers.length < 2,
+                canDropdown,
+              "cursor-default": !canDropdown,
             }
           )}
           type="button"
