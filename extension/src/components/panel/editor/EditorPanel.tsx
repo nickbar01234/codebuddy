@@ -92,13 +92,12 @@ const EditorPanel = () => {
           >
             <Tabs defaultValue="code" className="h-full w-full">
               <TabsList className="flex w-full justify-start gap-2">
-                {activePeer?.id && (
-                  <UserDropdown
-                    key={"user-dropdown"}
-                    isOpen={isUserDropdownOpen}
-                    toggle={toggleUserDropdown}
-                  />
-                )}
+                <UserDropdown
+                  key={"user-dropdown"}
+                  isOpen={isUserDropdownOpen}
+                  toggle={toggleUserDropdown}
+                />
+
                 <Separator
                   orientation="vertical"
                   className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
