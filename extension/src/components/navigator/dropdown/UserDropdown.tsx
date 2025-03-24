@@ -21,7 +21,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const canDropdown = peers.length >= 2;
   return activePeer ? (
     <div>
-      <div className="flex w-44 items-center">
+      <div className="flex h-6 w-44 items-center">
         <button
           data-dropdown-toggle="dropdown"
           className={cn(
