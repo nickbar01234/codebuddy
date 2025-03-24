@@ -91,7 +91,7 @@ const EditorPanel = () => {
             onResizeStop={onResizeStop}
           >
             <Tabs defaultValue="code" className="h-full w-full">
-              <TabsList className="flex w-full justify-start gap-2">
+              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
                 <UserDropdown
                   key={"user-dropdown"}
                   isOpen={isUserDropdownOpen}
