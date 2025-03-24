@@ -2,6 +2,7 @@ import { LogEvent } from "@cb/db/converter";
 import { cn } from "@cb/utils/cn";
 import { LeaveIcon } from "@cb/components/icons";
 import { History, MessageCircleIcon, Users } from "lucide-react";
+import { getUnixTs } from "@cb/utils/heartbeat";
 
 interface LogEntryProps {
   entry: LogEvent;
@@ -38,9 +39,9 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
     switch (type) {
       case "submission":
         return (
-          <div className="italic">
+          <div className="flex items-center gap-1 italic text-gray-700 dark:text-gray-400">
             <History className={cn("inline-block h-4 w-4", color)} />
-            <span className="bold">{payload.username}</span>
+            <span className="font-bold">{payload.username} </span>
             submitted their code
             <span className={color}>{`[${payload.output}]`}</span>
           </div>
@@ -48,17 +49,17 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
 
       case "connection":
         return (
-          <div className="italic">
+          <div className="flex items-center gap-1 italic text-gray-700 dark:text-gray-400">
             <Users className={cn("inline-block h-4 w-4", color)} />
-            <span className="bold">{payload.username}</span>
+            <span className="font-bold">{payload.username} </span>
             {payload.status === "join" ? " joined" : " left"} the room
           </div>
         );
       case "message":
         return (
-          <div className="">
+          <div className="flex items-center gap-1">
             <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
-            <span className={cn("bold", payload.color)}>
+            <span className={cn("font-bold", payload.color)}>
               {payload.username} :
             </span>
             {payload.message}
@@ -68,10 +69,11 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
         return "";
     }
   };
+
   return (
     <div className="flex items-center space-x-2 py-1">
       <span className={`flex-grow`}>{getPrompt()}</span>
-      <span className="text-xs text-gray-400">{timestamp}</span>
+      <span className="text-xs text-gray-400">{2}s</span>
     </div>
   );
 };

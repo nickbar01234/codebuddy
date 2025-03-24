@@ -72,12 +72,6 @@ const EditorPanel = () => {
           />
         ),
       },
-      {
-        value: "activity",
-        label: "Activity",
-        Icon: Activity,
-        Content: <ActivityLogTab logEntries={logEntries} />,
-      },
     ],
     [activePeer, activeTest, selectTest]
   );
@@ -177,7 +171,13 @@ const EditorPanel = () => {
             className="relative w-full overflow-auto"
             style={{ height: height - codePreference.height - 128 }}
           >
-            <div className="h-full w-full bg-black">THIS IS ACTIVITY LOG</div>
+            <div className="flex h-full w-full flex-col bg-white dark:bg-black">
+              <div className="flex items-center gap-1 bg-[--color-tabset-tabbar-background] px-4 py-2">
+                <Activity className="h-4 w-4 text-green-500" />
+                Activity
+              </div>
+              <ActivityLogTab logEntries={logEntries} />
+            </div>
           </div>
         </div>
       </div>
@@ -186,6 +186,12 @@ const EditorPanel = () => {
 };
 
 export default EditorPanel;
+const userColors = {
+  Buddy: "text-red-500",
+  Code: "text-blue-500",
+  Dev: "text-green-500",
+  "5bigBooms": "text-yellow-500",
+};
 
 const logEntries: LogEvent[] = [
   {
@@ -195,7 +201,7 @@ const logEntries: LogEvent[] = [
       output: "Accepted",
       status: "success",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "submission",
@@ -204,7 +210,7 @@ const logEntries: LogEvent[] = [
       output: "Time limit exceeded",
       status: "error",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "connection",
@@ -212,25 +218,25 @@ const logEntries: LogEvent[] = [
       username: "Dev",
       status: "join",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "message",
     payload: {
       username: "Code",
       message: "RAHHHhHHH can someone take a look at my code",
-      color: "#000000", // Default black color for normal message
+      color: userColors["Code"], // Assigning color for Code
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "message",
     payload: {
       username: "Buddy",
       message: "um no sry",
-      color: "#000000", // Default black color for normal message
+      color: userColors["Buddy"], // Assigning color for Buddy
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "connection",
@@ -238,33 +244,33 @@ const logEntries: LogEvent[] = [
       username: "Buddy",
       status: "leave",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "message",
     payload: {
       username: "Code",
       message: "???",
-      color: "#000000", // Default black color for normal message
+      color: userColors["Code"], // Assigning color for Code
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "message",
     payload: {
       username: "Dev",
       message: "lmao",
-      color: "#000000", // Default black color for normal message
+      color: userColors["Dev"], // Assigning color for Dev
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "message",
     payload: {
       username: "5bigBooms",
       message: "lmao",
-      color: "#000000", // Default black color for normal message
+      color: userColors["5bigBooms"], // Assigning color for 5bigBooms
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 1000), // Random timestamp
+    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
   },
 ];
