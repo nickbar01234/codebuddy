@@ -4,8 +4,11 @@ import { appStateContext } from "@cb/context/AppStateProvider";
 import { PeerSelectionContext } from "@cb/context/PeerSelectionProvider";
 import { windowContext } from "@cb/context/WindowProvider";
 import { sessionContext } from "@cb/context/SessionProvider";
+import { ActivityContext } from "@cb/context/ActivityProvider";
 
 export const useRTC = () => React.useContext(RTCContext);
+
+export const useActivity = () => React.useContext(ActivityContext);
 
 export const usePeerSelection = () => React.useContext(PeerSelectionContext);
 

@@ -7,6 +7,7 @@ import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
 import { AppNavigator } from "./AppNavigator";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppStateProvider } from "@cb/context/AppStateProvider";
+import { ActivityProvider } from "@cb/context/ActivityProvider";
 
 const RootNavigator = () => {
   const { auth } = useSession();
@@ -18,7 +19,9 @@ const RootNavigator = () => {
         <AppStateProvider user={auth.user}>
           <RTCProvider>
             <PeerSelectionProvider>
-              <AppNavigator />
+              <ActivityProvider>
+                <AppNavigator />
+              </ActivityProvider>
             </PeerSelectionProvider>
           </RTCProvider>
         </AppStateProvider>
