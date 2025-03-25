@@ -16,7 +16,7 @@ import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
-import CreateRoomLoadingPanel from "../CreateRoomLoadingPanel";
+import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
 import { throttle } from "lodash";
 import { useRTC } from "@cb/hooks/index";
 import { Separator } from "@cb/lib/components/ui/separator";
