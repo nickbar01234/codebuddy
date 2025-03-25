@@ -1,4 +1,4 @@
-import { getRoomRef } from "@cb/db";
+import { addEventToRoom, getRoomRef } from "@cb/db";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useRTC } from "../hooks";
@@ -10,6 +10,7 @@ interface ActivityContextProps {
 interface ActivityContext {
   activities: LogEvent[];
   scroll: React.MutableRefObject<any>;
+  sendActivity: (activity: LogEvent) => void;
 }
 
 const ActivityContext = createContext({} as ActivityContext);
@@ -18,6 +19,11 @@ export const ActivityProvider = (props: ActivityContextProps) => {
   const [activities, setActivities] = useState<LogEvent[]>([] as LogEvent[]);
   const scroll = useRef();
   const { roomId } = useRTC();
+
+  const sendActivity = (activity: LogEvent) => {
+    if (!roomId) return;
+    addEventToRoom(activity, roomId);
+  };
 
   useEffect(() => {
     if (!roomId) return;
@@ -39,7 +45,7 @@ export const ActivityProvider = (props: ActivityContextProps) => {
   }, [roomId]);
 
   return (
-    <ActivityContext.Provider value={{ activities, scroll }}>
+    <ActivityContext.Provider value={{ activities, scroll, sendActivity }}>
       {props.children}
     </ActivityContext.Provider>
   );
