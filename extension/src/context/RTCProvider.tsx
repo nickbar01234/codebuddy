@@ -287,6 +287,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     console.log("Created room");
     setRoomId(roomRef.id);
     navigator.clipboard.writeText(roomRef.id);
+
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
 

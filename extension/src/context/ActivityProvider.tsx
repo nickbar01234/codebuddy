@@ -11,6 +11,7 @@ import {
 import { createContext, useEffect, useState } from "react";
 import { LogEvent, logEventConverter } from "../db/converter";
 import { useRTC } from "../hooks";
+import React from "react";
 
 interface ActivityContextProps {
   children?: React.ReactNode;
@@ -34,10 +35,13 @@ export const ActivityProvider = (props: ActivityContextProps) => {
     name: "snapshot",
   });
 
-  const sendActivity = (activity: Omit<LogEvent, "timestamp">) => {
-    if (!roomId) return;
-    addEventToRoom(activity, roomId);
-  };
+  const sendActivity = React.useCallback(
+    (activity: Omit<LogEvent, "timestamp">) => {
+      if (!roomId) return;
+      addEventToRoom(activity, roomId);
+    },
+    [roomId]
+  );
   useEffect(() => {
     if (!roomId) return;
     const q = query(
@@ -45,7 +49,7 @@ export const ActivityProvider = (props: ActivityContextProps) => {
       orderBy("timestamp", "desc")
     ).withConverter(logEventConverter);
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const fetchSnapshot = onSnapshot(q, (querySnapshot) => {
       if (
         querySnapshot.docs.some(
           (doc) => !(doc.data().timestamp instanceof Timestamp)
@@ -58,11 +62,10 @@ export const ActivityProvider = (props: ActivityContextProps) => {
         ...doc.data(),
         timestamp: doc.data().timestamp,
       }));
-      registerSnapshot("activity", unsubscribe, (prev) => prev());
 
       setActivities(fetchedActivities.reverse()); // Ensure oldest first
     });
-    return () => unsubscribe();
+    registerSnapshot("activity", fetchSnapshot, (prev) => prev());
   }, [roomId, registerSnapshot]);
 
   return (
