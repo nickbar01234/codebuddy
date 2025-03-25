@@ -17,7 +17,7 @@ export const ActivityLogTab: React.FC<ActivityLogProps> = ({ logEntries }) => {
     preference: { codePreference },
   } = useWindowDimensions();
   return (
-    <div className="bg-layer-1 dark:bg-dark-layer-1 flex h-full w-full flex-col items-center gap-2 overflow-hidden rounded-lg p-2 shadow-md">
+    <div className="bg-layer-1 dark:bg-dark-layer-1 flex h-full w-full flex-col items-center gap-2 overflow-hidden rounded-lg p-2 py-2 shadow-md">
       <div className="flex w-full items-start gap-1 px-4 py-2">
         <Activity className="h-4 w-4 text-green-500" />
         Activity
