@@ -53,6 +53,7 @@ export const ActivityProvider = (props: ActivityContextProps) => {
       ) {
         return;
       }
+      console.log("hi");
       const fetchedActivities = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
