@@ -48,29 +48,6 @@ export const addEventToRoom = (data: LogEvent, roomId: string) => {
   addDoc(collection(roomRef, "logs"), data);
 };
 
-// export const getEventsFromRoom = async (
-//   roomId: string,
-//   maxLimit: number,
-//   lastEvent?: number | LogEvent
-// ) => {
-//   const roomRef = getRoomRef(roomId);
-
-//   let q = query(
-//     collection(roomRef, "logs"),
-//     orderBy("timestamp", "desc"),
-//     limit(maxLimit)
-//   );
-
-//   if (lastEvent !== undefined) {
-//     const timestamp =
-//       typeof lastEvent === "number" ? lastEvent : lastEvent.timestamp;
-//     q = query(q, startAfter(timestamp));
-//   }
-
-//   q = q.withConverter(logEventConverter);
-
-//   return getDocs(q);
-// };
 export const setRoomPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>,
   data: Partial<WithFieldValue<PeerConnection>>
