@@ -72,7 +72,7 @@ interface CreateRoom {
 }
 
 export interface RTCContext {
-  createRoom: (args: CreateRoom) => Promise<void>;
+  createRoom: (args: CreateRoom) => void;
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;

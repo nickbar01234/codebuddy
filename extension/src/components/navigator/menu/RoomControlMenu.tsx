@@ -9,7 +9,7 @@ import {
 } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { auth } from "@cb/db";
-import { useActivity, useAppState, useRTC } from "@cb/hooks/index";
+import { useRTC } from "@cb/hooks/index";
 import { clearLocalStorage } from "@cb/services";
 import { signOut } from "firebase/auth/web-extension";
 import {
@@ -119,10 +119,6 @@ export const RoomControlMenu = () => {
   const { state: appState, setState: setAppState } =
     React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
-  const { sendActivity } = useActivity();
-  const {
-    user: { username },
-  } = useAppState();
 
   React.useEffect(() => {
     if (roomId != null) {
@@ -133,19 +129,12 @@ export const RoomControlMenu = () => {
   }, [roomId, setAppState]);
 
   const createRoomThrottled = React.useMemo(() => {
-    return throttle(async (event: Event) => {
+    return throttle((event: Event) => {
       event.stopPropagation?.();
       setAppState(AppState.ROOM);
-      await createRoom({});
-      sendActivity({
-        type: "connection",
-        payload: {
-          username,
-          status: "join",
-        },
-      });
+      createRoom({});
     }, 1000);
-  }, [createRoom, setAppState, sendActivity, username]);
+  }, [createRoom, setAppState]);
 
   const joinRoomThrottled = React.useMemo(() => {
     return throttle(
@@ -156,18 +145,11 @@ export const RoomControlMenu = () => {
         const haveJoined = await joinRoom(inputRoomId);
         if (haveJoined) {
           setAppState(AppState.ROOM);
-          sendActivity({
-            type: "connection",
-            payload: {
-              username,
-              status: "join",
-            },
-          });
         }
       },
       1000
     );
-  }, [joinRoom, inputRoomId, setAppState, sendActivity, username]);
+  }, [joinRoom, inputRoomId, setAppState]);
 
   const signOutThrottled = React.useMemo(() => {
     return throttle(() => {
@@ -183,21 +165,14 @@ export const RoomControlMenu = () => {
   }, []);
 
   const leaveRoomThrottled = React.useMemo(() => {
-    return throttle(async (event: Event) => {
+    return throttle((event: Event) => {
       event.stopPropagation?.();
       setAppState(AppState.HOME);
       if (roomId) {
-        await leaveRoom(roomId);
-        sendActivity({
-          type: "connection",
-          payload: {
-            username,
-            status: "leave",
-          },
-        });
+        leaveRoom(roomId);
       }
     }, 1000);
-  }, [roomId, leaveRoom, setAppState, sendActivity, username]);
+  }, [roomId, leaveRoom, setAppState]);
 
   return (
     <DropdownMenu>
