@@ -1,8 +1,8 @@
 import {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
-  serverTimestamp,
   SnapshotOptions,
+  Timestamp,
 } from "firebase/firestore";
 
 export interface Room {
@@ -10,7 +10,7 @@ export interface Room {
   questionId: string;
   usernames: string[];
   nextQuestion: string;
-  createdAt: number;
+  createdAt: Timestamp;
 }
 
 export interface PeerConnection {
@@ -27,7 +27,9 @@ export interface Group {
 }
 
 export const roomConverter: FirestoreDataConverter<Room, Room> = {
-  toFirestore: (data: Room) => data,
+  toFirestore: (data: Room) => {
+    return data;
+  },
   fromFirestore: (
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions
@@ -39,7 +41,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
       questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
       nextQuestion: data.nextQuestion ?? "",
-      createdAt: data.createdAt ?? serverTimestamp(),
+      createdAt: data.createdAt ?? Timestamp.now(),
     };
   },
 };

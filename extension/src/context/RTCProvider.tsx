@@ -42,6 +42,7 @@ import {
   deleteDoc,
   getDocs,
   onSnapshot,
+  serverTimestamp,
   Unsubscribe,
   writeBatch,
 } from "firebase/firestore";
@@ -294,7 +295,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
       questions: arrayUnion(roomId),
       users: arrayUnion(username),
     });
-    await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
+    await setRoom(roomRef, {
+      questionId,
+      usernames: arrayUnion(username),
+      createdAt: serverTimestamp(),
+    });
     console.log("Created room", newGroupId);
     setGroupId(newGroupId);
     navigator.clipboard.writeText(newGroupId);
