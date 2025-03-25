@@ -40,8 +40,8 @@ const rulesPath = path.resolve(__dirname, "../firestore.rules");
   await assertSucceeds(roomDoc.get());
 
   const unauthenticated = testEnv.unauthenticatedContext();
-  const unauthenticatedDb = unauthenticated.firestore();
-  const undefineRoomDoc = unauthenticatedDb
+  const testDb = unauthenticated.firestore();
+  const undefineRoomDoc = testDb
     .collection("rooms")
     .doc(`CODEBUDDYTEST ${new Date()}`);
 
