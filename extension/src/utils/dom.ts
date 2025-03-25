@@ -30,3 +30,26 @@ export const waitForElement = (
     }, timeout);
   });
 };
+
+/**
+ * Hide all dom elements that does not contain {@param element} in its subtree up to root
+ */
+export const hideToRoot = (element: Element | undefined) => {
+  let node = element?.parentElement?.parentElement;
+  while (node != null) {
+    node.style.display = "block";
+    const parent = node.parentElement;
+    Array.from(parent?.children ?? []).forEach((sibling) => {
+      if (sibling !== node) {
+        (sibling as HTMLElement).style.display = "none";
+      }
+    });
+    node = parent;
+  }
+};
+
+export const disablePointerEvents = (context: Document = document) => {
+  const style = context.createElement("style");
+  style.textContent = "a { pointer-events: none; }";
+  context.head.appendChild(style);
+};

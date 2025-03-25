@@ -1,92 +1,77 @@
 import React from "react";
 import { useOnMount } from "@cb/hooks";
-import { waitForElement } from "@cb/utils";
+import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
+import { createRoot } from "react-dom/client";
+import SelectButtonQuestion from "@cb/components/button/SelectQuestionButton";
 
-export default function QuestionSelector() {
+// We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
+const TIMEOUT = 10_000;
+
+const QuestionSelector = React.memo(() => {
   useOnMount(() => {
-    waitForElement("#leetcode_question", 2000).then((element) => {
+    const handleIframeStyle = async (iframeDoc: Document) => {
+      disablePointerEvents(iframeDoc);
+
+      // A collection of questions - for some reason, leetcode has empty tables
+      const table = await waitForElement(
+        "div[role='table']:nth-child(1)",
+        TIMEOUT,
+        iframeDoc
+      );
+      hideToRoot(table);
+      const rows = await waitForElement(
+        "div[role='rowgroup']",
+        TIMEOUT,
+        table as unknown as Document
+      );
+      // The order currently: status, title, solution, acceptance, difficulty, frequency
+      rows?.querySelectorAll("div[role='row']").forEach(async (question) => {
+        try {
+          // Technically, the selector can either match on status (if daily question) or title -- in either cases,
+          // we have the link to the actual problem
+          const link = (await waitForElement(
+            "div[role='cell'] a",
+            TIMEOUT,
+            question as unknown as Document
+          )) as HTMLAnchorElement;
+          const injected = iframeDoc.createElement("span");
+          question.append(injected);
+          createRoot(injected).render(
+            <SelectButtonQuestion href={link?.href ?? ""} />
+          );
+        } catch {
+          // If no link exist, there's no point in displaying the question
+          rows.removeChild(question);
+        }
+      });
+
+      waitForElement(
+        "div[role='columnheader']:first-child",
+        TIMEOUT,
+        iframeDoc
+      ).then((element) => {
+        // todo(nickbar01234): Append an empty cell to make padding somewhat consistent... we should fix this styling
+        const cloned = element.cloneNode(true);
+        (cloned as HTMLElement).style.visibility = "hidden";
+        element.parentNode?.appendChild(cloned);
+      });
+    };
+
+    waitForElement("#leetcode_question", TIMEOUT).then((element) => {
       const iframe = element as HTMLIFrameElement;
 
       iframe.onload = async () => {
         const iframeDoc =
           iframe.contentDocument ?? iframe.contentWindow?.document;
-        if (iframeDoc) {
-          waitForElement(
-            "div[role='rowgroup']",
-            3000,
-            iframeDoc as Document
-          ).then((element) => {
-            const style = document.createElement("style");
-            style.textContent = "a { pointer-events: none; }";
-            iframeDoc.head.appendChild(style);
-
-            const listOfTable = iframeDoc.querySelectorAll(
-              "div[role='table']"
-            ) as NodeListOf<HTMLDivElement>;
-            const table = listOfTable[2];
-
-            const grandParent = table?.parentElement?.parentElement;
-
-            if (grandParent) {
-              let current: HTMLElement | null = grandParent; // Start from the given grandParent element
-
-              while (current) {
-                // Loop until there are no more parent elements
-                current.style.display = "block"; // Make the current element visible
-
-                if (current.parentElement) {
-                  // Check if the current element has a parent
-                  Array.from(current.parentElement.children).forEach(
-                    (sibling) => {
-                      if (sibling !== current) {
-                        // Hide all sibling elements except the current one
-                        (sibling as HTMLElement).style.display = "none";
-                      }
-                    }
-                  );
-                }
-
-                current = current.parentElement; // Move up to the next parent in the hierarchy
-              }
-            }
-
-            const questions = iframeDoc.querySelectorAll(
-              "div[role='row']"
-            ) as NodeListOf<HTMLDivElement>;
-            if (questions != null) {
-              questions.forEach((question) => {
-                waitForElement("a", 3000, question as unknown as Document).then(
-                  (element) => {
-                    const link = question.querySelector("a");
-                    if (link) {
-                      const questionTitle = link as HTMLAnchorElement;
-
-                      const plusIcon = document.createElement("span");
-                      plusIcon.innerHTML = "+";
-                      plusIcon.style.position = "absolute";
-                      plusIcon.style.left = "25px";
-                      plusIcon.style.top = "50%";
-                      plusIcon.style.transform = "translateY(-50%)";
-                      plusIcon.style.marginLeft = "8px";
-                      plusIcon.style.cursor = "pointer";
-                      plusIcon.style.fontSize = "20px";
-                      plusIcon.style.fontWeight = "bold";
-                      question.style.position = "relative";
-                      question.prepend(plusIcon);
-
-                      question.addEventListener("click", (e) => {
-                        console.log(questionTitle.href);
-                      });
-                    }
-                  }
-                );
-              });
-            }
+        if (iframeDoc != undefined) {
+          handleIframeStyle(iframeDoc).catch((e) => {
+            console.error("Unable to mount Leetcode iframe", e);
           });
         }
       };
     });
   });
+
   return (
     <iframe
       src="https://leetcode.com/problemset/"
@@ -96,4 +81,6 @@ export default function QuestionSelector() {
       sandbox="allow-scripts allow-same-origin"
     />
   );
-}
+});
+
+export default QuestionSelector;
