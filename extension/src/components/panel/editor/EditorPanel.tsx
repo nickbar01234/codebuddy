@@ -195,7 +195,7 @@ const logEntries: LogEvent[] = [
       output: "Accepted",
       status: "success",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
   },
   {
     type: "submission",
@@ -204,7 +204,7 @@ const logEntries: LogEvent[] = [
       output: "Time limit exceeded",
       status: "error",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
   },
   {
     type: "connection",
@@ -212,7 +212,7 @@ const logEntries: LogEvent[] = [
       username: "Dev",
       status: "join",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
   },
   {
     type: "message",
@@ -221,7 +221,7 @@ const logEntries: LogEvent[] = [
       message: "RAHHHhHHH can someone take a look at my code",
       color: userColors["Code"], // Assigning color for Code
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
   },
   {
     type: "message",
@@ -230,7 +230,7 @@ const logEntries: LogEvent[] = [
       message: "um no sry",
       color: userColors["Buddy"], // Assigning color for Buddy
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
   },
   {
     type: "connection",
@@ -238,7 +238,7 @@ const logEntries: LogEvent[] = [
       username: "Buddy",
       status: "leave",
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
   },
   {
     type: "message",
@@ -247,7 +247,7 @@ const logEntries: LogEvent[] = [
       message: "???",
       color: userColors["Code"], // Assigning color for Code
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
   },
   {
     type: "message",
@@ -256,7 +256,7 @@ const logEntries: LogEvent[] = [
       message: "lmao",
       color: userColors["Dev"], // Assigning color for Dev
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
   },
   {
     type: "message",
@@ -265,6 +265,6 @@ const logEntries: LogEvent[] = [
       message: "lmao",
       color: userColors["5bigBooms"], // Assigning color for 5bigBooms
     },
-    timestamp: Date.now() + Math.floor(Math.random() * 10), // Random timestamp
+    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
   },
 ];
