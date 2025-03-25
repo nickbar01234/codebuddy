@@ -1,11 +1,17 @@
 import { LogEvent } from "@cb/db/converter";
 import { cn } from "@cb/utils/cn";
-import { LeaveIcon } from "@cb/components/icons";
 import { History, MessageCircleIcon, Users } from "lucide-react";
-import { getUnixTs } from "@cb/utils/heartbeat";
 
 interface LogEntryProps {
   entry: LogEvent;
+}
+function timeAgo(timestamp: number) {
+  const diff = Math.floor((Date.now() - timestamp) / 1000); // Difference in seconds
+
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+
+  return `${Math.floor(diff / 3600)} hour ago`;
 }
 
 export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
@@ -73,7 +79,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   return (
     <div className="flex items-center space-x-2 py-1">
       <span className={`flex-grow`}>{getPrompt()}</span>
-      <span className="text-xs text-gray-400">{2}s</span>
+      <span className="text-xs text-gray-400">{timeAgo(timestamp)}</span>
     </div>
   );
 };
