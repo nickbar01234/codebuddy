@@ -1,6 +1,5 @@
 import {
   LogEvent,
-  logEventConverter,
   PeerConnection,
   peerConnectionConverter,
   Room,
@@ -14,12 +13,7 @@ import {
   doc,
   DocumentReference,
   getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
   setDoc,
-  startAfter,
   WithFieldValue,
 } from "firebase/firestore";
 
