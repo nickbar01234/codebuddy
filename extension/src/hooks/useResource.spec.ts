@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { renderHook } from "@testing-library/react";
-import useResource, { Resource } from "./useResource";
+import { useResource, Resource } from "./useResource";
 
 describe("useResource", () => {
   const RESOURCE = "resource";

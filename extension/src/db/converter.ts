@@ -1,7 +1,9 @@
 import {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
+  serverTimestamp,
   SnapshotOptions,
+  Timestamp,
 } from "firebase/firestore";
 
 export interface Room {
@@ -10,7 +12,7 @@ export interface Room {
 }
 export interface BaseEvent {
   type: string;
-  timestamp: number;
+  timestamp: Timestamp;
 }
 
 export interface SubmissionEvent extends BaseEvent {
@@ -67,7 +69,12 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
 };
 
 export const logEventConverter: FirestoreDataConverter<LogEvent, LogEvent> = {
-  toFirestore: (data: LogEvent) => data,
+  toFirestore: (data: LogEvent) => {
+    return {
+      ...data,
+      timestamp: serverTimestamp(),
+    };
+  },
   fromFirestore: (
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions

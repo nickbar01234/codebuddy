@@ -12,7 +12,7 @@ interface UseResourceProps {
   name?: string;
 }
 
-const useResource = <T>({ name }: UseResourceProps) => {
+export const useResource = <T>({ name }: UseResourceProps) => {
   const resourceRef = React.useRef<Record<string, Resource<T> | undefined>>({});
 
   const register = React.useRef(
@@ -71,5 +71,3 @@ const useResource = <T>({ name }: UseResourceProps) => {
     evict,
   };
 };
-
-export default useResource;

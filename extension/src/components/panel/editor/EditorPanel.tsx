@@ -1,7 +1,6 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppState } from "@cb/context/AppStateProvider";
-import { LogEvent } from "@cb/db/converter";
 import {
   useAppState,
   usePeerSelection,
@@ -171,7 +170,7 @@ const EditorPanel = () => {
             className="relative w-full overflow-auto"
             style={{ height: height - codePreference.height - 128 }}
           >
-            <ActivityLogTab logEntries={logEntries} />
+            <ActivityLogTab />
           </div>
         </div>
       </div>
@@ -180,91 +179,3 @@ const EditorPanel = () => {
 };
 
 export default EditorPanel;
-const userColors = {
-  Buddy: "text-red-500",
-  Code: "text-blue-500",
-  Dev: "text-green-500",
-  "5bigBooms": "text-yellow-500",
-};
-
-const logEntries: LogEvent[] = [
-  {
-    type: "submission",
-    payload: {
-      username: "Buddy",
-      output: "Accepted",
-      status: "success",
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
-  },
-  {
-    type: "submission",
-    payload: {
-      username: "Code",
-      output: "Time limit exceeded",
-      status: "error",
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
-  },
-  {
-    type: "connection",
-    payload: {
-      username: "Dev",
-      status: "join",
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Code",
-      message: "RAHHHhHHH can someone take a look at my code",
-      color: userColors["Code"], // Assigning color for Code
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Buddy",
-      message: "um no sry",
-      color: userColors["Buddy"], // Assigning color for Buddy
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
-  },
-  {
-    type: "connection",
-    payload: {
-      username: "Buddy",
-      status: "leave",
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Code",
-      message: "???",
-      color: userColors["Code"], // Assigning color for Code
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Dev",
-      message: "lmao",
-      color: userColors["Dev"], // Assigning color for Dev
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "5bigBooms",
-      message: "lmao",
-      color: userColors["5bigBooms"], // Assigning color for 5bigBooms
-    },
-    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
-  },
-];

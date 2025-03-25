@@ -12,7 +12,7 @@ import {
   setRoomPeerConnection,
 } from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
-import useResource from "@cb/hooks/useResource";
+import { useResource } from "@cb/hooks/useResource";
 import {
   clearLocalStorage,
   getLocalStorage,

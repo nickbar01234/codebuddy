@@ -1,12 +1,14 @@
 import { LogEvent } from "@cb/db/converter";
 import { cn } from "@cb/utils/cn";
+import { Timestamp } from "firebase/firestore";
 import { History, MessageCircleIcon, Users } from "lucide-react";
 
 interface LogEntryProps {
   entry: LogEvent;
 }
-function timeAgo(timestamp: number) {
-  const diff = Math.floor((Date.now() - timestamp) / 1000); // Difference in seconds
+function timeAgo(timestamp: Timestamp) {
+  const num = timestamp.toMillis();
+  const diff = Math.floor((Date.now() - num) / 1000); // Difference in seconds
 
   if (diff < 60) return "0s";
   if (diff < 3600) return `${Math.floor(diff / 60)}m`;

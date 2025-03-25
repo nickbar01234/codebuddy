@@ -4,6 +4,7 @@ import {
   peerConnectionConverter,
   Room,
   roomConverter,
+  logEventConverter,
 } from "@cb/db/converter";
 import { auth, firestore } from "@cb/db/setup";
 import {
@@ -43,34 +44,14 @@ export const getRoomPeerConnectionRef = (
   doc(getRoomPeerConnectionRefs(id, peer), username).withConverter(
     peerConnectionConverter
   );
-export const addEventToRoom = (data: LogEvent, roomId: string) => {
+export const addEventToRoom = (
+  data: Omit<LogEvent, "timestamp">,
+  roomId: string
+) => {
   const roomRef = getRoomRef(roomId);
-  addDoc(collection(roomRef, "logs"), data);
+  addDoc(collection(roomRef, "logs").withConverter(logEventConverter), data);
 };
 
-// export const getEventsFromRoom = async (
-//   roomId: string,
-//   maxLimit: number,
-//   lastEvent?: number | LogEvent
-// ) => {
-//   const roomRef = getRoomRef(roomId);
-
-//   let q = query(
-//     collection(roomRef, "logs"),
-//     orderBy("timestamp", "desc"),
-//     limit(maxLimit)
-//   );
-
-//   if (lastEvent !== undefined) {
-//     const timestamp =
-//       typeof lastEvent === "number" ? lastEvent : lastEvent.timestamp;
-//     q = query(q, startAfter(timestamp));
-//   }
-
-//   q = q.withConverter(logEventConverter);
-
-//   return getDocs(q);
-// };
 export const setRoomPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>,
   data: Partial<WithFieldValue<PeerConnection>>

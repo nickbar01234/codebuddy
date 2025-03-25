@@ -1,8 +1,17 @@
 import { addEventToRoom, getRoomRef } from "@cb/db";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { createContext, useEffect, useRef, useState } from "react";
+import { useResource } from "@cb/hooks/useResource";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  Timestamp,
+  Unsubscribe,
+} from "firebase/firestore";
+import { createContext, useEffect, useState } from "react";
 import { LogEvent, logEventConverter } from "../db/converter";
 import { useRTC } from "../hooks";
+
 interface ActivityContextProps {
   children?: React.ReactNode;
 }
@@ -13,18 +22,19 @@ type Activity = LogEvent & {
 
 interface ActivityContext {
   activities: Activity[];
-  scroll: React.MutableRefObject<any>;
-  sendActivity: (activity: LogEvent) => void;
+  sendActivity: (activity: Omit<LogEvent, "timestamp">) => void;
 }
 
 export const ActivityContext = createContext({} as ActivityContext);
 
 export const ActivityProvider = (props: ActivityContextProps) => {
   const [activities, setActivities] = useState<Activity[]>([] as Activity[]);
-  const scroll = useRef();
   const { roomId } = useRTC();
+  const { register: registerSnapshot } = useResource<Unsubscribe>({
+    name: "snapshot",
+  });
 
-  const sendActivity = (activity: LogEvent) => {
+  const sendActivity = (activity: Omit<LogEvent, "timestamp">) => {
     if (!roomId) return;
     addEventToRoom(activity, roomId);
   };
@@ -32,23 +42,31 @@ export const ActivityProvider = (props: ActivityContextProps) => {
     if (!roomId) return;
     const q = query(
       collection(getRoomRef(roomId), "logs"),
-      orderBy("times", "desc")
+      orderBy("timestamp", "desc")
     ).withConverter(logEventConverter);
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (
+        querySnapshot.docs.some(
+          (doc) => !(doc.data().timestamp instanceof Timestamp)
+        )
+      ) {
+        return;
+      }
       const fetchedActivities = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        timeStamp: doc.data().timestamp,
+        timestamp: doc.data().timestamp,
       }));
+      registerSnapshot("activity", unsubscribe, (prev) => prev());
 
       setActivities(fetchedActivities.reverse()); // Ensure oldest first
     });
     return () => unsubscribe();
-  }, [roomId]);
+  }, [roomId, registerSnapshot]);
 
   return (
-    <ActivityContext.Provider value={{ activities, scroll, sendActivity }}>
+    <ActivityContext.Provider value={{ activities, sendActivity }}>
       {props.children}
     </ActivityContext.Provider>
   );
