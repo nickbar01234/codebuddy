@@ -5,6 +5,7 @@ import { LogEntry } from "./LogEntry";
 import { Input } from "@cb/lib/components/ui/input";
 import { Button } from "@cb/lib/components/ui/button";
 import { useWindowDimensions } from "@cb/hooks/index";
+import { Activity } from "lucide-react";
 
 interface ActivityLogProps {
   logEntries: LogEvent[];
@@ -13,9 +14,13 @@ interface ActivityLogProps {
 export const ActivityLogTab: React.FC<ActivityLogProps> = ({ logEntries }) => {
   const { height } = useWindowDimensions();
   return (
-    <div className="flex h-full w-full flex-col items-center gap-2 overflow-hidden rounded-lg p-2 shadow-md">
+    <div className="bg-gray-2 dark:bg-dark-layer-bg flex h-full w-full flex-col items-center gap-2 overflow-hidden rounded-lg p-2 shadow-md">
+      <div className="flex w-full items-start gap-1 bg-[--color-tabset-tabbar-background] px-4 py-2">
+        <Activity className="h-4 w-4 text-green-500" />
+        Activity
+      </div>
       <div
-        className="flex w-full flex-col gap-2 overflow-y-auto p-2"
+        className="hide-scrollbar flex w-full flex-col gap-2 overflow-y-auto p-2"
         style={{ height: height - 128 }}
       >
         {logEntries.map((entry, index) => (

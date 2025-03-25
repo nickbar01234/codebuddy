@@ -1,6 +1,7 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppState } from "@cb/context/AppStateProvider";
+import { LogEvent } from "@cb/db/converter";
 import {
   useAppState,
   usePeerSelection,
@@ -14,13 +15,12 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { cn } from "@cb/utils/cn";
-import { Activity, CodeXml, FlaskConical } from "lucide-react";
+import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { ActivityLogTab } from "./tab/activity/ActivityLogTab";
 import CodeTab from "./tab/CodeTab";
 import { TestTab } from "./tab/TestTab";
-import { LogEvent } from "@cb/db/converter";
 
 export interface TabMetadata {
   id: string;
@@ -171,13 +171,7 @@ const EditorPanel = () => {
             className="relative w-full overflow-auto"
             style={{ height: height - codePreference.height - 128 }}
           >
-            <div className="flex h-full w-full flex-col bg-white dark:bg-black">
-              <div className="flex items-center gap-1 bg-[--color-tabset-tabbar-background] px-4 py-2">
-                <Activity className="h-4 w-4 text-green-500" />
-                Activity
-              </div>
-              <ActivityLogTab logEntries={logEntries} />
-            </div>
+            <ActivityLogTab logEntries={logEntries} />
           </div>
         </div>
       </div>
