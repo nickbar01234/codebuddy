@@ -7,6 +7,7 @@ import {
   setDoc,
   DocumentReference,
   WithFieldValue,
+  addDoc,
 } from "firebase/firestore";
 
 import {
@@ -14,6 +15,8 @@ import {
   peerConnectionConverter,
   Room,
   roomConverter,
+  LogEvent,
+  logEventConverter,
 } from "@cb/db/converter";
 
 export { firestore, auth };
@@ -42,6 +45,10 @@ export const getRoomPeerConnectionRef = (
   doc(getRoomPeerConnectionRefs(id, peer), username).withConverter(
     peerConnectionConverter
   );
+export const addEventToRoom = (data: LogEvent, roomId: string) => {
+  const roomRef = getRoomRef(roomId);
+  addDoc(collection(roomRef, "logs"), data);
+};
 
 export const setRoomPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>,

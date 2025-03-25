@@ -4,6 +4,10 @@ import {
   SnapshotOptions,
 } from "firebase/firestore";
 
+export interface Room {
+  questionId: string;
+  usernames: string[];
+}
 export interface BaseEvent {
   type: string;
   timestamp: number;
@@ -36,12 +40,6 @@ export interface MessageEvent extends BaseEvent {
 }
 export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
-export interface Room {
-  questionId: string;
-  usernames: string[];
-  activityLog: LogEvent[];
-}
-
 export interface PeerConnection {
   username?: string;
 
@@ -64,7 +62,22 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
       ...data,
       questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
-      activityLog: data.activityLog ?? [],
+    };
+  },
+};
+
+export const logEventConverter: FirestoreDataConverter<LogEvent, LogEvent> = {
+  toFirestore: (data: LogEvent) => data,
+  fromFirestore: (
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): LogEvent => {
+    const data = snapshot.data(options)! ?? {};
+    return {
+      ...data,
+      type: data.type ?? "",
+      timestamp: data.timestamp ?? 0,
+      payload: data.payload ?? {},
     };
   },
 };
