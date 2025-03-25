@@ -32,10 +32,22 @@ const rulesPath = path.resolve(__dirname, "../firestore.rules");
   });
   const db = authenticatedUser.firestore();
   const roomDoc = db.collection("rooms").doc(`CODEBUDDYTEST ${new Date()}`);
+
   console.log("Authenticated user can write from room");
-
   await assertSucceeds(roomDoc.set(roomData));
-  console.log("Authenticated user can read from room");
 
+  console.log("Authenticated user can read from room");
   await assertSucceeds(roomDoc.get());
+
+  const unauthenticated = testEnv.unauthenticatedContext();
+  const unauthenticatedDb = unauthenticated.firestore();
+  const undefineRoomDoc = unauthenticatedDb
+    .collection("rooms")
+    .doc(`CODEBUDDYTEST ${new Date()}`);
+
+  console.log("Unauthenticated user cannot write from room");
+  await assertFails(undefineRoomDoc.set(roomData));
+
+  console.log("Unauthenticated user cannot read from room");
+  await assertFails(undefineRoomDoc.get());
 })();
