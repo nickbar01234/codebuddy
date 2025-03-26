@@ -173,7 +173,6 @@ export const RoomControlMenu = () => {
       }
     }, 1000);
   }, [groupId, leaveRoom, setAppState]);
-  // console.log("groupId", groupId);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>

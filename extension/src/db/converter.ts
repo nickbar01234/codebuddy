@@ -23,7 +23,7 @@ export interface PeerConnection {
 
 export interface Group {
   questions: string[];
-  users: string[];
+  usernames: string[];
 }
 
 export const roomConverter: FirestoreDataConverter<Room, Room> = {
@@ -71,7 +71,7 @@ export const groupConverter: FirestoreDataConverter<Group, Group> = {
     return {
       ...data,
       questions: data.questions ?? [],
-      users: data.users ?? [],
+      usernames: data.usernames ?? [],
     };
   },
 };

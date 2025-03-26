@@ -293,7 +293,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const roomRef = getRoomRef(newGroupId, roomId);
     await setGroup(newGroupRef, {
       questions: arrayUnion(roomId),
-      users: arrayUnion(username),
+      usernames: arrayUnion(username),
     });
     await setRoom(roomRef, {
       questionId,
@@ -409,7 +409,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // console.log("Joining room", groupId);
       setGroupId(groupId);
       setGroup(getGroupRef(groupId), {
-        users: arrayUnion(username),
+        usernames: arrayUnion(username),
       });
       await setRoom(getRoomRef(groupId, roomId), {
         usernames: arrayUnion(username),
@@ -512,7 +512,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       try {
         await setGroup(getGroupRef(groupId), {
-          users: arrayRemove(username),
+          usernames: arrayRemove(username),
         });
         await setRoom(getRoomRef(groupId, roomId), {
           usernames: arrayRemove(username),
@@ -550,7 +550,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: arrayRemove(...peers),
       });
       batch.update(getGroupRef(groupId), {
-        users: arrayRemove(...peers),
+        usernames: arrayRemove(...peers),
       });
       await batch.commit();
       setInformations((prev) =>

@@ -12,7 +12,7 @@ import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
-  const { peers, activePeer, setActivePeerId } = usePeerSelection();
+  const { peers, setActivePeerId } = usePeerSelection();
   const { roomId } = useRTC();
   useDevSetupRoom();
 
