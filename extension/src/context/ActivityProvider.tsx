@@ -53,6 +53,7 @@ export const ActivityProvider = (props: ActivityContextProps) => {
     },
     [roomId]
   );
+
   useOnMount(() => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
       .then((button) => button as HTMLButtonElement)
