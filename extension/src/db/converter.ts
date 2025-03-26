@@ -5,14 +5,6 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-export interface Session {
-  finishedUsers: string[];
-  questionId: string;
-  usernames: string[];
-  nextQuestion: string;
-  createdAt: Timestamp;
-}
-
 export interface PeerConnection {
   username?: string;
   offer?: RTCSessionDescriptionInit;
@@ -26,25 +18,13 @@ export interface Room {
   usernames: string[];
 }
 
-export const sessionConverter: FirestoreDataConverter<Session, Session> = {
-  toFirestore: (data: Session) => {
-    return data;
-  },
-  fromFirestore: (
-    snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
-  ): Session => {
-    const data = snapshot.data(options) ?? {};
-    return {
-      ...data,
-      finishedUsers: data.finishedUsers ?? [],
-      questionId: data.questionId ?? "",
-      usernames: data.usernames ?? [],
-      nextQuestion: data.nextQuestion ?? "",
-      createdAt: data.createdAt ?? Timestamp.now(),
-    };
-  },
-};
+export interface Session {
+  finishedUsers: string[];
+  questionId: string;
+  usernames: string[];
+  nextQuestion: string;
+  createdAt: Timestamp;
+}
 
 export const peerConnectionConverter: FirestoreDataConverter<
   PeerConnection,
@@ -72,6 +52,25 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
       ...data,
       questions: data.questions ?? [],
       usernames: data.usernames ?? [],
+    };
+  },
+};
+export const sessionConverter: FirestoreDataConverter<Session, Session> = {
+  toFirestore: (data: Session) => {
+    return data;
+  },
+  fromFirestore: (
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): Session => {
+    const data = snapshot.data(options) ?? {};
+    return {
+      ...data,
+      finishedUsers: data.finishedUsers ?? [],
+      questionId: data.questionId ?? "",
+      usernames: data.usernames ?? [],
+      nextQuestion: data.nextQuestion ?? "",
+      createdAt: data.createdAt ?? Timestamp.now(),
     };
   },
 };
