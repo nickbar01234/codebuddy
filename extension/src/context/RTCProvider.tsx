@@ -66,7 +66,7 @@ const CODE_MIRROR_CONTENT = ".cm-content";
 
 export const HEARTBEAT_INTERVAL = 1000; // ms
 const CHECK_ALIVE_INTERVAL = 1000; // ms
-const TIMEOUT = 30; // seconds;
+const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
   groupId?: string;
