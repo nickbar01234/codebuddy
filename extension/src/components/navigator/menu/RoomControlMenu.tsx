@@ -34,19 +34,19 @@ const _RoomControlMenu = ({
   onCreateRoom,
   onJoinRoom,
   onLeaveRoom,
-  groupId,
-  setInputRoomId,
+  roomId,
+  setInputsessionId,
 }: {
   appState: AppState;
   onCreateRoom: (e: Event) => void;
   onJoinRoom: (e: React.MouseEvent | React.KeyboardEvent) => void;
   onLeaveRoom: (e: Event) => void;
-  groupId: string;
-  setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
+  roomId: string;
+  setInputsessionId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangesessionIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setInputRoomId(e.target.value);
+    setInputsessionId(e.target.value);
   };
 
   switch (appState) {
@@ -75,7 +75,7 @@ const _RoomControlMenu = ({
                 <input
                   className="bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[5px]"
                   placeholder="Enter room ID"
-                  onChange={onChangeRoomIdInput}
+                  onChange={onChangesessionIdInput}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       onJoinRoom(e);
@@ -94,7 +94,7 @@ const _RoomControlMenu = ({
           <RoomControlDropdownMenuItem
             onSelect={(e) => {
               e.stopPropagation();
-              navigator.clipboard.writeText(groupId ?? "");
+              navigator.clipboard.writeText(roomId ?? "");
             }}
           >
             <span className="flex items-center gap-2">
@@ -115,18 +115,18 @@ const _RoomControlMenu = ({
 };
 
 export const RoomControlMenu = () => {
-  const { createRoom, joinRoom, groupId, leaveRoom } = useRTC();
+  const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const { state: appState, setState: setAppState } =
     React.useContext(appStateContext);
-  const [inputRoomId, setInputRoomId] = React.useState("");
+  const [inputsessionId, setInputsessionId] = React.useState("");
 
   React.useEffect(() => {
-    if (groupId != null) {
+    if (roomId != null) {
       setAppState(AppState.ROOM);
     } else {
       setAppState(AppState.HOME);
     }
-  }, [groupId, setAppState]);
+  }, [roomId, setAppState]);
 
   const createRoomThrottled = React.useMemo(() => {
     return throttle((event: Event) => {
@@ -142,20 +142,20 @@ export const RoomControlMenu = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        const haveJoined = await joinRoom(inputRoomId);
+        const haveJoined = await joinRoom(inputsessionId);
         if (haveJoined) {
           setAppState(AppState.ROOM);
         }
       },
       1000
     );
-  }, [joinRoom, inputRoomId, setAppState]);
+  }, [joinRoom, inputsessionId, setAppState]);
 
   const signOutThrottled = React.useMemo(() => {
     return throttle(() => {
-      leaveRoom(groupId).then(() => signOut(auth));
+      leaveRoom(roomId).then(() => signOut(auth));
     }, 1000);
-  }, [leaveRoom, groupId]);
+  }, [leaveRoom, roomId]);
 
   const resetExtensionThrottled = React.useMemo(() => {
     return throttle((event: Event) => {
@@ -168,11 +168,11 @@ export const RoomControlMenu = () => {
     return throttle((event: Event) => {
       event.stopPropagation?.();
       setAppState(AppState.HOME);
-      if (groupId) {
-        leaveRoom(groupId);
+      if (roomId) {
+        leaveRoom(roomId);
       }
     }, 1000);
-  }, [groupId, leaveRoom, setAppState]);
+  }, [roomId, leaveRoom, setAppState]);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -184,8 +184,8 @@ export const RoomControlMenu = () => {
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
           onLeaveRoom={leaveRoomThrottled}
-          groupId={groupId ?? inputRoomId}
-          setInputRoomId={setInputRoomId}
+          roomId={roomId ?? inputsessionId}
+          setInputsessionId={setInputsessionId}
         />
         <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
           <span className="flex items-center gap-2">

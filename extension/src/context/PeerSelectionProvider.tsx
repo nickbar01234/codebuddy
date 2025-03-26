@@ -35,7 +35,7 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { informations, groupId, roomId } = useRTC();
+  const { informations, roomId, sessionId } = useRTC();
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
@@ -171,31 +171,31 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
-      return getLocalStorage("tabs")?.rooms[roomId].peers[peerId];
+      return getLocalStorage("tabs")?.rooms[sessionId].peers[peerId];
     },
-    [roomId]
+    [sessionId]
   );
 
   const setLocalStorageForIndividualPeers = React.useCallback(
     (peer: Peer) => {
       const currentInfo = getLocalStorage("tabs") ?? {
-        groupId: groupId ?? "",
+        roomId: roomId ?? "",
         rooms: {},
       };
-      const currentRoom = currentInfo.rooms[roomId ?? ""];
+      const currentRoom = currentInfo.rooms[sessionId ?? ""];
       if (!currentRoom) {
-        currentInfo.rooms[roomId ?? ""] = {
-          roomId: roomId ?? "",
+        currentInfo.rooms[sessionId ?? ""] = {
+          sessionId: sessionId ?? "",
           peers: {},
         };
       }
-      const currentPeers = currentInfo.rooms[roomId].peers;
+      const currentPeers = currentInfo.rooms[sessionId].peers;
       currentPeers[peer.id] = {
         ...peer,
       };
       setLocalStorage("tabs", currentInfo);
     },
-    [groupId, roomId]
+    [roomId, sessionId]
   );
 
   React.useEffect(() => {
@@ -205,7 +205,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         setLocalStorage("lastActivePeer", peer.id);
       }
     }
-  }, [peers, groupId, setLocalStorageForIndividualPeers, isBuffer]);
+  }, [peers, roomId, setLocalStorageForIndividualPeers, isBuffer]);
 
   React.useEffect(() => {
     setPeers((prev) =>

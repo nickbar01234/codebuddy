@@ -45,7 +45,7 @@ have 2 options:
 
    ```yaml
    rooms/
-    [roomId]:
+    [sessionId]:
       user-2/
         user-1:
           expiresAt: TIMESTAMP
@@ -66,7 +66,7 @@ have 2 options:
 
    ```yaml
    rooms/
-    [roomId]:
+    [sessionId]:
       users: {
         <user-2>: {
           <user-1>: { ... }

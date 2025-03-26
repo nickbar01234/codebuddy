@@ -39,12 +39,12 @@ const setup = async () => {
     const page = await browser.newPage();
     await page.goto(EXTENSION_HOST);
     await page.evaluate(
-      (peer, roomId) => {
+      (peer, sessionId) => {
         localStorage.setItem(
           "codebuddytest",
           JSON.stringify({
             peer: peer,
-            groupId: roomId,
+            roomId: sessionId,
           })
         );
       },

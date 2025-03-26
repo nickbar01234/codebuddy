@@ -15,20 +15,20 @@ const useDevSetupRoom = () => {
 
     const setupRoom = async () => {
       const test = getLocalStorage("test");
-      const groupId = test?.groupId;
-      const roomId = getQuestionIdFromUrl(window.location.href);
-      const groupRef = getGroupRef(groupId);
+      const roomId = test?.roomId;
+      const sessionId = getQuestionIdFromUrl(window.location.href);
+      const groupRef = getGroupRef(roomId);
       await setGroup(groupRef, {
-        questions: arrayUnion(roomId),
+        questions: arrayUnion(sessionId),
       });
-      if (test != undefined && groupId != undefined) {
+      if (test != undefined && roomId != undefined) {
         setLocalStorage("test", { peer: test?.peer });
         try {
-          await setRoom(getRoomRef(groupId, roomId), {
+          await setRoom(getRoomRef(roomId, sessionId), {
             usernames: arrayRemove(user.username),
             questionId: getQuestionIdFromUrl(window.location.href),
           });
-          joinRoom(groupId);
+          joinRoom(roomId);
         } catch (error) {
           console.log("error when removing", error);
         }
