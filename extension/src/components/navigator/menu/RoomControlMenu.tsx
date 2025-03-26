@@ -35,18 +35,18 @@ const _RoomControlMenu = ({
   onJoinRoom,
   onLeaveRoom,
   roomId,
-  setInputsessionId,
+  setInputRoomId,
 }: {
   appState: AppState;
   onCreateRoom: (e: Event) => void;
   onJoinRoom: (e: React.MouseEvent | React.KeyboardEvent) => void;
   onLeaveRoom: (e: Event) => void;
   roomId: string;
-  setInputsessionId: React.Dispatch<React.SetStateAction<string>>;
+  setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const onChangesessionIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeRoomInputId = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setInputsessionId(e.target.value);
+    setInputRoomId(e.target.value);
   };
 
   switch (appState) {
@@ -55,19 +55,19 @@ const _RoomControlMenu = ({
         <>
           <RoomControlDropdownMenuItem onSelect={onCreateRoom}>
             <span className="flex items-center gap-2">
-              <PlusIcon /> Create Session
+              <PlusIcon /> Create Room
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Dialog>
               <DialogTrigger>
                 <span className="flex items-center gap-2">
-                  <CodeIcon /> Join Session
+                  <CodeIcon /> Join Room
                 </span>
               </DialogTrigger>
               <DialogContent className="[&>button]:hidden">
                 <DialogHeader className="text-2xl">
-                  <DialogTitle>Input Session ID</DialogTitle>
+                  <DialogTitle>Input Room ID</DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="hidden">
                   Input room ID
@@ -75,7 +75,7 @@ const _RoomControlMenu = ({
                 <input
                   className="bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[5px]"
                   placeholder="Enter room ID"
-                  onChange={onChangesessionIdInput}
+                  onChange={onChangeRoomInputId}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       onJoinRoom(e);
@@ -98,12 +98,12 @@ const _RoomControlMenu = ({
             }}
           >
             <span className="flex items-center gap-2">
-              <CopyIcon /> Copy Session ID
+              <CopyIcon /> Copy Room ID
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={onLeaveRoom}>
             <span className="flex items-center gap-2">
-              <LeaveIcon /> Leave Session
+              <LeaveIcon /> Leave Room
             </span>
           </RoomControlDropdownMenuItem>
         </>
@@ -118,7 +118,7 @@ export const RoomControlMenu = () => {
   const { createRoom, joinRoom, roomId, leaveRoom } = useRTC();
   const { state: appState, setState: setAppState } =
     React.useContext(appStateContext);
-  const [inputsessionId, setInputsessionId] = React.useState("");
+  const [inputRoomId, setInputRoomId] = React.useState("");
 
   React.useEffect(() => {
     if (roomId != null) {
@@ -142,14 +142,14 @@ export const RoomControlMenu = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        const haveJoined = await joinRoom(inputsessionId);
+        const haveJoined = await joinRoom(inputRoomId);
         if (haveJoined) {
           setAppState(AppState.ROOM);
         }
       },
       1000
     );
-  }, [joinRoom, inputsessionId, setAppState]);
+  }, [joinRoom, inputRoomId, setAppState]);
 
   const signOutThrottled = React.useMemo(() => {
     return throttle(() => {
@@ -184,8 +184,8 @@ export const RoomControlMenu = () => {
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
           onLeaveRoom={leaveRoomThrottled}
-          roomId={roomId ?? inputsessionId}
-          setInputsessionId={setInputsessionId}
+          roomId={roomId ?? inputRoomId}
+          setInputRoomId={setInputRoomId}
         />
         <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
           <span className="flex items-center gap-2">

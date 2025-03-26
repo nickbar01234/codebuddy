@@ -2,12 +2,15 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import { firestore, getRoom, getRoomRef, setRoom } from "@cb/db";
 import {
+  firestore,
+  getRoom,
+  getRoomRef,
   getSession,
   getSessionPeerConnectionRef,
   getSessionPeerConnectionRefs,
   getSessionRef,
+  setRoom,
   setSession,
   setSessionPeerConnection,
 } from "@cb/db";
@@ -289,8 +292,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const createRoom = async ({ roomId }: CreateRoom) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
     const newRoomRef = getRoomRef(roomId);
-    const newroomId = newRoomRef.id;
-    const roomRef = getSessionRef(newroomId, sessionId);
+    const newRoomId = newRoomRef.id;
+    const roomRef = getSessionRef(newRoomId, sessionId);
     await setRoom(newRoomRef, {
       questions: arrayUnion(sessionId),
       usernames: arrayUnion(username),
@@ -300,10 +303,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
       usernames: arrayUnion(username),
       createdAt: serverTimestamp(),
     });
-    console.log("Created room", newroomId);
-    setRoomId(newroomId);
-    navigator.clipboard.writeText(newroomId);
-    toast.success(`Session ID ${newroomId} copied to clipboard`);
+    console.log("Created room", newRoomId);
+    setRoomId(newRoomId);
+    navigator.clipboard.writeText(newRoomId);
+    toast.success(`Session ID ${newRoomId} copied to clipboard`);
   };
 
   const createOffer = React.useCallback(
@@ -383,7 +386,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       const roomDoc = await getRoom(roomId);
       if (!roomDoc.exists()) {
-        toast.error("Roomdoes not exist");
+        toast.error("Room does not exist");
         return false;
       }
       const roomData = roomDoc.data();
@@ -589,8 +592,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     async (join: boolean) => {
       const refreshInfo = getLocalStorage("tabs");
       if (refreshInfo == undefined) return;
-      const prevsessionId = refreshInfo.roomId;
-      await leaveRoom(prevsessionId, join);
+      const prevRoomId = refreshInfo.roomId;
+      await leaveRoom(prevRoomId, join);
       // todo(nickbar01234): Dummy fix to mitigate a race
       // 1. User A reload and triggers leave room
       // 2. User B detects that A leaves the room and attempts to delete peer from local state
@@ -599,7 +602,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // 5. User A doesn't receive an offer
       if (join) {
         setTimeout(() => {
-          joinRoom(prevsessionId);
+          joinRoom(prevRoomId);
         }, 1500);
       }
     },

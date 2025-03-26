@@ -6,9 +6,9 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
+import { poll } from "@cb/utils/poll";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { poll } from "@cb/utils/poll";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
@@ -71,7 +71,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       const groups = (information.tests?.tests ?? []).reduce(
         (acc, test) => {
           // TODO(nickbar01234): Nasty implementation, but works
-          const lastRoom = acc[acc.length - 1];
+          const lastGroup = acc[acc.length - 1];
           if (lastGroup.length < variables.length) {
             lastGroup.push(test);
           } else {

@@ -1,24 +1,23 @@
-import { firestore, auth } from "@cb/db/setup";
+import {
+  PeerConnection,
+  peerConnectionConverter,
+  Room,
+  roomConverter,
+  Session,
+  sessionConverter,
+} from "@cb/db/converter";
+import { auth, firestore } from "@cb/db/setup";
 import {
   collection,
   deleteDoc,
   doc,
+  DocumentReference,
   getDoc,
   setDoc,
-  DocumentReference,
   WithFieldValue,
 } from "firebase/firestore";
 
-import {
-  PeerConnection,
-  peerConnectionConverter,
-  Session,
-  sessionConverter,
-  Room,
-  roomConverter,
-} from "@cb/db/converter";
-
-export { firestore, auth };
+export { auth, firestore };
 
 export const getRoomRef = (roomId?: string) =>
   doc(
