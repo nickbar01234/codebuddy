@@ -391,7 +391,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       const roomData = roomDoc.data();
       if (!roomData.questions.includes(sessionId)) {
-        toast.error("This roomdoes not contain this question");
+        toast.error("This room does not contain this question");
         return false;
       }
 
