@@ -41,17 +41,17 @@ export interface Preference {
 
 export interface LocalStorage {
   tabs: {
-    groupId: string;
-    rooms: {
-      [roomId: string]: {
-        roomId: string;
+    roomId: string;
+    sessions: {
+      [sessionId: string]: {
+        sessionId: string;
         peers: Record<string, Peer>;
       };
     };
   };
   test?: {
     peer: string;
-    groupId?: string;
+    roomId?: string;
   };
   lastActivePeer: string;
   signIn: {

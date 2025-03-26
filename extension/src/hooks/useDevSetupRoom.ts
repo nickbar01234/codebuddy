@@ -1,6 +1,7 @@
-import { getGroupRef, getRoomRef, setGroup, setRoom } from "@cb/db";
+import { getRoomRef, getSessionRef, setRoom, setSession } from "@cb/db";
 import { useAppState, useOnMount, useRTC } from ".";
 import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
+
 import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 
@@ -15,22 +16,22 @@ const useDevSetupRoom = () => {
 
     const setupRoom = async () => {
       const test = getLocalStorage("test");
-      const groupId = test?.groupId;
-      const roomId = getQuestionIdFromUrl(window.location.href);
-      const groupRef = getGroupRef(groupId);
-      await setGroup(groupRef, {
-        questions: arrayUnion(roomId),
+      const roomId = test?.roomId;
+      const sessionId = getQuestionIdFromUrl(window.location.href);
+      const groupRef = getRoomRef(roomId);
+      await setRoom(groupRef, {
+        questions: arrayUnion(sessionId),
         usernames: arrayUnion(user.username),
       });
-      if (test != undefined && groupId != undefined) {
+      if (test != undefined && roomId != undefined) {
         setLocalStorage("test", { peer: test?.peer });
         try {
-          await setRoom(getRoomRef(groupId, roomId), {
+          await setSession(getSessionRef(roomId, sessionId), {
             usernames: arrayRemove(user.username),
             questionId: getQuestionIdFromUrl(window.location.href),
             createdAt: serverTimestamp(),
           });
-          joinRoom(groupId);
+          joinRoom(roomId);
         } catch (error) {
           console.log("error when removing", error);
         }

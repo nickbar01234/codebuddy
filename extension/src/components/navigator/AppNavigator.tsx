@@ -13,7 +13,7 @@ import { RejoinPrompt } from "./menu/RejoinPrompt";
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { peers, setActivePeerId } = usePeerSelection();
-  const { roomId } = useRTC();
+  const { sessionId } = useRTC();
   useDevSetupRoom();
 
   const currentTabInfo = getLocalStorage("tabs");
@@ -31,7 +31,8 @@ export const AppNavigator = () => {
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={
-                Object.keys(currentTabInfo?.rooms[roomId]?.peers ?? 0).length
+                Object.keys(currentTabInfo?.sessions[sessionId]?.peers ?? 0)
+                  .length
               }
             />
           ) : state === AppState.REJOINING ? (

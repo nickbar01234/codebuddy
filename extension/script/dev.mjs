@@ -44,7 +44,7 @@ const setup = async () => {
           "codebuddytest",
           JSON.stringify({
             peer: peer,
-            groupId: roomId,
+            roomId: roomId,
           })
         );
       },
