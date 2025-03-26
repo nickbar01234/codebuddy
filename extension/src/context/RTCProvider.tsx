@@ -1,9 +1,5 @@
 import {
-  LEETCODE_SUBMISSION_RESULT,
-  LEETCODE_SUBMIT_BUTTON,
-} from "@cb/constants/page-elements";
-import { firestore } from "@cb/db";
-import {
+  firestore,
   getRoom,
   getRoomPeerConnectionRef,
   getRoomPeerConnectionRefs,
@@ -19,7 +15,6 @@ import {
   sendServiceRequest,
 } from "@cb/services";
 import {
-  EventType,
   ExtractMessage,
   LeetCodeContentChange,
   PeerInformation,
@@ -115,42 +110,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     get: getSnapshot,
     cleanup: cleanupSnapshot,
   } = useResource<Unsubscribe>({ name: "snapshot" });
-
-  useOnMount(() => {
-    waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
-      .then((button) => button as HTMLButtonElement)
-      .then((button) => {
-        const originalOnClick = button.onclick;
-        button.onclick = function (event) {
-          if (originalOnClick) {
-            originalOnClick.call(this, event);
-          }
-
-          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-            .then(() =>
-              sendMessageToAll(
-                withPayload({
-                  action: "event",
-                  event: EventType.SUBMIT_SUCCESS,
-                  eventMessage: `User ${username} passed all test cases`,
-                })
-              )
-            )
-            .catch(() =>
-              sendMessageToAll(
-                withPayload({
-                  action: "event",
-                  event: EventType.SUBMIT_FAILURE,
-                  eventMessage: `User ${username} failed some test cases`,
-                })
-              )
-            );
-        };
-      })
-      .catch((error) => {
-        console.error("Error mounting callback on submit code button:", error);
-      });
-  });
 
   const sendMessageToAll = React.useRef((fn: ReturnType<typeof withPayload>) =>
     Object.entries(getConnection()).forEach(([peer, connection]) =>
@@ -254,12 +213,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "event": {
             const { event, eventMessage } = payload;
             switch (event) {
-              case EventType.SUBMIT_SUCCESS:
-                toast.success(`Update: ${eventMessage}`);
-                break;
-              case EventType.SUBMIT_FAILURE:
-                toast.error(`Update: ${eventMessage}`);
-                break;
               default:
                 console.error("Unknown event", event);
                 break;
