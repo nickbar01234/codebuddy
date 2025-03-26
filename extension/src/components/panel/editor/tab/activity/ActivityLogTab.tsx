@@ -1,4 +1,3 @@
-import { LogEvent } from "@cb/db/converter";
 import {
   useActivity,
   useAppState,
@@ -7,7 +6,6 @@ import {
 } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
-import { Timestamp } from "firebase/firestore";
 import { Activity, Send } from "lucide-react";
 import React, { useEffect } from "react";
 import { LogEntry } from "./LogEntry";
@@ -97,103 +95,3 @@ const userColors = {
   Dev: "text-green-500",
   "5bigBooms": "text-yellow-500",
 };
-
-const dummy: LogEvent[] = [
-  {
-    type: "submission",
-    payload: {
-      username: "Buddy",
-      output: "Accepted",
-      status: "success",
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 10))
-    ), // Random timestamp
-  },
-  {
-    type: "submission",
-    payload: {
-      username: "Code",
-      output: "Time limit exceeded",
-      status: "error",
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 4000))
-    ), // Random timestamp
-  },
-  {
-    type: "connection",
-    payload: {
-      username: "Dev",
-      status: "join",
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 110))
-    ), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Code",
-      message: "RAHHHhHHH can someone take a look at my code",
-      color: userColors["Code"], // Assigning color for Code
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 3130))
-    ), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Buddy",
-      message: "um no sry",
-      color: userColors["Buddy"], // Assigning color for Buddy
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 13470))
-    ), // Random timestamp
-  },
-  {
-    type: "connection",
-    payload: {
-      username: "Buddy",
-      status: "leave",
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 1220))
-    ), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Code",
-      message: "???",
-      color: userColors["Code"], // Assigning color for Code
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 1234109))
-    ), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "Dev",
-      message: "lmao",
-      color: userColors["Dev"], // Assigning color for Dev
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 223410))
-    ), // Random timestamp
-  },
-  {
-    type: "message",
-    payload: {
-      username: "5bigBooms",
-      message: "lmao",
-      color: userColors["5bigBooms"], // Assigning color for 5bigBooms
-    },
-    timestamp: Timestamp.fromDate(
-      new Date(Date.now() - Math.floor(Math.random() * 232410))
-    ), // Random timestamp
-  },
-];
