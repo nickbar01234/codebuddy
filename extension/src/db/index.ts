@@ -14,27 +14,27 @@ import {
   peerConnectionConverter,
   Session,
   sessionConverter,
-  Group,
-  groupConverter,
+  Room,
+  roomConverter,
 } from "@cb/db/converter";
 
 export { firestore, auth };
 
-export const getGroupRef = (roomId?: string) =>
+export const getRoomRef = (roomId?: string) =>
   doc(
-    collection(firestore, "groups"),
+    collection(firestore, "rooms"),
     ...[roomId].filter((segment) => segment != undefined)
-  ).withConverter(groupConverter);
+  ).withConverter(roomConverter);
 
-export const getGroup = (roomId: string) => getDoc(getGroupRef(roomId));
+export const getRoom = (roomId: string) => getDoc(getRoomRef(roomId));
 
-export const setGroup = (
-  ref: DocumentReference<Group, Group>,
-  data: Partial<WithFieldValue<Group>>
+export const setRoom = (
+  ref: DocumentReference<Room, Room>,
+  data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
 
 export const getSessionQuestionRef = (roomId: string) =>
-  collection(getGroupRef(roomId), "sessions").withConverter(sessionConverter);
+  collection(getRoomRef(roomId), "sessions").withConverter(sessionConverter);
 
 export const getSessionRef = (roomId: string, sessionId: string) =>
   doc(getSessionQuestionRef(roomId), sessionId).withConverter(sessionConverter);

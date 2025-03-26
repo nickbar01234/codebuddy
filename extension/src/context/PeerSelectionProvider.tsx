@@ -71,7 +71,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
       const groups = (information.tests?.tests ?? []).reduce(
         (acc, test) => {
           // TODO(nickbar01234): Nasty implementation, but works
-          const lastGroup = acc[acc.length - 1];
+          const lastRoom = acc[acc.length - 1];
           if (lastGroup.length < variables.length) {
             lastGroup.push(test);
           } else {

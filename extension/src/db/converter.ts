@@ -21,7 +21,7 @@ export interface PeerConnection {
   answerCandidates: RTCIceCandidate[];
 }
 
-export interface Group {
+export interface Room {
   questions: string[];
   usernames: string[];
 }
@@ -61,12 +61,12 @@ export const peerConnectionConverter: FirestoreDataConverter<
   },
 };
 
-export const groupConverter: FirestoreDataConverter<Group, Group> = {
-  toFirestore: (data: Group) => data,
+export const roomConverter: FirestoreDataConverter<Room, Room> = {
+  toFirestore: (data: Room) => data,
   fromFirestore: (
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions
-  ): Group => {
+  ): Room => {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,

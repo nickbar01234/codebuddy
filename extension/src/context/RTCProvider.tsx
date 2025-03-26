@@ -2,7 +2,7 @@ import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
 } from "@cb/constants/page-elements";
-import { firestore, getGroup, getGroupRef, setGroup } from "@cb/db";
+import { firestore, getRoom, getRoomRef, setRoom } from "@cb/db";
 import {
   getSession,
   getSessionPeerConnectionRef,
@@ -288,10 +288,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async ({ roomId }: CreateRoom) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
-    const newGroupRef = getGroupRef(roomId);
+    const newGroupRef = getRoomRef(roomId);
     const newroomId = newGroupRef.id;
     const roomRef = getSessionRef(newroomId, sessionId);
-    await setGroup(newGroupRef, {
+    await setRoom(newGroupRef, {
       questions: arrayUnion(sessionId),
       usernames: arrayUnion(username),
     });
@@ -381,14 +381,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Please enter room ID");
         return false;
       }
-      const groupDoc = await getGroup(roomId);
+      const groupDoc = await getRoom(roomId);
       if (!groupDoc.exists()) {
-        toast.error("Group does not exist");
+        toast.error("Roomdoes not exist");
         return false;
       }
       const groupData = groupDoc.data();
       if (!groupData.questions.includes(sessionId)) {
-        toast.error("This group does not contain this question");
+        toast.error("This roomdoes not contain this question");
         return false;
       }
 
@@ -413,7 +413,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setSessionId(roomId);
-      setGroup(getGroupRef(roomId), {
+      setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
       await setSession(getSessionRef(roomId, sessionId), {
@@ -516,7 +516,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
-        await setGroup(getGroupRef(roomId), {
+        await setRoom(getRoomRef(roomId), {
           usernames: arrayRemove(username),
         });
         await setSession(getSessionRef(roomId, sessionId), {
@@ -554,7 +554,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       batch.update(getSessionRef(roomId, sessionId), {
         usernames: arrayRemove(...peers),
       });
-      batch.update(getGroupRef(roomId), {
+      batch.update(getRoomRef(roomId), {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
