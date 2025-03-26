@@ -1,4 +1,4 @@
-import { getGroupRef, getRoomRef, setGroup, setRoom } from "@cb/db";
+import { getGroupRef, getSessionRef, setGroup, setSession } from "@cb/db";
 import { useAppState, useOnMount, useRTC } from ".";
 import { arrayRemove, arrayUnion } from "firebase/firestore";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
@@ -24,7 +24,7 @@ const useDevSetupRoom = () => {
       if (test != undefined && roomId != undefined) {
         setLocalStorage("test", { peer: test?.peer });
         try {
-          await setRoom(getRoomRef(roomId, sessionId), {
+          await setSession(getSessionRef(roomId, sessionId), {
             usernames: arrayRemove(user.username),
             questionId: getQuestionIdFromUrl(window.location.href),
           });

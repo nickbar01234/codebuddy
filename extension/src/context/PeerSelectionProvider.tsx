@@ -171,7 +171,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
-      return getLocalStorage("tabs")?.rooms[sessionId].peers[peerId];
+      return getLocalStorage("tabs")?.sessions[sessionId].peers[peerId];
     },
     [sessionId]
   );
@@ -180,16 +180,16 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
     (peer: Peer) => {
       const currentInfo = getLocalStorage("tabs") ?? {
         roomId: roomId ?? "",
-        rooms: {},
+        sessions: {},
       };
-      const currentRoom = currentInfo.rooms[sessionId ?? ""];
+      const currentRoom = currentInfo.sessions[sessionId ?? ""];
       if (!currentRoom) {
-        currentInfo.rooms[sessionId ?? ""] = {
+        currentInfo.sessions[sessionId ?? ""] = {
           sessionId: sessionId ?? "",
           peers: {},
         };
       }
-      const currentPeers = currentInfo.rooms[sessionId].peers;
+      const currentPeers = currentInfo.sessions[sessionId].peers;
       currentPeers[peer.id] = {
         ...peer,
       };

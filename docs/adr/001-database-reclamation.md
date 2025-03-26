@@ -2,7 +2,7 @@
 
 30 Jan, 2025
 
-Since Code Buddy is designed to be a serverless application, we don't have a central coordinator to manage rooms. Users
+Since Code Buddy is designed to be a serverless application, we don't have a central coordinator to manage sessions. Users
 can independently create, join, and leave room. In the happy path, if users leave via our application UI, we can manage
 database resources on their behalf. However, given the nature of browsers, we should expect that users can close their
 browser, lose internet connection, etc., at any given moment. In this documentation, we outline the design decision to
@@ -44,7 +44,7 @@ have 2 options:
 1. Use a constant naming scheme for the subcollections.
 
    ```yaml
-   rooms/
+   sessions/
     [sessionId]:
       user-2/
         user-1:
@@ -65,7 +65,7 @@ have 2 options:
 2. Flatten the data model.
 
    ```yaml
-   rooms/
+   sessions/
     [sessionId]:
       users: {
         <user-2>: {

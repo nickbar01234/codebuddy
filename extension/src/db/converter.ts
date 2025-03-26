@@ -5,7 +5,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
-export interface Room {
+export interface Session {
   finishedUsers: string[];
   questionId: string;
   usernames: string[];
@@ -26,14 +26,14 @@ export interface Group {
   usernames: string[];
 }
 
-export const roomConverter: FirestoreDataConverter<Room, Room> = {
-  toFirestore: (data: Room) => {
+export const sessionConverter: FirestoreDataConverter<Session, Session> = {
+  toFirestore: (data: Session) => {
     return data;
   },
   fromFirestore: (
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions
-  ): Room => {
+  ): Session => {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,

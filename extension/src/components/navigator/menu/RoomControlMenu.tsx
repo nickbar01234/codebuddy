@@ -55,19 +55,19 @@ const _RoomControlMenu = ({
         <>
           <RoomControlDropdownMenuItem onSelect={onCreateRoom}>
             <span className="flex items-center gap-2">
-              <PlusIcon /> Create Room
+              <PlusIcon /> Create Session
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <Dialog>
               <DialogTrigger>
                 <span className="flex items-center gap-2">
-                  <CodeIcon /> Join Room
+                  <CodeIcon /> Join Session
                 </span>
               </DialogTrigger>
               <DialogContent className="[&>button]:hidden">
                 <DialogHeader className="text-2xl">
-                  <DialogTitle>Input Room ID</DialogTitle>
+                  <DialogTitle>Input Session ID</DialogTitle>
                 </DialogHeader>
                 <DialogDescription className="hidden">
                   Input room ID
@@ -98,12 +98,12 @@ const _RoomControlMenu = ({
             }}
           >
             <span className="flex items-center gap-2">
-              <CopyIcon /> Copy Room ID
+              <CopyIcon /> Copy Session ID
             </span>
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={onLeaveRoom}>
             <span className="flex items-center gap-2">
-              <LeaveIcon /> Leave Room
+              <LeaveIcon /> Leave Session
             </span>
           </RoomControlDropdownMenuItem>
         </>

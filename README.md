@@ -5,7 +5,7 @@ _Your daily dose of LeetCode can be tedious, but you don't have to do it alone! 
 Code Buddy is a Google Chrome extension designed to connect up to 4 people working on the same LeetCode problem together.
 Using the extension, we hope that you will have fun while doing LeetCode, while also having someone to keep you accountable ;)
 
-We would like to acknowledge `binarysearch.com` (which unfortunately no longer exist) for the inspiration and [LeetRoom](https://leetrooms.com/) for the initial execution.
+We would like to acknowledge `binarysearch.com` (which unfortunately no longer exist) for the inspiration and [LeetRoom](https://leetsessions.com/) for the initial execution.
 
 ## Features
 

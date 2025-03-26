@@ -31,7 +31,8 @@ export const AppNavigator = () => {
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={
-                Object.keys(currentTabInfo?.rooms[sessionId]?.peers ?? 0).length
+                Object.keys(currentTabInfo?.sessions[sessionId]?.peers ?? 0)
+                  .length
               }
             />
           ) : state === AppState.REJOINING ? (
