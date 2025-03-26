@@ -1,6 +1,6 @@
 import { getRoomRef, getSessionRef, setRoom, setSession } from "@cb/db";
 import { useAppState, useOnMount, useRTC } from ".";
-import { arrayRemove, arrayUnion } from "firebase/firestore";
+import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 
@@ -20,6 +20,7 @@ const useDevSetupRoom = () => {
       const groupRef = getRoomRef(roomId);
       await setRoom(groupRef, {
         questions: arrayUnion(sessionId),
+        usernames: arrayUnion(user.username),
       });
       if (test != undefined && roomId != undefined) {
         setLocalStorage("test", { peer: test?.peer });
@@ -27,6 +28,7 @@ const useDevSetupRoom = () => {
           await setSession(getSessionRef(roomId, sessionId), {
             usernames: arrayRemove(user.username),
             questionId: getQuestionIdFromUrl(window.location.href),
+            createdAt: serverTimestamp(),
           });
           joinRoom(roomId);
         } catch (error) {

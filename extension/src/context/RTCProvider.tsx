@@ -293,12 +293,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
     const newRoomRef = getRoomRef(roomId);
     const newRoomId = newRoomRef.id;
-    const roomRef = getSessionRef(newRoomId, sessionId);
+    const sessionRef = getSessionRef(newRoomId, sessionId);
     await setRoom(newRoomRef, {
       questions: arrayUnion(sessionId),
       usernames: arrayUnion(username),
     });
-    await setSession(roomRef, {
+    await setSession(sessionRef, {
       questionId,
       usernames: arrayUnion(username),
       createdAt: serverTimestamp(),
