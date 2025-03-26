@@ -2,7 +2,6 @@ import { LogEvent } from "@cb/db/converter";
 import {
   useActivity,
   useAppState,
-  useOnMount,
   usePeerSelection,
   useWindowDimensions,
 } from "@cb/hooks/index";
