@@ -78,7 +78,7 @@ export interface RTCContext {
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
   sessionId: string;
-  setSessionId: (id: string) => void;
+  setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
   joiningBackRoom: (join: boolean) => Promise<void>;
@@ -96,7 +96,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
   } = useAppState();
-  const [roomId, setSessionId] = React.useState<null | string>(null);
+  const [roomId, setRoomId] = React.useState<null | string>(null);
   const { state: appState } = useAppState();
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
@@ -288,10 +288,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const createRoom = async ({ roomId }: CreateRoom) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
-    const newGroupRef = getRoomRef(roomId);
-    const newroomId = newGroupRef.id;
+    const newRoomRef = getRoomRef(roomId);
+    const newroomId = newRoomRef.id;
     const roomRef = getSessionRef(newroomId, sessionId);
-    await setRoom(newGroupRef, {
+    await setRoom(newRoomRef, {
       questions: arrayUnion(sessionId),
       usernames: arrayUnion(username),
     });
@@ -301,7 +301,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       createdAt: serverTimestamp(),
     });
     console.log("Created room", newroomId);
-    setSessionId(newroomId);
+    setRoomId(newroomId);
     navigator.clipboard.writeText(newroomId);
     toast.success(`Session ID ${newroomId} copied to clipboard`);
   };
@@ -381,23 +381,23 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Please enter room ID");
         return false;
       }
-      const groupDoc = await getRoom(roomId);
-      if (!groupDoc.exists()) {
+      const roomDoc = await getRoom(roomId);
+      if (!roomDoc.exists()) {
         toast.error("Roomdoes not exist");
         return false;
       }
-      const groupData = groupDoc.data();
-      if (!groupData.questions.includes(sessionId)) {
+      const roomData = roomDoc.data();
+      if (!roomData.questions.includes(sessionId)) {
         toast.error("This roomdoes not contain this question");
         return false;
       }
 
-      const roomDoc = await getSession(roomId, sessionId);
-      if (!roomDoc.exists()) {
+      const sessionDoc = await getSession(roomId, sessionId);
+      if (!sessionDoc.exists()) {
         toast.error("Session does not exist");
         return false;
       }
-      const roomQuestionId = roomDoc.data().questionId;
+      const roomQuestionId = sessionDoc.data().questionId;
       if (questionId !== roomQuestionId) {
         const questionUrl = constructUrlFromQuestionId(roomQuestionId);
         toast.error("The room you join is on this question:", {
@@ -405,14 +405,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
         return false;
       }
-      const usernames = roomDoc.data().usernames;
+      const usernames = sessionDoc.data().usernames;
       if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
         return false;
       }
       // console.log("Joining room", roomId);
-      setSessionId(roomId);
+      setRoomId(roomId);
       setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
@@ -534,7 +534,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       cleanupSnapshot();
       cleanupConnection();
-      setSessionId(null);
+      setRoomId(null);
       setInformations({});
       setPeerState({});
     },
@@ -774,7 +774,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         joinRoom,
         leaveRoom,
         roomId,
-        setSessionId,
+        setRoomId,
         informations,
         peerState,
         joiningBackRoom,
