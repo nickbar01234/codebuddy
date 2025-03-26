@@ -9,6 +9,13 @@ import { Input } from "@cb/lib/components/ui/input";
 import { Activity, Send } from "lucide-react";
 import React, { useEffect } from "react";
 import { LogEntry } from "./LogEntry";
+import { useOnMount } from "@cb/hooks/index";
+import { waitForElement } from "@cb/utils";
+import {
+  LEETCODE_SUBMIT_BUTTON,
+  LEETCODE_SUBMISSION_RESULT,
+  LEETCODE_SUBMISSION_DETAILS,
+} from "@cb/constants/page-elements";
 
 export const ActivityLogTab: React.FC = () => {
   const {
@@ -32,6 +39,48 @@ export const ActivityLogTab: React.FC = () => {
     }
   }, [activities, isBuffer]);
 
+  useOnMount(() => {
+    waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
+      .then((button) => button as HTMLButtonElement)
+      .then((button) => {
+        const originalOnClick = button.onclick;
+        button.onclick = function (event) {
+          if (originalOnClick) {
+            originalOnClick.call(this, event);
+          }
+
+          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
+            .then(() =>
+              sendActivity({
+                type: "message",
+                payload: {
+                  username: username,
+                  message: "Accepted",
+                  color: userColors.Code,
+                },
+              })
+            )
+            .catch(() =>
+              waitForElement(LEETCODE_SUBMISSION_DETAILS, 10000).then(
+                (element) => {
+                  const errorMessage = element.textContent;
+                  sendActivity({
+                    type: "message",
+                    payload: {
+                      username: username,
+                      message: errorMessage ?? "Failed",
+                      color: userColors.Code,
+                    },
+                  });
+                }
+              )
+            );
+        };
+      })
+      .catch((error) => {
+        console.error("Error mounting callback on submit code button:", error);
+      });
+  });
   const onSubmit = React.useCallback(() => {
     const userColorKeys = Object.keys(userColors);
     const randomColor =
