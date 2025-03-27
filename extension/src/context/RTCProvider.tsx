@@ -123,7 +123,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
     () => getQuestionIdFromUrl(window.location.href),
     []
   );
-  const [roomState, setRoomState] = React.useState<ROOMSTATE | null>(null);
+  const [roomState, setRoomState] = React.useState<ROOMSTATE | null>(
+    ROOMSTATE.CODE
+  );
   const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
     null
   );

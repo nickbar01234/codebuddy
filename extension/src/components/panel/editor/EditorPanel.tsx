@@ -78,7 +78,7 @@ const EditorPanel = () => {
         height={codePreference.height}
         axis="y"
         resizeHandles={canViewCode ? ["s"] : undefined}
-        className="relative flex h-full w-full"
+        className="relative flex h-full w-full flex-col"
         minConstraints={[Infinity, height * 0.2]}
         maxConstraints={[Infinity, height * 0.5]}
         handle={
@@ -206,7 +206,7 @@ const EditorPanel = () => {
                 <TabsContent
                   value="code"
                   forceMount
-                  className={cn("data-[state=inactive]:hidden")}
+                  className={cn("h-full w-full data-[state=inactive]:hidden")}
                 >
                   {isBuffer && <Skeleton className="h-full w-full" />}
                   <div
