@@ -178,19 +178,25 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const setLocalStorageForIndividualPeers = React.useCallback(
     (peer: Peer) => {
-      const currentTab = getLocalStorage("tabs") ?? {
-        roomId: roomId ?? "",
-        peers: {},
-      };
-      (currentTab.peers as Record<string, Peer>)[peer.id] = {
+      if (!roomId) {
+        return;
+      }
+      const currentTab = getLocalStorage("tabs");
+      (currentTab!.peers as Record<string, Peer>)[peer.id] = {
         ...peer,
       };
-      setLocalStorage("tabs", currentTab);
+      setLocalStorage("tabs", currentTab!);
     },
     [roomId]
   );
 
   React.useEffect(() => {
+    if (peers.length === 0 && !getLocalStorage("tabs") && roomId) {
+      setLocalStorage("tabs", {
+        roomId: roomId,
+        peers: {},
+      });
+    }
     for (const peer of peers) {
       setLocalStorageForIndividualPeers(peer);
       if (peer.active) {
