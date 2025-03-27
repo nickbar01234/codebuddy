@@ -5,12 +5,8 @@ import {
 import { useRTC } from "@cb/hooks/index";
 import React from "react";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger, DialogOverlay, DialogPortal } from "@radix-ui/react-dialog";
-import { DialogHeader } from "@cb/lib/components/ui/dialog";
-import { RoomControlDropdownMenuItem } from "../navigator/menu/RoomControlDropdownMenuItem";
+import { Dialog, DialogHeader, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@cb/lib/components/ui/dialog"; 
 import { throttle } from "lodash";
-import { MouseEvent } from 'react';
-
 
 
 const HomePanel = () => {
@@ -21,8 +17,8 @@ const HomePanel = () => {
   const { state: appState, setState: setAppState } = React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
-  const onCreateRoom = React.useMemo(() => {
-    return throttle((event: Event) => {
+  const onCreateRoom = React.useMemo(() => { 
+    return throttle((event: Event | React.MouseEvent<Element>) => {
       event.stopPropagation?.();
       setAppState(AppState.ROOM);
       createRoom({});
@@ -51,15 +47,19 @@ const HomePanel = () => {
 
   return (
     <div className="h-full w-full flex flex-col justify-center items-center overflow-auto gap-y-2">
-      <div className="h-1/3 w-1/3 max-h-40 max-w-40 mb-7">
-        <img src={lightLogo} className="dark:hidden" alt="CodeBuddy logo" />
-        <img src={darkLogo} className="hidden dark:block" alt="CodeBuddy logo"/>
+      <div className="h-1/3 w-1/3 mb-5 justify-center items-center text-center">
+        <div className="justify-center items-center text-center mb-2">
+          <img src={lightLogo} className="dark:hidden" alt="CodeBuddy logo" />
+          <img src={darkLogo} className="hidden dark:block" alt="CodeBuddy logo"/>
+        </div>
+        <h1 className="text-2xl overflow-hidden">CodeBuddy</h1>
       </div>
       
       <button
-        className="flex w-1/3 items-center bg-fill-secondary rounded-lg px-[12px] py-[8px] text-sm font-medium"
+        className="flex w-1/3 items-center bg-fill-primary rounded-lg px-[12px] py-[8px] text-sm font-medium overflow-auto shadow hover:bg-fill-secondary transition"
         type="button"
-        // onClick={onCreateRoom}
+        onClick={onCreateRoom}
+        aria-label="Create a new room"
       >
         <PlusIcon /> 
         <div className="h-full w-full text-center">
@@ -67,24 +67,19 @@ const HomePanel = () => {
         </div>
       </button>
 
-      <button
-        className="flex w-1/3 items-center bg-fill-secondary rounded-lg px-[12px] py-[8px] text-sm font-medium"
-        type="button"
-        onClick={() => {}}
-      >
-        <CodeIcon /> 
-        <div className="h-full w-full text-center">
-          Join Room
-        </div>
-      </button>
-
       <Dialog>
-        <DialogTrigger>
-          <span className="flex items-center gap-2">
-            <CodeIcon /> Join Room
-          </span>
+        <DialogTrigger className="w-1/3">
+          <button
+            className="flex w-full items-center bg-fill-primary rounded-lg px-[12px] py-[8px] text-sm font-medium overflow-auto shadow hover:bg-fill-secondary transition"
+            type="button"
+            aria-label="Join an existing room"
+          >
+            <CodeIcon /> 
+            <div className="h-full w-full text-center">
+              Join Room
+            </div>
+          </button>
         </DialogTrigger>
-        <DialogOverlay/>
         <DialogContent className="[&>button]:hidden">
           <DialogHeader className="text-2xl">
             <DialogTitle>Input Room ID</DialogTitle>
