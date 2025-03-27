@@ -29,20 +29,18 @@ import {
 import { DialogDescription } from "@radix-ui/react-dialog";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 import { throttle } from "lodash";
-import { LeaveRoomDialog } from "@cb/components/ui/LeaveRoomDialog";
+import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 
 const _RoomControlMenu = ({
   appState,
   onCreateRoom,
   onJoinRoom,
-  onLeaveRoom,
   roomId,
   setInputRoomId,
 }: {
   appState: AppState;
   onCreateRoom: (e: Event) => void;
   onJoinRoom: (e: React.MouseEvent | React.KeyboardEvent) => void;
-  onLeaveRoom: (e: React.MouseEvent<HTMLButtonElement>) => void;
   roomId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
@@ -110,7 +108,6 @@ const _RoomControlMenu = ({
                   <LeaveIcon /> Leave Room
                 </span>
               }
-              onLeaveRoom={onLeaveRoom}
             />
           </RoomControlDropdownMenuItem>
         </>
@@ -171,16 +168,6 @@ export const RoomControlMenu = () => {
     }, 1000);
   }, []);
 
-  const leaveRoomThrottled = React.useMemo(() => {
-    return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation?.();
-      if (roomId) {
-        leaveRoom(roomId);
-      }
-      setAppState(AppState.HOME);
-    }, 1000);
-  }, [roomId, leaveRoom, setAppState]);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -191,7 +178,6 @@ export const RoomControlMenu = () => {
           appState={appState}
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
-          onLeaveRoom={leaveRoomThrottled}
           roomId={roomId ?? inputRoomId}
           setInputRoomId={setInputRoomId}
         />

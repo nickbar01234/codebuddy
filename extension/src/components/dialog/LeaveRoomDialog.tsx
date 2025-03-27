@@ -1,4 +1,3 @@
-// LeaveRoomDialog.tsx
 import {
   Dialog,
   DialogTrigger,
@@ -9,16 +8,30 @@ import {
   DialogClose,
 } from "@cb/lib/components/ui/dialog";
 import { ReactNode } from "react";
+import React from "react";
+import { throttle } from "lodash";
+import { useRTC } from "@cb/hooks/index";
+import { AppState } from "@cb/context/AppStateProvider";
+import { useAppState } from "@cb/hooks/index";
 
 interface LeaveRoomDialogProps {
   trigger: ReactNode;
-  onLeaveRoom: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-export function LeaveRoomDialog({
-  trigger,
-  onLeaveRoom,
-}: LeaveRoomDialogProps) {
+export function LeaveRoomDialog({ trigger }: LeaveRoomDialogProps) {
+  const { roomId, leaveRoom } = useRTC();
+  const { setState: setAppState } = useAppState();
+
+  const leaveRoomThrottled = React.useMemo(() => {
+    return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
+      event.stopPropagation?.();
+      setAppState(AppState.HOME);
+      if (roomId) {
+        leaveRoom(roomId);
+      }
+    }, 1000);
+  }, [roomId, leaveRoom, setAppState]);
+
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
@@ -34,8 +47,8 @@ export function LeaveRoomDialog({
           <div className="mt-4 flex w-full items-center justify-end gap-2 self-end">
             <DialogClose asChild>
               <button
-                className="h-10 rounded-md px-4 py-2 hover:bg-[--color-tab-hover-background]"
-                onClick={onLeaveRoom}
+                className="hover:bg-fill-secondary h-10 rounded-md px-4 py-2"
+                onClick={leaveRoomThrottled}
               >
                 <span className="text-sm font-medium">Yes</span>
               </button>

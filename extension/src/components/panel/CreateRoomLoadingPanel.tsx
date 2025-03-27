@@ -1,14 +1,10 @@
 import { useRTC } from "@cb/hooks/index";
 import { CopyIcon } from "lucide-react";
-import { LeaveRoomDialog } from "@cb/components/ui/LeaveRoomDialog";
+import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 
-const CreateRoomLoadingPanel = ({
-  onLeaveRoom,
-}: {
-  onLeaveRoom: (e: React.MouseEvent<HTMLButtonElement>) => void;
-}) => {
+const CreateRoomLoadingPanel = () => {
   const { roomId } = useRTC();
 
   return (
@@ -21,12 +17,11 @@ const CreateRoomLoadingPanel = ({
               <span className="text-base font-medium">Leave Room</span>
             </button>
           }
-          onLeaveRoom={onLeaveRoom}
         />
       </div>
 
       <div className="relative flex flex-col items-center text-center">
-        <span className="text-2xl font-bold text-[#1E1E1E] dark:text-gray-100">
+        <span className="text-2xl font-bold text-[#1E1E1E] dark:text-[#F1F1F1B2]">
           Room created successfully!
         </span>
         <span className="text-lg text-[#757575] dark:text-gray-400">
@@ -37,11 +32,11 @@ const CreateRoomLoadingPanel = ({
       <LoadingPanel numberOfUsers={0} />
 
       <div className="relative flex w-full max-w-sm flex-col items-center">
-        <div className="mb-1 self-start text-xl font-semibold text-gray-900 dark:text-gray-100">
+        <div className="mb-1 self-start text-xl font-semibold text-[#1E1E1E] dark:text-[#F1F1F1B2]">
           Room ID
         </div>
         <div className="flex w-full items-center overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
-          <span className="w-full truncate px-4 py-3 font-mono text-lg text-gray-800 dark:text-gray-100">
+          <span className="w-full truncate px-4 py-3 font-mono text-lg text-[#1E1E1E] dark:text-[#F1F1F1B2]">
             {roomId ?? "Fetching Room ID..."}
           </span>
           <button

@@ -17,8 +17,6 @@ import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
 import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
-import { throttle } from "lodash";
-import { useRTC } from "@cb/hooks/index";
 import { Separator } from "@cb/lib/components/ui/separator";
 
 export interface TabMetadata {
@@ -49,24 +47,13 @@ const EditorPanel = () => {
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
-  const { roomId, leaveRoom } = useRTC();
-  const { state: appState, setState: setAppState } =
-    React.useContext(appStateContext);
 
-  const leaveRoomThrottled = React.useMemo(() => {
-    return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
-      event.stopPropagation?.();
-      setAppState(AppState.HOME);
-      if (roomId) {
-        leaveRoom(roomId);
-      }
-    }, 1000);
-  }, [roomId, leaveRoom, setAppState]);
+  const { state: appState } = React.useContext(appStateContext);
 
   return (
     <>
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
-        <CreateRoomLoadingPanel onLeaveRoom={leaveRoomThrottled} />
+        <CreateRoomLoadingPanel />
       )}
       <div
         className={cn("relative flex h-full w-full flex-col justify-between", {
