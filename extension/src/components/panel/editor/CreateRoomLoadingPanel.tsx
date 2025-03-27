@@ -2,13 +2,13 @@ import { useRTC } from "@cb/hooks/index";
 import { CopyIcon } from "lucide-react";
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import { Ripple } from "@cb/components/ui/Ripple";
 
 const CreateRoomLoadingPanel = () => {
   const { roomId } = useRTC();
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center p-4">
+    <div className="flex h-full w-full flex-col items-center justify-between p-4">
       <div className="mb-24 ml-4 self-start">
         <LeaveRoomDialog
           trigger={
@@ -29,7 +29,7 @@ const CreateRoomLoadingPanel = () => {
         </span>
       </div>
 
-      <LoadingPanel numberOfUsers={0} />
+      <Ripple />
 
       <div className="relative flex w-full max-w-sm flex-col items-center">
         <div className="mb-1 self-start text-xl font-semibold text-[#1E1E1E] dark:text-[#F1F1F1B2]">
