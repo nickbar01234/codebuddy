@@ -7,6 +7,9 @@ export default {
 
   theme: {
     extend: {
+      fontFamily: {
+        'space-grotesk': ['"Space Grotesk"', 'sans-serif'],
+      },
       animation: {
         ripple: "ripple var(--duration,2s) ease calc(var(--i, 0)*.2s) infinite",
       },
@@ -66,6 +69,7 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        buddy: "#DD5471",
       },
     },
   },
