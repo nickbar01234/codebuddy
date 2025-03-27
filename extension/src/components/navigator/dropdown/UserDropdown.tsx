@@ -18,16 +18,19 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const { peerState } = useRTC();
   const ping = peerState[activePeer?.id ?? ""]?.latency * 1000;
   const signalStrength = getStatus(ping);
+  const canDropdown = peers.length >= 2;
   return activePeer ? (
     <div>
-      <div className="flex items-center">
+      <div className="flex w-44 items-center">
         <button
           data-dropdown-toggle="dropdown"
           className={cn(
-            "relative inline-flex w-44 items-center text-clip rounded-lg px-2 text-center text-sm font-medium",
-            peers.length >= 2
-              ? "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary"
-              : "cursor-default"
+            "relative inline-flex max-w-40 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-lg p-2 text-center text-sm font-medium",
+            {
+              "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary":
+                canDropdown,
+              "cursor-default": !canDropdown,
+            }
           )}
           type="button"
           onClick={toggle}
@@ -49,7 +52,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
                   signalStrength.bg,
                   i + 1 > signalStrength.level && "opacity-20"
                 )}
-              ></span>
+              />
             ))}
           </i>
         </div>
@@ -76,7 +79,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
       </div>
     </div>
   ) : (
-    <Skeleton className="h-4 w-[12.75rem]" />
+    <Skeleton className="h-4 w-44" />
   );
 };
 
