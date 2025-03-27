@@ -194,7 +194,12 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   );
 
   React.useEffect(() => {
-    console.log("Peers", peers);
+    if (peers && peers.length === 0 && !getLocalStorage("tabs") && roomId) {
+      setLocalStorage("tabs", {
+        roomId: roomId,
+        peers: {},
+      });
+    }
     for (const peer of peers) {
       setLocalStorageForIndividualPeers(peer);
       if (peer.active) {

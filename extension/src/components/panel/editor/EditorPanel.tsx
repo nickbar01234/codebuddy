@@ -1,10 +1,8 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import {
-  useAppState,
-  usePeerSelection,
-  useWindowDimensions,
-} from "@cb/hooks/index";
+import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
+import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
   TabsContent,
@@ -16,8 +14,6 @@ import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
-import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
-import { Separator } from "@cb/lib/components/ui/separator";
 
 export interface TabMetadata {
   id: string;
