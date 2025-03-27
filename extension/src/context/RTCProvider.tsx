@@ -388,7 +388,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-      console.log("CHANGING ROOM ID FROM JOINING ")
       await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
