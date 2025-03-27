@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { Connection } from "types/utils";
 import { additionalServers } from "./additionalServers";
 import { AppState } from "./AppStateProvider";
+import { setLocalStorage } from "@cb/services";
 
 const servers = {
   iceServers: [
@@ -286,6 +287,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await setRoom(roomRef, { questionId, usernames: arrayUnion(username) });
     console.log("Created room");
     setRoomId(roomRef.id);
+    const currentTab = {
+      roomId: roomRef.id ?? "",
+      peers : {}
+    };
+    setLocalStorage("tabs", currentTab);
     navigator.clipboard.writeText(roomRef.id);
     toast.success(`Room ID ${roomRef.id} copied to clipboard`);
   };
@@ -382,6 +388,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
+      console.log("CHANGING ROOM ID FROM JOINING ")
       await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
