@@ -4,12 +4,18 @@ interface RippleProps {
   mainCircleOpacity?: number;
   numCircles?: number;
   className?: string;
+  distanceBetweenCircles?: number;
+  delay?: number;
+  opacityDecrement?: number;
 }
 
 export const Ripple = React.memo(function Ripple({
   mainCircleSize = 210,
   mainCircleOpacity = 0.24,
   numCircles = 8,
+  distanceBetweenCircles = 70,
+  delay = 0.06,
+  opacityDecrement = 0.03,
 }: RippleProps) {
   return (
     <div
@@ -18,9 +24,9 @@ export const Ripple = React.memo(function Ripple({
       }
     >
       {Array.from({ length: numCircles }, (_, i) => {
-        const size = mainCircleSize + i * 70;
-        const opacity = mainCircleOpacity - i * 0.03;
-        const animationDelay = `${i * 0.06}s`;
+        const size = mainCircleSize + i * distanceBetweenCircles;
+        const opacity = mainCircleOpacity - i * opacityDecrement;
+        const animationDelay = `${i * delay}s`;
         const borderStyle = i === numCircles - 1 ? "dashed" : "solid";
         const borderOpacity = 5 + i * 5;
 
