@@ -2,13 +2,8 @@ import {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
   SnapshotOptions,
+  Timestamp,
 } from "firebase/firestore";
-export interface Room {
-  finishedUsers: string[];
-  questionId: string;
-  usernames: string[];
-  nextQuestion: string;
-}
 
 export interface PeerConnection {
   username?: string;
@@ -18,26 +13,18 @@ export interface PeerConnection {
   answerCandidates: RTCIceCandidate[];
 }
 
-export interface Group {
+export interface Room {
   questions: string[];
+  usernames: string[];
 }
 
-export const roomConverter: FirestoreDataConverter<Room, Room> = {
-  toFirestore: (data: Room) => data,
-  fromFirestore: (
-    snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
-  ): Room => {
-    const data = snapshot.data(options) ?? {};
-    return {
-      ...data,
-      finishedUsers: data.finishedUsers ?? [],
-      questionId: data.questionId ?? "",
-      usernames: data.usernames ?? [],
-      nextQuestion: data.nextQuestion ?? "", // Default to empty string if not present
-    };
-  },
-};
+export interface Session {
+  finishedUsers: string[];
+  questionId: string;
+  usernames: string[];
+  nextQuestion: string;
+  createdAt: Timestamp;
+}
 
 export const peerConnectionConverter: FirestoreDataConverter<
   PeerConnection,
@@ -54,16 +41,36 @@ export const peerConnectionConverter: FirestoreDataConverter<
   },
 };
 
-export const groupConverter: FirestoreDataConverter<Group, Group> = {
-  toFirestore: (data: Group) => data,
+export const roomConverter: FirestoreDataConverter<Room, Room> = {
+  toFirestore: (data: Room) => data,
   fromFirestore: (
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions
-  ): Group => {
+  ): Room => {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,
-      questions: data.questions ?? [], // Default to empty array if questions is missing
+      questions: data.questions ?? [],
+      usernames: data.usernames ?? [],
+    };
+  },
+};
+export const sessionConverter: FirestoreDataConverter<Session, Session> = {
+  toFirestore: (data: Session) => {
+    return data;
+  },
+  fromFirestore: (
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): Session => {
+    const data = snapshot.data(options) ?? {};
+    return {
+      ...data,
+      finishedUsers: data.finishedUsers ?? [],
+      questionId: data.questionId ?? "",
+      usernames: data.usernames ?? [],
+      nextQuestion: data.nextQuestion ?? "",
+      createdAt: data.createdAt ?? Timestamp.now(),
     };
   },
 };

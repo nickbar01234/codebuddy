@@ -6,9 +6,9 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
+import { poll } from "@cb/utils/poll";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { poll } from "@cb/utils/poll";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
@@ -35,7 +35,7 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { informations, groupId, roomId } = useRTC();
+  const { informations, roomId, sessionId } = useRTC();
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
@@ -171,50 +171,34 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
-      const currentInfo = getLocalStorage("tabs")?.rooms;
-      if (!currentInfo) {
-        return undefined;
-      }
-      const currentRoom = currentInfo[roomId ?? ""];
-      if (!currentRoom) {
-        return undefined;
-      }
-      const currentPeers = currentRoom.peers;
-      if (!currentPeers) {
-        return undefined;
-      }
-      if (currentPeers[peerId] == undefined) {
-        return undefined;
-      }
-      return currentPeers[peerId];
+      return getLocalStorage("tabs")?.sessions[sessionId].peers[peerId];
     },
-    [roomId]
+    [sessionId]
   );
 
   const setLocalStorageForIndividualPeers = React.useCallback(
     (peer: Peer) => {
-      if (!groupId) {
+      if (!roomId) {
         return;
       }
       const currentInfo = getLocalStorage("tabs") ?? {
-        groupId: groupId ?? "",
-        rooms: {},
+        roomId: roomId ?? "",
+        sessions: {},
       };
-
-      const currentRoom = currentInfo.rooms[roomId ?? ""];
+      const currentRoom = currentInfo.sessions[sessionId ?? ""];
       if (!currentRoom) {
-        currentInfo.rooms[roomId ?? ""] = {
-          roomId: roomId ?? "",
+        currentInfo.sessions[sessionId ?? ""] = {
+          sessionId: sessionId ?? "",
           peers: {},
         };
       }
-      const currentPeers = currentInfo.rooms[roomId].peers;
+      const currentPeers = currentInfo.sessions[sessionId].peers;
       currentPeers[peer.id] = {
         ...peer,
       };
       setLocalStorage("tabs", currentInfo);
     },
-    [groupId, roomId]
+    [roomId, sessionId]
   );
 
   React.useEffect(() => {
@@ -227,7 +211,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         setLocalStorage("lastActivePeer", peer.id);
       }
     }
-  }, [peers, groupId, setLocalStorageForIndividualPeers, isBuffer]);
+  }, [peers, roomId, setLocalStorageForIndividualPeers, isBuffer]);
 
   React.useEffect(() => {
     setPeers((prev) =>

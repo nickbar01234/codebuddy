@@ -2,7 +2,7 @@
   "indexes": [],
   "fieldOverrides": [
     {
-      "collectionGroup": "rooms",
+      "collectionGroup": "sessions",
       "fieldPath": "expiredAt",
       "ttl": true,
       "indexes": []
