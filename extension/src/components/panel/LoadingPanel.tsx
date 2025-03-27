@@ -30,8 +30,8 @@ export function LoadingPanel({ numberOfUsers = 0 }: { numberOfUsers: number }) {
   const div7Ref = React.useRef<HTMLDivElement>(null);
   // console.log("LoadingPanel -> numberOfUsers", numberOfUsers);
   return numberOfUsers === 0 ? (
-    <div className="flex flex-col items-center justify-center h-full w-full">
-      <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg ">
+    <div className="flex h-full w-full flex-col items-center justify-center">
+      <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg">
         <div className="z-10 flex size-12 items-center justify-center rounded-full border-2 bg-white p-3 shadow-[0_0_20px_-12px_rgba(0,0,0,0.8)]">
           <UserIcon />
         </div>
