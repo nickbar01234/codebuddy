@@ -29,7 +29,9 @@ const CreateRoomLoadingPanel = () => {
         </span>
       </div>
 
-      <Ripple />
+      <div className="clip-path-[inset(0_50%_0_0)]">
+        <Ripple />
+      </div>
 
       <div className="relative flex w-full max-w-sm flex-col items-center">
         <div className="mb-1 self-start text-xl font-semibold text-[#1E1E1E] dark:text-[#F1F1F1B2]">
@@ -40,6 +42,8 @@ const CreateRoomLoadingPanel = () => {
             {roomId ?? "Fetching Room ID..."}
           </span>
           <button
+            type="button"
+            aria-label="Copy room ID"
             className="flex h-full w-12 items-center justify-center bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600"
             onClick={(e) => {
               e.stopPropagation();
