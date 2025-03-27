@@ -1,5 +1,5 @@
 import { useRTC } from "@cb/hooks/index";
-import { CopyIcon } from "lucide-react";
+import { CopyIcon, UserIcon } from "lucide-react";
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/ui/Ripple";
@@ -29,7 +29,13 @@ const CreateRoomLoadingPanel = () => {
         </span>
       </div>
 
-      <div className="clip-path-[inset(0_50%_0_0)]">
+      <div
+        className="absolute bottom-0 left-1/2 h-full w-full -translate-x-1/2 transform"
+        style={{ clipPath: "inset(0 0 50% 0)" }}
+      >
+        <div className="absolute left-1/2 top-1/3 h-full w-full">
+          <UserIcon />
+        </div>
         <Ripple />
       </div>
 
