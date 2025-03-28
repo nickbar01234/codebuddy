@@ -16,7 +16,8 @@
     "vitest": "^3.0.7"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm vitest"
   },
   "lint-staged": {
     "*.{ts,tsx,md,html,css}": [
