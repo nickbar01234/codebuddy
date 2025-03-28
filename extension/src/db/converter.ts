@@ -3,21 +3,9 @@ import {
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from "firebase/firestore";
+import { Room, PeerConnection } from "@cb/common/firebase";
 
-export interface Room {
-  questionId: string;
-  usernames: string[];
-}
-
-export interface PeerConnection {
-  username?: string;
-
-  offer?: RTCSessionDescriptionInit;
-  offerCandidates: RTCIceCandidate[];
-
-  answer?: RTCSessionDescriptionInit;
-  answerCandidates: RTCIceCandidate[];
-}
+export type { Room, PeerConnection };
 
 export const roomConverter: FirestoreDataConverter<Room, Room> = {
   toFirestore: (data: Room) => data,

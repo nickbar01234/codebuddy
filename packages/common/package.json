@@ -1,0 +1,16 @@
+{
+  "name": "@cb/common",
+  "private": true,
+  "version": "0.0.0",
+  "exports": {
+    "./firebase": {
+      "import": "./dist/firebase/index.js",
+      "types": "./dist/firebase/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "depedencies": {},
+  "devDependencies": {}
+}
