@@ -7,6 +7,7 @@ interface RippleProps {
   distanceBetweenCircles?: number;
   delay?: number;
   opacityDecrement?: number;
+  unit?: string;
 }
 
 export const Ripple = React.memo(function Ripple({
@@ -16,6 +17,7 @@ export const Ripple = React.memo(function Ripple({
   distanceBetweenCircles = 70,
   delay = 0.06,
   opacityDecrement = 0.03,
+  unit = "px",
 }: RippleProps) {
   return (
     <div
@@ -36,8 +38,8 @@ export const Ripple = React.memo(function Ripple({
             className={`animate-ripple bg-foreground/25 absolute rounded-full border shadow-xl [--i:${i}]`}
             style={
               {
-                width: `${size}px`,
-                height: `${size}px`,
+                width: `${size}` + unit,
+                height: `${size}` + unit,
                 opacity,
                 animationDelay,
                 borderStyle,
