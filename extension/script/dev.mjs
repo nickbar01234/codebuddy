@@ -4,7 +4,6 @@ import _ from "lodash";
 
 const EXTENSION_PATH = "./dist/";
 
-const EXTENSION_HOST = "https://leetcode.com/problems/";
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 
 // eslint-disable-next-line no-undef
@@ -42,8 +41,18 @@ const setup = async () => {
       ],
       devtools: true,
     });
+
     const page = await browser.newPage();
-    await page.goto(EXTENSION_HOST);
+    // Enable browser dev-mode for extensions.
+    await page.goto("chrome://extensions");
+    const devModeToggle = await page.evaluateHandle(() =>
+      document
+        .querySelector("body > extensions-manager")
+        .shadowRoot.querySelector("extensions-toolbar")
+        .shadowRoot.querySelector("#devMode")
+    );
+    await devModeToggle.click();
+    await page.goto(TARGET_QUESTION);
     await page.evaluate(
       (peer, roomId) => {
         localStorage.setItem(
@@ -57,7 +66,6 @@ const setup = async () => {
       peer,
       NUM_USERS > 1 ? ROOM_ID : undefined
     );
-    await page.goto(TARGET_QUESTION);
     return { browser, page };
   };
   const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {
