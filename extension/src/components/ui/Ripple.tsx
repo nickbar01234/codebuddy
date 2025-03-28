@@ -54,3 +54,7 @@ export const Ripple = React.memo(function Ripple({
     </div>
   );
 });
+function extractNumbers(cssString: string) {
+  const matches = cssString.match(/-?\d*\.?\d+/g);
+  return matches ? matches.map(Number) : [];
+}

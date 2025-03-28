@@ -31,10 +31,19 @@ const CreateRoomLoadingPanel = () => {
 
       <div className="absolute inset-0 h-full w-full">
         <div
-          className="absolute h-full w-full"
+          className="absolute top-[25%] h-[200%] w-full"
           style={{ clipPath: "inset(0 0 50% 0)" }}
         >
-          <Ripple />
+          <div>
+            <Ripple
+              numCircles={5}
+              mainCircleSize={800}
+              distanceBetweenCircles={180}
+              mainCircleOpacity={0.15}
+              opacityDecrement={0.02}
+              delay={0.09}
+            />
+          </div>
         </div>
       </div>
 
