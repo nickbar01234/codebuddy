@@ -12,10 +12,13 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.1"
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.0.0",
+    "vitest": "^3.0.7"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm vitest"
   },
   "type": "module",
   "lint-staged": {

@@ -1,11 +1,8 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { AppState } from "@cb/context/AppStateProvider";
-import {
-  useAppState,
-  usePeerSelection,
-  useWindowDimensions,
-} from "@cb/hooks/index";
+import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
+import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
   TabsContent,
@@ -17,7 +14,6 @@ import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import EditorToolBar from "./EditorToolBar";
-import { Separator } from "@cb/lib/components/ui/separator";
 
 export interface TabMetadata {
   id: string;
@@ -29,7 +25,6 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { peers, activePeer, unblur, selectTest, isBuffer } =
     usePeerSelection();
-  const { state: appState } = useAppState();
   const {
     setCodePreferenceHeight,
     onResizeStop,
@@ -49,10 +44,12 @@ const EditorPanel = () => {
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
+  const { state: appState } = React.useContext(appStateContext);
+
   return (
     <>
       {!isBuffer && emptyRoom && appState === AppState.ROOM && (
-        <LoadingPanel numberOfUsers={peers.length} />
+        <CreateRoomLoadingPanel />
       )}
       <div
         className={cn("relative flex h-full w-full flex-col justify-between", {
@@ -91,7 +88,7 @@ const EditorPanel = () => {
             onResizeStop={onResizeStop}
           >
             <Tabs defaultValue="code" className="h-full w-full">
-              <TabsList className="flex w-full justify-start gap-2">
+              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
                 <UserDropdown
                   key={"user-dropdown"}
                   isOpen={isUserDropdownOpen}
