@@ -1,21 +1,29 @@
 name: Tests
-run-name: ${{ github.actor }} is running tests 🚀
+
 on:
   push:
     branches: ["main", "haianhng31/github-workflow"]
   pull_request:
     branches: ["main", "haianhng31/github-workflow"]
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    matrix:
-      node-version: ["21.x", "22.x", "23.x"]
+    strategy:
+      matrix:
+        node-version: ["21.x", "22.x", "23.x"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Use Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        uses: pnpm install
+        run: |
+          cd src/extension
+          pnpm install
       - name: Run tests
-        uses: pnpm test
+        run: |
+          cd src/extension
+          pnpm test
