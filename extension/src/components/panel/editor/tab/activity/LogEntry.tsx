@@ -37,7 +37,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
   const color = getColorClass();
   const getPrompt = () => {
-    const baseClass = " whitespace-nowrap flex items-center gap-1 ";
+    const baseClass = " whitespace-nowrap w-full flex items-center gap-1 ";
     switch (type) {
       case "submission":
         return (
@@ -73,8 +73,9 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="flex items-center py-1">
-      <span className={`flex-grow`}>{getPrompt()}</span>
+    <div className="justify-betweenr flex items-center py-1">
+      <span className={`w-full`}>{getPrompt()}</span>
+      <span className="inline-block w-full flex-grow" />
       <span className="text-tertiary text-xs">{timeAgo(timestamp)}</span>
     </div>
   );
