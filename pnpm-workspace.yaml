@@ -1,6 +1,7 @@
 packages:
   - firebase/
   - extension/
+  - packages/*
 
 catalogs:
   react18:

@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "lib": ["DOM", "ES2022"]
+  },
+  "extends": ["@tsconfig/node22/tsconfig.json"]
+}

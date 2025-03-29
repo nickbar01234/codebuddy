@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@eslint/js": "^9.22.0",
+    "@tsconfig/node22": "^22.0.1",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "eslint": "^9.22.0",
     "eslint-plugin-react": "^7.37.4",
@@ -17,7 +18,8 @@
   },
   "scripts": {
     "prepare": "husky",
-    "test": "pnpm vitest"
+    "test": "pnpm vitest",
+    "build": "pnpm run -r build"
   },
   "lint-staged": {
     "*.{ts,tsx,md,html,css}": [
