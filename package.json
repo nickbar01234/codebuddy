@@ -17,7 +17,9 @@
   },
   "scripts": {
     "prepare": "husky",
-    "test": "pnpm vitest"
+    "test": "pnpm vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "lint-staged": {
     "*.{ts,tsx,md,html,css}": [
