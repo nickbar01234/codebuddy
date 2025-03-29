@@ -31,11 +31,7 @@ import {
   ResponseStatus,
   WindowMessage,
 } from "@cb/types";
-import {
-  constructUrlFromQuestionId,
-  getQuestionIdFromUrl,
-  waitForElement,
-} from "@cb/utils";
+import { getQuestionIdFromUrl, waitForElement } from "@cb/utils";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
 import { poll } from "@cb/utils/poll";
@@ -80,7 +76,6 @@ export interface RTCContext {
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
-  sessionId: string;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
@@ -290,16 +285,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const createRoom = async ({ roomId }: CreateRoom) => {
-    const questionId = getQuestionIdFromUrl(window.location.href);
     const newRoomRef = getRoomRef(roomId);
     const newRoomId = newRoomRef.id;
     const sessionRef = getSessionRef(newRoomId, sessionId);
     await setRoom(newRoomRef, {
-      questions: arrayUnion(sessionId),
       usernames: arrayUnion(username),
     });
     await setSession(sessionRef, {
-      questionId,
       usernames: arrayUnion(username),
       createdAt: serverTimestamp(),
     });
@@ -378,7 +370,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const joinRoom = React.useCallback(
     async (roomId: string): Promise<boolean> => {
-      const questionId = getQuestionIdFromUrl(window.location.href);
       console.log("Joining room", roomId);
       if (!roomId) {
         toast.error("Please enter room ID");
@@ -389,23 +380,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Room does not exist");
         return false;
       }
-      const roomData = roomDoc.data();
-      if (!roomData.questions.includes(sessionId)) {
-        toast.error("This room does not contain this question");
-        return false;
-      }
-
       const sessionDoc = await getSession(roomId, sessionId);
       if (!sessionDoc.exists()) {
         toast.error("Session does not exist");
-        return false;
-      }
-      const roomQuestionId = sessionDoc.data().questionId;
-      if (questionId !== roomQuestionId) {
-        const questionUrl = constructUrlFromQuestionId(roomQuestionId);
-        toast.error("The room you join is on this question:", {
-          description: questionUrl,
-        });
         return false;
       }
       const usernames = sessionDoc.data().usernames;
@@ -781,7 +758,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         informations,
         peerState,
         joiningBackRoom,
-        sessionId,
       }}
     >
       {props.children}

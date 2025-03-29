@@ -14,13 +14,11 @@ export interface PeerConnection {
 }
 
 export interface Room {
-  questions: string[];
   usernames: string[];
 }
 
 export interface Session {
   finishedUsers: string[];
-  questionId: string;
   usernames: string[];
   nextQuestion: string;
   createdAt: Timestamp;
@@ -50,7 +48,6 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,
-      questions: data.questions ?? [],
       usernames: data.usernames ?? [],
     };
   },
@@ -67,7 +64,6 @@ export const sessionConverter: FirestoreDataConverter<Session, Session> = {
     return {
       ...data,
       finishedUsers: data.finishedUsers ?? [],
-      questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
       nextQuestion: data.nextQuestion ?? "",
       createdAt: data.createdAt ?? Timestamp.now(),

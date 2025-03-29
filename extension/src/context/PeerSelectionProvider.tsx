@@ -9,6 +9,7 @@ import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
 import { poll } from "@cb/utils/poll";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
+import { getQuestionIdFromUrl } from "@cb/utils";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
@@ -35,12 +36,15 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { informations, roomId, sessionId } = useRTC();
+  const { informations, roomId } = useRTC();
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
   const { variables } = useInferTests();
+  const sessionId = React.useMemo(() => {
+    return getQuestionIdFromUrl(window.location.href);
+  }, []);
 
   const activeUserInformation = React.useMemo(
     () => (activePeer == undefined ? undefined : informations[activePeer?.id]),
