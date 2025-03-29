@@ -1,7 +1,7 @@
 import { LogEvent } from "@cb/db/converter";
 import { cn } from "@cb/utils/cn";
-import { History, MessageCircleIcon, Users } from "lucide-react";
 import { timeAgo } from "@cb/utils/heartbeat";
+import { History, MessageCircleIcon, Users } from "lucide-react";
 interface LogEntryProps {
   entry: LogEvent;
 }
@@ -37,7 +37,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
   const color = getColorClass();
   const getPrompt = () => {
-    const baseClass = "w-full h-full flex items-center gap-1 ";
+    const baseClass = " whitespace-nowrap flex items-center gap-1 ";
     switch (type) {
       case "submission":
         return (
@@ -59,7 +59,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
         );
       case "message":
         return (
-          <div className="flex items-center gap-1">
+          <div className={cn(baseClass, "")}>
             <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
             <span className={cn("font-bold", payload.color)}>
               {payload.username}:
@@ -73,8 +73,8 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="flex flex-grow items-center justify-between py-1">
-      <span className={`w-full flex-shrink-0 flex-grow`}>{getPrompt()}</span>
+    <div className="flex items-center py-1">
+      <span className={`flex-grow`}>{getPrompt()}</span>
       <span className="text-tertiary text-xs">{timeAgo(timestamp)}</span>
     </div>
   );
