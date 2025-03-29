@@ -67,8 +67,8 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 
-export const HEARTBEAT_INTERVAL = 1000; // ms
-const CHECK_ALIVE_INTERVAL = 1000; // ms
+export const HEARTBEAT_INTERVAL = 15000; // ms
+const CHECK_ALIVE_INTERVAL = 15000; // ms
 const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
