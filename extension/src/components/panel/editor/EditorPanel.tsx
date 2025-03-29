@@ -4,7 +4,6 @@ import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
 import { Separator } from "@cb/lib/components/ui/separator";
-import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
   TabsContent,
