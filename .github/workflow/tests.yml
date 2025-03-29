@@ -2,9 +2,9 @@ name: Tests
 run-name: ${{ github.actor }} is running tests 🚀
 on:
   push:
-    branches: ["tests", "haianhng31/github-workflow"]
+    branches: ["main", "haianhng31/github-workflow"]
   pull_request:
-    branches: ["tests", "haianhng31/github-workflow"]
+    branches: ["main", "haianhng31/github-workflow"]
 jobs:
   test:
     runs-on: ubuntu-latest
