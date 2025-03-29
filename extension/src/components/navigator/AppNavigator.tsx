@@ -4,12 +4,14 @@ import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
+import { usePeerSelection } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
+import { getQuestionIdFromUrl } from "@cb/utils";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -34,8 +36,11 @@ export const AppNavigator = () => {
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={
-                Object.keys(currentTabInfo?.sessions[sessionId]?.peers ?? {})
-                  .length
+                Object.keys(
+                  currentTabInfo?.sessions[
+                    getQuestionIdFromUrl(window.location.href)
+                  ]?.peers ?? {}
+                ).length
               }
             />
           ) : state === AppState.REJOINING ? (
