@@ -32,7 +32,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
       case "message":
         return "text-gray-500";
       default:
-        return "text-gray-500";
+        return assertUnreachable(type);
     }
   };
   const color = getColorClass();
