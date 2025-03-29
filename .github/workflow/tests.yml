@@ -1,0 +1,21 @@
+name: Tests
+run-name: ${{ github.actor }} is running tests 🚀
+on:
+  push:
+    branches: ["tests", "haianhng31/github-workflow"]
+  pull_request:
+    branches: ["tests", "haianhng31/github-workflow"]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    matrix:
+      node-version: ["21.x", "22.x", "23.x"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+      - name: Install dependencies
+        uses: pnpm install
+      - name: Run tests
+        uses: pnpm test
