@@ -1,19 +1,13 @@
 import { LogEvent } from "@cb/db/converter";
 import { cn } from "@cb/utils/cn";
 import { History, MessageCircleIcon, Users } from "lucide-react";
-
+import { timeAgo } from "@cb/utils/heartbeat";
 interface LogEntryProps {
   entry: LogEvent;
 }
-function timeAgo(timestamp: number) {
-  const diff = Math.floor((Date.now() - timestamp) / 1000); // Difference in seconds
-
-  if (diff < 60) return "0s";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-
-  return `${Math.floor(diff / 3600)}h`;
-}
-
+const assertUnreachable = (_x: never): never => {
+  throw new Error("Can't reach here");
+};
 export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   const { type, payload, timestamp } = entry;
   const getColorClass = () => {
@@ -32,8 +26,9 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
             return "text-orange-500";
           case "join":
             return "text-cyan-500";
+          default:
+            return assertUnreachable(payload.status);
         }
-        break;
       case "message":
         return "text-gray-500";
       default:
@@ -42,10 +37,11 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
   const color = getColorClass();
   const getPrompt = () => {
+    const baseClass = "w-full h-full flex items-center gap-1 ";
     switch (type) {
       case "submission":
         return (
-          <div className="flex items-center gap-1 italic text-gray-700 dark:text-gray-400">
+          <div className={cn(baseClass, "text-secondary italic")}>
             <History className={cn("inline-block h-4 w-4", color)} />
             <span className="font-bold">{payload.username} </span>
             submitted their code
@@ -55,7 +51,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
 
       case "connection":
         return (
-          <div className="flex items-center gap-1 italic text-gray-700 dark:text-gray-400">
+          <div className={cn(baseClass, "text-secondary italic")}>
             <Users className={cn("inline-block h-4 w-4", color)} />
             <span className="font-bold">{payload.username} </span>
             {payload.status === "join" ? " joined" : " left"} the room
@@ -77,9 +73,9 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="flex items-center py-1">
-      <span className={`flex-grow`}>{getPrompt()}</span>
-      <span className="text-xs text-gray-400">{timeAgo(timestamp)}</span>
+    <div className="flex flex-grow items-center justify-between py-1">
+      <span className={`w-full flex-shrink-0 flex-grow`}>{getPrompt()}</span>
+      <span className="text-tertiary text-xs">{timeAgo(timestamp)}</span>
     </div>
   );
 };

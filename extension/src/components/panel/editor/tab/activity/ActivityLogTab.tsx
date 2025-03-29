@@ -23,7 +23,7 @@ export const ActivityLogTab: React.FC<ActivityLogProps> = ({ logEntries }) => {
         Activity Log
       </div>
       <div
-        className="hide-scrollbar flex w-full flex-col gap-1 overflow-y-auto p-4"
+        className="hide-scrollbar flex w-full flex-col gap-1 overflow-auto p-4"
         style={{ height: height - codePreference.height - 150 }}
       >
         {logEntries.map((entry, index) => (

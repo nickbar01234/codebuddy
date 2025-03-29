@@ -29,6 +29,13 @@
   --color-drag-rect-background: var(--layer-02);
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
+  --text-secondary: #757575;
+  --text-tertiary: ##b3b3b3;
+}
+
+.dark {
+  --text-secondary: #f1f1f1b2;
+  --text-tertiary: #ffffff66;
 }
 /* add the code bellow */
 @layer utilities {
