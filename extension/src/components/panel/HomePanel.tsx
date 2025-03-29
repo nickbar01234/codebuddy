@@ -7,14 +7,12 @@ import React from "react";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { Dialog, DialogHeader, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@cb/lib/components/ui/dialog"; 
 import { throttle } from "lodash";
-
+import { darkLogo, lightLogo } from "../icons/Logo";
+import { Button } from "../../lib/components/ui/button"
 
 const HomePanel = () => {
-  const darkLogo = chrome.runtime.getURL("images/logo_dark.png");
-  const lightLogo = chrome.runtime.getURL("images/logo_light.png");
-
   const { createRoom, joinRoom } = useRTC();
-  const { state: appState, setState: setAppState } = React.useContext(appStateContext);
+  const { setState: setAppState } = React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const onCreateRoom = React.useMemo(() => { 
@@ -46,18 +44,19 @@ const HomePanel = () => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col overflow-auto gap-10">
+    <div className="h-full w-full flex flex-col overflow-scroll hide-scrollbar gap-10">
       <div className="h-1/2 w-full flex flex-col justify-end items-center gap-2">
-        <img src={lightLogo} className="w-1/3 aspect-square max-h-[200px] max-w-[200px] dark:hidden" alt="CodeBuddy logo" />
-        <img src={darkLogo} className="w-1/3 aspect-square max-h-[200px] max-w-[200px] hidden dark:block" alt="CodeBuddy logo"/>
-        <h1 className="text-2xl font-space-grotesk">
-          Code<span className="text-buddy">Buddy</span>
+        <img src={lightLogo} className="w-1/3 aspect-square max-h-[150px] max-w-[150px] min-h-[100px] min-w-[100px] dark:hidden" alt="CodeBuddy logo" />
+        <img src={darkLogo} className="w-1/3 aspect-square max-h-[150px] max-w-[150px] min-h-[100px] min-w-[100px] hidden dark:block" alt="CodeBuddy logo"/>
+        <h1 className="text-2xl font-spacegrotesk">
+          Code<span className="text-pinkish-red">Buddy</span>
         </h1>
       </div>
       
       <div className="h-1/2 w-full flex flex-col items-center gap-2">
-        <button
-          className="flex w-1/3 items-center bg-fill-primary rounded-lg px-[12px] py-[8px] text-sm font-medium shadow hover:bg-fill-secondary transition"
+        <Button
+          className="w-[150px] items-center justify-center bg-fill-primary"
+          variant="secondary"
           type="button"
           onClick={onCreateRoom}
           aria-label="Create a new room"
@@ -66,20 +65,21 @@ const HomePanel = () => {
           <div className="h-full w-full text-center">
             Create Room
           </div>
-        </button>
+        </Button>
 
         <Dialog>
-          <DialogTrigger className="w-1/3">
-            <button
-              className="flex w-full items-center bg-fill-primary rounded-lg px-[12px] py-[8px] text-sm font-medium shadow hover:bg-fill-secondary transition"
+          <DialogTrigger>
+            <Button
+              className="w-[150px] items-center justify-center bg-fill-primary"
+              variant="secondary"
               type="button"
-              aria-label="Join an existing room"
+              aria-label="Create a new room"
             >
               <CodeIcon /> 
               <div className="h-full w-full text-center">
                 Join Room
               </div>
-            </button>
+            </Button>
           </DialogTrigger>
           <DialogContent className="[&>button]:hidden">
             <DialogHeader className="text-2xl">
