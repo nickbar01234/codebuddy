@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: ["21.x", "22.x", "23.x"]
+        node-version: ["23.x"]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,10 +20,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install dependencies
-        run: |
-          cd extension
-          pnpm install
+        run: pnpm install
       - name: Run tests
-        run: |
-          cd extension
-          pnpm test
+        run: pnpm test
