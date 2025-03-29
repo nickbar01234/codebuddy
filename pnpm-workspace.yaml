@@ -1,5 +1,5 @@
 packages:
-  - firebase/
+  - firebase/**
   - extension/
 
 catalogs:
