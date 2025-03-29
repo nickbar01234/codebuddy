@@ -3,9 +3,10 @@ import EditorPanel from "@cb/components/panel/editor";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection, useRTC } from "@cb/hooks/index";
+import { usePeerSelection } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
+import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
@@ -13,7 +14,9 @@ import { RejoinPrompt } from "./menu/RejoinPrompt";
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
   const { peers, setActivePeerId } = usePeerSelection();
-  const { sessionId } = useRTC();
+  const sessionId = React.useMemo(() => {
+    return getQuestionIdFromUrl(window.location.href);
+  }, []);
   useDevSetupRoom();
 
   const currentTabInfo = getLocalStorage("tabs");
