@@ -27,4 +27,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build
+        working-directory: ./extension
         run: pnpm build
