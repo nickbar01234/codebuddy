@@ -48,7 +48,7 @@ const HomePanel = () => {
       <div className="h-1/2 w-full flex flex-col justify-end items-center gap-2">
         <img src={lightLogo} className="w-1/3 aspect-square max-h-[150px] max-w-[150px] min-h-[100px] min-w-[100px] dark:hidden" alt="CodeBuddy logo" />
         <img src={darkLogo} className="w-1/3 aspect-square max-h-[150px] max-w-[150px] min-h-[100px] min-w-[100px] hidden dark:block" alt="CodeBuddy logo"/>
-        <h1 className="text-2xl font-spacegrotesk">
+        <h1 className="text-2xl font-space-grotesk">
           Code<span className="text-pinkish-red">Buddy</span>
         </h1>
       </div>
