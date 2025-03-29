@@ -32,11 +32,11 @@ export const setRoom = (
   data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
 
-export const getSessionQuestionRef = (roomId: string) =>
+export const getSessionRefs = (roomId: string) =>
   collection(getRoomRef(roomId), "sessions").withConverter(sessionConverter);
 
 export const getSessionRef = (roomId: string, sessionId: string) =>
-  doc(getSessionQuestionRef(roomId), sessionId).withConverter(sessionConverter);
+  doc(getSessionRefs(roomId), sessionId).withConverter(sessionConverter);
 
 export const getSession = (roomId: string, sessionId: string) =>
   getDoc(getSessionRef(roomId, sessionId));
