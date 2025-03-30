@@ -12,33 +12,25 @@ export interface BaseEvent {
 
 export interface SubmissionEvent extends BaseEvent {
   type: "submission";
-  payload: {
-    username: string;
-    output: string;
-    status: "success" | "error";
-  };
+  username: string;
+  output: string;
+  status: "success" | "error";
 }
 
 export interface ConnectionEvent extends BaseEvent {
   type: "connection";
-  payload: {
-    username: string;
-    status: "join" | "leave";
-  };
+  username: string;
+  status: "join" | "leave";
 }
 
 export interface MessageEvent extends BaseEvent {
   type: "message";
-  payload: {
-    username: string;
-    message: string;
-    color: string;
-  };
+  username: string;
+  message: string;
 }
 export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface Room {
-  questionId: string;
   usernames: string[];
   activityLog: LogEvent[];
 }
@@ -50,11 +42,6 @@ export interface PeerConnection {
   answer?: RTCSessionDescriptionInit;
   answerCandidates: RTCIceCandidate[];
 }
-
-export interface Room {
-  usernames: string[];
-}
-
 export interface Session {
   finishedUsers: string[];
   usernames: string[];
@@ -87,6 +74,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     return {
       ...data,
       usernames: data.usernames ?? [],
+      activityLog: data.activityLog ?? [],
     };
   },
 };
