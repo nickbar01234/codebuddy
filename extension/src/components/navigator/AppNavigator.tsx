@@ -9,6 +9,7 @@ import { getLocalStorage } from "@cb/services";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
+import { CreateRoomOptionPanel } from "../panel/CreateRoomOptionPanel";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -33,6 +34,8 @@ export const AppNavigator = () => {
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
+          ) : state === AppState.HOME ? (
+            <CreateRoomOptionPanel />
           ) : null}
         </div>
         <EditorPanel />

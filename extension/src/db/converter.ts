@@ -7,6 +7,8 @@ import {
 export interface Room {
   questionId: string;
   usernames: string[];
+  visibility: string;
+  roomName: string;
 }
 
 export interface PeerConnection {
@@ -29,6 +31,8 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     const data = snapshot.data(options)! ?? {};
     return {
       ...data,
+      visibility: data.visibility ?? "",
+      roomName: data.roomName ?? "",
       questionId: data.questionId ?? "",
       usernames: data.usernames ?? [],
     };

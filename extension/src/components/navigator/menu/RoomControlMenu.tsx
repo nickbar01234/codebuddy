@@ -136,7 +136,7 @@ export const RoomControlMenu = () => {
     return throttle((event: Event) => {
       event.stopPropagation?.();
       setAppState(AppState.ROOM);
-      createRoom({});
+      createRoom({ visibility: "public" });
     }, 1000);
   }, [createRoom, setAppState]);
 
