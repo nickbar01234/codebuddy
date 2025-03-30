@@ -13,7 +13,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import EditorToolBar from "./EditorToolBar";
+import { EditorToolBar } from "./EditorToolBar";
 
 export interface TabMetadata {
   id: string;

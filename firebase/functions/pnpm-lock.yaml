@@ -18,9 +18,9 @@ importers:
         specifier: ^6.3.0
         version: 6.3.0(firebase-admin@13.0.2)
     devDependencies:
-      typescript:
-        specifier: ~5.6.2
-        version: 5.6.3
+      '@firebase/functions-types':
+        specifier: ^0.6.3
+        version: 0.6.3
 
 packages:
 
@@ -58,6 +58,9 @@ packages:
   '@firebase/database@1.0.11':
     resolution: {integrity: sha512-gLrw/XeioswWUXgpVKCPAzzoOuvYNqK5fRUeiJTzO7Mlp9P6ylFEyPJlRBl1djqYye641r3MX6AmIeMXwjgwuQ==}
     engines: {node: '>=18.0.0'}
+
+  '@firebase/functions-types@0.6.3':
+    resolution: {integrity: sha512-EZoDKQLUHFKNx6VLipQwrSMh01A1SaL3Wg6Hpi//x6/fJ6Ee4hrAeswK99I5Ht8roiniKHw4iO0B1Oxj5I4plg==}
 
   '@firebase/logger@0.4.4':
     resolution: {integrity: sha512-mH0PEh1zoXGnaR8gD1DeGeNZtWFKbnz9hDO91dIml3iou1gpOnLqXQ2dJfB71dj6dpmUjcQ6phY3ZZJbjErr9g==}
@@ -986,11 +989,6 @@ packages:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
 
-  typescript@5.6.3:
-    resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
@@ -1117,6 +1115,8 @@ snapshots:
       '@firebase/util': 1.10.3
       faye-websocket: 0.11.4
       tslib: 2.8.1
+
+  '@firebase/functions-types@0.6.3': {}
 
   '@firebase/logger@0.4.4':
     dependencies:
@@ -2261,8 +2261,6 @@ snapshots:
     dependencies:
       media-typer: 0.3.0
       mime-types: 2.1.35
-
-  typescript@5.6.3: {}
 
   undici-types@6.20.0: {}
 

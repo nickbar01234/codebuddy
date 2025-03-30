@@ -9,6 +9,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "prettier": "3.5.3",
+    "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1",
@@ -16,7 +17,8 @@
     "vitest": "^3.0.7"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm vitest"
   },
   "lint-staged": {
     "*.{ts,tsx,md,html,css}": [
