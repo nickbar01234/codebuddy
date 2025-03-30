@@ -11,6 +11,9 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
+    ignores: ["**/node_modules/*", "**/dist/*"]
+  },
+  {
     rules: {
       "no-unused-vars": "off",
       "no-explicit-any": "off",
@@ -39,5 +42,5 @@ export default tseslint.config(
       ...react.configs.flat.recommended.languageOptions,
       globals: globals.browser,
     },
-  }
+  },
 );

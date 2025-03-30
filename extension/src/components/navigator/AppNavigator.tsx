@@ -6,6 +6,7 @@ import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
+import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
@@ -29,7 +30,13 @@ export const AppNavigator = () => {
         <div className="absolute inset-0 flex h-full w-full items-center justify-center">
           {state === AppState.LOADING ? (
             <LoadingPanel
-              numberOfUsers={Object.keys(currentTabInfo?.peers ?? 0).length}
+              numberOfUsers={
+                Object.keys(
+                  currentTabInfo?.sessions[
+                    getQuestionIdFromUrl(window.location.href)
+                  ]?.peers ?? {}
+                ).length
+              }
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
