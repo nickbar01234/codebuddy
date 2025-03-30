@@ -1,4 +1,4 @@
-import { firestore, auth } from "@cb/db/setup";
+import { FirebaseConnection } from "@cb/db/setup";
 import {
   collection,
   deleteDoc,
@@ -16,7 +16,8 @@ import {
   roomConverter,
 } from "@cb/db/converter";
 
-export { firestore, auth };
+export const firestore = FirebaseConnection.getFirebaseFirestore();
+export const auth = FirebaseConnection.getFirebaseAuth();
 
 export const getRoomRef = (id?: string) =>
   doc(
