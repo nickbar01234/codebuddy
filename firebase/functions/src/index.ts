@@ -1,13 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { initializeApp } from "firebase-admin/app";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import {
   onDocumentCreated,
   onDocumentDeleted,
 } from "firebase-functions/firestore";
-
-initializeApp();
 
 const db = getFirestore();
 
