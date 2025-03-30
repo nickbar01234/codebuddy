@@ -11,7 +11,7 @@
     "128": "./icons/128.png"
   },
   "host_permissions": ["https://leetcode.com/problems/*"],
-  "permissions": ["scripting", "tabs"],
+  "permissions": ["scripting", "tabs", "https://fonts.googleapis.com/"],
   "content_scripts": [
     {
       "js": ["assets/index.js"],
@@ -29,7 +29,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["images/*.png"],
+      "resources": ["images/*.png", "fonts/SpaceGrotesk/*.ttf"],
       "matches": ["<all_urls>"]
     }
   ]

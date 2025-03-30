@@ -1,4 +1,5 @@
 import tailwindCssAnimate from "tailwindcss-animate";
+import plugin from "tailwindcss";
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -8,7 +9,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'space-grotesk': ['"Space Grotesk"', 'sans-serif'],
+        "space-grotesk": ['"Space Grotesk"', "sans-serif"],
       },
       animation: {
         ripple: "ripple var(--duration,2s) ease calc(var(--i, 0)*.2s) infinite",
@@ -73,5 +74,16 @@ export default {
       },
     },
   },
-  plugins: [tailwindCssAnimate],
+  plugins: [
+    // tailwindCssAnimate,
+    plugin(function ({ addBase }) {
+      addBase({
+        "@font-face": {
+          fontFamily: "Space Grotesk",
+          fontWeight: "500",
+          src: 'url("/fonts/SpaceGrotesk/SpaceGrotesk-Medium.ttf") format("truetype")',
+        },
+      });
+    }),
+  ],
 };

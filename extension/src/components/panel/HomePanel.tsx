@@ -1,21 +1,25 @@
-import {
-  CodeIcon,
-  PlusIcon,
-} from "@cb/components/icons";
+import { CodeIcon, PlusIcon } from "@cb/components/icons";
 import { useRTC } from "@cb/hooks/index";
 import React from "react";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { Dialog, DialogHeader, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@cb/lib/components/ui/dialog"; 
+import {
+  Dialog,
+  DialogHeader,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@cb/lib/components/ui/dialog";
 import { throttle } from "lodash";
 import { darkLogo, lightLogo } from "../icons/Logo";
-import { Button } from "../../lib/components/ui/button"
+import { Button } from "../../lib/components/ui/button";
 
 const HomePanel = () => {
   const { createRoom, joinRoom } = useRTC();
   const { setState: setAppState } = React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
-  const onCreateRoom = React.useMemo(() => { 
+  const onCreateRoom = React.useMemo(() => {
     return throttle((event: Event | React.MouseEvent<Element>) => {
       event.stopPropagation?.();
       setAppState(AppState.ROOM);
@@ -44,41 +48,45 @@ const HomePanel = () => {
   };
 
   return (
-    <div className="h-full w-full flex flex-col overflow-scroll hide-scrollbar gap-10">
-      <div className="h-1/2 w-full flex flex-col justify-end items-center gap-2">
-        <img src={lightLogo} className="w-1/3 aspect-square max-h-[150px] max-w-[150px] min-h-[100px] min-w-[100px] dark:hidden" alt="CodeBuddy logo" />
-        <img src={darkLogo} className="w-1/3 aspect-square max-h-[150px] max-w-[150px] min-h-[100px] min-w-[100px] hidden dark:block" alt="CodeBuddy logo"/>
-        <h1 className="text-2xl font-space-grotesk">
+    <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll">
+      <div className="flex h-1/2 w-full flex-col items-center justify-end gap-2">
+        <img
+          src={lightLogo}
+          className="aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px] dark:hidden"
+          alt="CodeBuddy logo"
+        />
+        <img
+          src={darkLogo}
+          className="hidden aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px] dark:block"
+          alt="CodeBuddy logo"
+        />
+        <h1 className="font-space-grotesk text-2xl">
           Code<span className="text-pinkish-red">Buddy</span>
         </h1>
       </div>
-      
-      <div className="h-1/2 w-full flex flex-col items-center gap-2">
+
+      <div className="flex h-1/2 w-full flex-col items-center gap-2">
         <Button
-          className="w-[150px] items-center justify-center bg-fill-primary"
+          className="bg-fill-primary w-[150px] items-center justify-center"
           variant="secondary"
           type="button"
           onClick={onCreateRoom}
           aria-label="Create a new room"
         >
-          <PlusIcon /> 
-          <div className="h-full w-full text-center">
-            Create Room
-          </div>
+          <PlusIcon />
+          <div className="h-full w-full text-center">Create Room</div>
         </Button>
 
         <Dialog>
           <DialogTrigger>
             <Button
-              className="w-[150px] items-center justify-center bg-fill-primary"
+              className="bg-fill-primary w-[150px] items-center justify-center"
               variant="secondary"
               type="button"
               aria-label="Create a new room"
             >
-              <CodeIcon /> 
-              <div className="h-full w-full text-center">
-                Join Room
-              </div>
+              <CodeIcon />
+              <div className="h-full w-full text-center">Join Room</div>
             </Button>
           </DialogTrigger>
           <DialogContent className="[&>button]:hidden">
@@ -95,14 +103,14 @@ const HomePanel = () => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   onJoinRoom(e);
-                } 
+                }
               }}
             />
           </DialogContent>
         </Dialog>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default HomePanel;
