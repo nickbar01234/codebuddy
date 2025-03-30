@@ -1,10 +1,8 @@
-name: Eslint
+name: Eslint & Build
 
 on:
-  push:
-    branches: ["main", "haianhng31/github-workflow"]
   pull_request:
-    branches: ["main", "haianhng31/github-workflow"]
+    branches: ["main"]
 
 jobs:
   test:
@@ -28,3 +26,6 @@ jobs:
         run: pnpm install
       - name: Run eslint
         run: pnpm lint
+      - name: Build
+        working-directory: ./extension
+        run: pnpm build

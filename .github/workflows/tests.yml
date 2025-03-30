@@ -1,10 +1,8 @@
 name: Tests
 
 on:
-  push:
-    branches: ["main", "haianhng31/github-workflow"]
   pull_request:
-    branches: ["main", "haianhng31/github-workflow"]
+    branches: ["main"]
 
 jobs:
   test:
@@ -27,5 +25,5 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: Run tests
-        working-directory: ./extension
+        # working-directory: ./extension
         run: pnpm test
