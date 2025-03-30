@@ -44,7 +44,7 @@ const _RoomControlMenu = ({
   roomId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeRoomInputId = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setInputRoomId(e.target.value);
   };
@@ -75,7 +75,7 @@ const _RoomControlMenu = ({
                 <input
                   className="bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[5px]"
                   placeholder="Enter room ID"
-                  onChange={onChangeRoomIdInput}
+                  onChange={onChangeRoomInputId}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       onJoinRoom(e);
