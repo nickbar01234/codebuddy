@@ -1,6 +1,8 @@
 import QuestionSelector from "@cb/components/QuestionSelector";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
 import { RenderButton } from "@cb/components/ui/RenderButton";
+import { Skeleton } from "@cb/components/ui/Skeleton";
 import { AppState } from "@cb/context/AppStateProvider";
 import { ROOMSTATE } from "@cb/context/RTCProvider";
 import {
@@ -9,6 +11,7 @@ import {
   useRTC,
   useWindowDimensions,
 } from "@cb/hooks/index";
+import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
   TabsContent,
@@ -19,11 +22,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { LoadingPanel } from "../LoadingPanel";
 import EditorToolBar from "./EditorToolBar";
-import { Skeleton } from "@cb/components/ui/Skeleton";
-import { Separator } from "@cb/lib/components/ui/separator";
-
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -144,9 +143,7 @@ const EditorPanel = () => {
           )}
         >
           {isBuffer && emptyRoom && <Skeleton className="h-full w-full" />}
-          {!isBuffer && emptyRoom && (
-            <LoadingPanel numberOfUsers={peers.length} />
-          )}
+          {!isBuffer && emptyRoom && <CreateRoomLoadingPanel />}
           <div
             className={cn(
               "relative flex h-full w-full flex-col justify-between",
@@ -173,7 +170,7 @@ const EditorPanel = () => {
               })}
             >
               <Tabs defaultValue="code" className="h-full w-full">
-                <TabsList className="flex w-full justify-start gap-2">
+                <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
                   <UserDropdown
                     key={"user-dropdown"}
                     isOpen={isUserDropdownOpen}

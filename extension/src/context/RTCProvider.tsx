@@ -4,6 +4,7 @@ import {
 } from "@cb/constants/page-elements";
 import {
   firestore,
+  getAllSessionId,
   getRoom,
   getRoomRef,
   getSession,
@@ -67,8 +68,8 @@ const servers = {
 
 const CODE_MIRROR_CONTENT = ".cm-content";
 
-export const HEARTBEAT_INTERVAL = 1000; // ms
-const CHECK_ALIVE_INTERVAL = 1000; // ms
+export const HEARTBEAT_INTERVAL = 15000; // ms
+const CHECK_ALIVE_INTERVAL = 15000; // ms
 const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
@@ -296,11 +297,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const newRoomId = newRoomRef.id;
     const sessionRef = getSessionRef(newRoomId, sessionId);
     await setRoom(newRoomRef, {
-      questions: arrayUnion(sessionId),
       usernames: arrayUnion(username),
     });
     await setSession(sessionRef, {
-      questionId: questionId,
       finishedUsers: [],
 
       usernames: arrayUnion(username),
@@ -384,7 +383,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const joinRoom = React.useCallback(
     async (roomId: string): Promise<boolean> => {
-      const questionId = getQuestionIdFromUrl(window.location.href);
       console.log("Joining room", roomId);
       if (!roomId) {
         toast.error("Please enter room ID");
@@ -395,11 +393,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Room does not exist");
         return false;
       }
-      const roomData = roomDoc.data();
-      if (!roomData.questions.includes(sessionId)) {
-        toast.error("This room does not contain this question");
-        return false;
-      }
 
       const sessionDoc = await getSession(roomId, sessionId);
       if (!sessionDoc.exists()) {
@@ -407,15 +400,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
       const sessionData = sessionDoc.data();
-      const roomQuestionId = sessionData.questionId;
-      if (questionId !== roomQuestionId) {
-        const questionUrl = constructUrlFromQuestionId(roomQuestionId);
-        toast.error("The room you join is on this question:", {
-          description: roomQuestionId,
-        });
-        return false;
-      }
-      const usernames = sessionData.usernames;
+      const usernames = roomDoc.data().usernames;
       if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
@@ -541,10 +526,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       try {
         const roomDoc = (await getRoom(roomId)).data();
+        const roomQuestions = await getAllSessionId(roomId);
         if (!roomDoc) return;
         const batch = writeBatch(firestore);
         await Promise.all(
-          roomDoc.questions.map(async (curQuestionId) => {
+          roomQuestions.map(async (curQuestionId: string) => {
             batch.update(getSessionRef(roomId, curQuestionId), {
               usernames: arrayRemove(username),
             });
@@ -555,6 +541,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
             myAnswers.docs.forEach((doc) => batch.delete(doc.ref));
           })
         );
+        batch.update(getRoomRef(roomId), {
+          usernames: arrayRemove(username),
+        });
         await batch.commit();
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
@@ -650,12 +639,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await setSession(getSessionRef(roomId, sessionId), {
         nextQuestion: chosenQuestionId,
       });
-      await setRoom(getRoomRef(roomId), {
-        questions: arrayUnion(chosenQuestionId),
-      });
       const newSessionRef = getSessionRef(roomId, chosenQuestionId);
       await setSession(newSessionRef, {
-        questionId: chosenQuestionId,
         finishedUsers: [],
         usernames: [],
         nextQuestion: "",

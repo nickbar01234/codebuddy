@@ -6,6 +6,7 @@ import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
+import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
@@ -31,8 +32,11 @@ export const AppNavigator = () => {
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={
-                Object.keys(currentTabInfo?.sessions[sessionId]?.peers ?? {})
-                  .length
+                Object.keys(
+                  currentTabInfo?.sessions[
+                    getQuestionIdFromUrl(window.location.href)
+                  ]?.peers ?? {}
+                ).length
               }
             />
           ) : // <div> LOADING OUTSIDE IN APP NAVIGATORR</div>

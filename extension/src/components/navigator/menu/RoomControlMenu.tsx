@@ -1,3 +1,4 @@
+import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import {
   CodeIcon,
   CopyIcon,
@@ -10,37 +11,35 @@ import {
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { auth } from "@cb/db";
 import { useRTC } from "@cb/hooks/index";
-import { clearLocalStorage } from "@cb/services";
-import { signOut } from "firebase/auth/web-extension";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@cb/lib/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@cb/lib/components/ui/dropdown-menu";
-import React from "react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@cb/lib/components/ui/dialog";
+import { clearLocalStorage } from "@cb/services";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
+import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
+import React from "react";
+import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
 const _RoomControlMenu = ({
   appState,
   onCreateRoom,
   onJoinRoom,
-  onLeaveRoom,
   roomId,
   setInputRoomId,
 }: {
   appState: AppState;
   onCreateRoom: (e: Event) => void;
   onJoinRoom: (e: React.MouseEvent | React.KeyboardEvent) => void;
-  onLeaveRoom: (e: Event) => void;
   roomId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
@@ -101,10 +100,14 @@ const _RoomControlMenu = ({
               <CopyIcon /> Copy Room ID
             </span>
           </RoomControlDropdownMenuItem>
-          <RoomControlDropdownMenuItem onSelect={onLeaveRoom}>
-            <span className="flex items-center gap-2">
-              <LeaveIcon /> Leave Room
-            </span>
+          <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <LeaveRoomDialog
+              trigger={
+                <span className="flex items-center gap-2">
+                  <LeaveIcon /> Leave Room
+                </span>
+              }
+            />
           </RoomControlDropdownMenuItem>
         </>
       );
@@ -164,15 +167,6 @@ export const RoomControlMenu = () => {
     }, 1000);
   }, []);
 
-  const leaveRoomThrottled = React.useMemo(() => {
-    return throttle((event: Event) => {
-      event.stopPropagation?.();
-      setAppState(AppState.HOME);
-      if (roomId) {
-        leaveRoom(roomId);
-      }
-    }, 1000);
-  }, [roomId, leaveRoom, setAppState]);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -183,7 +177,6 @@ export const RoomControlMenu = () => {
           appState={appState}
           onCreateRoom={createRoomThrottled}
           onJoinRoom={joinRoomThrottled}
-          onLeaveRoom={leaveRoomThrottled}
           roomId={roomId ?? inputRoomId}
           setInputRoomId={setInputRoomId}
         />
