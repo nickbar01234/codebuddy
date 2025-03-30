@@ -60,7 +60,7 @@ const HomePanel = () => {
           className="hidden aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px] dark:block"
           alt="CodeBuddy logo"
         />
-        <h1 className="font-space-grotesk text-2xl">
+        <h1 className="text-2xl">
           Code<span className="text-pinkish-red">Buddy</span>
         </h1>
       </div>
