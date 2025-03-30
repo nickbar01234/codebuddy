@@ -1,59 +1,77 @@
-import { FirebaseConnection } from "@cb/db/setup";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  setDoc,
-  DocumentReference,
-  WithFieldValue,
-} from "firebase/firestore";
-
 import {
   PeerConnection,
   peerConnectionConverter,
   Room,
   roomConverter,
+  Session,
+  sessionConverter,
 } from "@cb/db/converter";
+import { FirebaseConnection } from "@cb/db/setup";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  DocumentReference,
+  getDoc,
+  setDoc,
+  WithFieldValue,
+} from "firebase/firestore";
 
 export const firestore = FirebaseConnection.getFirebaseFirestore();
 export const auth = FirebaseConnection.getFirebaseAuth();
 
-export const getRoomRef = (id?: string) =>
+export const getRoomRef = (roomId?: string) =>
   doc(
     collection(firestore, "rooms"),
-    ...[id].filter((segment) => segment != undefined)
+    ...[roomId].filter((segment) => segment != undefined)
   ).withConverter(roomConverter);
 
-export const getRoom = (id: string) => getDoc(getRoomRef(id));
+export const getRoom = (roomId: string) => getDoc(getRoomRef(roomId));
 
 export const setRoom = (
   ref: DocumentReference<Room, Room>,
   data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
 
-export const getRoomPeerConnectionRefs = (id: string, username: string) =>
-  collection(getRoomRef(id), username).withConverter(peerConnectionConverter);
+export const getSessionRefs = (roomId: string) =>
+  collection(getRoomRef(roomId), "sessions").withConverter(sessionConverter);
 
-export const getRoomPeerConnectionRef = (
-  id: string,
-  peer: string,
+export const getSessionRef = (roomId: string, sessionId: string) =>
+  doc(getSessionRefs(roomId), sessionId).withConverter(sessionConverter);
+
+export const getSession = (roomId: string, sessionId: string) =>
+  getDoc(getSessionRef(roomId, sessionId));
+
+export const setSession = (
+  ref: DocumentReference<Session, Session>,
+  data: Partial<WithFieldValue<Session>>
+) => setDoc(ref, data, { merge: true });
+
+export const getSessionPeerConnectionRefs = (
+  roomId: string,
+  sessionId: string,
   username: string
 ) =>
-  doc(getRoomPeerConnectionRefs(id, peer), username).withConverter(
+  collection(getSessionRef(roomId, sessionId), username).withConverter(
     peerConnectionConverter
   );
 
-export const setRoomPeerConnection = (
+export const getSessionPeerConnectionRef = (
+  roomId: string,
+  sessionId: string,
+  peer: string,
+  username: string
+) =>
+  doc(
+    getSessionPeerConnectionRefs(roomId, sessionId, peer),
+    username
+  ).withConverter(peerConnectionConverter);
+
+export const setSessionPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>,
   data: Partial<WithFieldValue<PeerConnection>>
 ) => setDoc(ref, data, { merge: true });
 
-export const deleteRoomPeerConnection = (
+export const deleteSessionPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>
 ) => deleteDoc(ref);
-
-export const checkRoomExist = async (roomId: string) => {
-  const roomDoc = await getRoom(roomId);
-  return roomDoc.exists();
-};
