@@ -6,7 +6,7 @@ import {
   Session,
   sessionConverter,
 } from "@cb/db/converter";
-import { auth, firestore } from "@cb/db/setup";
+import { FirebaseConnection } from "@cb/db/setup";
 import {
   collection,
   deleteDoc,
@@ -17,7 +17,8 @@ import {
   WithFieldValue,
 } from "firebase/firestore";
 
-export { auth, firestore };
+export const firestore = FirebaseConnection.getFirebaseFirestore();
+export const auth = FirebaseConnection.getFirebaseAuth();
 
 export const getRoomRef = (roomId?: string) =>
   doc(

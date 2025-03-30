@@ -1,8 +1,11 @@
-import { FirebaseOptions } from "firebase/app";
-import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import { FirebaseApp, FirebaseOptions, initializeApp } from "firebase/app";
+import { Auth, getAuth } from "firebase/auth";
 import { connectAuthEmulator } from "firebase/auth/web-extension";
+import {
+  connectFirestoreEmulator,
+  Firestore,
+  getFirestore,
+} from "firebase/firestore";
 
 const env = (import.meta as any).env;
 const DEV_VALUE = "demo-code-buddy-development";
@@ -26,14 +29,40 @@ export const firebaseOptions: FirebaseOptions =
         appId: env.VITE_APP_ID,
       };
 
-const app = initializeApp(firebaseOptions);
+export class FirebaseConnection {
+  private static instance: FirebaseConnection | null = null;
+  private app: FirebaseApp;
+  private auth: Auth;
+  private firestore: Firestore;
 
-export const auth = getAuth(app);
+  private constructor() {
+    this.app = initializeApp(firebaseOptions);
+    this.auth = getAuth(this.app);
+    this.firestore = getFirestore(this.app);
 
-export const firestore = getFirestore(app);
+    if (env.MODE === "development") {
+      // See firebase.json
+      connectFirestoreEmulator(this.firestore, "localhost", 3001);
+      connectAuthEmulator(this.auth, "http://localhost:3003");
+    }
+  }
 
-if (env.MODE === "development") {
-  // See firebase.json
-  connectFirestoreEmulator(firestore, "localhost", 3001);
-  connectAuthEmulator(auth, "http://localhost:3003");
+  private static getInstance(): FirebaseConnection {
+    if (this.instance === null) {
+      this.instance = new FirebaseConnection();
+    }
+    return this.instance;
+  }
+
+  public static getApp() {
+    return this.getInstance().app;
+  }
+
+  public static getFirebaseAuth() {
+    return this.getInstance().auth;
+  }
+
+  public static getFirebaseFirestore() {
+    return this.getInstance().firestore;
+  }
 }
