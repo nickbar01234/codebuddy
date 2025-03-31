@@ -10,11 +10,12 @@
     "moduleResolution": "nodenext",
     "isolatedModules": true,
     "moduleDetection": "force",
-    "outDir": "lib",
+    "outDir": "dist",
 
     /* Linting */
     "strict": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["./**/*.spec.ts"]
 }
