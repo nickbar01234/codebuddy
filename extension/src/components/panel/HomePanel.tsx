@@ -51,16 +51,6 @@ const HomePanel = () => {
     <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll">
       <div className="flex h-1/2 w-full flex-col items-center justify-end gap-2">
         <ThemeAwaredLogo className="aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px]" />
-        {/* <img
-          src={lightLogo}
-          className="aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px] dark:hidden"
-          alt="CodeBuddy logo"
-        />
-        <img
-          src={darkLogo}
-          className="hidden aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px] dark:block"
-          alt="CodeBuddy logo"
-        /> */}
         <h1 className="text-2xl">
           Code<span className="text-pinkish-red">Buddy</span>
         </h1>
