@@ -13,7 +13,7 @@ const colorVariants = {
   red: "text-[#FF3B30]",
   orange: "text-[#FF9500]",
   blue: "text-[#007AFF]",
-  gray: "text-[#BDBDBD]",
+  gray: "text-[#757575]",
   coral: "text-[#FF6F61]",
   cyan: "text-[#40C4FF]",
   pink: "text-[#FF6586]",
@@ -50,7 +50,6 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
         const { status } = entry;
         switch (status) {
           case "leave":
-            return "coral";
           case "join":
             return "cyan";
           default:
@@ -76,14 +75,27 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
             )
       ]
     ];
-
+  const getIcon = () => {
+    switch (type) {
+      case "submission":
+        return <History className={cn("inline-block h-4 w-4", color)} />;
+      case "connection":
+        return <Users className={cn("inline-block h-4 w-4", color)} />;
+      case "message":
+        return (
+          <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
+        );
+      default:
+        return assertUnreachable(type);
+    }
+  };
   const getPrompt = () => {
-    const baseClass = " whitespace-nowrap w-full flex items-center gap-1 ";
+    const baseClass =
+      "flex-shrink-0 hide-scrollbar overflow-x-auto whitespace-nowrap w-full flex items-center gap-1 ";
     switch (type) {
       case "submission":
         return (
           <div className={cn(baseClass, "text-secondary italic")}>
-            <History className={cn("inline-block h-4 w-4", color)} />
             <span className="font-bold">{entry.username} </span>
             submitted their code
             <span className={color}>{`[${entry.output}]`}</span>
@@ -93,7 +105,6 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
       case "connection":
         return (
           <div className={cn(baseClass, "text-secondary italic")}>
-            <Users className={cn("inline-block h-4 w-4", color)} />
             <span className="font-bold">{entry.username} </span>
             {entry.status === "join" ? " joined" : " left"} the room
           </div>
@@ -101,7 +112,6 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
       case "message":
         return (
           <div className={cn(baseClass, "")}>
-            <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
             <span className={cn("font-bold", userColor)}>
               {entry.username}:
             </span>
@@ -114,10 +124,12 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="justify-betweenr flex items-center py-1">
-      <span className={`w-full`}>{getPrompt()}</span>
-      <span className="inline-block w-full flex-grow" />
-      <span className="text-tertiary text-xs">{timeAgo(timestamp)}</span>
+    <div className="grid grid-cols-[auto_1fr_auto] items-center py-1 relative h-full w-full">
+      <span className="flex-shrink-0 mr-1">{getIcon()}</span>
+      {getPrompt()}
+      <span className="ml-1 text-tertiary text-xs justify-self-end">
+        {timeAgo(timestamp)}
+      </span>
     </div>
   );
 };

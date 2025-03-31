@@ -30,7 +30,7 @@
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
   --text-secondary: #757575;
-  --text-tertiary: ##b3b3b3;
+  --text-tertiary: #b3b3b3;
 }
 
 .dark {

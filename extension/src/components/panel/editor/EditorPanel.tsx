@@ -1,5 +1,10 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import {
+  ActivityLogTab,
+  CodeTab,
+  TestTab,
+} from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
@@ -14,10 +19,6 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { ActivityLogTab } from "./tab/activity/ActivityLogTab";
-import CodeTab from "./tab/CodeTab";
-import { TestTab } from "./tab/TestTab";
-
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -137,7 +138,11 @@ const EditorPanel = () => {
                         "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                       }
                     >
-                      <tab.Icon className="mr-2 h-4 w-4 text-green-500" />
+                      <tab.Icon
+                        className="mr-2 h-4 w-4 text-[#34C759]
+
+"
+                      />
                       {tab.label}
                     </TabsTrigger>
                     {index !== tabsConfig.length - 1 && (

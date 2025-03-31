@@ -1,8 +1,8 @@
 import React from "react";
-import { EditorToolBar } from "../EditorToolBar";
 import { EDITOR_NODE_ID } from "../EditorPanel";
+import { EditorToolBar } from "../EditorToolBar";
 
-const CodeTab: React.FC = () => {
+export const CodeTab: React.FC = () => {
   return (
     <div className="h-full w-full">
       <EditorToolBar />
@@ -13,5 +13,3 @@ const CodeTab: React.FC = () => {
     </div>
   );
 };
-
-export default CodeTab;
