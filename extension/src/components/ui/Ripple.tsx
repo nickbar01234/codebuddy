@@ -1,3 +1,4 @@
+import { cn } from "@cb/utils/cn";
 import React from "react";
 interface RippleProps {
   mainCircleSize?: number;
@@ -29,13 +30,16 @@ export const Ripple = React.memo(function Ripple({
         const size = mainCircleSize + i * distanceBetweenCircles;
         const opacity = mainCircleOpacity - i * opacityDecrement;
         const animationDelay = `${i * delay}s`;
-        const borderStyle = i === numCircles - 1 ? "dashed" : "solid";
+        const borderStyle = "solid";
         const borderOpacity = 5 + i * 5;
 
         return (
           <div
             key={i}
-            className={`animate-ripple bg-foreground/25 absolute rounded-full border shadow-xl [--i:${i}]`}
+            className={cn(
+              `animate-ripple absolute rounded-full border shadow-xl [--i:${i}]`,
+              "bg-foreground dark:bg-foreground/25"
+            )}
             style={
               {
                 width: `${size}` + unit,
