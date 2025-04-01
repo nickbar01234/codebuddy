@@ -7,7 +7,7 @@ import { createRoot } from "react-dom/client";
 // We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
 const TIMEOUT = 10_000;
 
-const QuestionSelector = React.memo(
+export const QuestionSelector = React.memo(
   ({
     handleQuestionSelect,
   }: {
@@ -95,5 +95,3 @@ const QuestionSelector = React.memo(
     );
   }
 );
-
-export default QuestionSelector;
