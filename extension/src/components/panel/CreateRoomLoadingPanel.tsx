@@ -1,8 +1,8 @@
-import { useRTC } from "@cb/hooks/index";
-import { CopyIcon } from "lucide-react";
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import { useRTC } from "@cb/hooks/index";
+import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
   const { roomId } = useRTC();
