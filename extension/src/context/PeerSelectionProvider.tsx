@@ -6,10 +6,10 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
+import { getQuestionIdFromUrl } from "@cb/utils";
 import { poll } from "@cb/utils/poll";
 import React from "react";
 import { useOnMount, useRTC } from "../hooks";
-import { getQuestionIdFromUrl } from "@cb/utils";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 

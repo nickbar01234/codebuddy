@@ -1,12 +1,12 @@
-export * from "./services";
 export * from "./peers";
-export * from "./window";
+export * from "./services";
 export * from "./user-session";
 export type {
-  MessagePayload,
   ExtractMessage,
   LeetCodeContentChange,
+  MessagePayload,
 } from "./utils";
+export * from "./window";
 
 interface AppPreference {
   width: number;

@@ -5,6 +5,36 @@ import {
   Timestamp,
 } from "firebase/firestore";
 
+export interface BaseEvent {
+  type: string;
+  timestamp: number;
+}
+
+export interface SubmissionEvent extends BaseEvent {
+  type: "submission";
+  username: string;
+  output: string;
+  status: "success" | "error";
+}
+
+export interface ConnectionEvent extends BaseEvent {
+  type: "connection";
+  username: string;
+  status: "join" | "leave";
+}
+
+export interface MessageEvent extends BaseEvent {
+  type: "message";
+  username: string;
+  message: string;
+}
+export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
+
+export interface Room {
+  usernames: string[];
+  activityLog: LogEvent[];
+}
+
 export interface PeerConnection {
   username?: string;
   offer?: RTCSessionDescriptionInit;
@@ -12,11 +42,6 @@ export interface PeerConnection {
   answer?: RTCSessionDescriptionInit;
   answerCandidates: RTCIceCandidate[];
 }
-
-export interface Room {
-  usernames: string[];
-}
-
 export interface Session {
   finishedUsers: string[];
   usernames: string[];
@@ -49,6 +74,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     return {
       ...data,
       usernames: data.usernames ?? [],
+      activityLog: data.activityLog ?? [],
     };
   },
 };
