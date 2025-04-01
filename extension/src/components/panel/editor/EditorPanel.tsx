@@ -1,10 +1,10 @@
-import QuestionSelector from "@cb/components/QuestionSelector";
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
-import { RenderButton } from "@cb/components/ui/RenderButton";
+import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { Skeleton } from "@cb/components/ui/Skeleton";
 import { AppState } from "@cb/context/AppStateProvider";
 import { ROOMSTATE } from "@cb/context/RTCProvider";
+import { LogEvent } from "@cb/db/converter";
 import {
   useAppState,
   usePeerSelection,
@@ -22,7 +22,11 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import EditorToolBar from "./EditorToolBar";
+import { ActivityLog } from "./activity/ActivityLog";
+import { Choose } from "./stage/Choose";
+import { Decision } from "./stage/Decision";
+import { Wait } from "./stage/Wait";
+
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -33,20 +37,14 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { peers, activePeer, unblur, selectTest, isBuffer } =
     usePeerSelection();
-  const { state: appState, setState: setAppState } = useAppState();
+  const { state: appState } = useAppState();
   const {
     setCodePreferenceHeight,
     onResizeStop,
     preference: { codePreference },
     height,
   } = useWindowDimensions();
-  const {
-    roomState,
-    handleChooseQuestion,
-    joiningBackRoom,
-    handleNavigateToNextQuestion,
-    peerState,
-  } = useRTC();
+  const { roomState } = useRTC();
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = React.useCallback(
     (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -59,12 +57,29 @@ const EditorPanel = () => {
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
-  const unfinishedPeers = React.useMemo(
-    () =>
-      Object.entries(peerState)
-        .filter(([_, state]) => !state.finished)
-        .map(([peerId, state]) => ({ peerId, ...state })),
-    [peerState]
+
+  const tabsConfig = React.useMemo(
+    () => [
+      {
+        value: "code",
+        label: "Code",
+        Icon: CodeXml,
+        Content: <CodeTab />,
+      },
+      {
+        value: "test",
+        label: "Test",
+        Icon: FlaskConical,
+        Content: (
+          <TestTab
+            activePeer={activePeer}
+            activeTest={activeTest}
+            selectTest={selectTest}
+          />
+        ),
+      },
+    ],
+    [activePeer, activeTest, selectTest]
   );
 
   return (
@@ -88,203 +103,172 @@ const EditorPanel = () => {
         onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
         onResizeStop={onResizeStop}
       >
-        {roomState !== ROOMSTATE.CODE && (
-          <div className="flex h-[30vh] w-full items-center justify-center rounded-t-lg p-2">
-            {isBuffer ? (
-              <Skeleton className="h-full w-full" />
-            ) : (
-              <>
-                {roomState === ROOMSTATE.WAIT && (
-                  <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-                    Waiting for other to finish
-                    <ul>
-                      {unfinishedPeers.map(({ peerId, latency }) => (
-                        <li key={peerId + latency}> {peerId} </li>
-                      ))}
-                    </ul>
-                  </h1>
-                )}
-                {roomState === ROOMSTATE.CHOOSE && (
-                  <QuestionSelector
-                    handleQuestionSelect={handleChooseQuestion}
-                  />
-                )}
-
-                {roomState === ROOMSTATE.DECISION && (
-                  <div className="flex w-full flex-col">
-                    <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
-                      Do you want to go on to next question?
-                    </h1>
-                    <div className="flex justify-center gap-4">
-                      <RenderButton
-                        label="YES"
-                        isYes={true}
-                        onClick={handleNavigateToNextQuestion}
-                      />
-                      <RenderButton
-                        label="NO"
-                        isYes={false}
-                        onClick={() => {
-                          joiningBackRoom(false);
-                          setAppState(AppState.HOME);
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+        {roomState !== ROOMSTATE.CODE &&
+          (isBuffer ? (
+            <Skeleton className="h-[30vh] w-full" />
+          ) : (
+            <div className="flex h-[30vh] w-full items-center justify-center rounded-t-lg p-2">
+              {roomState === ROOMSTATE.WAIT && <Wait />}
+              {roomState === ROOMSTATE.CHOOSE && <Choose />}
+              {roomState === ROOMSTATE.DECISION && <Decision />}
+            </div>
+          ))}
+        {emptyRoom &&
+          (isBuffer ? (
+            <Skeleton className="h-full w-full" />
+          ) : (
+            <CreateRoomLoadingPanel />
+          ))}
         <div
           className={cn(
             "relative flex h-full w-full flex-col justify-between",
-            {}
+            {
+              "max-h-[30vh]": roomState !== ROOMSTATE.CODE,
+              hidden: emptyRoom,
+            }
           )}
         >
-          {isBuffer && emptyRoom && <Skeleton className="h-full w-full" />}
-          {!isBuffer && emptyRoom && <CreateRoomLoadingPanel />}
-          <div
-            className={cn(
-              "relative flex h-full w-full flex-col justify-between",
-              {
-                "max-h-[30vh]": roomState !== ROOMSTATE.CODE,
-                hidden: emptyRoom,
-              }
-            )}
-          >
-            {/* todo(nickbar01234): Fix styling */}
-            {!canViewCode && !isBuffer && (
-              <button
-                className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
-                onClick={unblur}
-                type="button"
-              >
-                View
-              </button>
-            )}
-            <div
-              data-view-code={canViewCode}
-              className={cn("h-full w-full", {
-                blur: !canViewCode,
-              })}
+          {/* todo(nickbar01234): Fix styling */}
+          {!canViewCode && !isBuffer && (
+            <button
+              className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
+              onClick={unblur}
+              type="button"
             >
-              <Tabs defaultValue="code" className="h-full w-full">
-                <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
-                  <UserDropdown
-                    key={"user-dropdown"}
-                    isOpen={isUserDropdownOpen}
-                    toggle={toggleUserDropdown}
-                  />
+              View
+            </button>
+          )}
+          <div
+            data-view-code={canViewCode}
+            className={cn("h-full w-full", {
+              blur: !canViewCode,
+            })}
+          >
+            <Tabs defaultValue="code" className="h-full w-full">
+              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
+                <UserDropdown
+                  key="user-dropdown"
+                  isOpen={isUserDropdownOpen}
+                  toggle={toggleUserDropdown}
+                />
 
-                  <Separator
-                    orientation="vertical"
-                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                  />
-                  <TabsTrigger
-                    value="code"
-                    className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                  >
-                    <CodeXml className="mr-2 h-4 w-4 text-green-500" />
-                    Code
-                  </TabsTrigger>
-                  <Separator
-                    orientation="vertical"
-                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                  />
-                  <TabsTrigger
-                    value="test"
-                    className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                  >
-                    <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
-                    Test
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent
-                  value="code"
-                  forceMount
-                  className={cn("h-full w-full data-[state=inactive]:hidden")}
-                >
-                  {isBuffer && <Skeleton className="h-full w-full" />}
-                  <div
-                    className={cn(
-                      "relative flex h-full w-full grow flex-col gap-y-2",
-                      {
-                        hidden: isBuffer,
+                <Separator
+                  orientation="vertical"
+                  className={
+                    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  }
+                />
+
+                {tabsConfig.map((tab, index) => (
+                  <React.Fragment key={tab.value}>
+                    <TabsTrigger
+                      value={tab.value}
+                      className={
+                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                       }
+                    >
+                      <tab.Icon
+                        className="mr-2 h-4 w-4 text-[#34C759]
+
+"
+                      />
+                      {tab.label}
+                    </TabsTrigger>
+                    {index !== tabsConfig.length - 1 && (
+                      <Separator
+                        orientation="vertical"
+                        className={
+                          "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                        }
+                      />
                     )}
-                  >
-                    <EditorToolBar />
-                    <div
-                      id={EDITOR_NODE_ID}
-                      className={cn("h-full w-full overflow-hidden")}
-                    />
-                  </div>
-                </TabsContent>
+                  </React.Fragment>
+                ))}
+              </TabsList>
+
+              {tabsConfig.map(({ value, Content }) => (
                 <TabsContent
-                  value="test"
+                  key={value}
+                  value={value}
                   forceMount
-                  className={cn("data-[state=inactive]:hidden")}
-                >
-                  {isBuffer ? (
-                    <Skeleton className="h-full w-full bg-[--color-tabset-tabbar-background]" />
-                  ) : (
-                    <div className="mx-5 my-4 flex flex-col space-y-4">
-                      <div className="flex w-full flex-row items-start justify-between gap-4">
-                        <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
-                          {activePeer?.tests.map((test, idx) => (
-                            <div key={idx} onClick={() => selectTest(idx)}>
-                              {test.selected ? (
-                                <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">
-                                  Case {idx + 1}
-                                </button>
-                              ) : (
-                                <button className="hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent relative inline-flex items-center whitespace-nowrap rounded-lg bg-transparent px-4 py-1 font-medium focus:outline-none">
-                                  Case {idx + 1}
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex h-full w-full flex-col space-y-2">
-                            {activeTest?.test.map((assignment, idx) => (
-                              <React.Fragment key={idx}>
-                                <div className="text-label-3 dark:text-dark-label-3 text-xs font-medium">
-                                  {assignment.variable} =
-                                </div>
-                                <div className="font-menlo bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[10px]">
-                                  <div
-                                    className="font-menlo placeholder:text-label-4 dark:placeholder:text-dark-label-4 sentry-unmask w-full resize-none whitespace-pre-wrap break-words outline-none"
-                                    contentEditable="true"
-                                  >
-                                    {assignment.value}
-                                  </div>
-                                </div>
-                              </React.Fragment>
-                            )) ?? null}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  className={cn(
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto"
                   )}
+                >
+                  {Content}
                 </TabsContent>
-              </Tabs>
-            </div>
+              ))}
+            </Tabs>
           </div>
         </div>
       </ResizableBox>
-
       <div
         className="relative w-full overflow-auto"
         style={{ height: height - codePreference.height - 128 }}
       >
-        <div className="h-full w-full bg-black">THIS IS ACTIVITY LOG</div>
+        <ActivityLog logEntries={logEntries} />
       </div>
     </div>
   );
 };
 
 export default EditorPanel;
+
+const logEntries: LogEvent[] = [
+  {
+    type: "submission",
+    username: "Buddy",
+    output: "Accepted",
+    status: "success",
+    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
+  },
+  {
+    type: "submission",
+    username: "Code",
+    output: "Time limit exceeded",
+    status: "error",
+    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
+  },
+  {
+    type: "connection",
+    username: "Dev",
+    status: "join",
+    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Code",
+    message: "RAHHHhHHH can someone take a look at my code",
+    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Buddy",
+    message: "um no sry",
+    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
+  },
+  {
+    type: "connection",
+    username: "Buddy",
+    status: "leave",
+    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Code",
+    message: "???",
+    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Dev",
+    message: "lmao",
+    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "5bigBooms",
+    message: "lmao",
+    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
+  },
+];
