@@ -7,7 +7,6 @@
     "build:service_worker": "tsc -p ./src/services/tsconfig.json && TYPE=service_worker vite build",
     "build:content_script": "tsc && TYPE=content_script vite build",
     "build": "pnpm run \"/^build:.*/\"",
-    "dev:prod": "pnpm run build && concurrently --kill-others \"pnpm run build --watch\"",
     "dev:build": "pnpm run build --mode development",
     "dev:prod": "pnpm run build && concurrently --kill-others \"pnpm run build --watch\"",
     "dev": "pnpm run dev:build && concurrently --kill-others \"node script/dev.mjs\" \"pnpm run dev:build --watch\"",
