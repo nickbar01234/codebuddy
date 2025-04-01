@@ -1,15 +1,26 @@
+import { usePeerSelection } from "@cb/hooks/index";
+import { Skeleton } from "@cb/lib/components/ui/skeleton";
+import { cn } from "@cb/utils/cn";
 import React from "react";
 import { EDITOR_NODE_ID } from "../EditorPanel";
 import { EditorToolBar } from "../EditorToolBar";
 
 export const CodeTab: React.FC = () => {
+  const { isBuffer } = usePeerSelection();
   return (
-    <div className="h-full w-full">
-      <EditorToolBar />
+    <>
+      {isBuffer && <Skeleton className="h-full w-full" />}
       <div
-        id={EDITOR_NODE_ID}
-        className="h-full min-h-[50vh] w-full overflow-hidden"
-      />
-    </div>
+        className={cn("relative flex h-full w-full grow flex-col gap-y-2", {
+          hidden: isBuffer,
+        })}
+      >
+        <EditorToolBar />
+        <div
+          id={EDITOR_NODE_ID}
+          className={cn("h-full w-full overflow-hidden")}
+        />
+      </div>
+    </>
   );
 };

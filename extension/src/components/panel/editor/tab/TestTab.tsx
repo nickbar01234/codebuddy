@@ -1,5 +1,7 @@
-import React from "react";
+import { usePeerSelection } from "@cb/hooks/index";
+import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import { Peer, TestCase } from "@cb/types";
+import React from "react";
 
 interface TestTabProps {
   activePeer: Peer | undefined;
@@ -12,8 +14,11 @@ export const TestTab: React.FC<TestTabProps> = ({
   activeTest,
   selectTest,
 }) => {
-  return (
-    <div className="mx-5 my-4 flex h-full w-full flex-col space-y-4">
+  const { isBuffer } = usePeerSelection();
+  return isBuffer ? (
+    <Skeleton className="h-full w-full bg-[--color-tabset-tabbar-background]" />
+  ) : (
+    <div className="mx-5 my-4 flex flex-col space-y-4">
       <div className="flex w-full flex-row items-start justify-between gap-4">
         <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
           {activePeer?.tests.map((test, idx) => (
