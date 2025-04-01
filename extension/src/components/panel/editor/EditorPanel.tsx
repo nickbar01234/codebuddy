@@ -162,7 +162,9 @@ const EditorPanel = () => {
                   key={value}
                   value={value}
                   forceMount
-                  className={cn("data-[state=inactive]:hidden")}
+                  className={cn(
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto"
+                  )}
                 >
                   {Content}
                 </TabsContent>
