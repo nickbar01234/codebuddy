@@ -2,12 +2,12 @@ import { PasteCodeIcon } from "@cb/components/icons";
 import { usePeerSelection } from "@cb/hooks/index";
 import { capitalize } from "@cb/utils/string";
 
-const EditorToolBar = () => {
+export const EditorToolBar = () => {
   const { activeUserInformation, pasteCode } = usePeerSelection();
 
   return (
-    <div className="flex h-8 items-center justify-between border-b p-2 border-border-quaternary dark:border-border-quaternary overflow-x-scroll hide-scrollbar gap-4">
-      <div className="text-text-secondary dark:text-text-secondary text-sm font-normal group">
+    <div className="border-border-quaternary dark:border-border-quaternary hide-scrollbar flex h-8 items-center justify-between gap-4 overflow-x-scroll border-b p-2">
+      <div className="text-text-secondary dark:text-text-secondary group text-sm font-normal">
         {capitalize(activeUserInformation?.code?.code.language ?? "")}
       </div>
       <button
@@ -15,12 +15,10 @@ const EditorToolBar = () => {
         type="button"
         data-tooltip-target="tooltip-default"
         onClick={pasteCode}
-        className="text-black dark:text-white justify-between hover:bg-fill-quaternary dark:hover:bg-fill-quaternary focus:ring-4 focus:outline-none font-medium rounded-lg text-xs text-center inline-flex items-center mt-1 me-1"
+        className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary me-1 mt-1 inline-flex items-center justify-between rounded-lg text-center text-xs font-medium text-black focus:outline-none focus:ring-4 dark:text-white"
       >
         <PasteCodeIcon />
       </button>
     </div>
   );
 };
-
-export default EditorToolBar;
