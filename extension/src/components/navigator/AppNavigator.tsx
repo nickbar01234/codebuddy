@@ -38,8 +38,7 @@ export const AppNavigator = () => {
                 ).length
               }
             />
-          ) : // <div> LOADING OUTSIDE IN APP NAVIGATORR</div>
-          state === AppState.REJOINING ? (
+          ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
           ) : null}
         </div>
