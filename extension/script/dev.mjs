@@ -1,6 +1,6 @@
 import chokidar from "chokidar";
-import puppeteer from "puppeteer";
 import _ from "lodash";
+import puppeteer from "puppeteer";
 
 const EXTENSION_PATH = "./dist/";
 
@@ -22,12 +22,6 @@ const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
 const ROOM_ID = `CODE_BUDDY_TEST_${Date.now()}`;
 
 const setup = async () => {
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      console.log("Waiting for extension to load...");
-      resolve();
-    }, 2000);
-  });
   const createBrowser = async (peer) => {
     const browser = await puppeteer.launch({
       headless: false,

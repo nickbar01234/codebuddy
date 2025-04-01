@@ -1,7 +1,7 @@
-import React from "react";
-import { AnimatedBeam } from "@cb/components/ui/AnimatedBeam";
 import { UserIcon } from "@cb/components/icons/UserIcon";
-import { Ripple } from "@cb/components/ui/Ripple";
+import { Ripple } from "@cb/components/panel/Ripple";
+import { AnimatedBeam } from "@cb/components/ui/AnimatedBeam";
+import React from "react";
 
 const Circle = React.forwardRef<
   HTMLDivElement,

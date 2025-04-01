@@ -1,5 +1,6 @@
 import { cn } from "@cb/utils/cn";
 import React from "react";
+
 interface RippleProps {
   mainCircleSize?: number;
   mainCircleOpacity?: number;
@@ -60,7 +61,3 @@ export const Ripple = React.memo(function Ripple({
     </div>
   );
 });
-function extractNumbers(cssString: string) {
-  const matches = cssString.match(/-?\d*\.?\d+/g);
-  return matches ? matches.map(Number) : [];
-}
