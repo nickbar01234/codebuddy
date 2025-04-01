@@ -20,14 +20,14 @@ const CreateRoomLoadingPanel = () => {
         />
       </div>
 
-      <div className="relative z-20 h-full w-full justify-center flex flex-col gap-1 items-center text-center">
+      <div className="relative z-20 top-[20vh] justify-center flex flex-col gap-1 items-center text-center">
         <span className="text-2xl font-bold text-[#1E1E1E] dark:text-[#F1F1F1B2]">
           Room created successfully!
         </span>
         <span className="text-lg text-[#757575] dark:text-gray-400">
           Others can now join your room using the Room ID below
         </span>
-        <div className=" flex w-full max-w-sm flex-col items-center">
+        <div className="mt-5 flex w-full max-w-sm flex-col items-center">
           <div className="flex w-full items-center overflow-hidden rounded-lg border border-gray-300 dark:border-gray-600">
             <span className="w-full truncate px-4 py-3 font-mono text-lg text-[#1E1E1E] dark:text-[#F1F1F1B2]">
               {roomId ?? "Fetching Room ID..."}
