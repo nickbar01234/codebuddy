@@ -45,7 +45,7 @@ have 2 options:
 
    ```yaml
    rooms/
-    [rooms-id]:
+    [roomsId]:
        user-2/
          user-1:
            expiresAt: TIMESTAMP
