@@ -1,6 +1,6 @@
-import { WindowMessage } from "types/window";
-import { useOnMount } from ".";
 import { sendServiceRequest } from "@cb/services";
+import { WindowMessage } from "types/window";
+import { useOnMount } from "./useOnMount";
 
 const useDevReload = () => {
   useOnMount(() => {

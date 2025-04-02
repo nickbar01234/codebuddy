@@ -1,8 +1,8 @@
-import React from "react";
-import { useOnMount } from "@cb/hooks";
-import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
-import { createRoot } from "react-dom/client";
 import SelectButtonQuestion from "@cb/components/button/SelectQuestionButton";
+import { useOnMount } from "@cb/hooks/useOnMount";
+import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
+import React from "react";
+import { createRoot } from "react-dom/client";
 
 // We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
 const TIMEOUT = 10_000;

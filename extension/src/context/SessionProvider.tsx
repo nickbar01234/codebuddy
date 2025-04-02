@@ -1,17 +1,17 @@
-import React from "react";
-import { AuthenticationStatus, ResponseStatus, Status } from "@cb/types";
 import { auth } from "@cb/db";
-import { useOnMount } from "@cb/hooks";
-import {
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-} from "firebase/auth/web-extension";
+import useAuthenticate from "@cb/hooks/useAuthenticate";
+import { useOnMount } from "@cb/hooks/useOnMount";
 import {
   getLocalStorage,
   removeLocalStorage,
   sendServiceRequest,
 } from "@cb/services";
-import useAuthenticate from "@cb/hooks/useAuthenticate";
+import { AuthenticationStatus, ResponseStatus, Status } from "@cb/types";
+import {
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+} from "firebase/auth/web-extension";
+import React from "react";
 import { toast } from "sonner";
 
 interface SessionProviderProps {

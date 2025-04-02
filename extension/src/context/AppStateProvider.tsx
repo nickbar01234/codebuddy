@@ -1,7 +1,7 @@
-import React from "react";
+import { useOnMount } from "@cb/hooks/useOnMount";
 import { getLocalStorage } from "@cb/services";
-import { useOnMount } from "@cb/hooks";
 import { AppUser } from "@cb/types";
+import React from "react";
 
 enum AppState {
   HOME, // Home screen

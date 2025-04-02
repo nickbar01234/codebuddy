@@ -1,5 +1,5 @@
 import { CodeBuddyPreference } from "@cb/constants";
-import { useOnMount } from "@cb/hooks";
+import { useOnMount } from "@cb/hooks/useOnMount";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { Preference } from "@cb/types";
 import React, { createContext } from "react";
