@@ -70,7 +70,7 @@ const TIMEOUT = 100; // seconds;
 interface CreateRoom {
   roomId?: string;
   roomName?: string;
-  visibility: string;
+  isPublic: boolean;
 }
 
 export interface RTCContext {
@@ -282,14 +282,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [receiveCode, receiveTests, setConnection]
   );
 
-  const createRoom = async ({ roomId, roomName, visibility }: CreateRoom) => {
+  const createRoom = async ({ roomId, roomName, isPublic }: CreateRoom) => {
     const questionId = getQuestionIdFromUrl(window.location.href);
     const roomRef = getRoomRef(roomId);
     await setRoom(roomRef, {
       questionId,
       usernames: arrayUnion(username),
       roomName,
-      visibility,
+      isPublic,
     });
     console.log("Created room");
     setRoomId(roomRef.id);

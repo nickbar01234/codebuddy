@@ -4,6 +4,8 @@ import { throttle } from "lodash";
 import { useRTC } from "@cb/hooks/index";
 import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState } from "@cb/hooks/index";
+import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
+import { Button } from "@cb/lib/components/ui/button";
 
 export const CreateRoomOptionPanel = () => {
   const [visibility, setVisibility] = useState("public");
@@ -17,7 +19,7 @@ export const CreateRoomOptionPanel = () => {
       setAppState(AppState.ROOM);
       createRoom({
         roomName: roomName,
-        visibility: visibility,
+        isPublic: visibility === "public",
       });
     }, 1000);
   }, [createRoom, setAppState, roomName, visibility]);
@@ -37,53 +39,50 @@ export const CreateRoomOptionPanel = () => {
           className="w-full rounded-md border border-[#787880] bg-white px-3 py-2 text-[#1E1E1E] placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] dark:text-[#FFFFFF]"
         />
       </div>
-
-      <div className="space-y-2">
+      <RadioGroup
+        value={visibility}
+        onValueChange={(value) => setVisibility(value)}
+        className="space-y-2"
+      >
         <p className="font-medium text-[#1E1E1E] dark:text-[#FFFFFF]">
           Visibility
         </p>
 
-        <label className="flex items-center space-x-2">
-          <input
-            type="radio"
-            name="visibility"
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
             value="public"
-            checked={visibility === "public"}
-            onChange={() => setVisibility("public")}
+            id="public"
             className="form-radio text-[#050404] accent-black dark:text-[#FFFFFF] dark:accent-white"
           />
-          <div>
+          <label htmlFor="public" className="space-y-0.5">
             <span>Public</span>
             <p className="text-base text-[#757575] dark:text-[#F1F1F1]">
               Anyone can join your room
             </p>
-          </div>
-        </label>
+          </label>
+        </div>
 
-        <label className="flex items-center space-x-2">
-          <input
-            type="radio"
-            name="visibility"
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem
             value="private"
-            checked={visibility === "private"}
-            onChange={() => setVisibility("private")}
+            id="private"
             className="form-radio text-[#1E1E1E] accent-black dark:text-[#FFFFFF] dark:accent-white"
           />
-          <div>
+          <label htmlFor="private" className="space-y-0.5">
             <span>Private</span>
             <p className="text-base text-[#757575] dark:text-[#F1F1F1]">
               Only users with the Room ID can access
             </p>
-          </div>
-        </label>
-      </div>
+          </label>
+        </div>
+      </RadioGroup>
 
-      <button
+      <Button
         onClick={createRoomThrottled}
         className="w-full rounded-md bg-gray-200 py-2 font-medium text-[#1E1E1E] transition hover:bg-[--color-tab-hover-background] dark:bg-[#49494E] dark:text-[#FFFFFF] dark:hover:bg-[--color-tab-hover-background]"
       >
         Create
-      </button>
+      </Button>
     </div>
   );
 };

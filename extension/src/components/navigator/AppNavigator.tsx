@@ -34,8 +34,6 @@ export const AppNavigator = () => {
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
-          ) : state === AppState.HOME ? (
-            <CreateRoomOptionPanel />
           ) : null}
         </div>
         <EditorPanel />
