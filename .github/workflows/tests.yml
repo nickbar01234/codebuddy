@@ -25,5 +25,4 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: Run tests
-        # working-directory: ./extension
         run: pnpm test

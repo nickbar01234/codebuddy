@@ -11,7 +11,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ["**/node_modules/*", "**/dist/*", "**/script/dev.mjs"],
+    ignores: ["**/node_modules/*", "**/dist/*"],
   },
   {
     rules: {
