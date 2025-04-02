@@ -8,7 +8,7 @@ import {
 } from "firebase/auth/web-extension";
 import _ from "lodash";
 import React from "react";
-import { useOnMount } from "./useOnMount";
+import { useOnMount } from ".";
 
 interface UseDevAuthenticateProps {
   authenticate: (session: AuthenticationStatus) => void;

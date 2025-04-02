@@ -1,6 +1,6 @@
 import { waitForElement } from "@cb/utils";
 import React from "react";
-import { useOnMount } from "./useOnMount";
+import { useOnMount } from ".";
 
 const useInferTests = () => {
   const [variables, setVariables] = React.useState<string[]>([]);

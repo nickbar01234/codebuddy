@@ -1,4 +1,4 @@
-import { useOnMount } from "@cb/hooks/useOnMount";
+import { useOnMount } from "@cb/hooks";
 import { getLocalStorage } from "@cb/services";
 import { AppUser } from "@cb/types";
 import React from "react";

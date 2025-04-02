@@ -1,5 +1,5 @@
 import SelectButtonQuestion from "@cb/components/button/SelectQuestionButton";
-import { useOnMount } from "@cb/hooks/useOnMount";
+import { useOnMount } from "@cb/hooks";
 import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
 import React from "react";
 import { createRoot } from "react-dom/client";

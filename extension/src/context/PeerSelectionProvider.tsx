@@ -1,6 +1,5 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import useInferTests from "@cb/hooks/useInferTests";
-import { useOnMount } from "@cb/hooks/useOnMount";
 import {
   getLocalStorage,
   sendServiceRequest,
@@ -10,7 +9,7 @@ import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { poll } from "@cb/utils/poll";
 import React from "react";
-import { useRTC } from "../hooks";
+import { useOnMount, useRTC } from "../hooks";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 

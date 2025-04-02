@@ -1,6 +1,6 @@
 import { auth } from "@cb/db";
+import { useOnMount } from "@cb/hooks";
 import useAuthenticate from "@cb/hooks/useAuthenticate";
-import { useOnMount } from "@cb/hooks/useOnMount";
 import {
   getLocalStorage,
   removeLocalStorage,

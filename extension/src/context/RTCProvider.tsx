@@ -14,8 +14,7 @@ import {
   setSession,
   setSessionPeerConnection,
 } from "@cb/db";
-import { useAppState } from "@cb/hooks";
-import { useOnMount } from "@cb/hooks/useOnMount";
+import { useAppState, useOnMount } from "@cb/hooks";
 import useResource from "@cb/hooks/useResource";
 import {
   clearLocalStorage,
