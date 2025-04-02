@@ -15,7 +15,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { ActivityLog } from "./activity/ActivityLogTab";
+import { ActivityLog } from "./activity/ActivityLog";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
