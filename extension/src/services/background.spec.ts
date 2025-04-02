@@ -27,7 +27,7 @@ describe("serviceRequest", () => {
       expect(getLanguageExtension()).toHaveLength(0);
     });
 
-    test("returnFirstLanguageExtensionFound", () => {
+    test("returnLanguageExtensionWhenFound", () => {
       const languages = {
         id: "typescript",
         extensions: ["ts"],
