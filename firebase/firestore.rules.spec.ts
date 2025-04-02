@@ -1,4 +1,3 @@
-import { beforeAll, describe, expect, it } from "vitest";
 import {
   assertFails,
   assertSucceeds,
@@ -8,16 +7,11 @@ import {
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { beforeAll, describe, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rulesPath = path.resolve(__dirname, "firestore.rules");
-
-describe("DemoTest", () => {
-  it("TestRunner", () => {
-    expect(1).toBe(1);
-  });
-});
 
 describe("Firebase security test", () => {
   let testEnv: RulesTestEnvironment;
@@ -42,11 +36,28 @@ describe("Firebase security test", () => {
     const authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
       email: "code@gmail.com",
     });
-    const db = authenticatedUser.firestore();
-    const roomDoc = db.collection("rooms").doc(`CODEBUDDYTEST_${Date.now()}`);
+    const roomId = `CODEBUDDYTEST_${Date.now()}`;
 
-    await assertSucceeds(roomDoc.set(roomData));
-    await assertSucceeds(roomDoc.get());
+    const db = authenticatedUser.firestore();
+    const roomDoc = db.collection("rooms").doc(roomId);
+    const sessionSubRef = db
+      .collection("rooms")
+      .doc(roomId)
+      .collection("sessions")
+      .doc("two-sum");
+
+    await assertSucceeds(roomDoc.set(roomData)).then(() => {
+      console.log("Set room with authenticated useer");
+    });
+    await assertSucceeds(roomDoc.get()).then(() => {
+      console.log("Getting room with authenticated user");
+    });
+
+    await assertSucceeds(
+      sessionSubRef.set({}).then(() => {
+        console.log("Creating subcollection session is correct");
+      })
+    );
   });
 
   it("should deny unauthenticated users from read/write rooms", async () => {
@@ -54,7 +65,47 @@ describe("Firebase security test", () => {
     const db = unauthenticated.firestore();
     const roomDoc = db.collection("rooms").doc(`CODEBUDDYTEST_${Date.now()}`);
 
-    await assertFails(roomDoc.set(roomData));
-    await assertFails(roomDoc.get());
+    await assertFails(roomDoc.set(roomData)).then(() => {
+      console.log("unauthenticated is denied from joining room");
+    });
+    await assertFails(roomDoc.get()).then(() => {
+      console.log("unauthenticated is denied from accessing room");
+    });
+  });
+
+  it("only user in usernames array can access session document", async () => {
+    const roomId = `CODEBUDDYTEST_${Date.now()}`;
+    const anotherEmail = testEnv.authenticatedContext("anotherUser", {
+      email: "another@gmail.com",
+    });
+    const validUser = testEnv.authenticatedContext("codebuddytest", {
+      email: "buddy@hotmail.com",
+    });
+    const validDb = validUser.firestore();
+    const roomDoc = validDb.collection("rooms").doc(roomId);
+    await roomDoc.set(roomData);
+
+    const unvalidDb = anotherEmail.firestore();
+    const sessionSubRef = unvalidDb
+      .collection("rooms")
+      .doc(roomId)
+      .collection("sessions")
+      .doc("two-sum");
+    await assertFails(sessionSubRef.set({})).then(() => {
+      console.log("anotherEmail is correctly denied from creating session");
+    });
+  });
+
+  it("should deny random path", async () => {
+    const authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
+      email: "code@gmail.com",
+    });
+    const db = authenticatedUser.firestore();
+    const randomCollection = db.collection("randomCollection").doc("randomDoc");
+    await assertFails(
+      randomCollection.set(roomData).then(() => {
+        console.log("cannot access random collections");
+      })
+    );
   });
 });
