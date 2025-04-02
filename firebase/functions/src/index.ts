@@ -10,6 +10,7 @@ import {
 initializeApp();
 
 const db = getFirestore();
+
 export const cleanup = onDocumentDeleted("rooms/{roomId}", async (event) => {
   const {
     params: { roomId },
