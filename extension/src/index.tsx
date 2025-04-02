@@ -1,9 +1,11 @@
+import { store } from "@cb/state/store";
+import { waitForElement } from "@cb/utils";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "./App";
-import { waitForElement } from "@cb/utils";
-import "./style/index.css";
+import { Provider } from "react-redux";
 import "react-resizable/css/styles.css";
+import App from "./App";
+import "./style/index.css";
 
 const TIME_OUT = 5000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
@@ -16,7 +18,9 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
     leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
     createRoot(extensionRoot).render(
       <React.StrictMode>
-        <App />
+        <Provider store={store}>
+          <App />
+        </Provider>
       </React.StrictMode>
     );
   })

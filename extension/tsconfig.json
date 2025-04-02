@@ -33,7 +33,8 @@
       "@cb/db/*": ["./db/*"],
       "@cb/lib/*": ["./lib/*"],
       "@cb/constants": ["./constants/index.ts"],
-      "@cb/constants/*": ["./constants/*"]
+      "@cb/constants/*": ["./constants/*"],
+      "@cb/state/*": ["./state/*"]
     }
   },
   "include": ["./src", "./src/services/index.ts"],

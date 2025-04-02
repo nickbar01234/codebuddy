@@ -1,8 +1,9 @@
 import chokidar from "chokidar";
-import puppeteer from "puppeteer";
 import _ from "lodash";
+import puppeteer from "puppeteer";
 
 const EXTENSION_PATH = "./dist/";
+const REDUX_DEVTOOLS_PATH = "./redux_devtools/";
 
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 
@@ -27,10 +28,9 @@ const setup = async () => {
       headless: false,
       defaultViewport: null,
       args: [
-        `--disable-extensions-except=${EXTENSION_PATH}`,
-        `--load-extension=${EXTENSION_PATH}`,
+        `--disable-extensions-except=${EXTENSION_PATH},${REDUX_DEVTOOLS_PATH}`,
+        `--load-extension=${EXTENSION_PATH},${REDUX_DEVTOOLS_PATH}`,
         "--start-maximized",
-        // todo(nickbar01234): Figure out nginx and ngrok so that cors doesn't break
         "--disable-web-security",
       ],
       devtools: true,
