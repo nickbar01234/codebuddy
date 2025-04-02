@@ -1,6 +1,12 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import {
+  ActivityLogTab,
+  CodeTab,
+  TestTab,
+} from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
@@ -13,8 +19,6 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import EditorToolBar from "./EditorToolBar";
-
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -43,6 +47,30 @@ const EditorPanel = () => {
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
+
+  const tabsConfig = React.useMemo(
+    () => [
+      {
+        value: "code",
+        label: "Code",
+        Icon: CodeXml,
+        Content: <CodeTab />,
+      },
+      {
+        value: "test",
+        label: "Test",
+        Icon: FlaskConical,
+        Content: (
+          <TestTab
+            activePeer={activePeer}
+            activeTest={activeTest}
+            selectTest={selectTest}
+          />
+        ),
+      },
+    ],
+    [activePeer, activeTest, selectTest]
+  );
 
   const { state: appState } = React.useContext(appStateContext);
 
@@ -90,100 +118,64 @@ const EditorPanel = () => {
             <Tabs defaultValue="code" className="h-full w-full">
               <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
                 <UserDropdown
-                  key={"user-dropdown"}
+                  key="user-dropdown"
                   isOpen={isUserDropdownOpen}
                   toggle={toggleUserDropdown}
                 />
 
                 <Separator
                   orientation="vertical"
-                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  className={
+                    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  }
                 />
-                <TabsTrigger
-                  value="code"
-                  className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                >
-                  <CodeXml className="mr-2 h-4 w-4 text-green-500" />
-                  Code
-                </TabsTrigger>
-                <Separator
-                  orientation="vertical"
-                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                />
-                <TabsTrigger
-                  value="test"
-                  className="rounded-none border-transparent bg-transparent hover:rounded-t-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                >
-                  <FlaskConical className="mr-2 h-4 w-4 text-green-500" />
-                  Test
-                </TabsTrigger>
+
+                {tabsConfig.map((tab, index) => (
+                  <React.Fragment key={tab.value}>
+                    <TabsTrigger
+                      value={tab.value}
+                      className={
+                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                      }
+                    >
+                      <tab.Icon
+                        className="mr-2 h-4 w-4 text-[#34C759]
+
+"
+                      />
+                      {tab.label}
+                    </TabsTrigger>
+                    {index !== tabsConfig.length - 1 && (
+                      <Separator
+                        orientation="vertical"
+                        className={
+                          "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                        }
+                      />
+                    )}
+                  </React.Fragment>
+                ))}
               </TabsList>
-              <TabsContent
-                value="code"
-                forceMount
-                className={cn("data-[state=inactive]:hidden")}
-              >
-                <div className="h-full w-full">
-                  <EditorToolBar />
-                  <div
-                    id={EDITOR_NODE_ID}
-                    className="h-full min-h-[50vh] w-full overflow-hidden"
-                  />
-                </div>
-              </TabsContent>
-              <TabsContent
-                value="test"
-                forceMount
-                className={cn("data-[state=inactive]:hidden")}
-              >
-                <div className="mx-5 my-4 flex h-full w-full flex-col space-y-4">
-                  <div className="flex w-full flex-row items-start justify-between gap-4">
-                    <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
-                      {activePeer?.tests.map((test, idx) => (
-                        <div key={idx} onClick={() => selectTest(idx)}>
-                          {test.selected ? (
-                            <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">
-                              Case {idx + 1}
-                            </button>
-                          ) : (
-                            <button className="hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent relative inline-flex items-center whitespace-nowrap rounded-lg bg-transparent px-4 py-1 font-medium focus:outline-none">
-                              Case {idx + 1}
-                            </button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex h-full w-full flex-col space-y-2">
-                        {activeTest?.test.map((assignment, idx) => (
-                          <React.Fragment key={idx}>
-                            <div className="text-label-3 dark:text-dark-label-3 text-xs font-medium">
-                              {assignment.variable} =
-                            </div>
-                            <div className="font-menlo bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[10px]">
-                              <div
-                                className="font-menlo placeholder:text-label-4 dark:placeholder:text-dark-label-4 sentry-unmask w-full resize-none whitespace-pre-wrap break-words outline-none"
-                                contentEditable="true"
-                              >
-                                {assignment.value}
-                              </div>
-                            </div>
-                          </React.Fragment>
-                        )) ?? null}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
+
+              {tabsConfig.map(({ value, Content }) => (
+                <TabsContent
+                  key={value}
+                  value={value}
+                  forceMount
+                  className={cn(
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto"
+                  )}
+                >
+                  {Content}
+                </TabsContent>
+              ))}
             </Tabs>
           </ResizableBox>
           <div
             className="relative w-full overflow-auto"
             style={{ height: height - codePreference.height - 128 }}
           >
-            <div className="h-full w-full bg-black">THIS IS ACTIVITY LOG</div>
+            <ActivityLogTab logEntries={logEntries} />
           </div>
         </div>
       </div>
@@ -192,3 +184,62 @@ const EditorPanel = () => {
 };
 
 export default EditorPanel;
+
+const logEntries: LogEvent[] = [
+  {
+    type: "submission",
+    username: "Buddy",
+    output: "Accepted",
+    status: "success",
+    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
+  },
+  {
+    type: "submission",
+    username: "Code",
+    output: "Time limit exceeded",
+    status: "error",
+    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
+  },
+  {
+    type: "connection",
+    username: "Dev",
+    status: "join",
+    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Code",
+    message: "RAHHHhHHH can someone take a look at my code",
+    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Buddy",
+    message: "um no sry",
+    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
+  },
+  {
+    type: "connection",
+    username: "Buddy",
+    status: "leave",
+    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Code",
+    message: "???",
+    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Dev",
+    message: "lmao",
+    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "5bigBooms",
+    message: "lmao",
+    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
+  },
+];

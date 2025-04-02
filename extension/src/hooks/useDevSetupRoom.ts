@@ -1,8 +1,8 @@
-import { getRoomRef, setRoom } from "@cb/db";
+import { getRoomRef, getSessionRef, setRoom, setSession } from "@cb/db";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { poll } from "@cb/utils/poll";
-import { arrayRemove } from "firebase/firestore";
+import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
 import { useAppState, useRTC } from ".";
 import { useOnMount } from "./useOnMount";
 
@@ -22,16 +22,22 @@ const useDevSetupRoom = () => {
       });
 
       const roomId = test?.roomId;
+      const sessionId = getQuestionIdFromUrl(window.location.href);
+      const roomRef = getRoomRef(roomId);
+      await setRoom(roomRef, {
+        usernames: arrayUnion(user.username),
+      });
       if (test != undefined && roomId != undefined) {
         setLocalStorage("test", { peer: test?.peer });
-        setRoom(getRoomRef(roomId), {
-          usernames: arrayRemove(user.username),
-          questionId: getQuestionIdFromUrl(window.location.href),
-        })
-          .then(() => joinRoom(roomId))
-          .catch((error) => {
-            console.log("error when removing", error);
+        try {
+          await setSession(getSessionRef(roomId, sessionId), {
+            usernames: arrayRemove(user.username),
+            createdAt: serverTimestamp(),
           });
+          joinRoom(roomId);
+        } catch (error) {
+          console.log("error when removing", error);
+        }
       }
     };
 
