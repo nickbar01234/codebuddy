@@ -1,17 +1,17 @@
 // @ts-check
 
 import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
+import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
-import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
 import globals from "globals";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
-    ignores: ["**/node_modules/*", "**/dist/*"]
+    ignores: ["**/node_modules/*", "**/dist/*"],
   },
   {
     rules: {
@@ -37,10 +37,22 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "firebase/auth",
+              message:
+                "firebase/auth is not supported for extension manifest v3. Please use firebase/auth/web-extension instead.",
+            },
+          ],
+        },
+      ],
     },
     languageOptions: {
       ...react.configs.flat.recommended.languageOptions,
       globals: globals.browser,
     },
-  },
+  }
 );
