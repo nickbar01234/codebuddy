@@ -37,6 +37,18 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "firebase/auth",
+              message:
+                "firebase/auth is not supported for extension manifest v3. Please use firebase/auth/web-extension instead.",
+            },
+          ],
+        },
+      ],
     },
     languageOptions: {
       ...react.configs.flat.recommended.languageOptions,

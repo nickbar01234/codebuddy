@@ -1,10 +1,10 @@
 import { auth } from "@cb/db";
 import { getLocalStorage } from "@cb/services";
 import { AuthenticationStatus, Status } from "@cb/types";
-import { Unsubscribe } from "firebase/auth";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  Unsubscribe,
 } from "firebase/auth/web-extension";
 import _ from "lodash";
 import React from "react";
