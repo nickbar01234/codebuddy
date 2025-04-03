@@ -23,6 +23,6 @@ describe("useResource", () => {
   });
 
   test("dummy", () => {
-    expect(true).toBeTruthy();
+    expect(true).toBeFalsy();
   });
 });
