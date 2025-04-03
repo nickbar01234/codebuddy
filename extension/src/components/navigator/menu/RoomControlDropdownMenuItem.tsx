@@ -1,6 +1,7 @@
 import { DropdownMenuItem } from "@cb/lib/components/ui/dropdown-menu";
 import { cn } from "@cb/utils/cn";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface RoomControlDropdownMenuItemProps
   extends React.ComponentProps<typeof DropdownMenuItem> {}
 
