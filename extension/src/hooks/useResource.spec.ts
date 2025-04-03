@@ -21,4 +21,8 @@ describe("useResource", () => {
     register(RESOURCE, VALUE, unsubscribe);
     expect(unsubscribe).toHaveBeenCalledExactlyOnceWith(VALUE);
   });
+
+  test("dummy", () => {
+    expect(true).toBeTruthy();
+  });
 });
