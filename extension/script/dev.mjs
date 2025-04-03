@@ -1,6 +1,8 @@
+/* eslint-disable */
+
 import chokidar from "chokidar";
-import puppeteer from "puppeteer";
 import _ from "lodash";
+import puppeteer from "puppeteer";
 
 const EXTENSION_PATH = "./dist/";
 

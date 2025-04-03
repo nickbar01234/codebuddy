@@ -6,3 +6,12 @@ export const calculateNewRTT = (latency: number, sample: number) => {
 };
 
 export const getUnixTs = () => Math.floor(Date.now() / 1000);
+
+export const timeAgo = (timestamp: number) => {
+  const diff = Math.floor((Date.now() - timestamp) / 1000); // Difference in seconds
+
+  if (diff < 60) return "0s";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
+
+  return `${Math.floor(diff / 3600)}h`;
+};

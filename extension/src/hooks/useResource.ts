@@ -1,5 +1,5 @@
 import React from "react";
-import { useOnMount } from ".";
+import { useOnMount } from "./useOnMount";
 
 type Unsubscribe<T> = (resource: T) => void;
 
