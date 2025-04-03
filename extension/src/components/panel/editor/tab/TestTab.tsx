@@ -1,5 +1,5 @@
-import React from "react";
 import { Peer, TestCase } from "@cb/types";
+import React from "react";
 
 interface TestTabProps {
   activePeer: Peer | undefined;
