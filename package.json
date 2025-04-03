@@ -22,7 +22,8 @@
     "prepare": "husky",
     "test": "pnpm vitest",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "build": "pnpm --filter=!. build"
   },
   "lint-staged": {
     "*.{ts,tsx,md,html,css}": [
