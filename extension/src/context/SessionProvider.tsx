@@ -1,19 +1,8 @@
-import React from "react";
-import { AuthenticationStatus, ResponseStatus, Status } from "@cb/types";
-import { auth } from "@cb/db";
 import { useOnMount } from "@cb/hooks";
-import {
-  isSignInWithEmailLink,
-  signInWithEmailLink,
-} from "firebase/auth/web-extension";
-import {
-  getLocalStorage,
-  removeLocalStorage,
-  sendServiceRequest,
-} from "@cb/services";
 import useAuthenticate from "@cb/hooks/useAuthenticate";
-import { toast } from "sonner";
-
+import { initialAuthenticateCheck } from "@cb/state/session/sessionSlice";
+import { AuthenticationStatus, Status } from "@cb/types";
+import React from "react";
 interface SessionProviderProps {
   children?: React.ReactNode;
 }
@@ -36,24 +25,7 @@ const SessionProvider = (props: SessionProviderProps) => {
   });
 
   useOnMount(() => {
-    const signIn = getLocalStorage("signIn");
-    if (
-      signIn != undefined &&
-      isSignInWithEmailLink(auth, window.location.href)
-    ) {
-      // todo(nickbar01234): Handle signin from different device
-      // todo(nickbar01234): Handle error code
-      signInWithEmailLink(auth, signIn.email, window.location.href)
-        .then(() => sendServiceRequest({ action: "closeSignInTab", signIn }))
-        .then((response) => {
-          if (response.status === ResponseStatus.SUCCESS) {
-            toast.info("Closed sign-in tab");
-          }
-        })
-        .finally(() => {
-          removeLocalStorage("signIn");
-        });
-    }
+    initialAuthenticateCheck();
   });
 
   return <Provider value={{ auth: authenticationStatus }}>{children}</Provider>;

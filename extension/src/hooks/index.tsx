@@ -1,9 +1,14 @@
-import React from "react";
-import { RTCContext } from "@cb/context/RTCProvider";
 import { appStateContext } from "@cb/context/AppStateProvider";
 import { PeerSelectionContext } from "@cb/context/PeerSelectionProvider";
-import { windowContext } from "@cb/context/WindowProvider";
+import { RTCContext } from "@cb/context/RTCProvider";
 import { sessionContext } from "@cb/context/SessionProvider";
+import { windowContext } from "@cb/context/WindowProvider";
+import { AppDispatch, RootState } from "@cb/state/store";
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+
+export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
+export const useAppSelector = useSelector.withTypes<RootState>();
 
 export const useRTC = () => React.useContext(RTCContext);
 
