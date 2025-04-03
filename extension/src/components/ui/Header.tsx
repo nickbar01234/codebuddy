@@ -1,8 +1,9 @@
 import { cn } from "@cb/utils/cn";
 
-interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-const Header = ({ className, ...props }: HeaderProps) => {
+const Header = ({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) => {
   const darkLogo = chrome.runtime.getURL("images/logo_dark.png");
   const lightLogo = chrome.runtime.getURL("images/logo_light.png");
 

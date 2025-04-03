@@ -1,3 +1,4 @@
+import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import {
   CodeIcon,
   CopyIcon,
@@ -10,26 +11,24 @@ import {
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { auth } from "@cb/db";
 import { useRTC } from "@cb/hooks/index";
-import { clearLocalStorage } from "@cb/services";
-import { signOut } from "firebase/auth/web-extension";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@cb/lib/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@cb/lib/components/ui/dropdown-menu";
-import React from "react";
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@cb/lib/components/ui/dialog";
+import { clearLocalStorage } from "@cb/services";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
+import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
-import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
+import React from "react";
+import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
 const _RoomControlMenu = ({
   appState,
@@ -44,7 +43,7 @@ const _RoomControlMenu = ({
   roomId: string;
   setInputRoomId: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-  const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeRoomInputId = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setInputRoomId(e.target.value);
   };
@@ -75,7 +74,7 @@ const _RoomControlMenu = ({
                 <input
                   className="bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[5px]"
                   placeholder="Enter room ID"
-                  onChange={onChangeRoomIdInput}
+                  onChange={onChangeRoomInputId}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
                       onJoinRoom(e);
@@ -136,7 +135,7 @@ export const RoomControlMenu = () => {
     return throttle((event: Event) => {
       event.stopPropagation?.();
       setAppState(AppState.ROOM);
-      createRoom({ isPublic: true });
+      createRoom({ roomName: "", isPublic: true });
     }, 1000);
   }, [createRoom, setAppState]);
 
