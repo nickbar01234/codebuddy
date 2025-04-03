@@ -25,4 +25,8 @@ describe("useResource", () => {
   test("dummy", () => {
     expect(true).toBeFalsy();
   });
+
+  test("anotherDumy", () => {
+    expect(false).toBeTruthy();
+  });
 });
