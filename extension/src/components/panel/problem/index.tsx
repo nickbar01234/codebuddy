@@ -2,17 +2,17 @@ import { useOnMount } from "@cb/hooks";
 import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { SelectQuestionButton } from "./SelectQuestionButton";
+import { SelectQuestionButton } from "./SelectProblemButton";
 
 // We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
 const TIMEOUT = 10_000;
 
-export const QuestionSelector = React.memo(
-  ({
-    handleQuestionSelect,
-  }: {
-    handleQuestionSelect: (questionLink: string) => void;
-  }) => {
+interface QuestionSelectorPanelProps {
+  handleQuestionSelect: (link: string) => void;
+}
+
+export const QuestionSelectorPanel = React.memo(
+  ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
     useOnMount(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
