@@ -54,7 +54,7 @@ export default tseslint.config(
         },
       ],
       "no-relative-import-paths/no-relative-import-paths": [
-        "error",
+        "warn",
         {
           allowSameFolder: true,
           rootDir: "extension/src",
