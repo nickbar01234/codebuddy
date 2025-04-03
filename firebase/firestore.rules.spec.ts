@@ -46,18 +46,9 @@ describe("Firebase security test", () => {
       .collection("sessions")
       .doc("two-sum");
 
-    await assertSucceeds(roomDoc.set(roomData)).then(() => {
-      console.log("Set room with authenticated useer");
-    });
-    await assertSucceeds(roomDoc.get()).then(() => {
-      console.log("Getting room with authenticated user");
-    });
-
-    await assertSucceeds(
-      sessionSubRef.set({}).then(() => {
-        console.log("Creating subcollection session is correct");
-      })
-    );
+    await assertSucceeds(roomDoc.set(roomData));
+    await assertSucceeds(roomDoc.get());
+    await assertSucceeds(sessionSubRef.set({}));
   });
 
   it("should deny unauthenticated users from read/write rooms", async () => {
@@ -65,12 +56,8 @@ describe("Firebase security test", () => {
     const db = unauthenticated.firestore();
     const roomDoc = db.collection("rooms").doc(`CODEBUDDYTEST_${Date.now()}`);
 
-    await assertFails(roomDoc.set(roomData)).then(() => {
-      console.log("unauthenticated is denied from joining room");
-    });
-    await assertFails(roomDoc.get()).then(() => {
-      console.log("unauthenticated is denied from accessing room");
-    });
+    await assertFails(roomDoc.set(roomData));
+    await assertFails(roomDoc.get());
   });
 
   it("only user in usernames array can access session document", async () => {
@@ -91,9 +78,7 @@ describe("Firebase security test", () => {
       .doc(roomId)
       .collection("sessions")
       .doc("two-sum");
-    await assertFails(sessionSubRef.set({})).then(() => {
-      console.log("anotherEmail is correctly denied from creating session");
-    });
+    await assertFails(sessionSubRef.set({}));
   });
 
   it("should deny random path", async () => {
@@ -102,10 +87,6 @@ describe("Firebase security test", () => {
     });
     const db = authenticatedUser.firestore();
     const randomCollection = db.collection("randomCollection").doc("randomDoc");
-    await assertFails(
-      randomCollection.set(roomData).then(() => {
-        console.log("cannot access random collections");
-      })
-    );
+    await assertFails(randomCollection.set(roomData));
   });
 });
