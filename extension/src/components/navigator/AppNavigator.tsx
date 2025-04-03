@@ -9,7 +9,6 @@ import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
-import { CreateRoomOptionPanel } from "../panel/CreateRoomOptionPanel";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const AppNavigator = () => {
@@ -41,8 +40,6 @@ export const AppNavigator = () => {
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
-          ) : state === AppState.HOME ? (
-            <CreateRoomOptionPanel />
           ) : null}
         </div>
         <EditorPanel />
