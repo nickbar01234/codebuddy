@@ -115,8 +115,15 @@ const EditorPanel = () => {
             onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
             onResizeStop={onResizeStop}
           >
-            <Tabs defaultValue="code" className="h-full w-full">
-              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
+            <Tabs
+              defaultValue="code"
+              className={cn("h-full w-full bg-inherit text-inherit")}
+            >
+              <TabsList
+                className={cn(
+                  "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
+                )}
+              >
                 <UserDropdown
                   key="user-dropdown"
                   isOpen={isUserDropdownOpen}
