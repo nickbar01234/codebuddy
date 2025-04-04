@@ -45,17 +45,15 @@ have 2 options:
 
    ```yaml
    rooms/
-    [rooms-id]:
-      sessions/
-        [sessions-id]:
-          user-2/
-            user-1:
-              expiresAt: TIMESTAMP
-          user-3/
-            user-1:
-              expiresAt: TIMESTAMP
-            user-2:
-              expiresAt: TIMESTAMP
+    [roomId]:
+      user-2/
+        user-1:
+          expiresAt: TIMESTAMP
+      user-3/
+        user-1:
+          expiresAt: TIMESTAMP
+        user-2:
+          expiresAt: TIMESTAMP
 
       expiresAt: TIMESTAMP
    ```
@@ -68,19 +66,17 @@ have 2 options:
 
    ```yaml
    rooms/
-    [rooms-id]:
-      sessions/
-        [sessions-id]:
-          users: {
-            <user-2>: {
-              <user-1>: { ... }
-            },
+    [roomId]:
+      users: {
+        <user-2>: {
+          <user-1>: { ... }
+        },
 
-            <user-3>: {
-              user-1: { ... }
-              user-2: { ... }
-            }
-          }
+        <user-3>: {
+          user-1: { ... }
+          user-2: { ... }
+        }
+      }
 
       expiresAt: TIMESTAMP
    ```
