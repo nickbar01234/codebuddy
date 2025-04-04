@@ -1,7 +1,6 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
-import { Skeleton } from "@cb/components/ui/Skeleton";
 import { AppState } from "@cb/context/AppStateProvider";
 import { ROOMSTATE } from "@cb/context/RTCProvider";
 import { LogEvent } from "@cb/db/converter";
@@ -12,6 +11,7 @@ import {
   useWindowDimensions,
 } from "@cb/hooks/index";
 import { Separator } from "@cb/lib/components/ui/separator";
+import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import {
   Tabs,
   TabsContent,
