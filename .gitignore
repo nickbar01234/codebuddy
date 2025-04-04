@@ -26,4 +26,4 @@ draft.ts
 # todo(nickbar01234): This is an artifact from directly mounting the code to docker
 .pnpm-store
 
-extension/redux_devtools
+/extension/redux_devtools/
