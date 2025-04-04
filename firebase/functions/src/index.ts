@@ -10,7 +10,6 @@ import {
 initializeApp();
 
 const db = getFirestore();
-// remember to change the path to the collection you want to delete. todoooo
 
 export const cleanup = onDocumentDeleted("rooms/{roomId}", async (event) => {
   const {
