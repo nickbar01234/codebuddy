@@ -1,6 +1,6 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { usePeerSelection } from "@cb/hooks";
-import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import { cn } from "@cb/utils/cn";
 import { Copy } from "lucide-react";
 import React from "react";
@@ -10,8 +10,7 @@ export const CodeTab: React.FC = () => {
   const { pasteCode } = usePeerSelection();
 
   return (
-    <>
-      {isBuffer && <Skeleton className="relative h-full w-full" />}
+    <SkeletonWrapper loading={isBuffer} className="relative">
       <div
         className={cn("relative flex h-full w-full grow flex-col gap-y-2", {
           hidden: isBuffer,
@@ -33,6 +32,6 @@ export const CodeTab: React.FC = () => {
           className={cn("h-full w-full overflow-hidden")}
         />
       </div>
-    </>
+    </SkeletonWrapper>
   );
 };
