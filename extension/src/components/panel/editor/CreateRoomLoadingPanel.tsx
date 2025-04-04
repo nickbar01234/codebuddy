@@ -9,7 +9,7 @@ const CreateRoomLoadingPanel = () => {
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4">
-      <div className="left-7 top-5 absolute self-start">
+      <div className="left-7 top-5 absolute self-start z-30">
         <LeaveRoomDialog
           trigger={
             <button className="relative z-10 flex w-40 cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-400 px-4 py-2 hover:bg-[--color-tab-hover-background] dark:border-gray-600">
