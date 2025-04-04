@@ -11,14 +11,23 @@ export const SkeletonWrapper: FC<SkelentonWrapperProps> = ({
   className,
   loading,
 }) => {
-  return loading ? (
-    <Skeleton
-      className={cn(
-        "h-full w-full bg-[--color-tabset-tabbar-background]",
-        className
+  return (
+    <>
+      {loading && (
+        <Skeleton
+          className={cn(
+            "h-full w-full bg-[--color-tabset-tabbar-background]",
+            className
+          )}
+        />
       )}
-    />
-  ) : (
-    <>{children}</>
+      <div
+        className={cn("h-full w-full ", {
+          hidden: loading,
+        })}
+      >
+        {children}
+      </div>
+    </>
   );
 };

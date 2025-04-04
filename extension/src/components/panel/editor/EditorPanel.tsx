@@ -142,11 +142,7 @@ const EditorPanel = () => {
                         "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                       }
                     >
-                      <tab.Icon
-                        className="mr-2 h-4 w-4 text-[#34C759]
-
-"
-                      />
+                      <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
                     </TabsTrigger>
                     {index !== tabsConfig.length - 1 && (
@@ -167,7 +163,7 @@ const EditorPanel = () => {
                   value={value}
                   forceMount
                   className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto"
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full"
                   )}
                 >
                   {Content}
