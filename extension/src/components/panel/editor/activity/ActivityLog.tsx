@@ -10,7 +10,7 @@ interface ActivityLogProps {
   logEntries: LogEvent[];
 }
 
-export const ActivityLogTab: React.FC<ActivityLogProps> = ({ logEntries }) => {
+export const ActivityLog: React.FC<ActivityLogProps> = ({ logEntries }) => {
   const {
     height,
     preference: { codePreference },
