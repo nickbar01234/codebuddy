@@ -9,7 +9,7 @@ import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { poll } from "@cb/utils/poll";
 import React from "react";
-import { useOnMount, useRTC } from "../hooks";
+import { useOnMount, useRTC } from "@cb/hooks";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
 
