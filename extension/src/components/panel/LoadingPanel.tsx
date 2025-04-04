@@ -1,7 +1,7 @@
-import React from "react";
-import { AnimatedBeam } from "@cb/components/ui/AnimatedBeam";
 import { UserIcon } from "@cb/components/icons/UserIcon";
-import { Ripple } from "@cb/components/ui/Ripple";
+import { Ripple } from "@cb/components/panel/Ripple";
+import { AnimatedBeam } from "@cb/components/ui/AnimatedBeam";
+import React from "react";
 
 const Circle = React.forwardRef<
   HTMLDivElement,
@@ -28,7 +28,6 @@ export function LoadingPanel({ numberOfUsers = 0 }: { numberOfUsers: number }) {
   const div3Ref = React.useRef<HTMLDivElement>(null);
   const div6Ref = React.useRef<HTMLDivElement>(null);
   const div7Ref = React.useRef<HTMLDivElement>(null);
-  // console.log("LoadingPanel -> numberOfUsers", numberOfUsers);
   return numberOfUsers === 0 ? (
     <div className="flex h-full w-full flex-col items-center justify-center">
       <div className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg">

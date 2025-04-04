@@ -1,10 +1,6 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
-import {
-  ActivityLogTab,
-  CodeTab,
-  TestTab,
-} from "@cb/components/panel/editor/tab";
+import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
+import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
@@ -19,6 +15,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import { ActivityLog } from "./activity/ActivityLog";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -115,8 +112,15 @@ const EditorPanel = () => {
             onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
             onResizeStop={onResizeStop}
           >
-            <Tabs defaultValue="code" className="h-full w-full">
-              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
+            <Tabs
+              defaultValue="code"
+              className={cn("h-full w-full bg-inherit text-inherit")}
+            >
+              <TabsList
+                className={cn(
+                  "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
+                )}
+              >
                 <UserDropdown
                   key="user-dropdown"
                   isOpen={isUserDropdownOpen}
@@ -175,7 +179,7 @@ const EditorPanel = () => {
             className="relative w-full overflow-auto"
             style={{ height: height - codePreference.height - 128 }}
           >
-            <ActivityLogTab logEntries={logEntries} />
+            <ActivityLog logEntries={logEntries} />
           </div>
         </div>
       </div>
