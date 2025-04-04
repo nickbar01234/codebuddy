@@ -1,5 +1,6 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import { ActivityLog } from "@cb/components/panel/editor/activity/ActivityLog";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
@@ -15,7 +16,6 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { ActivityLog } from "./activity/ActivityLogTab";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
