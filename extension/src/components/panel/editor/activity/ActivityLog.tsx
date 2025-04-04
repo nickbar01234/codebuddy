@@ -18,11 +18,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ logEntries }) => {
   return (
     <div className="bg-layer-1 dark:bg-dark-layer-1 flex h-full w-full flex-col items-center gap-2 overflow-hidden rounded-lg p-4 shadow-md">
       <div className="flex w-full items-start gap-1">
-        <Activity
-          className="h-4 w-4 text-[#34C759]
-
-"
-        />
+        <Activity className="h-4 w-4 text-[#34C759]" />
         Activity Log
       </div>
       <div
