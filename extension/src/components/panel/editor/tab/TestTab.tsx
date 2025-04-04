@@ -15,9 +15,10 @@ export const TestTab: React.FC<TestTabProps> = ({
   selectTest,
 }) => {
   const { isBuffer } = usePeerSelection();
+
   return (
-    <SkeletonWrapper loading={isBuffer}>
-      <div className="mx-5 my-4 flex flex-col space-y-4">
+    <SkeletonWrapper loading={isBuffer} className="relative">
+      <div className="mx-5 my-4 flex flex-col space-y-4 h-full w-full">
         <div className="flex w-full flex-row items-start justify-between gap-4">
           <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
             {activePeer?.tests.map((test, idx) => (

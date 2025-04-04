@@ -19,8 +19,9 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const ping = peerState[activePeer?.id ?? ""]?.latency * 1000;
   const signalStrength = getStatus(ping);
   const canDropdown = peers.length >= 2;
+
   return (
-    <SkeletonWrapper loading={!activePeer} className=" h-4 w-44">
+    <SkeletonWrapper loading={activePeer == undefined} className=" h-4 w-44">
       <div>
         <div className="flex w-44 items-center">
           <button
