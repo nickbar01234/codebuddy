@@ -1,18 +1,18 @@
 import { CodeIcon, PlusIcon } from "@cb/components/icons";
-import { useRTC } from "@cb/hooks/index";
-import React from "react";
+import { ThemeAwaredLogo } from "@cb/components/icons/Logo";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { useRTC } from "@cb/hooks/index";
+import { Button } from "@cb/lib/components/ui/button";
 import {
   Dialog,
-  DialogHeader,
   DialogContent,
   DialogDescription,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@cb/lib/components/ui/dialog";
 import { throttle } from "lodash";
-import { ThemeAwaredLogo } from "../icons/Logo";
-import { Button } from "../../lib/components/ui/button";
+import React from "react";
 
 const HomePanel = () => {
   const { createRoom, joinRoom } = useRTC();
@@ -48,36 +48,34 @@ const HomePanel = () => {
   };
 
   return (
-    <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll">
-      <div className="flex h-1/2 w-full flex-col items-center justify-end gap-2">
+    <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll justify-center">
+      <div className="flex w-full flex-col items-center justify-end gap-2">
         <ThemeAwaredLogo className="aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px]" />
         <h1 className="text-2xl">
           Code<span className="text-pinkish-red">Buddy</span>
         </h1>
       </div>
 
-      <div className="flex h-1/2 w-full flex-col items-center gap-2">
+      <div className="flex w-full flex-col items-center gap-2">
         <Button
-          className="bg-fill-primary w-[150px] items-center justify-center"
+          className="flex items-center justify-center w-[150px] bg-gray-200 hover:bg-[--color-tab-hover-background] dark:bg-transparent dark:hover:bg-[--color-tab-hover-background]"
           variant="secondary"
-          type="button"
-          onClick={onCreateRoom}
           aria-label="Create a new room"
+          onClick={onCreateRoom}
         >
           <PlusIcon />
-          <div className="h-full w-full text-center">Create Room</div>
+          <span>Create Room</span>
         </Button>
 
         <Dialog>
           <DialogTrigger>
             <Button
-              className="bg-fill-primary w-[150px] items-center justify-center"
+              className="flex items-center justify-center w-[150px] bg-gray-200 hover:bg-[--color-tab-hover-background] dark:bg-transparent dark:hover:bg-[--color-tab-hover-background]"
               variant="secondary"
-              type="button"
               aria-label="Create a new room"
             >
               <CodeIcon />
-              <div className="h-full w-full text-center">Join Room</div>
+              <span>Join Room</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="[&>button]:hidden">
