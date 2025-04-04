@@ -1,19 +1,20 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
 import {
-  query as firestoreQuery,
-  Query,
-  getDocs,
-  startAfter,
-  QuerySnapshot,
-  getCountFromServer,
-  QueryDocumentSnapshot,
   limit as firestoreLimit,
+  query as firestoreQuery,
+  getCountFromServer,
+  getDocs,
+  Query,
   QueryConstraint,
+  QueryDocumentSnapshot,
+  QuerySnapshot,
+  startAfter,
 } from "firebase/firestore";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Data<T> = {
   currentPage: number;
   docs: QueryDocumentSnapshot<T>[];
+  docsArray: QueryDocumentSnapshot<T>[];
 };
 
 type HookReturnValue<T> = {
@@ -22,16 +23,20 @@ type HookReturnValue<T> = {
   data: Data<T>;
   error?: Error;
   loading: boolean;
-  getNext: () => void;
-  getPrevious: () => void;
+  getNext: (
+    lastDoc: QueryDocumentSnapshot<T>
+  ) => Promise<QueryDocumentSnapshot<T> | null>;
+  // getPrevious: (lastDoc: QueryDocumentSnapshot<T>) => Promise<QueryDocumentSnapshot<T> | null>;
   hasNext: boolean;
   hasPrevious: boolean;
+  search: (pageNumber: number) => void;
+  currentPage: number;
 };
 
 type HookProps<T> = {
   query: Query<T>;
   limit: number;
-  from?: QueryDocumentSnapshot<T>;
+  // from?: QueryDocumentSnapshot<T>;
 };
 
 const addQuery = <T, U>(
@@ -48,28 +53,45 @@ const usePaginate = <T>({
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
   const [docs, setDocs] = useState<QueryDocumentSnapshot<T>[]>([]);
-  const [lastSnap, setLastSnap] = useState<QueryDocumentSnapshot<T>[]>([]);
+  const [docsArray, setDocsArray] = useState<QueryDocumentSnapshot<T>[][]>([]);
+  const [lastSnap, setLastSnap] = useState<QueryDocumentSnapshot<T>>();
   const [query, setQuery] = useState(
     addQuery(baseQuery, firestoreLimit, limit)
   );
   const [count, setCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const fetchResolver = useRef<
+    ((val: QueryDocumentSnapshot<T> | null) => void) | null
+  >(null);
 
   const onRes = useCallback((res: QuerySnapshot<T>) => {
+    let newLastDoc: QueryDocumentSnapshot<T> | null = null;
     if (res.size) {
-      setLastSnap((e) => [...e, res.docs[res.size - 1]]);
+      newLastDoc = res.docs[res.size - 1];
+      setLastSnap(res.docs[res.size - 1]);
       setDocs(res.docs);
+      setDocsArray((prevDocsArray) => [...prevDocsArray, res.docs]);
     }
     setLoading(false);
+
+    if (fetchResolver.current) {
+      fetchResolver.current(newLastDoc);
+      fetchResolver.current = null;
+    }
   }, []);
 
   const onErr = (err: Error) => {
     setError(err);
     setLoading(false);
+
+    if (fetchResolver.current) {
+      fetchResolver.current(null);
+      fetchResolver.current = null;
+    }
   };
 
   useEffect(() => {
-    setLoading(true);
     getCountFromServer(baseQuery).then((res) => {
       setTotalPages(Math.ceil(res.data().count / limit));
       setCount(res.data().count);
@@ -81,45 +103,112 @@ const usePaginate = <T>({
     getDocs(query).then(onRes).catch(onErr);
   }, [query, onRes]);
 
-  const getLastEle = (array: any[]) => array[array.length - 1];
+  // const getPrevious = useCallback(() => {
+  //   if (lastSnap.length > 1) {
+  //     const newArray = lastSnap.slice(0, -2);
+  //     setLastSnap(newArray);
+  //     let q = addQuery(baseQuery, startAfter, getLastEle(newArray));
+  //     q = addQuery(q, firestoreLimit, limit);
+  //     setQuery(q);
+  //   }
+  // }, [baseQuery, lastSnap, limit]);
 
-  const getNext = useCallback(() => {
-    console.log("getNext clicked. Last Snapshot:", lastSnap);
-    if (lastSnap.length) {
-      let q = addQuery(baseQuery, startAfter, lastSnap[lastSnap.length - 1]); // Use only last item
-      q = addQuery(q, firestoreLimit, limit);
-      setQuery(q);
-    } else {
-      console.warn("No last snapshot available. Cannot fetch next page.");
-    }
-  }, [baseQuery, lastSnap, limit]);
+  // const getNext = useCallback(() => {
+  //   console.log("getNext clicked. Last Snapshot:", lastSnap);
+  //   if (lastSnap.length) {
+  //     let q = addQuery(baseQuery, startAfter, lastSnap[lastSnap.length - 1]); // Use only last item
+  //     q = addQuery(q, firestoreLimit, limit);
+  //     setQuery(q);
+  //   } else {
+  //     console.warn("No last snapshot available. Cannot fetch next page.");
+  //   }
+  // }, [baseQuery, lastSnap, limit]);
 
-  const getPrevious = useCallback(() => {
-    if (lastSnap.length > 1) {
-      const newArray = lastSnap.slice(0, -2);
-      setLastSnap(newArray);
-      let q = addQuery(baseQuery, startAfter, getLastEle(newArray));
+  const getNext = useCallback(
+    async (
+      lastDoc: QueryDocumentSnapshot<T>
+    ): Promise<QueryDocumentSnapshot<T> | null> => {
+      let q = addQuery(baseQuery, startAfter, lastDoc);
       q = addQuery(q, firestoreLimit, limit);
-      setQuery(q);
-    }
-  }, [baseQuery, lastSnap, limit]);
+
+      try {
+        return new Promise((resolve) => {
+          fetchResolver.current = resolve;
+          setQuery(q);
+        });
+      } catch (err) {
+        onErr(err as Error);
+        return null;
+      }
+    },
+    [baseQuery, limit]
+  );
+
+  const advancePages = useCallback(
+    async (
+      pagesToAdvance: number,
+      lastDoc: QueryDocumentSnapshot<T> | undefined
+    ) => {
+      for (let i = 0; i < pagesToAdvance; i++) {
+        if (lastDoc) {
+          const newLastDoc = await getNext(lastDoc);
+          if (newLastDoc) {
+            lastDoc = newLastDoc;
+            setLastSnap(newLastDoc);
+            setCurrentPage((prev) => prev + 1);
+          }
+        }
+      }
+    },
+    [getNext]
+  );
+
+  const search = useCallback(
+    async (pageNumber: number) => {
+      if (docsArray.length < pageNumber) {
+        const pagesToAdvance = pageNumber - docsArray.length;
+        await advancePages(pagesToAdvance, lastSnap);
+      } else {
+        // console.log(`Page ${pageNumber} already loaded.`);
+        setCurrentPage(pageNumber);
+        setDocs(docsArray[pageNumber - 1]);
+      }
+      // console.log("docsArray", docsArray);
+    },
+    [docsArray, lastSnap, advancePages]
+  );
 
   const memoizedResult = useMemo(
     () => ({
       error,
       loading,
       getNext,
-      getPrevious,
-      hasNext: lastSnap.length < totalPages,
-      hasPrevious: lastSnap.length > 1,
+      // getPrevious,
+      hasNext: currentPage < totalPages,
+      hasPrevious: currentPage > 1,
       data: {
         docs,
-        currentPage: lastSnap.length,
+        docsArray: docsArray.flat(),
+        currentPage,
       },
       totalPages,
       count,
+      currentPage,
+      search,
     }),
-    [docs, lastSnap, totalPages, error, count, getNext, getPrevious, loading] // query causes re-rendering
+    [
+      docs,
+      // lastSnap,
+      totalPages,
+      error,
+      count,
+      getNext,
+      // getPrevious,
+      loading,
+      currentPage,
+      docsArray,
+      search,
+    ] // query causes re-rendering
   );
 
   return memoizedResult;
