@@ -1,5 +1,6 @@
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
+import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
@@ -10,7 +11,6 @@ import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React from "react";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
-import HomePanel from "../panel/HomePanel";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -43,8 +43,7 @@ export const AppNavigator = () => {
             <RejoinPrompt />
           ) : state === AppState.HOME ? (
             <HomePanel />
-          ) : null
-          }
+          ) : null}
         </div>
         <EditorPanel />
       </div>

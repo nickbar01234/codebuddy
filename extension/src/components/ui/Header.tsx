@@ -1,5 +1,5 @@
+import { ThemeAwaredLogo } from "@cb/components/icons/Logo";
 import { cn } from "@cb/utils/cn";
-import { ThemeAwaredLogo } from "../icons/Logo";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface HeaderProps extends React.HTMLAttributes<HTMLDivElement> {}
