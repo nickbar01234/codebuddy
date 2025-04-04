@@ -19,11 +19,9 @@ export const AppNavigator = () => {
   const currentTabInfo = getLocalStorage("tabs");
 
   return (
-    <div className="relative flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col">
       <div className="hide-scrollbar flex h-9 w-full items-center justify-between gap-2 overflow-y-hidden overflow-x-scroll rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
-        <div className="flex items-center">
-          <Header />
-        </div>
+        <Header />
         <RoomControlMenu />
       </div>
       <div className="relative h-full w-full overflow-hidden">
@@ -46,7 +44,7 @@ export const AppNavigator = () => {
       </div>
       <div
         className={cn(
-          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
+          "flex h-12 w-full items-center self-end overflow-x-auto overflow-y-hidden rounded-b-lg bg-[--color-tabset-tabbar-background] p-2 text-sm",
           { hidden: peers.length === 0 }
         )}
       >
