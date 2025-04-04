@@ -1,33 +1,29 @@
-import { cn } from "@cb/utils/cn";
-
-// export const darkLogo = chrome.runtime.getURL("images/logo_dark.png");
-// export const lightLogo = chrome.runtime.getURL("images/logo_light.png");
+import React from "react";
 
 interface ThemeAwaredLogoProps {
-  className?: string;
+  containerProps?: React.HtmlHTMLAttributes<HTMLDivElement>;
   darkLogoPath?: string;
   lightLogoPath?: string;
 }
 
 export const ThemeAwaredLogo = ({
-  className = "",
+  containerProps,
   darkLogoPath = "images/logo_dark.png",
   lightLogoPath = "images/logo_light.png",
 }: ThemeAwaredLogoProps) => {
-  const darkLogo = chrome.runtime.getURL(darkLogoPath);
-  const lightLogo = chrome.runtime.getURL(lightLogoPath);
+  const darkLogo = React.useMemo(
+    () => chrome.runtime.getURL(darkLogoPath),
+    [darkLogoPath]
+  );
+  const lightLogo = React.useMemo(
+    () => chrome.runtime.getURL(lightLogoPath),
+    [lightLogoPath]
+  );
+
   return (
-    <>
-      <img
-        src={lightLogo}
-        className={cn("dark:hidden", className)}
-        alt="CodeBuddy logo"
-      />
-      <img
-        src={darkLogo}
-        className={cn("hidden dark:block", className)}
-        alt="CodeBuddy logo"
-      />
-    </>
+    <div {...containerProps}>
+      <img src={lightLogo} className="dark:hidden" alt="CodeBuddy logo" />
+      <img src={darkLogo} className="hidden dark:block" alt="CodeBuddy logo" />
+    </div>
   );
 };

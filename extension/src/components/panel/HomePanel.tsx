@@ -50,13 +50,18 @@ const HomePanel = () => {
   return (
     <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll justify-center">
       <div className="flex w-full flex-col items-center justify-end gap-2">
-        <ThemeAwaredLogo className="aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px]" />
+        <ThemeAwaredLogo
+          containerProps={{
+            className:
+              "aspect-square max-h-[150px] min-h-[100px] w-1/3 min-w-[100px] max-w-[150px]",
+          }}
+        />
         <h1 className="text-2xl">
           Code<span className="text-pinkish-red">Buddy</span>
         </h1>
       </div>
 
-      <div className="flex w-full flex-col items-center gap-2">
+      <div className="flex w-full flex-col items-center gap-3">
         <Button
           className="flex items-center justify-center w-[150px] bg-gray-200 hover:bg-[--color-tab-hover-background] dark:bg-transparent dark:hover:bg-[--color-tab-hover-background]"
           variant="secondary"
