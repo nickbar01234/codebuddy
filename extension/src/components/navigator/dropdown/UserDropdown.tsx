@@ -1,9 +1,9 @@
 import { CaretDownIcon } from "@cb/components/icons";
-import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
+import { usePeerSelection, useRTC } from "@cb/hooks/index";
+import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import { cn } from "@cb/utils/cn";
 import React from "react";
-import { Skeleton } from "@cb/lib/components/ui/skeleton";
 
 interface UserDropdownProps {
   isOpen: boolean;
