@@ -1,9 +1,8 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 import { getCountFromServer, getDocs } from "firebase/firestore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import usePaginate from "./usePaginate"; // adjust the path as needed
+import usePaginate from "./usePaginate";
 
-// Mocks
 vi.mock("firebase/firestore", async () => {
   return {
     getCountFromServer: vi.fn(),
@@ -70,17 +69,10 @@ describe("usePaginate", () => {
       returnedLastDoc = await result.current.getNext(firstDocs[1]);
     });
 
-    // Validate lastDoc returned
     expect(returnedLastDoc).toEqual(secondDocs[1]);
     expect(returnedLastDoc?.id).toBe("doc-2-p2");
-
-    // currentPage remains the same
     expect(result.current.data.currentPage).toBe(1);
-
-    // Docs now reflect the second page (latest fetched docs)
     expect(result.current.data.docs[0].id).toBe("doc-1-p2");
-
-    // docsArray should contain both the first and second page
     expect(result.current.data.docsArray.length).toBe(4);
     expect(result.current.data.docsArray.map((d) => d.id)).toEqual([
       "doc-1",
