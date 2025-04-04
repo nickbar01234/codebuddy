@@ -1,7 +1,7 @@
-import { QuestionSelector } from "@cb/components/leetcode/QuestionSelector";
+import { QuestionSelectorPanel } from "@cb/components/panel/problem/index";
 import { useRTC } from "@cb/hooks/index";
 
 export const Choose = () => {
   const { handleChooseQuestion } = useRTC();
-  return <QuestionSelector handleQuestionSelect={handleChooseQuestion} />;
+  return <QuestionSelectorPanel handleQuestionSelect={handleChooseQuestion} />;
 };
