@@ -2,6 +2,7 @@
 
 import eslint from "@eslint/js";
 import tsEslintPlugin from "@typescript-eslint/eslint-plugin";
+import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
@@ -19,6 +20,9 @@ export default tseslint.config(
       "no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
+    },
+    plugins: {
+      "no-relative-import-paths": noRelativeImportPaths,
     },
   },
   {
@@ -47,6 +51,14 @@ export default tseslint.config(
                 "firebase/auth is not supported for extension manifest v3. Please use firebase/auth/web-extension instead.",
             },
           ],
+        },
+      ],
+      "no-relative-import-paths/no-relative-import-paths": [
+        "warn",
+        {
+          allowSameFolder: true,
+          rootDir: "extension/src",
+          prefix: "@cb",
         },
       ],
     },
