@@ -12,11 +12,11 @@ import {
 import { throttle } from "lodash";
 import React, { ReactNode } from "react";
 
-interface LeaveRoomDialogProps {
+export interface DialogProps {
   trigger: ReactNode;
 }
 
-export function LeaveRoomDialog({ trigger }: LeaveRoomDialogProps) {
+export function LeaveRoomDialog({ trigger }: DialogProps) {
   const { roomId, leaveRoom } = useRTC();
   const { setState: setAppState } = useAppState();
 
