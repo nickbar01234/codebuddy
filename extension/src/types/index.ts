@@ -49,6 +49,8 @@ export interface LocalStorage {
     roomId?: string;
   };
   lastActivePeer: string;
+  roomState: string;
+  chooseQuestion: string;
   signIn: {
     email: string;
     url: string;

@@ -64,6 +64,14 @@ export const getSessionPeerConnectionRefs = (
     peerConnectionConverter
   );
 
+export const getAllSessionId = async (roomId: string) => {
+  // This function will return all sessions in a room.
+  // Note: This is not efficient for large datasets, consider using query for pagination or filtering.
+  const sessionRefs = getSessionRefs(roomId);
+  const snapshot = await getDocs(sessionRefs);
+  return snapshot.docs.map((doc) => doc.id);
+};
+
 export const getSessionPeerConnectionRef = (
   roomId: string,
   sessionId: string,

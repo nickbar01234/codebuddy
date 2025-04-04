@@ -4,6 +4,7 @@ import {
 } from "@cb/constants/page-elements";
 import {
   firestore,
+  getAllSessionId,
   getRoom,
   getRoomRef,
   getSession,
@@ -20,6 +21,7 @@ import {
   clearLocalStorage,
   getLocalStorage,
   sendServiceRequest,
+  setLocalStorage,
 } from "@cb/services";
 import {
   EventType,
@@ -31,14 +33,17 @@ import {
   ResponseStatus,
   WindowMessage,
 } from "@cb/types";
-import { getQuestionIdFromUrl, waitForElement } from "@cb/utils";
+import {
+  constructUrlFromQuestionId,
+  getQuestionIdFromUrl,
+  waitForElement,
+} from "@cb/utils";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
 import { poll } from "@cb/utils/poll";
 import {
   arrayRemove,
   arrayUnion,
-  deleteDoc,
   getDocs,
   onSnapshot,
   serverTimestamp,
@@ -76,14 +81,27 @@ export interface RTCContext {
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
+  sessionId: string;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
   joiningBackRoom: (join: boolean) => Promise<void>;
+  roomState: ROOMSTATE | null;
+  handleChooseQuestion: (questionId: string) => void;
+  handleNavigateToNextQuestion: () => void;
+  chooseQuestion: string | null;
 }
 
 interface RTCProviderProps {
   children: React.ReactNode;
+}
+
+export enum ROOMSTATE {
+  CODE,
+  CHOOSE,
+  WAIT,
+  DECISION,
+  NAVIGATE,
 }
 
 export const RTCContext = React.createContext({} as RTCContext);
@@ -105,6 +123,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
+  );
+  const [roomState, setRoomState] = React.useState<ROOMSTATE | null>(
+    ROOMSTATE.CODE
+  );
+  const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
+    null
   );
 
   const {
@@ -131,24 +155,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
           }
 
           waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-            .then(() =>
-              sendMessageToAll(
-                withPayload({
-                  action: "event",
-                  event: EventType.SUBMIT_SUCCESS,
-                  eventMessage: `User ${username} passed all test cases`,
-                })
-              )
-            )
-            .catch(() =>
-              sendMessageToAll(
-                withPayload({
-                  action: "event",
-                  event: EventType.SUBMIT_FAILURE,
-                  eventMessage: `User ${username} failed some test cases`,
-                })
-              )
-            );
+            .then(() => handleSucessfulSubmissionRef.current())
+            .catch(() => handleFailedSubmissionRef.current());
         };
       })
       .catch((error) => {
@@ -227,8 +235,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       ...prev,
       [peer]: {
         latency: 0,
-        deviation: 0,
-        connected: true,
+        finished: false,
       },
     }));
   });
@@ -285,6 +292,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const createRoom = async ({ roomId }: CreateRoom) => {
+    const questionId = getQuestionIdFromUrl(window.location.href);
     const newRoomRef = getRoomRef(roomId);
     const newRoomId = newRoomRef.id;
     const sessionRef = getSessionRef(newRoomId, sessionId);
@@ -292,12 +300,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
       usernames: arrayUnion(username),
     });
     await setSession(sessionRef, {
+      finishedUsers: [],
+
       usernames: arrayUnion(username),
+      nextQuestion: "",
+
       createdAt: serverTimestamp(),
     });
     console.log("Created room", newRoomId);
     setRoomId(newRoomId);
     navigator.clipboard.writeText(newRoomId);
+    setRoomState(ROOMSTATE.CODE);
     toast.success(`Session ID ${newRoomId} copied to clipboard`);
   };
 
@@ -380,12 +393,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Room does not exist");
         return false;
       }
+
       const sessionDoc = await getSession(roomId, sessionId);
       if (!sessionDoc.exists()) {
         toast.error("Session does not exist");
         return false;
       }
-      const usernames = sessionDoc.data().usernames;
+      const sessionData = sessionDoc.data();
+      const usernames = roomDoc.data().usernames;
       if (usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
@@ -473,7 +488,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
-      localStorage.removeItem("refresh");
+      const navigate =
+        getLocalStorage("roomState") == ROOMSTATE.NAVIGATE.toString();
+      const finished = sessionData.finishedUsers.includes(username);
+      const nextQuestionChosen = sessionData.nextQuestion !== "";
+      if (navigate) {
+        setRoomState(ROOMSTATE.CODE);
+      } else if (finished && !nextQuestionChosen) {
+        setRoomState(ROOMSTATE.CHOOSE);
+      } else if (finished && nextQuestionChosen) {
+        setRoomState(ROOMSTATE.DECISION);
+      } else if (finished) {
+        setRoomState(ROOMSTATE.WAIT);
+      } else {
+        setRoomState(ROOMSTATE.CODE);
+      }
       return true;
     },
     [
@@ -496,18 +525,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
-        await setRoom(getRoomRef(roomId), {
-          usernames: arrayRemove(username),
-        });
-        await setSession(getSessionRef(roomId, sessionId), {
-          usernames: arrayRemove(username),
-        });
-        const myAnswers = await getDocs(
-          getSessionPeerConnectionRefs(roomId, sessionId, username)
+        const roomDoc = (await getRoom(roomId)).data();
+        const roomQuestions = await getAllSessionId(roomId);
+        if (!roomDoc) return;
+        const batch = writeBatch(firestore);
+        await Promise.all(
+          roomQuestions.map(async (curQuestionId: string) => {
+            batch.update(getSessionRef(roomId, curQuestionId), {
+              usernames: arrayRemove(username),
+            });
+
+            const myAnswers = await getDocs(
+              getSessionPeerConnectionRefs(roomId, curQuestionId, username)
+            );
+            myAnswers.docs.forEach((doc) => batch.delete(doc.ref));
+          })
         );
-        myAnswers.docs.forEach(async (doc) => {
-          deleteDoc(doc.ref);
+        batch.update(getRoomRef(roomId), {
+          usernames: arrayRemove(username),
         });
+        await batch.commit();
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
       }
@@ -518,11 +555,41 @@ export const RTCProvider = (props: RTCProviderProps) => {
       setInformations({});
       setPeerState({});
     },
-    [username, cleanupSnapshot, cleanupConnection, sessionId]
+    [username, cleanupSnapshot, cleanupConnection]
   );
+  const handleSucessfulSubmission = React.useCallback(async () => {
+    if (!roomId || !sessionId) return;
+
+    sendMessageToAll(
+      withPayload({
+        action: "event",
+        event: EventType.SUBMIT_SUCCESS,
+        eventMessage: `User ${username} passed all test cases for ${roomId}`,
+      })
+    );
+    const sessionDoc = await getSession(roomId, sessionId);
+    const sessionData = sessionDoc.data();
+    if (!sessionData) return;
+    await setSession(getSessionRef(roomId, sessionId), {
+      finishedUsers: arrayUnion(username),
+    });
+  }, [username, sessionId, roomId, sendMessageToAll]);
+
+  const handleFailedSubmission = React.useCallback(async () => {
+    if (!roomId || !sessionId) return;
+
+    sendMessageToAll(
+      withPayload({
+        action: "event",
+        event: EventType.SUBMIT_FAILURE,
+        eventMessage: `User ${username} failed some test cases for ${roomId}`,
+      })
+    );
+  }, [username, sessionId, roomId, sendMessageToAll]);
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
+      if (peers.length === 0) return;
       if (roomId == null) return;
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
@@ -562,8 +629,31 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }
   }, [roomId, username, sessionId]);
 
+  const handleChooseQuestion = React.useCallback(
+    async (questionURL: string) => {
+      if (!roomId) return;
+      const chosenQuestionId = getQuestionIdFromUrl(questionURL);
+      console.log("Choose question URL", questionURL);
+      toast.info("You have selected question " + chosenQuestionId);
+      if (roomId == null) return;
+      await setSession(getSessionRef(roomId, sessionId), {
+        nextQuestion: chosenQuestionId,
+      });
+      const newSessionRef = getSessionRef(roomId, chosenQuestionId);
+      await setSession(newSessionRef, {
+        finishedUsers: [],
+        usernames: [],
+        nextQuestion: "",
+        createdAt: serverTimestamp(),
+      });
+    },
+    [sessionId, roomId]
+  );
+
   const deletePeersRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
+  const handleSucessfulSubmissionRef = React.useRef(handleSucessfulSubmission);
+  const handleFailedSubmissionRef = React.useRef(handleFailedSubmission);
 
   const joiningBackRoom = React.useCallback(
     async (join: boolean) => {
@@ -577,20 +667,48 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // 3. User A join sessions before (2) is completed
       // 4. User B haven't finished cleaning A from local state
       // 5. User A doesn't receive an offer
+
       if (join) {
-        setTimeout(() => {
-          joinRoom(prevRoomId);
-        }, 1500);
+        const prevQuestionId = getLocalStorage("chooseQuestion");
+        if (
+          prevQuestionId != null &&
+          prevQuestionId !== getQuestionIdFromUrl(window.location.href)
+        ) {
+          setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
+          history.pushState(
+            null,
+            "",
+            constructUrlFromQuestionId(prevQuestionId)
+          );
+          location.reload();
+        } else {
+          setTimeout(async () => {
+            const join = await joinRoom(prevRoomId);
+            if (!join) {
+              toast.error("Failed to join room");
+            }
+          }, 1500);
+        }
       }
     },
     [joinRoom, leaveRoom]
   );
 
+  const handleNavigateToNextQuestion = React.useCallback(async () => {
+    if (!chooseQuestion) return;
+    setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
+    setLocalStorage("chooseQuestion", chooseQuestion);
+    await deleteMeRef.current();
+    history.pushState(null, "", constructUrlFromQuestionId(chooseQuestion));
+    location.reload();
+    // window.location.href = constructUrlFromQuestionId(chooseQuestion);
+  }, [chooseQuestion]);
+
   React.useEffect(() => {
     if (roomId != null && getSnapshot()[roomId] == undefined) {
       const unsubscribe = onSnapshot(
         getSessionRef(roomId, sessionId),
-        (snapshot) => {
+        async (snapshot) => {
           const data = snapshot.data();
           // todo(nickbar01234): Clear and report room if deleted?
           if (data == undefined) return;
@@ -604,15 +722,53 @@ export const RTCProvider = (props: RTCProviderProps) => {
             .slice(data.usernames.indexOf(username) + 1)
             .filter((username) => !getConnection()[username]);
 
-          deletePeersRef.current(removedPeers);
+          await deletePeersRef.current(removedPeers);
 
-          addedPeers.forEach((peer) => {
-            createOffer(roomId, peer);
-          });
+          for (const peer of addedPeers) {
+            await createOffer(roomId, peer);
+          }
 
           removedPeers.forEach((peer) => {
             toast.error(`${peer} has left the room`);
           });
+
+          const sessionDoc = await getSession(roomId, sessionId);
+          const sessionData = sessionDoc.data();
+          if (!sessionData) return;
+
+          const nextQuestionChosen = sessionData.nextQuestion !== "";
+          const finishedUsers = sessionData.finishedUsers;
+          console.log("finishedUsers", getUnixTs(), finishedUsers, usernames);
+          setPeerState((prev) => {
+            const updatedState = { ...prev };
+
+            finishedUsers.forEach((peer) => {
+              if (updatedState[peer]) {
+                updatedState[peer] = { ...updatedState[peer], finished: true };
+              }
+            });
+            return updatedState;
+          });
+          if (!nextQuestionChosen) {
+            if (
+              finishedUsers.length !== 0 &&
+              finishedUsers.includes(username)
+            ) {
+              setRoomState(ROOMSTATE.CHOOSE);
+            }
+          } else {
+            if (usernames.every((user) => finishedUsers.includes(user))) {
+              toast.info(
+                "All users have finished the question. " +
+                  "Navigating to the next question: " +
+                  constructUrlFromQuestionId(sessionData.nextQuestion)
+              );
+              setChooseQuestion(sessionData.nextQuestion);
+              setRoomState(ROOMSTATE.DECISION);
+            } else if (finishedUsers.includes(username)) {
+              setRoomState(ROOMSTATE.WAIT);
+            }
+          }
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
@@ -648,6 +804,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
   React.useEffect(() => {
     deletePeersRef.current = deletePeers;
   }, [deletePeers]);
+
+  React.useEffect(() => {
+    handleSucessfulSubmissionRef.current = handleSucessfulSubmission;
+  }, [handleSucessfulSubmission]);
+
+  React.useEffect(() => {
+    handleFailedSubmissionRef.current = handleFailedSubmission;
+  }, [handleFailedSubmission]);
+
+  React.useEffect(() => {
+    if (roomState == null) return;
+    setLocalStorage("roomState", roomState.toString());
+  }, [roomState]);
 
   useOnMount(() => {
     const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
@@ -758,6 +927,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
         informations,
         peerState,
         joiningBackRoom,
+        sessionId,
+        roomState,
+        handleChooseQuestion,
+        chooseQuestion,
+        handleNavigateToNextQuestion,
       }}
     >
       {props.children}
