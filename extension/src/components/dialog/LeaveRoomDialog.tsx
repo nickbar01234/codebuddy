@@ -1,18 +1,16 @@
+import { AppState } from "@cb/context/AppStateProvider";
+import { useAppState, useRTC } from "@cb/hooks/index";
 import {
   Dialog,
-  DialogTrigger,
+  DialogClose,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
-  DialogClose,
+  DialogTrigger,
 } from "@cb/lib/components/ui/dialog";
-import { ReactNode } from "react";
-import React from "react";
 import { throttle } from "lodash";
-import { useRTC } from "@cb/hooks/index";
-import { AppState } from "@cb/context/AppStateProvider";
-import { useAppState } from "@cb/hooks/index";
+import React, { ReactNode } from "react";
 
 interface LeaveRoomDialogProps {
   trigger: ReactNode;

@@ -1,10 +1,6 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
-import {
-  ActivityLogTab,
-  CodeTab,
-  TestTab,
-} from "@cb/components/panel/editor/tab";
+import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
@@ -19,6 +15,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import { ActivityLog } from "./activity/ActivityLog";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -175,7 +172,7 @@ const EditorPanel = () => {
             className="relative w-full overflow-auto"
             style={{ height: height - codePreference.height - 128 }}
           >
-            <ActivityLogTab logEntries={logEntries} />
+            <ActivityLog logEntries={logEntries} />
           </div>
         </div>
       </div>
