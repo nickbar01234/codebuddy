@@ -292,7 +292,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const createRoom = async ({ roomId }: CreateRoom) => {
-    const questionId = getQuestionIdFromUrl(window.location.href);
     const newRoomRef = getRoomRef(roomId);
     const newRoomId = newRoomRef.id;
     const sessionRef = getSessionRef(newRoomId, sessionId);
