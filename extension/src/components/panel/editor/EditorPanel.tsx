@@ -1,5 +1,5 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { ActivityLog } from "@cb/components/panel/editor/activity/ActivityLog";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
