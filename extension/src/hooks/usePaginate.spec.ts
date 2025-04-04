@@ -1,189 +1,219 @@
-import { renderHook, act } from "@testing-library/react-hooks";
-import {
-  collection,
-  query,
-  where,
-  Firestore,
-  Query,
-  QueryDocumentSnapshot,
-  QuerySnapshot,
-  DocumentData,
-  getDocs,
-  getCountFromServer,
-} from "firebase/firestore";
-import usePaginate from "./usePaginate";
-import { beforeEach, afterEach, describe, expect, test, vi, it } from "vitest";
-import * as firestore from "firebase/firestore";
-import { waitFor } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react-hooks";
+import { getCountFromServer, getDocs } from "firebase/firestore";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import usePaginate from "./usePaginate"; // adjust the path as needed
 
-vi.mock("firebase/firestore", () => ({
-  getFirestore: vi.fn(),
-  collection: vi.fn(),
-  doc: vi.fn(),
-  getDoc: vi.fn(),
-  addDoc: vi.fn(),
-  updateDoc: vi.fn(),
-  deleteDoc: vi.fn(),
-  onSnapshot: vi.fn(),
-  getDocs: vi.fn(), // mockResolvedValue directly here
-  getCountFromServer: vi.fn(),
-  limit: vi.fn(),
-  query: vi.fn(),
-  startAfter: vi.fn(),
-}));
+// Mocks
+vi.mock("firebase/firestore", async () => {
+  return {
+    getCountFromServer: vi.fn(),
+    getDocs: vi.fn(),
+    query: vi.fn((...args) => args),
+    limit: vi.fn((val) => `LIMIT(${val})`),
+    startAfter: vi.fn((val) => `START_AFTER(${val})`),
+  };
+});
 
-// const mockGetDocs = firestore.getDocs; //Change to use the imported namespace
-// const mockGetCountFromServer = firestore.getCountFromServer;
-// const mockLimit = firestore.limit;
-// const mockQuery = firestore.query;
-
-const mockPaginatedData = Array.from({ length: 10 }, (_, i) => ({
-  id: i + 1,
-  name: `Item ${i + 1}`,
-}));
+const mockDoc = (id: string) => ({ id }) as any;
+const generateDocs = (count: number) =>
+  Array.from({ length: count }, (_, i) => mockDoc(`doc-${i + 1}`));
 
 describe("usePaginate", () => {
-  // const mockQuery = {} as Query<DocumentData>;
-  const totalItems = 10;
-  const limit = 3;
-  const mockQuery: Query<DocumentData> = {
-    firestore: {} as Firestore,
-    type: "query",
-    converter: null,
-    withConverter: vi.fn(),
-  } as unknown as Query<DocumentData>;
-
-  const mockSnapshot = {
-    docs: mockPaginatedData.map((item) => ({
-      id: item.id,
-      data: vi.fn(() => item),
-    })),
-    size: mockPaginatedData.length,
-    empty: false,
-    metadata: {},
-    query: mockQuery,
-  } as unknown as QuerySnapshot<DocumentData>;
+  const mockQuery: any = "MOCK_QUERY";
+  const limit = 2;
 
   beforeEach(() => {
     vi.clearAllMocks();
+  });
 
-    (getCountFromServer as vi.Mock).mockResolvedValueOnce({
-      data: () => ({
-        count: totalItems,
-      }),
+  it("fetches total count on mount", async () => {
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 10 }),
     });
 
-    (getDocs as vi.Mock).mockResolvedValueOnce(mockSnapshot);
-  });
+    (getDocs as any).mockResolvedValue({
+      size: 2,
+      docs: generateDocs(2),
+    });
 
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("should initialize with loading state", async () => {
-    const { result, waitForNextUpdate } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
-
-    expect(result.current.loading).toBe(false);
-    await waitForNextUpdate();
-    expect(result.current.loading).toBe(true);
-    // await waitForNextUpdate();
-    // expect(result.current.loading).toBe(false);
-  });
-
-  it("should fetch initial documents", async () => {
     const { result, waitForNextUpdate } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
     );
 
     await waitForNextUpdate();
-    console.log("result", result.current.data);
-    expect(result.current.data.docs).toHaveLength(limit);
-    expect(result.current.count).toBe(totalItems);
-    expect(result.current.totalPages).toBe(Math.ceil(totalItems / limit));
+
+    expect(result.current.totalPages).toBe(5);
+    expect(result.current.data.docs.length).toBe(2);
     expect(result.current.data.currentPage).toBe(1);
   });
 
-  // it("should fetch the next page of documents", async () => {
-  //   // Setup mock for next page
-  //   const mockNextPageSnapshot = {
-  //     docs: mockPaginatedData.map((item, i) => ({
-  //       id: item.id + 3, // Adjusting for next page data
-  //       data: vi.fn(() => item),
-  //     })),
-  //     size: mockPaginatedData.length,
-  //     empty: false,
-  //     metadata: {},
-  //     query: mockQuery,
-  //   } as unknown as QuerySnapshot<DocumentData>;
+  it("fetches next page using getNext, which updates lastSnap, docs, docsArray but not currentPage", async () => {
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 4 }),
+    });
 
-  //   (getDocs as vi.Mock).mockResolvedValueOnce(mockNextPageSnapshot);
+    const firstDocs = generateDocs(2);
+    const secondDocs = generateDocs(2).map((d) => ({ ...d, id: d.id + "-p2" }));
 
-  //   const { result, waitForNextUpdate } = renderHook(() =>
-  //     usePaginate({ query: mockQuery, limit })
-  //   );
+    (getDocs as any)
+      .mockResolvedValueOnce({ size: 2, docs: firstDocs })
+      .mockResolvedValueOnce({ size: 2, docs: secondDocs });
 
-  //   await waitForNextUpdate(); // Wait for initial data to be loaded
-  //   console.log("result before get next", result.current.data);
-  //   console.log("count before get next", result.current.count);
+    const { result, waitForNextUpdate } = renderHook(() =>
+      usePaginate({ query: mockQuery, limit })
+    );
 
-  //   expect(result.current.data.docs).toHaveLength(limit);
-  //   expect(result.current.count).toBe(totalItems);
-  //   expect(result.current.totalPages).toBe(Math.ceil(totalItems / limit));
+    await waitForNextUpdate();
 
-  //   // Call getNext to simulate fetching the next page
-  //   act(() => {
-  //     result.current.getNext();
-  //   });
+    let returnedLastDoc: any;
+    await act(async () => {
+      returnedLastDoc = await result.current.getNext(firstDocs[1]);
+    });
 
-  //   await waitForNextUpdate(); // Wait for next page to be fetched
-  //   console.log("result after get next", result.current.data);
-  //   console.log("count after get next", result.current.count);
-  //   expect(result.current.data.docs).toHaveLength(limit); // Next page should have same page size
-  //   expect(result.current.data.currentPage).toBe(2); // Page number should increase
-  // });
+    // Validate lastDoc returned
+    expect(returnedLastDoc).toEqual(secondDocs[1]);
+    expect(returnedLastDoc?.id).toBe("doc-2-p2");
 
-  // it('should handle getNext correctly', async () => {
-  //   const { result, waitForNextUpdate } = renderHook(() =>
-  //     usePaginate({ query: mockQuery, limit: pageSize })
-  //   );
+    // currentPage remains the same
+    expect(result.current.data.currentPage).toBe(1);
 
-  //   await waitForNextUpdate();
-  //   act(() => {
-  //     result.current.getNext();
-  //   });
+    // Docs now reflect the second page (latest fetched docs)
+    expect(result.current.data.docs[0].id).toBe("doc-1-p2");
 
-  //   expect(mockGetDocs).toHaveBeenCalledTimes(2);
-  // });
+    // docsArray should contain both the first and second page
+    expect(result.current.data.docsArray.length).toBe(4);
+    expect(result.current.data.docsArray.map((d) => d.id)).toEqual([
+      "doc-1",
+      "doc-2",
+      "doc-1-p2",
+      "doc-2-p2",
+    ]);
+  });
 
-  // it('should handle getPrevious correctly', async () => {
-  //   const { result, waitForNextUpdate } = renderHook(() =>
-  //     usePaginate({ query: mockQuery, limit: 2 })
-  //   );
+  it("returns null from getNext if query fails", async () => {
+    const docs = generateDocs(2);
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 4 }),
+    });
+    (getDocs as any)
+      .mockResolvedValueOnce({ size: 2, docs })
+      .mockRejectedValueOnce(new Error("Network error"));
 
-  //   await waitForNextUpdate();
-  //   act(() => {
-  //     result.current.getNext();
-  //   });
+    const { result, waitForNextUpdate } = renderHook(() =>
+      usePaginate({ query: mockQuery, limit })
+    );
 
-  //   await waitForNextUpdate();
-  //   act(() => {
-  //     result.current.getPrevious();
-  //   });
+    await waitForNextUpdate();
 
-  //   expect(mockGetDocs).toHaveBeenCalledTimes(3);
-  // });
+    let returned: any;
+    await act(async () => {
+      returned = await result.current.getNext(docs[1]);
+    });
 
-  // it('should handle errors', async () => {
-  //   mockGetDocs.mockRejectedValueOnce(new Error('Fetch error'));
+    expect(returned).toBe(null);
+    expect(result.current.error?.message).toBe("Network error");
+  });
 
-  //   const { result, waitForNextUpdate } = renderHook(() =>
-  //     usePaginate({ query: mockQuery, limit: 2 })
-  //   );
+  it("can navigate back to a previously loaded page using search", async () => {
+    const page1 = generateDocs(2);
+    const page2 = generateDocs(2).map((d) => ({ ...d, id: d.id + "-p2" }));
 
-  //   await waitForNextUpdate();
-  //   expect(result.current.error).toBeDefined();
-  //   expect(result.current.loading).toBe(false);
-  // });
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 4 }),
+    });
+    (getDocs as any)
+      .mockResolvedValueOnce({ size: 2, docs: page1 })
+      .mockResolvedValueOnce({ size: 2, docs: page2 });
+
+    const { result, waitForNextUpdate } = renderHook(() =>
+      usePaginate({ query: mockQuery, limit })
+    );
+
+    await waitForNextUpdate();
+
+    await act(async () => {
+      result.current.search(2);
+    });
+
+    expect(result.current.currentPage).toBe(2);
+    expect(result.current.data.docs[0].id).toBe("doc-1-p2");
+
+    await act(async () => {
+      result.current.search(1);
+    });
+
+    expect(result.current.currentPage).toBe(1);
+    expect(result.current.data.docs[0].id).toBe("doc-1");
+  });
+
+  it("handles errors gracefully", async () => {
+    const error = new Error("Fetch failed");
+
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 0 }),
+    });
+
+    (getDocs as any).mockRejectedValue(error);
+
+    const { result, waitForNextUpdate } = renderHook(() =>
+      usePaginate({ query: mockQuery, limit })
+    );
+
+    await waitForNextUpdate();
+
+    expect(result.current.error).toEqual(error);
+    expect(result.current.loading).toBe(false);
+  });
+
+  it("correctly reflects hasNext and hasPrevious based on currentPage and totalPages", async () => {
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 4 }),
+    });
+
+    const docs = generateDocs(2);
+    (getDocs as any).mockResolvedValue({ size: 2, docs });
+
+    const { result, waitForNextUpdate } = renderHook(() =>
+      usePaginate({ query: mockQuery, limit })
+    );
+
+    await waitForNextUpdate();
+
+    expect(result.current.hasNext).toBe(true);
+    expect(result.current.hasPrevious).toBe(false);
+
+    await act(async () => {
+      result.current.search(2);
+    });
+
+    expect(result.current.hasNext).toBe(false);
+    expect(result.current.hasPrevious).toBe(true);
+  });
+
+  it("sets loading state correctly during fetch", async () => {
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 2 }),
+    });
+
+    const docs = generateDocs(2);
+    let resolveDocs: (val: any) => void;
+
+    (getDocs as any).mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolveDocs = resolve;
+      });
+    });
+
+    const { result } = renderHook(() =>
+      usePaginate({ query: mockQuery, limit })
+    );
+
+    expect(result.current.loading).toBe(true);
+
+    await act(async () => {
+      resolveDocs!({ size: 2, docs });
+    });
+
+    expect(result.current.loading).toBe(false);
+  });
 });
