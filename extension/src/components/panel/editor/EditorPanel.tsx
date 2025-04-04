@@ -1,5 +1,5 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { Skeleton } from "@cb/components/ui/Skeleton";
 import { AppState } from "@cb/context/AppStateProvider";
@@ -144,8 +144,15 @@ const EditorPanel = () => {
               blur: !canViewCode,
             })}
           >
-            <Tabs defaultValue="code" className="h-full w-full">
-              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
+            <Tabs
+              defaultValue="code"
+              className={cn("h-full w-full bg-inherit text-inherit")}
+            >
+              <TabsList
+                className={cn(
+                  "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
+                )}
+              >
                 <UserDropdown
                   key="user-dropdown"
                   isOpen={isUserDropdownOpen}
