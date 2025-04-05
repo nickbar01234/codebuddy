@@ -41,7 +41,3 @@ export interface Connection {
   channel: RTCDataChannel;
   lastSeen: number;
 }
-
-export interface Dictionary<V> {
-  [k: string]: V;
-}

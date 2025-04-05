@@ -13,7 +13,9 @@ const useLanguageExtension = () => {
     poll({
       fn: async () => sendServiceRequest({ action: "getLanguageExtension" }),
       until: (response) => response instanceof Array && response.length > 0,
-    }).then(setLanguageExtensions);
+    })
+      .then(setLanguageExtensions)
+      .catch(console.error);
   });
 
   const getLanguageExtension = React.useCallback(
