@@ -1,7 +1,7 @@
-import { defineConfig } from "vitest/config";
+import config from "./vite.config";
 
-export default defineConfig({
-  test: {
-    environment: "jsdom",
-  },
-});
+// Delete to vite.config.ts, since we have a different build configuration
+// for extension/ and background/
+process.env.TYPE = "content_script";
+
+export default config;
