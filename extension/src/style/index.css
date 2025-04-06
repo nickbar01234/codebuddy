@@ -113,6 +113,29 @@ i.bar:hover span {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+
+    /* CUSTOM COLOR */
+    --color-default-bg-hover: #f5f5f5ff;
+    /* Button color */
+    --color-button1-bg: #78788033;
+    --color-button1-border: #78788033;
+    --color-button1-hover: #2c2c2cff;
+    /* Table color */
+    --color-table-bg: #f0f0f0ff;
+    /* Text color */
+    --color-text-default: #1e1e1eff;
+    --color-text-secondary: #757575ff;
+    --color-text-tertiary: #b3b3b3ff;
+    --color-text-other: #ffffffff;
+    /* Icon color */
+    --color-icon-default: #1e1e1eff;
+    --color-icon-secondary: #757575ff;
+    /* Individual color */
+    --color-pink: #dd5471ff;
+    --color-green: #34c759ff;
+    --color-red: #ff3b30ff;
+    --color-blue: #007affff;
+    --color-orange: #ff9500ff;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -139,6 +162,29 @@ i.bar:hover span {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* CUSTOM COLOR */
+    --color-default-bg-hover: #383838ff;
+    /* Button color */
+    --color-button1-bg: #49494eff;
+    --color-button1-border: #4a4a4eff;
+    --color-button1-hover: #f5f5f5ff;
+    /* Table color */
+    --color-table-bg: #353535ff;
+    /* Text color */
+    --color-text-default: #ffffffff;
+    --color-text-secondary: #f1f1f1b2;
+    --color-text-tertiary: #ffffff66;
+    --color-text-other: #ffffffff;
+    /* Icon color */
+    --color-icon-default: #ffffffff;
+    --color-icon-secondary: #757575ff;
+    /* Custom color */
+    --color-pink: #ff6586ff;
+    --color-green: #34c759ff;
+    --color-red: #ff3b30ff;
+    --color-blue: #007affff;
+    --color-orange: #ff9500ff;
   }
 }
 
@@ -148,5 +194,28 @@ i.bar:hover span {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  button:hover,
+  a:hover {
+    background-color: var(--color-default-bg-hover);
+  }
+}
+
+@layer components {
+  table {
+    background-color: var(--color-table-bg);
+  }
+  .button1 {
+    background-color: var(--color-button1-bg);
+    border: 1px solid var(--color-button1-border);
+  }
+  .button1:hover {
+    background-color: var(--color-button1-hover);
+  }
+  .icon-primary {
+    color: var(--color-icon-default);
+  }
+  .icon-secondary {
+    color: var(--color-icon-secondary);
   }
 }
