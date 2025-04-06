@@ -23,6 +23,7 @@ describe("Firebase security test", () => {
     usernames: ["code@gmail.com", "buddy@hotmail.com"],
   };
   let authenticatedUser: RulesTestContext;
+  let db: ReturnType<typeof authenticatedUser.firestore>;
 
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
@@ -36,11 +37,11 @@ describe("Firebase security test", () => {
     authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
       email: "code@gmail.com",
     });
+    db = authenticatedUser.firestore();
   });
 
   it("should allow authenticated users to read/write rooms", async () => {
     const roomId = `CODEBUDDYTEST_${Date.now()}`;
-    const db = authenticatedUser.firestore();
     const roomDoc = db.collection("rooms").doc(roomId);
     const sessionSubRef = db
       .collection("rooms")
@@ -56,8 +57,10 @@ describe("Firebase security test", () => {
 
   it("should deny unauthenticated users from read/write rooms", async () => {
     const unauthenticated = testEnv.unauthenticatedContext();
-    const db = unauthenticated.firestore();
-    const roomDoc = db.collection("rooms").doc(`CODEBUDDYTEST_${Date.now()}`);
+    const unauthenticatedDb = unauthenticated.firestore();
+    const roomDoc = unauthenticatedDb
+      .collection("rooms")
+      .doc(`CODEBUDDYTEST_${Date.now()}`);
 
     await assertFails(roomDoc.set(roomData));
     await assertFails(roomDoc.get());
@@ -68,7 +71,7 @@ describe("Firebase security test", () => {
     const anotherEmail = testEnv.authenticatedContext("anotherUser", {
       email: "another@gmail.com",
     });
-    const validUser = testEnv.authenticatedContext("codebuddytest", {
+    const validUser = testEnv.authenticatedContext("buddytest", {
       email: "buddy@hotmail.com",
     });
     const validDb = validUser.firestore();
@@ -85,7 +88,6 @@ describe("Firebase security test", () => {
   });
 
   it("should deny random path", async () => {
-    const db = authenticatedUser.firestore();
     const randomCollection = db.collection("randomCollection").doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
   });
