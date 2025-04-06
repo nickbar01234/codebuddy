@@ -12,7 +12,7 @@ jobs:
         node-version: ["22.x"]
     
     services:
-      firebase-emulator: 
+      firestore-emulator: 
         build:
         # build the container from current directory
           context: . 
