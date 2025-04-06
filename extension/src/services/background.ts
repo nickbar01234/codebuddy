@@ -69,6 +69,9 @@ const setupCodeBuddyModel = async (id: string) => {
           scrollBeyondLastLine: false,
           automaticLayout: true,
           minimap: { enabled: false },
+          padding: {
+            top: 8,
+          },
         }
       );
       buddyEditor.id = "CodeBuddy";
