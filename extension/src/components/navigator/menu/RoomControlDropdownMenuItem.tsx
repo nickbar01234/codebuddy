@@ -12,7 +12,7 @@ export const RoomControlDropdownMenuItem = ({
   return (
     <DropdownMenuItem
       className={cn(
-        "focus:bg-[--color-tab-hover-background] hover:bg-[--color-tab-hover-background] cursor-pointer",
+        "cursor-pointer hover:bg-[--color-tab-hover-background] focus:bg-[--color-tab-hover-background]",
         className
       )}
       {...props}

@@ -164,119 +164,150 @@ const setValueModel = async (
   console.log("Applied Changes");
 };
 
-chrome.runtime.onMessage.addListener(
-  (request: ServiceRequest, sender, sendResponse) => {
-    switch (request.action) {
-      case "getValue": {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: getValue,
-            world: "MAIN",
-          })
-          .then((result) => {
-            sendResponse(result[0].result);
-          });
-
-        break;
-      }
-
-      case "pasteCode": {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: pasteCode,
-            args: [request.value],
-            world: "MAIN",
-          })
-          .then(sendResponse);
-        break;
-      }
-
-      case "setupCodeBuddyModel": {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: setupCodeBuddyModel,
-            args: [request.id],
-            world: "MAIN",
-          })
-          .then((result) => {
-            sendResponse(result[0].result);
-          });
-        break;
-      }
-
-      case "setupLeetCodeModel": {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: setupLeetCodeModel,
-            args: [],
-            world: "MAIN",
-          })
-          .then((result) => sendResponse(result[0].result));
-        break;
-      }
-
-      case "setValueOtherEditor": {
-        chrome.scripting
-          .executeScript({
-            target: { tabId: sender.tab?.id ?? 0 },
-            func: setValueModel,
-            args: [
-              {
-                code: request.code,
-                language: request.language,
-                changes: request.changes,
-                changeUser: request.changeUser,
-                editorId: request.editorId,
-              },
-            ],
-            world: "MAIN",
-          })
-          .then(() => {
-            sendResponse();
-          });
-        break;
-      }
-
-      case "getActiveTabId": {
-        // Per https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts, we don't have access to
-        // chrome API. So using background as a proxy
-        sendResponse(sender.tab?.id ?? -1);
-        break;
-      }
-
-      case "closeSignInTab": {
-        const {
-          signIn: { url, tabId },
-        } = request;
-        chrome.tabs
-          .get(tabId)
-          .then(async (tab) => {
-            const response = servicePayload<"closeSignInTab">({
-              status: tab.url?.startsWith(url)
-                ? ResponseStatus.SUCCESS
-                : ResponseStatus.FAIL,
-            });
-            if (response.status === ResponseStatus.SUCCESS) {
-              await chrome.tabs.remove(tabId);
-            }
-            sendResponse(response);
-          })
-          .catch(console.error);
-        break;
-      }
-      case "reloadExtension": {
-        chrome.runtime.reload();
-        break;
-      }
-      default:
-        console.error(`Unhandled request ${request}`);
-        break;
-    }
-
-    return true;
+export const getLanguageExtension = () => {
+  const monaco = (window as any).monaco;
+  const getLanguages = monaco?.languages?.getLanguages;
+  if (getLanguages == undefined) {
+    return [];
   }
-);
+  return getLanguages() as any[];
+};
+
+// todo(nickbar01234): Small hack until we figure out a better story for testing
+// Without this guard, tests fail to run, because "chrome" is undefined.
+if ((import.meta as any).env.MODE !== "test") {
+  chrome.runtime.onMessage.addListener(
+    (request: ServiceRequest, sender, sendResponse) => {
+      switch (request.action) {
+        case "getValue": {
+          chrome.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: getValue,
+              world: "MAIN",
+            })
+            .then((result) => {
+              sendResponse(result[0].result);
+            });
+
+          break;
+        }
+
+        case "pasteCode": {
+          chrome.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: pasteCode,
+              args: [request.value],
+              world: "MAIN",
+            })
+            .then(sendResponse);
+          break;
+        }
+
+        case "setupCodeBuddyModel": {
+          chrome.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: setupCodeBuddyModel,
+              args: [request.id],
+              world: "MAIN",
+            })
+            .then((result) => {
+              sendResponse(result[0].result);
+            });
+          break;
+        }
+
+        case "setupLeetCodeModel": {
+          chrome.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: setupLeetCodeModel,
+              args: [],
+              world: "MAIN",
+            })
+            .then((result) => sendResponse(result[0].result));
+          break;
+        }
+
+        case "setValueOtherEditor": {
+          chrome.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: setValueModel,
+              args: [
+                {
+                  code: request.code,
+                  language: request.language,
+                  changes: request.changes,
+                  changeUser: request.changeUser,
+                  editorId: request.editorId,
+                },
+              ],
+              world: "MAIN",
+            })
+            .then(() => {
+              sendResponse();
+            });
+          break;
+        }
+
+        case "getActiveTabId": {
+          // Per https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts, we don't have access to
+          // chrome API. So using background as a proxy
+          sendResponse(sender.tab?.id ?? -1);
+          break;
+        }
+
+        case "closeSignInTab": {
+          const {
+            signIn: { url, tabId },
+          } = request;
+          chrome.tabs
+            .get(tabId)
+            .then(async (tab) => {
+              const response = servicePayload<"closeSignInTab">({
+                status: tab.url?.startsWith(url)
+                  ? ResponseStatus.SUCCESS
+                  : ResponseStatus.FAIL,
+              });
+              if (response.status === ResponseStatus.SUCCESS) {
+                await chrome.tabs.remove(tabId);
+              }
+              sendResponse(response);
+            })
+            .catch(console.error);
+          break;
+        }
+
+        case "reloadExtension": {
+          chrome.runtime.reload();
+          break;
+        }
+
+        case "getLanguageExtension": {
+          chrome.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: getLanguageExtension,
+              args: [],
+              world: "MAIN",
+            })
+            .then((response) =>
+              sendResponse(
+                servicePayload<"getLanguageExtension">(response[0].result ?? [])
+              )
+            );
+          break;
+        }
+
+        default:
+          console.error(`Unhandled request ${request}`);
+          break;
+      }
+
+      return true;
+    }
+  );
+}

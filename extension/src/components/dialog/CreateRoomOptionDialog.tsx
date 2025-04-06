@@ -14,7 +14,6 @@ import React, { useState } from "react";
 import { DialogProps } from "./LeaveRoomDialog";
 
 export const CreateRoomOptionDialog = ({ trigger }: DialogProps) => {
-  const [open, setOpen] = useState(false);
   const [visibility, setVisibility] = useState("public");
   const [roomName, setRoomName] = useState("");
   const { createRoom } = useRTC();
@@ -28,15 +27,12 @@ export const CreateRoomOptionDialog = ({ trigger }: DialogProps) => {
         roomName: roomName,
         isPublic: visibility === "public",
       });
-      setOpen(false); // close dialog after creation
     }, 1000);
   }, [createRoom, setAppState, roomName, visibility]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <div onClick={() => setOpen(true)}>{trigger}</div>
-      </DialogTrigger>
+    <Dialog>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
 
       <DialogContent
         className="w-[500px] space-y-4 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] shadow-lg dark:bg-[#1E1E1E] dark:text-[#FFFFFF]"
