@@ -3,12 +3,13 @@ import {
   assertFails,
   assertSucceeds,
   initializeTestEnvironment,
+  RulesTestContext,
   RulesTestEnvironment,
 } from "@firebase/rules-unit-testing";
 import { readFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { beforeAll, describe, it } from "vitest";
+import { afterAll, beforeAll, describe, it } from "vitest";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -21,6 +22,7 @@ describe("Firebase security test", () => {
     expiredAt: new Date(),
     usernames: ["code@gmail.com", "buddy@hotmail.com"],
   };
+  let authenticatedUser: RulesTestContext;
 
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
@@ -31,14 +33,13 @@ describe("Firebase security test", () => {
         port: 3001,
       },
     });
+    authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
+      email: "code@gmail.com",
+    });
   });
 
   it("should allow authenticated users to read/write rooms", async () => {
-    const authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
-      email: "code@gmail.com",
-    });
     const roomId = `CODEBUDDYTEST_${Date.now()}`;
-
     const db = authenticatedUser.firestore();
     const roomDoc = db.collection("rooms").doc(roomId);
     const sessionSubRef = db
@@ -84,11 +85,12 @@ describe("Firebase security test", () => {
   });
 
   it("should deny random path", async () => {
-    const authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
-      email: "code@gmail.com",
-    });
     const db = authenticatedUser.firestore();
     const randomCollection = db.collection("randomCollection").doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
+  });
+
+  afterAll(async () => {
+    await testEnv.cleanup();
   });
 });
