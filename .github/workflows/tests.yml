@@ -21,12 +21,6 @@ jobs:
           dockerfile: Dockerfile
         ports:
           - 3001:3001
-        #make sure that the docker is running before ci/cd
-        options: |
-          --health-cmd "curl --fail http://localhost:3001 || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
