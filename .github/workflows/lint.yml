@@ -27,5 +27,4 @@ jobs:
       - name: Run eslint
         run: pnpm lint
       - name: Build
-        working-directory: ./extension
         run: pnpm build
