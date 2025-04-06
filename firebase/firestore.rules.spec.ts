@@ -50,6 +50,7 @@ describe("Firebase security test", () => {
     await assertSucceeds(roomDoc.set(roomData));
     await assertSucceeds(roomDoc.get());
     await assertSucceeds(sessionSubRef.set({}));
+    await assertFails(roomDoc.update({ expiredAt: new Date() }));
   });
 
   it("should deny unauthenticated users from read/write rooms", async () => {
