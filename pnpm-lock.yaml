@@ -23,6 +23,9 @@ importers:
       '@firebase/rules-unit-testing':
         specifier: ^4.0.1
         version: 4.0.1(firebase@10.14.1)
+      '@types/jsdom':
+        specifier: ^21.1.7
+        version: 21.1.7
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.26.1
         version: 8.29.0(@typescript-eslint/parser@8.29.0(eslint@9.23.0(jiti@1.21.7))(typescript@5.8.2))(eslint@9.23.0(jiti@1.21.7))(typescript@5.8.2)
@@ -1490,6 +1493,9 @@ packages:
 
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
+
+  '@types/jsdom@21.1.7':
+    resolution: {integrity: sha512-yOriVnggzrnQ3a9OKOCxaVuSug3w3/SbOj5i7VwXWZEyUNl3bLF9V3MfxGbZKuwqJOQyRfqXyROBB1CoZLFWzA==}
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -5822,6 +5828,12 @@ snapshots:
 
   '@types/http-errors@2.0.4': {}
 
+  '@types/jsdom@21.1.7':
+    dependencies:
+      '@types/node': 20.17.27
+      '@types/tough-cookie': 4.0.5
+      parse5: 7.2.1
+
   '@types/json-schema@7.0.15': {}
 
   '@types/jsonwebtoken@9.0.9':
@@ -5886,8 +5898,7 @@ snapshots:
       '@types/node': 20.17.28
       '@types/send': 0.17.4
 
-  '@types/tough-cookie@4.0.5':
-    optional: true
+  '@types/tough-cookie@4.0.5': {}
 
   '@types/yauzl@2.10.3':
     dependencies:

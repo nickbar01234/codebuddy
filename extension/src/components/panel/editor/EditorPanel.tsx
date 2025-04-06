@@ -1,9 +1,11 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
-import CreateRoomLoadingPanel from "@cb/components/panel/CreateRoomLoadingPanel";
+import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
+import { ActivityLog } from "@cb/components/panel/editor/activity/ActivityLog";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
+import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
@@ -15,7 +17,6 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { ActivityLog } from "./activity/ActivityLog";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -24,8 +25,14 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { peers, activePeer, unblur, selectTest, isBuffer } =
-    usePeerSelection();
+  const {
+    peers,
+    activePeer,
+    unblur,
+    selectTest,
+    isBuffer,
+    activeUserInformation,
+  } = usePeerSelection();
   const {
     setCodePreferenceHeight,
     onResizeStop,
@@ -40,16 +47,19 @@ const EditorPanel = () => {
     },
     []
   );
+  const { getLanguageExtension } = useLanguageExtension();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
-  const tabsConfig = React.useMemo(
-    () => [
+  const tabsConfig = React.useMemo(() => {
+    const extension =
+      getLanguageExtension(activeUserInformation?.code?.code.language) ?? "";
+    return [
       {
         value: "code",
-        label: "Code",
+        label: `Code${extension}`,
         Icon: CodeXml,
         Content: <CodeTab />,
       },
@@ -65,9 +75,14 @@ const EditorPanel = () => {
           />
         ),
       },
-    ],
-    [activePeer, activeTest, selectTest]
-  );
+    ];
+  }, [
+    activePeer,
+    activeTest,
+    selectTest,
+    activeUserInformation,
+    getLanguageExtension,
+  ]);
 
   const { state: appState } = React.useContext(appStateContext);
 
@@ -112,8 +127,15 @@ const EditorPanel = () => {
             onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
             onResizeStop={onResizeStop}
           >
-            <Tabs defaultValue="code" className="h-full w-full">
-              <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto">
+            <Tabs
+              defaultValue="code"
+              className={cn("h-full w-full bg-inherit text-inherit")}
+            >
+              <TabsList
+                className={cn(
+                  "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
+                )}
+              >
                 <UserDropdown
                   key="user-dropdown"
                   isOpen={isUserDropdownOpen}
@@ -135,11 +157,7 @@ const EditorPanel = () => {
                         "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                       }
                     >
-                      <tab.Icon
-                        className="mr-2 h-4 w-4 text-[#34C759]
-
-"
-                      />
+                      <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
                     </TabsTrigger>
                     {index !== tabsConfig.length - 1 && (
@@ -160,7 +178,7 @@ const EditorPanel = () => {
                   value={value}
                   forceMount
                   className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto"
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full"
                   )}
                 >
                   {Content}
