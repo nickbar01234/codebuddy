@@ -1,5 +1,6 @@
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
+import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
@@ -25,7 +26,7 @@ export const AppNavigator = () => {
         <RoomControlMenu />
       </div>
       <div className="relative h-full w-full overflow-hidden">
-        <div className="absolute inset-0 flex h-full w-full items-center justify-center">
+        <div className="absolute inset-0 flex h-full w-full items-center justify-center mx-2">
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={
@@ -38,6 +39,8 @@ export const AppNavigator = () => {
             />
           ) : state === AppState.REJOINING ? (
             <RejoinPrompt />
+          ) : state === AppState.HOME ? (
+            <HomePanel />
           ) : null}
         </div>
         <EditorPanel />
