@@ -14,7 +14,6 @@ jobs:
     services:
       firestore-emulator: 
         build:
-        # build the container from current directory
           context: . 
           dockerfile: Dockerfile
         ports:
