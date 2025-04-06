@@ -12,14 +12,6 @@ jobs:
     strategy:
       matrix:
         node-version: ["22.x"]
-    
-    services:
-      firestore-emulator: 
-        build:
-          context: . 
-          dockerfile: Dockerfile
-        ports:
-          - 3001:3001
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
