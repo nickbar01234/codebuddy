@@ -1,6 +1,8 @@
 name: Tests
 
 on:
+  push: 
+    branches: ["na/firebase-security"]
   pull_request:
     branches: ["main"]
 
@@ -10,6 +12,20 @@ jobs:
     strategy:
       matrix:
         node-version: ["22.x"]
+    services:
+      firestore-emulator:
+        build:
+          context: .
+          dockerfile: Dockerfile
+          target: development
+        ports:
+          - 3001:3001
+        options: >-
+          --health-cmd "curl --fail http://localhost:3001 || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
