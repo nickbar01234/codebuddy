@@ -178,7 +178,7 @@ const EditorPanel = () => {
                   value={value}
                   forceMount
                   className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full"
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
                   )}
                 >
                   {Content}
