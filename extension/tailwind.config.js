@@ -73,6 +73,13 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
+        leetcode: {
+          bg: "var(--color-leetcode-bg)",
+          nav: "var(--color-leetcode-nav)",
+          hard: "var(--color-leetcode-hard)",
+          medium: "var(--color-leetcode-medium)",
+          easy: "var(--color-leetcode-easy)",
+        },
         "codebuddy-pink": "var(--color-pink)",
         "codebuddy-green": "var(--color-green)",
         "codebuddy-red": "var(--color-red)",

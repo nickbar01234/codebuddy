@@ -136,6 +136,13 @@ i.bar:hover span {
     --color-red: #ff3b30ff;
     --color-blue: #007affff;
     --color-orange: #ff9500ff;
+
+    /* LEETCODE COLOR */
+    --color-leetcode-bg: #ffffffff;
+    --color-leetcode-nav: #fafafaff;
+    --color-leetcode-hard: #ff284bff;
+    --color-leetcode-medium: #ffaf00ff;
+    --color-leetcode-easy: #00a690ff;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -185,6 +192,13 @@ i.bar:hover span {
     --color-red: #ff3b30ff;
     --color-blue: #007affff;
     --color-orange: #ff9500ff;
+
+    /* LEETCODE COLOR */
+    --color-leetcode-bg: #262626ff;
+    --color-leetcode-nav: #353535ff;
+    --color-leetcode-hard: #f53837ff;
+    --color-leetcode-medium: #ffb700ff;
+    --color-leetcode-easy: #1cbbbaff;
   }
 }
 
