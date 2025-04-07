@@ -20,6 +20,8 @@ services:
       - ./firebase:/app/services/firebase
       # Ignoring local node_modules
       - /app/services/firebase/functions/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001"]
     deploy:
       resources:
         limits:
