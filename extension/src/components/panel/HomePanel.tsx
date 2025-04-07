@@ -83,7 +83,7 @@ const HomePanel = () => {
           </DialogTrigger>
 
           <DialogContent
-            className="w-[500px] space-y-4 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] shadow-lg dark:bg-[#1E1E1E] dark:text-[#FFFFFF]"
+            className="w-[500px] space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]"
             onClick={(e) => e.stopPropagation()}
           >
             <DialogHeader>
@@ -92,10 +92,10 @@ const HomePanel = () => {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-1">
+            <div className="gap-y-2">
               <Label
                 htmlFor="roomName"
-                className="font-medium text-[#1E1E1E] dark:text-[#FFFFFF]"
+                className="font-medium text-base text-[#1E1E1E] dark:text-[#FFFFFF]"
               >
                 Room Name
               </Label>
@@ -113,7 +113,7 @@ const HomePanel = () => {
             <RadioGroup
               value={visibility}
               onValueChange={(value) => setVisibility(value)}
-              className="space-y-2"
+              className="space-y-1"
             >
               <p className="font-medium text-[#1E1E1E] dark:text-[#FFFFFF]">
                 Visibility
@@ -150,7 +150,7 @@ const HomePanel = () => {
 
             <Button
               onClick={createRoomThrottled}
-              className="w-full rounded-md bg-gray-200 py-2 font-medium text-[#1E1E1E] transition hover:bg-[--color-tab-hover-background] dark:bg-[#49494E] dark:text-[#FFFFFF] dark:hover:bg-[--color-tab-hover-background]"
+              className="w-full rounded-md  py-2 font-medium text-base text-[#1E1E1E] transition  dark:text-[#FFFFFF] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
             >
               Create
             </Button>
