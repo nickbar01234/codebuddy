@@ -25,8 +25,13 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: Start Firebase emulator 
-        run: docker compose up -d --wait --wait-timeout 30
-      - name: Test connection to Firestore Emulator
-        run: curl -v http://localhost:3001
+        run: docker compose up -d
+      - name: Wait for firebase emulator
+        run: | 
+          echo "Waiting to check firebase to be healthy"
+          until [ "$(docker inspect --format='{{.State.Health.Status}}' firebase)" = "healthy" ]; do
+            echo "Waiting..."
+            sleep 2
+          done
       - name: Run tests
         run: pnpm test
