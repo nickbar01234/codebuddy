@@ -33,5 +33,6 @@ jobs:
             echo "Waiting..."
             sleep 2
           done
+          echo "Firebase is healthy"
       - name: Run tests
         run: pnpm test
