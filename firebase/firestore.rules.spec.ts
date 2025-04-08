@@ -26,13 +26,16 @@ describe("Firebase security test", () => {
   let unauthenticatedUser: RulesTestContext;
   let authenticatedDb: ReturnType<RulesTestContext["firestore"]>;
   let unauthenticatedDb: ReturnType<RulesTestContext["firestore"]>;
+
   const createRoom = (db: ReturnType<RulesTestContext["firestore"]>) => {
     const roomId = `CODEBUDDYTEST_${Date.now()}`;
     return db.collection("rooms").doc(roomId);
   };
+
   const createSession = (roomDoc: ReturnType<typeof createRoom>) => {
     return roomDoc.collection("sessions").doc("two-sum");
   };
+
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
       projectId: "demo-code-buddy-development",
@@ -48,6 +51,10 @@ describe("Firebase security test", () => {
     unauthenticatedUser = testEnv.unauthenticatedContext();
     authenticatedDb = authenticatedUser.firestore();
     unauthenticatedDb = unauthenticatedUser.firestore();
+  });
+
+  afterAll(async () => {
+    await testEnv.cleanup();
   });
 
   it("should allow authenticated users to read/write rooms", async () => {
@@ -69,9 +76,9 @@ describe("Firebase security test", () => {
     const anotherEmail = testEnv.authenticatedContext("anotherUser", {
       email: "another@gmail.com",
     });
-    const unvalidRoomDoc = createRoom(anotherEmail.firestore());
-    const unvalidSessionRef = createSession(unvalidRoomDoc);
-    await assertFails(unvalidSessionRef.set({}));
+    const invalidRoomDoc = createRoom(anotherEmail.firestore());
+    const invalidSessionRef = createSession(invalidRoomDoc);
+    await assertFails(invalidSessionRef.set({}));
   });
 
   it("should deny random path", async () => {
@@ -79,9 +86,5 @@ describe("Firebase security test", () => {
       .collection("randomCollection")
       .doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
-  });
-
-  afterAll(async () => {
-    await testEnv.cleanup();
   });
 });
