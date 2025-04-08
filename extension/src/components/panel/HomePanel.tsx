@@ -130,7 +130,7 @@ const HomePanel = () => {
                 </label>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start gap-x-3">
                 <RadioGroupItem
                   value="private"
                   id="private"
