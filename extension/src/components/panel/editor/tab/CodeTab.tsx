@@ -16,7 +16,7 @@ export const CodeTab: React.FC = () => {
           hidden: isBuffer,
         })}
       >
-        <div className="absolute top-0 right-0 pr-6 z-50">
+        <div className="absolute top-2 right-0 pr-6 z-50">
           <button
             title="Paste code"
             type="button"

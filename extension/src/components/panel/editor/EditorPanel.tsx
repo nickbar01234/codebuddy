@@ -5,6 +5,7 @@ import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import { usePeerSelection, useWindowDimensions } from "@cb/hooks/index";
+import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
@@ -24,8 +25,14 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { peers, activePeer, unblur, selectTest, isBuffer } =
-    usePeerSelection();
+  const {
+    peers,
+    activePeer,
+    unblur,
+    selectTest,
+    isBuffer,
+    activeUserInformation,
+  } = usePeerSelection();
   const {
     setCodePreferenceHeight,
     onResizeStop,
@@ -40,16 +47,19 @@ const EditorPanel = () => {
     },
     []
   );
+  const { getLanguageExtension } = useLanguageExtension();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
-  const tabsConfig = React.useMemo(
-    () => [
+  const tabsConfig = React.useMemo(() => {
+    const extension =
+      getLanguageExtension(activeUserInformation?.code?.code.language) ?? "";
+    return [
       {
         value: "code",
-        label: "Code",
+        label: `Code${extension}`,
         Icon: CodeXml,
         Content: <CodeTab />,
       },
@@ -65,9 +75,14 @@ const EditorPanel = () => {
           />
         ),
       },
-    ],
-    [activePeer, activeTest, selectTest]
-  );
+    ];
+  }, [
+    activePeer,
+    activeTest,
+    selectTest,
+    activeUserInformation,
+    getLanguageExtension,
+  ]);
 
   const { state: appState } = React.useContext(appStateContext);
 
@@ -163,7 +178,7 @@ const EditorPanel = () => {
                   value={value}
                   forceMount
                   className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full"
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
                   )}
                 >
                   {Content}
