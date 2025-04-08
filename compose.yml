@@ -20,6 +20,8 @@ services:
       - ./firebase:/app/services/firebase
       # Ignoring local node_modules
       - /app/services/firebase/functions/node_modules
+    healthcheck:
+      test: timeout 30s bash -c '</dev/tcp/localhost/3001' || exit 1
     deploy:
       resources:
         limits:
