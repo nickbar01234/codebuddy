@@ -21,7 +21,7 @@ const HomePanel = () => {
   const { joinRoom, createRoom } = useRTC();
   const { setState: setAppState } = React.useContext(appStateContext);
   const [inputRoomId, setInputRoomId] = React.useState("");
-  const [visibility, setVisibility] = React.useState("public");
+  const [isPublic, setIsPublic] = React.useState(true);
   const [roomName, setRoomName] = React.useState("");
 
   const createRoomThrottled = React.useMemo(() => {
@@ -30,10 +30,10 @@ const HomePanel = () => {
       setAppState(AppState.ROOM);
       createRoom({
         roomName: roomName,
-        isPublic: visibility === "public",
+        isPublic: isPublic,
       });
     }, 1000);
-  }, [createRoom, setAppState, roomName, visibility]);
+  }, [createRoom, setAppState, roomName, isPublic]);
 
   const onJoinRoom = React.useMemo(() => {
     return throttle(
@@ -105,25 +105,22 @@ const HomePanel = () => {
                 placeholder="Enter Room Name"
                 value={roomName}
                 onChange={(e) => setRoomName(e.target.value)}
-                className="w-full border border-[#787880] px-3 py-2 text-[#1E1E1E] placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] dark:text-[#FFFFFF] focus:border-transparent
-"
+                className="w-full border border-[#787880] px-3 py-2 placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] focus:border-transparent"
               />
             </div>
 
             <RadioGroup
-              value={visibility}
-              onValueChange={(value) => setVisibility(value)}
+              value={isPublic ? "public" : "private"}
+              onValueChange={(value) => setIsPublic(value === "public")}
               className="space-y-1"
             >
-              <p className="font-medium text-[#1E1E1E] dark:text-[#FFFFFF]">
-                Visibility
-              </p>
+              <p className="font-medium ">Visibility</p>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start gap-x-3">
                 <RadioGroupItem
                   value="public"
                   id="public"
-                  className="form-radio text-[#050404] accent-black dark:text-[#FFFFFF] dark:accent-white"
+                  className="form-radio  accent-black  dark:accent-white"
                 />
                 <label htmlFor="public" className="space-y-0.5">
                   <span>Public</span>
@@ -137,7 +134,7 @@ const HomePanel = () => {
                 <RadioGroupItem
                   value="private"
                   id="private"
-                  className="form-radio text-[#1E1E1E] accent-black dark:text-[#FFFFFF] dark:accent-white"
+                  className="form-radio  accent-black  dark:accent-white"
                 />
                 <label htmlFor="private" className="space-y-0.5">
                   <span>Private</span>
@@ -150,7 +147,7 @@ const HomePanel = () => {
 
             <Button
               onClick={createRoomThrottled}
-              className="w-full rounded-md  py-2 font-medium text-base text-[#1E1E1E] transition  dark:text-[#FFFFFF] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
+              className="w-full rounded-md  py-2 font-medium text-base transition text-[#1E1E1E] dark:text-[#FFFFFF] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
             >
               Create
             </Button>
