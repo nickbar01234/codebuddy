@@ -92,7 +92,7 @@ const HomePanel = () => {
               </DialogTitle>
             </DialogHeader>
 
-            <div className="gap-y-2">
+            <div className="flex flex-col gap-y-2">
               <Label
                 htmlFor="roomName"
                 className="font-medium text-base text-[#1E1E1E] dark:text-[#FFFFFF]"
