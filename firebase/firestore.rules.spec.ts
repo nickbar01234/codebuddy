@@ -23,8 +23,16 @@ describe("Firebase security test", () => {
     usernames: ["code@gmail.com", "buddy@hotmail.com"],
   };
   let authenticatedUser: RulesTestContext;
-  let db: ReturnType<typeof authenticatedUser.firestore>;
-
+  let unauthenticatedUser: RulesTestContext;
+  let authenticatedDb: ReturnType<RulesTestContext["firestore"]>;
+  let unauthenticatedDb: ReturnType<RulesTestContext["firestore"]>;
+  const createRoom = (db: ReturnType<RulesTestContext["firestore"]>) => {
+    const roomId = `CODEBUDDYTEST_${Date.now()}`;
+    return db.collection("rooms").doc(roomId);
+  };
+  const createSession = (roomDoc: ReturnType<typeof createRoom>) => {
+    return roomDoc.collection("sessions").doc("two-sum");
+  };
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
       projectId: "demo-code-buddy-development",
@@ -37,58 +45,39 @@ describe("Firebase security test", () => {
     authenticatedUser = testEnv.authenticatedContext("codebuddytest", {
       email: "code@gmail.com",
     });
-    db = authenticatedUser.firestore();
+    unauthenticatedUser = testEnv.unauthenticatedContext();
+    authenticatedDb = authenticatedUser.firestore();
+    unauthenticatedDb = unauthenticatedUser.firestore();
   });
 
   it("should allow authenticated users to read/write rooms", async () => {
-    const roomId = `CODEBUDDYTEST_${Date.now()}`;
-    const roomDoc = db.collection("rooms").doc(roomId);
-    const sessionSubRef = db
-      .collection("rooms")
-      .doc(roomId)
-      .collection("sessions")
-      .doc("two-sum");
-
-    await assertSucceeds(roomDoc.set(roomData));
-    await assertSucceeds(roomDoc.get());
-    await assertSucceeds(sessionSubRef.set({}));
-    await assertFails(roomDoc.update({ expiredAt: new Date() }));
+    const authenticatedRoomDoc = createRoom(authenticatedDb);
+    const authenticatedSession = createSession(authenticatedRoomDoc);
+    await assertSucceeds(authenticatedRoomDoc.set(roomData));
+    await assertSucceeds(authenticatedRoomDoc.get());
+    await assertSucceeds(authenticatedSession.set({}));
+    await assertFails(authenticatedRoomDoc.update({ expiredAt: new Date() }));
   });
 
   it("should deny unauthenticated users from read/write rooms", async () => {
-    const unauthenticated = testEnv.unauthenticatedContext();
-    const unauthenticatedDb = unauthenticated.firestore();
-    const roomDoc = unauthenticatedDb
-      .collection("rooms")
-      .doc(`CODEBUDDYTEST_${Date.now()}`);
-
-    await assertFails(roomDoc.set(roomData));
-    await assertFails(roomDoc.get());
+    const unauthenticatedRoomDoc = createRoom(unauthenticatedDb);
+    await assertFails(unauthenticatedRoomDoc.set(roomData));
+    await assertFails(unauthenticatedRoomDoc.get());
   });
 
   it("only user in usernames array can access session document", async () => {
-    const roomId = `CODEBUDDYTEST_${Date.now()}`;
     const anotherEmail = testEnv.authenticatedContext("anotherUser", {
       email: "another@gmail.com",
     });
-    const validUser = testEnv.authenticatedContext("buddytest", {
-      email: "buddy@hotmail.com",
-    });
-    const validDb = validUser.firestore();
-    const roomDoc = validDb.collection("rooms").doc(roomId);
-    await roomDoc.set(roomData);
-
-    const unvalidDb = anotherEmail.firestore();
-    const sessionSubRef = unvalidDb
-      .collection("rooms")
-      .doc(roomId)
-      .collection("sessions")
-      .doc("two-sum");
-    await assertFails(sessionSubRef.set({}));
+    const unvalidRoomDoc = createRoom(anotherEmail.firestore());
+    const unvalidSessionRef = createSession(unvalidRoomDoc);
+    await assertFails(unvalidSessionRef.set({}));
   });
 
   it("should deny random path", async () => {
-    const randomCollection = db.collection("randomCollection").doc("randomDoc");
+    const randomCollection = authenticatedDb
+      .collection("randomCollection")
+      .doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
   });
 
