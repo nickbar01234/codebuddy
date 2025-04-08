@@ -86,7 +86,7 @@ export interface RTCContext {
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
   joiningBackRoom: (join: boolean) => Promise<void>;
-  roomState: ROOMSTATE | null;
+  roomState: RoomState | null;
   handleChooseQuestion: (questionId: string) => void;
   handleNavigateToNextQuestion: () => void;
   chooseQuestion: string | null;
@@ -96,7 +96,7 @@ interface RTCProviderProps {
   children: React.ReactNode;
 }
 
-export enum ROOMSTATE {
+export enum RoomState {
   CODE,
   CHOOSE,
   WAIT,
@@ -124,8 +124,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     () => getQuestionIdFromUrl(window.location.href),
     []
   );
-  const [roomState, setRoomState] = React.useState<ROOMSTATE | null>(
-    ROOMSTATE.CODE
+  const [roomState, setRoomState] = React.useState<RoomState | null>(
+    RoomState.CODE
   );
   const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
     null
@@ -310,7 +310,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     console.log("Created room", newRoomId);
     setRoomId(newRoomId);
     navigator.clipboard.writeText(newRoomId);
-    setRoomState(ROOMSTATE.CODE);
+    setRoomState(RoomState.CODE);
     toast.success(`Session ID ${newRoomId} copied to clipboard`);
   };
 
@@ -489,19 +489,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
         );
       }
       const navigate =
-        getLocalStorage("roomState") == ROOMSTATE.NAVIGATE.toString();
+        getLocalStorage("roomState") == RoomState.NAVIGATE.toString();
       const finished = sessionData.finishedUsers.includes(username);
       const nextQuestionChosen = sessionData.nextQuestion !== "";
       if (navigate) {
-        setRoomState(ROOMSTATE.CODE);
+        setRoomState(RoomState.CODE);
       } else if (finished && !nextQuestionChosen) {
-        setRoomState(ROOMSTATE.CHOOSE);
+        setRoomState(RoomState.CHOOSE);
       } else if (finished && nextQuestionChosen) {
-        setRoomState(ROOMSTATE.DECISION);
+        setRoomState(RoomState.DECISION);
       } else if (finished) {
-        setRoomState(ROOMSTATE.WAIT);
+        setRoomState(RoomState.WAIT);
       } else {
-        setRoomState(ROOMSTATE.CODE);
+        setRoomState(RoomState.CODE);
       }
       return true;
     },
@@ -674,7 +674,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           prevQuestionId != null &&
           prevQuestionId !== getQuestionIdFromUrl(window.location.href)
         ) {
-          setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
+          setLocalStorage("roomState", RoomState.NAVIGATE.toString());
           history.pushState(
             null,
             "",
@@ -696,7 +696,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (!chooseQuestion) return;
-    setLocalStorage("roomState", ROOMSTATE.NAVIGATE.toString());
+    setLocalStorage("roomState", RoomState.NAVIGATE.toString());
     setLocalStorage("chooseQuestion", chooseQuestion);
     await deleteMeRef.current();
     history.pushState(null, "", constructUrlFromQuestionId(chooseQuestion));
@@ -754,7 +754,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
               finishedUsers.length !== 0 &&
               finishedUsers.includes(username)
             ) {
-              setRoomState(ROOMSTATE.CHOOSE);
+              setRoomState(RoomState.CHOOSE);
             }
           } else {
             if (usernames.every((user) => finishedUsers.includes(user))) {
@@ -764,9 +764,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
                   constructUrlFromQuestionId(sessionData.nextQuestion)
               );
               setChooseQuestion(sessionData.nextQuestion);
-              setRoomState(ROOMSTATE.DECISION);
+              setRoomState(RoomState.DECISION);
             } else if (finishedUsers.includes(username)) {
-              setRoomState(ROOMSTATE.WAIT);
+              setRoomState(RoomState.WAIT);
             }
           }
         }

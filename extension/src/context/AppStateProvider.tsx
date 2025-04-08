@@ -2,7 +2,7 @@ import { useOnMount } from "@cb/hooks";
 import { getLocalStorage } from "@cb/services";
 import { AppUser } from "@cb/types";
 import React from "react";
-import { ROOMSTATE } from "./RTCProvider";
+import { RoomState } from "./RTCProvider";
 
 enum AppState {
   HOME, // Home screen
@@ -36,7 +36,7 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
       "navigation"
     )[0] as PerformanceNavigationTiming;
     const navigate =
-      getLocalStorage("roomState") == ROOMSTATE.NAVIGATE.toString();
+      getLocalStorage("roomState") == RoomState.NAVIGATE.toString();
     if (refreshInfo?.roomId)
       if (maybeReload.type === "reload" || navigate) {
         setState(AppState.LOADING);
