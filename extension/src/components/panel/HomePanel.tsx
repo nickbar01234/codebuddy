@@ -27,6 +27,10 @@ const HomePanel = () => {
   const createRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<Element>) => {
       event.stopPropagation?.();
+      if (isPublic && roomName.trim() === "") {
+        alert("Public rooms must have a name.");
+        return;
+      }
       setAppState(AppState.ROOM);
       createRoom({
         roomName: roomName,
