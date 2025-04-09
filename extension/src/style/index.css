@@ -28,15 +28,11 @@
   --color-drag-rect-background: var(--layer-02);
   --color-drag-rect: var(--text-primary);
   --color-edge-marker: var(--blue-60);
-  --text-secondary: #757575;
-  --text-tertiary: #b3b3b3;
 }
 
 .dark {
   --color-button-background: var(--fill-tertiary);
   --color-button-hover-background: rgba(255, 255, 255, 0.2);
-  --text-secondary: #f1f1f1b2;
-  --text-tertiary: #ffffff66;
 }
 /* add the code bellow */
 @layer utilities {
@@ -136,13 +132,9 @@ i.bar:hover span {
     --color-red: #ff3b30ff;
     --color-blue: #007affff;
     --color-orange: #ff9500ff;
-
-    /* LEETCODE COLOR */
+    /* Leetcode color */
     --color-leetcode-bg: #ffffffff;
     --color-leetcode-nav: #fafafaff;
-    --color-leetcode-hard: #ff284bff;
-    --color-leetcode-medium: #ffaf00ff;
-    --color-leetcode-easy: #00a690ff;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -186,19 +178,15 @@ i.bar:hover span {
     /* Icon color */
     --color-icon-default: #ffffffff;
     --color-icon-secondary: #757575ff;
-    /* Custom color */
+    /* Individual color */
     --color-pink: #ff6586ff;
     --color-green: #34c759ff;
     --color-red: #ff3b30ff;
     --color-blue: #007affff;
     --color-orange: #ff9500ff;
-
-    /* LEETCODE COLOR */
+    /* Leetcode color */
     --color-leetcode-bg: #262626ff;
     --color-leetcode-nav: #353535ff;
-    --color-leetcode-hard: #f53837ff;
-    --color-leetcode-medium: #ffb700ff;
-    --color-leetcode-easy: #1cbbbaff;
   }
 }
 

@@ -34,7 +34,6 @@ export default {
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -74,17 +73,19 @@ export default {
           5: "hsl(var(--chart-5))",
         },
         leetcode: {
+          hard: "var(--difficulty-hard)",
+          medium: "var(--difficulty-medium)",
+          easy: "var(--difficulty-easy)",
           bg: "var(--color-leetcode-bg)",
           nav: "var(--color-leetcode-nav)",
-          hard: "var(--color-leetcode-hard)",
-          medium: "var(--color-leetcode-medium)",
-          easy: "var(--color-leetcode-easy)",
         },
-        "codebuddy-pink": "var(--color-pink)",
-        "codebuddy-green": "var(--color-green)",
-        "codebuddy-red": "var(--color-red)",
-        "codebuddy-blue": "var(--color-blue)",
-        "codebuddy-orange": "var(--color-orange)",
+        codebuddy: {
+          pink: "var(--color-pink)",
+          green: "var(--color-green)",
+          red: "var(--color-red)",
+          blue: "var(--color-blue)",
+          orange: "var(--color-orange)",
+        },
       },
     },
   },
