@@ -120,7 +120,7 @@ const HomePanel = () => {
                 <RadioGroupItem
                   value="public"
                   id="public"
-                  className="form-radio  accent-black  dark:accent-white"
+                  className="form-radio mt-2 accent-black  dark:accent-white"
                 />
                 <label htmlFor="public" className="space-y-0.5">
                   <span>Public</span>
@@ -134,7 +134,7 @@ const HomePanel = () => {
                 <RadioGroupItem
                   value="private"
                   id="private"
-                  className="form-radio  accent-black  dark:accent-white"
+                  className="form-radio mt-2 accent-black  dark:accent-white"
                 />
                 <label htmlFor="private" className="space-y-0.5">
                   <span>Private</span>
