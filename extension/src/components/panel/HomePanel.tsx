@@ -120,18 +120,23 @@ const HomePanel = () => {
             >
               <p className="font-medium ">Visibility</p>
 
-              <div className="flex items-start gap-x-3">
-                <RadioGroupItem
-                  value="public"
-                  id="public"
-                  className="form-radio mt-2 accent-black  dark:accent-white"
-                />
-                <label htmlFor="public" className="space-y-0.5">
-                  <span>Public</span>
+              <div className="flex flex-col gap-y-1">
+                <div className="grid grid-cols-[5%_95%]">
+                  <RadioGroupItem
+                    value="public"
+                    id="public"
+                    className="form-radio accent-black dark:accent-white self-center"
+                  />
+                  <label htmlFor="public">
+                    <span>Public</span>
+                  </label>
+                </div>
+                <div className="grid grid-cols-[5%_95%]">
+                  <div />
                   <p className="text-base text-[#757575] dark:text-[#F1F1F1]">
                     Anyone can join your room
                   </p>
-                </label>
+                </div>
               </div>
 
               <div className="flex items-start gap-x-3">
