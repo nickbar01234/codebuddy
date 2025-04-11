@@ -40,20 +40,19 @@ const usePaginate = <T>({
   const [totalDocs, setTotalDocs] = useState(0);
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [isNext, setIsNext] = useState<boolean>(true);
 
   const buildPaginatedQuery = useCallback(
     (cursor?: QueryDocumentSnapshot<T>) => {
       const cursorConstraint =
-        cursor &&
-        (direction === "next" ? startAfter(cursor) : endBefore(cursor));
+        cursor && (isNext ? startAfter(cursor) : endBefore(cursor));
       return firestoreQuery(
         baseQuery,
         ...(cursorConstraint ? [cursorConstraint] : []),
         firestoreLimit(limit)
       );
     },
-    [baseQuery, direction, limit]
+    [baseQuery, isNext, limit]
   );
 
   const handleSnapshot = useCallback(
@@ -61,14 +60,14 @@ const usePaginate = <T>({
       if (res.empty) return;
 
       const newDocs = res.docs;
-      if (!firstDoc || direction === "prev") setFirstDoc(newDocs[0]);
-      if (direction === "next") setLastDoc(newDocs[newDocs.length - 1]);
+      if (!firstDoc || !isNext) setFirstDoc(newDocs[0]);
+      if (isNext) setLastDoc(newDocs[newDocs.length - 1]);
 
       setDocs((prev) =>
-        direction === "next" ? [...prev, ...newDocs] : [...newDocs, ...prev]
+        isNext ? [...prev, ...newDocs] : [...newDocs, ...prev]
       );
     },
-    [direction, firstDoc]
+    [isNext, firstDoc]
   );
 
   const handleError = useCallback((err: unknown) => {
@@ -103,12 +102,12 @@ const usePaginate = <T>({
 
   const getNext = useCallback(() => {
     if (docs.length === totalDocs) return;
-    setDirection("next");
+    setIsNext(true);
     if (lastDoc) fetchDocs(lastDoc);
   }, [lastDoc, fetchDocs, docs, totalDocs]);
 
   const getPrevious = useCallback(() => {
-    setDirection("prev");
+    setIsNext(false);
     if (firstDoc) fetchDocs(firstDoc);
   }, [firstDoc, fetchDocs]);
 
