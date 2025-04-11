@@ -380,22 +380,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Room does not exist");
         return false;
       }
-      const sessionDoc = await getSession(roomId, sessionId);
-      if (!sessionDoc.exists()) {
-        toast.error("Session does not exist");
-        return false;
-      }
-      const usernames = sessionDoc.data().usernames;
-      if (usernames.length >= MAX_CAPACITY) {
+      if (roomDoc.data().usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
         return false;
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-      setRoom(getRoomRef(roomId), {
+      await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
+      const sessionDoc = await getSession(roomId, sessionId);
+      if (!sessionDoc.exists()) {
+        toast.error("Session does not exist");
+        return false;
+      }
       await setSession(getSessionRef(roomId, sessionId), {
         usernames: arrayUnion(username),
       });
@@ -496,17 +495,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
 
       try {
-        await setRoom(getRoomRef(roomId), {
-          usernames: arrayRemove(username),
-        });
         await setSession(getSessionRef(roomId, sessionId), {
           usernames: arrayRemove(username),
         });
         const myAnswers = await getDocs(
           getSessionPeerConnectionRefs(roomId, sessionId, username)
         );
-        myAnswers.docs.forEach(async (doc) => {
-          deleteDoc(doc.ref);
+        await Promise.all(myAnswers.docs.map((doc) => deleteDoc(doc.ref)));
+        await setRoom(getRoomRef(roomId), {
+          usernames: arrayRemove(username),
         });
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
