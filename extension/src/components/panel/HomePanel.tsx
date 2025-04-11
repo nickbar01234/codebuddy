@@ -139,18 +139,23 @@ const HomePanel = () => {
                 </div>
               </div>
 
-              <div className="flex items-start gap-x-3">
-                <RadioGroupItem
-                  value="private"
-                  id="private"
-                  className="form-radio mt-2 accent-black  dark:accent-white"
-                />
-                <label htmlFor="private" className="space-y-0.5">
-                  <span>Private</span>
+              <div className="flex flex-col gap-y-1">
+                <div className="grid grid-cols-[5%_95%]">
+                  <RadioGroupItem
+                    value="private"
+                    id="private"
+                    className="form-radio accent-black dark:accent-white self-center"
+                  />
+                  <label htmlFor="private">
+                    <span>Private</span>
+                  </label>
+                </div>
+                <div className="grid grid-cols-[5%_95%]">
+                  <div />
                   <p className="text-base text-[#757575] dark:text-[#F1F1F1]">
                     Only users with the Room ID can access
                   </p>
-                </label>
+                </div>
               </div>
             </RadioGroup>
 
