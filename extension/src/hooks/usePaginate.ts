@@ -91,9 +91,13 @@ const usePaginate = <T>({
   );
 
   useEffect(() => {
-    getCountFromServer(baseQuery)
-      .then((res) => setTotalDocs(res.data().count))
-      .catch(handleError);
+    const interval = setInterval(() => {
+      getCountFromServer(baseQuery)
+        .then((res) => setTotalDocs(res.data().count))
+        .catch(handleError);
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [baseQuery, handleError]);
 
   useEffect(() => {
