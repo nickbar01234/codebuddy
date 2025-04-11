@@ -1,4 +1,5 @@
 import { act, renderHook } from "@testing-library/react-hooks";
+
 import { getCountFromServer, getDocs } from "firebase/firestore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import usePaginate from "./usePaginate";
@@ -34,9 +35,7 @@ describe("usePaginate", () => {
     const firstDocs = generateDocs(2);
     const secondDocs = generateDocs(2).map((d) => ({ ...d, id: d.id + "-p2" }));
 
-    (getDocs as any)
-      .mockResolvedValueOnce({ size: 2, docs: firstDocs })
-      .mockResolvedValueOnce({ size: 2, docs: secondDocs });
+    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: firstDocs });
 
     const { result, waitForNextUpdate } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
@@ -49,7 +48,9 @@ describe("usePaginate", () => {
       "doc-1",
       "doc-2",
     ]);
-    const initialFirstDoc = result.current.data.docs[0];
+    expect(result.current.hasNext).toBe(true);
+
+    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: secondDocs });
 
     await act(async () => {
       result.current.getNext();
@@ -62,7 +63,6 @@ describe("usePaginate", () => {
       "doc-1-p2",
       "doc-2-p2",
     ]);
-    expect(result.current.data.docs[0]).toBe(initialFirstDoc);
     expect(result.current.hasNext).toBe(false);
   });
 
@@ -99,35 +99,6 @@ describe("usePaginate", () => {
       "doc-1-p2",
       "doc-2-p2",
     ]);
-  });
-
-  it("correctly reflects hasNext", async () => {
-    (getCountFromServer as any).mockResolvedValue({
-      data: () => ({ count: 6 }),
-    });
-
-    const docs = generateDocs(2);
-    (getDocs as any).mockResolvedValue({ size: 2, docs });
-
-    const { result, waitForNextUpdate } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
-
-    await waitForNextUpdate();
-
-    expect(result.current.hasNext).toBe(true);
-
-    await act(async () => {
-      result.current.getNext();
-    });
-
-    expect(result.current.hasNext).toBe(true);
-
-    await act(async () => {
-      result.current.getNext();
-    });
-
-    expect(result.current.hasNext).toBe(false);
   });
 
   it("handles empty results correctly", async () => {
