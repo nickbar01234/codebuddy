@@ -4,12 +4,14 @@ import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { usePeerSelection } from "@cb/hooks/index";
+import { getAllSessionId } from "@cb/db";
+import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { QuestionSelectorPanel } from "@cb/components/panel";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const AppNavigator = () => {
@@ -18,6 +20,28 @@ export const AppNavigator = () => {
   useDevSetupRoom();
 
   const currentTabInfo = getLocalStorage("tabs");
+  const { roomId } = useRTC();
+
+  const [pastQuestionsId, setPastQuestionsId] = useState<string[]>([
+    "add-two-numbers",
+    "",
+  ]);
+  useEffect(() => {
+    if (!roomId) {
+      return;
+    }
+    const fetchPastQuestions = async () => {
+      const pastSessionsId = await getAllSessionId(roomId);
+      console.log("roomId", roomId);
+      console.log("past session id", pastSessionsId);
+      setPastQuestionsId(pastSessionsId);
+    };
+    fetchPastQuestions();
+  }, [roomId]);
+
+  const handleQuestionSelect = (link: string) => {
+    window.location.href = link;
+  };
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -43,6 +67,10 @@ export const AppNavigator = () => {
             <HomePanel />
           ) : null}
         </div>
+        <QuestionSelectorPanel
+          handleQuestionSelect={handleQuestionSelect}
+          pastQuestionsId={pastQuestionsId}
+        />
         <EditorPanel />
       </div>
       <div

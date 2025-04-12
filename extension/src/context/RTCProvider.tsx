@@ -382,6 +382,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       const sessionDoc = await getSession(roomId, sessionId);
       if (!sessionDoc.exists()) {
+        console.log("error in session doc", sessionId);
         toast.error("Session does not exist");
         return false;
       }

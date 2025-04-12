@@ -1,6 +1,5 @@
-import { useOnMount } from "@cb/hooks";
 import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
-import React from "react";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { SelectQuestionButton } from "./SelectProblemButton";
 
@@ -9,11 +8,12 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
+  pastQuestionsId: string[];
 }
-
+//run useEffect when the entire iframedoc is finished loading
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
-    useOnMount(() => {
+  ({ handleQuestionSelect, pastQuestionsId }: QuestionSelectorPanelProps) => {
+    useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -30,32 +30,54 @@ export const QuestionSelectorPanel = React.memo(
           table as unknown as Document
         );
         // The order currently: status, title, solution, acceptance, difficulty, frequency
-        rows?.querySelectorAll("div[role='row']").forEach(async (question) => {
-          try {
-            // Technically, the selector can either match on status (if daily question) or title -- in either cases,
-            // we have the link to the actual problem
-            const link = (await waitForElement(
-              "div[role='cell'] a",
-              TIMEOUT,
-              question as unknown as Document
-            )) as HTMLAnchorElement;
-            const injected = iframeDoc.createElement("span");
-            question.append(injected);
-            createRoot(injected).render(
-              <SelectQuestionButton
-                onClick={() => {
-                  // Handle the question select
-                  handleQuestionSelect(link.href);
-                  // Prevent further action
+
+        const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
+        setTimeout(async () => {
+          for (const question of rowList) {
+            try {
+              // Technically, the selector can either match on status (if daily question) or title -- in either cases,
+              // we have the link to the actual problem
+              const link = (await waitForElement(
+                "div[role='cell'] a",
+                TIMEOUT,
+                question as unknown as Document
+              )) as HTMLAnchorElement;
+
+              const url = new URL(link.href);
+              const currQuestionId = url.pathname
+                .split("/")
+                .filter(Boolean)
+                .pop();
+
+              if (currQuestionId && pastQuestionsId.includes(currQuestionId)) {
+                console.log("past question Id", pastQuestionsId);
+                try {
+                  rows.removeChild(question);
+                  console.log("remove ok", question);
                   return;
-                }}
-              />
-            );
-          } catch {
-            // If no link exist, there's no point in displaying the question
-            rows.removeChild(question);
+                } catch (error) {
+                  console.log("cannot remove", error);
+                }
+              }
+              const injected = iframeDoc.createElement("span");
+              question.append(injected);
+
+              createRoot(injected).render(
+                <SelectQuestionButton
+                  onClick={() => {
+                    // Handle the question select
+                    handleQuestionSelect(link.href);
+                    // Prevent further action
+                    return;
+                  }}
+                />
+              );
+            } catch {
+              // If no link exist, there's no point in displaying the question
+              rows.removeChild(question);
+            }
           }
-        });
+        }, 5000);
 
         waitForElement(
           "div[role='columnheader']:first-child",
@@ -71,7 +93,6 @@ export const QuestionSelectorPanel = React.memo(
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
         const iframe = element as HTMLIFrameElement;
-
         iframe.onload = async () => {
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
@@ -82,7 +103,7 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-    });
+    }, [pastQuestionsId, handleQuestionSelect]);
 
     return (
       <iframe
