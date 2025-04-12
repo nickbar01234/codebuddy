@@ -47,7 +47,7 @@ describe("usePaginate", () => {
       usePaginate({ query: mockQuery, limit })
     );
     await act(async () => {
-      vi.advanceTimersByTimeAsync(5000);
+      vi.advanceTimersByTimeAsync(120000);
       vi.advanceTimersByTime(500);
     });
 

@@ -99,7 +99,7 @@ const usePaginate = <T>({
       getCountFromServer(baseQuery)
         .then((res) => setTotalDocs(res.data().count))
         .catch(handleError);
-    }, 5000);
+    }, 120000);
 
     return () => clearInterval(interval);
   }, [baseQuery, handleError]);
