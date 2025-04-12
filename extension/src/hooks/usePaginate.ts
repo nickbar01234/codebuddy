@@ -36,11 +36,12 @@ const usePaginate = <T>({
   limit,
 }: HookProps<T>): HookReturnValue<T> => {
   const [docs, setDocs] = useState<QueryDocumentSnapshot<T>[]>([]);
-  const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<T>>();
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<T>>();
   const [totalDocs, setTotalDocs] = useState(0);
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
+
+  const getFirstDoc = useCallback(() => docs[0], [docs]);
+  const getLastDoc = useCallback(() => docs[docs.length - 1], [docs]);
 
   const buildPaginatedQuery = useCallback(
     (isNext: boolean, cursor?: QueryDocumentSnapshot<T>) => {
@@ -58,16 +59,12 @@ const usePaginate = <T>({
   const handleSnapshot = useCallback(
     (res: QuerySnapshot<T>, isNext: boolean) => {
       if (res.empty) return;
-
       const newDocs = res.docs;
-      if (!firstDoc || !isNext) setFirstDoc(newDocs[0]);
-      if (isNext) setLastDoc(newDocs[newDocs.length - 1]);
-
       setDocs((prev) =>
         isNext ? [...prev, ...newDocs] : [...newDocs, ...prev]
       );
     },
-    [firstDoc]
+    []
   );
 
   const handleError = useCallback((err: unknown) => {
@@ -110,12 +107,14 @@ const usePaginate = <T>({
 
   const getNext = useCallback(() => {
     if (docs.length === totalDocs) return;
+    const lastDoc = getLastDoc();
     if (lastDoc) fetchDocs(lastDoc, true);
-  }, [lastDoc, fetchDocs, docs, totalDocs]);
+  }, [getLastDoc, fetchDocs, docs, totalDocs]);
 
   const getPrevious = useCallback(() => {
+    const firstDoc = getFirstDoc();
     if (firstDoc) fetchDocs(firstDoc, false);
-  }, [firstDoc, fetchDocs]);
+  }, [getFirstDoc, fetchDocs]);
 
   return useMemo(
     () => ({
