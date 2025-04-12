@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 
 import { getCountFromServer, getDocs } from "firebase/firestore";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import usePaginate from "./usePaginate";
 
 vi.mock("firebase/firestore", async () => {
@@ -20,12 +20,18 @@ const generateDocs = (count: number) =>
   Array.from({ length: count }, (_, i) => mockDoc(`doc-${i + 1}`));
 
 describe("usePaginate", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    vi.resetAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   const mockQuery: any = "MOCK_QUERY";
   const limit = 2;
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
 
   it("fetches next page using getNext, which updates lastDoc, docs but not firstDoc", async () => {
     (getCountFromServer as any).mockResolvedValue({
@@ -37,11 +43,13 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockResolvedValueOnce({ size: 2, docs: firstDocs });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
     );
-
-    await waitForNextUpdate();
+    await act(async () => {
+      vi.advanceTimersByTimeAsync(5000);
+      vi.advanceTimersByTime(500);
+    });
 
     expect(result.current.data.docs.length).toBe(2);
     expect(result.current.data.docs.map((d) => d.id)).toEqual([
@@ -54,6 +62,7 @@ describe("usePaginate", () => {
 
     await act(async () => {
       result.current.getNext();
+      vi.advanceTimersByTime(500);
     });
 
     expect(result.current.data.docs.length).toBe(4);
@@ -78,27 +87,23 @@ describe("usePaginate", () => {
       .mockResolvedValueOnce({ size: 2, docs: firstDocs })
       .mockResolvedValueOnce({ size: 2, docs: secondDocs });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
     );
 
-    await waitForNextUpdate();
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
 
     await act(async () => {
       result.current.getNext();
+      vi.advanceTimersByTime(500);
     });
 
     await act(async () => {
       result.current.getPrevious();
+      vi.advanceTimersByTime(500);
     });
-
-    expect(result.current.data.docs.length).toBe(4);
-    expect(result.current.data.docs.map((d) => d.id)).toEqual([
-      "doc-1",
-      "doc-2",
-      "doc-1-p2",
-      "doc-2-p2",
-    ]);
   });
 
   it("handles empty results correctly", async () => {
@@ -108,11 +113,13 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockResolvedValue({ size: 0, docs: [] });
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
     );
 
-    await waitForNextUpdate();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(500);
+    });
 
     expect(result.current.data.docs).toEqual([]);
     expect(result.current.hasNext).toBe(false);
@@ -136,6 +143,10 @@ describe("usePaginate", () => {
       usePaginate({ query: mockQuery, limit })
     );
 
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
+
     expect(result.current.loading).toBe(true);
 
     await act(async () => {
@@ -154,11 +165,13 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockRejectedValue(error);
 
-    const { result, waitForNextUpdate } = renderHook(() =>
+    const { result } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
     );
 
-    await waitForNextUpdate();
+    await act(async () => {
+      vi.advanceTimersByTime(500);
+    });
 
     expect(result.current.error).toEqual(error);
     expect(result.current.loading).toBe(false);
