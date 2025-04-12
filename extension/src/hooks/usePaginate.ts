@@ -41,10 +41,9 @@ const usePaginate = <T>({
   const [totalDocs, setTotalDocs] = useState(0);
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
-  const [isNext, setIsNext] = useState<boolean>(true);
 
   const buildPaginatedQuery = useCallback(
-    (cursor?: QueryDocumentSnapshot<T>) => {
+    (isNext: boolean, cursor?: QueryDocumentSnapshot<T>) => {
       const cursorConstraint =
         cursor && (isNext ? startAfter(cursor) : endBefore(cursor));
       return firestoreQuery(
@@ -53,11 +52,11 @@ const usePaginate = <T>({
         firestoreLimit(limit)
       );
     },
-    [baseQuery, isNext, limit]
+    [baseQuery, limit]
   );
 
   const handleSnapshot = useCallback(
-    (res: QuerySnapshot<T>) => {
+    (res: QuerySnapshot<T>, isNext: boolean) => {
       if (res.empty) return;
 
       const newDocs = res.docs;
@@ -68,7 +67,7 @@ const usePaginate = <T>({
         isNext ? [...prev, ...newDocs] : [...newDocs, ...prev]
       );
     },
-    [isNext, firstDoc]
+    [firstDoc]
   );
 
   const handleError = useCallback((err: unknown) => {
@@ -77,18 +76,21 @@ const usePaginate = <T>({
 
   const fetchDocs = useMemo(
     () =>
-      debounce(async (cursor?: QueryDocumentSnapshot<T>) => {
-        setLoading(true);
-        try {
-          const q = buildPaginatedQuery(cursor);
-          const res = await getDocs(q);
-          handleSnapshot(res);
-        } catch (err) {
-          handleError(err);
-        } finally {
-          setLoading(false);
-        }
-      }, 500),
+      debounce(
+        async (cursor?: QueryDocumentSnapshot<T>, isNext: boolean = true) => {
+          setLoading(true);
+          try {
+            const q = buildPaginatedQuery(isNext, cursor);
+            const res = await getDocs(q);
+            handleSnapshot(res, isNext);
+          } catch (err) {
+            handleError(err);
+          } finally {
+            setLoading(false);
+          }
+        },
+        500
+      ),
     [buildPaginatedQuery, handleSnapshot, handleError]
   );
 
@@ -108,13 +110,11 @@ const usePaginate = <T>({
 
   const getNext = useCallback(() => {
     if (docs.length === totalDocs) return;
-    setIsNext(true);
-    if (lastDoc) fetchDocs(lastDoc);
+    if (lastDoc) fetchDocs(lastDoc, true);
   }, [lastDoc, fetchDocs, docs, totalDocs]);
 
   const getPrevious = useCallback(() => {
-    setIsNext(false);
-    if (firstDoc) fetchDocs(firstDoc);
+    if (firstDoc) fetchDocs(firstDoc, false);
   }, [firstDoc, fetchDocs]);
 
   return useMemo(
