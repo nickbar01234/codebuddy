@@ -32,6 +32,8 @@ export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface Room {
   usernames: string[];
+  isPublic: boolean;
+  roomName: string;
   activityLog: LogEvent[];
 }
 
@@ -42,6 +44,7 @@ export interface PeerConnection {
   answer?: RTCSessionDescriptionInit;
   answerCandidates: RTCIceCandidate[];
 }
+
 export interface Session {
   finishedUsers: string[];
   usernames: string[];
@@ -73,6 +76,8 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,
+      isPublic: data.isPublic ?? true,
+      roomName: data.roomName ?? "",
       usernames: data.usernames ?? [],
       activityLog: data.activityLog ?? [],
     };
