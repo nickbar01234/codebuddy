@@ -9,6 +9,7 @@ import {
   QuerySnapshot,
   startAfter,
 } from "firebase/firestore";
+import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Data<T> {
@@ -74,19 +75,20 @@ const usePaginate = <T>({
     setError(err as Error);
   }, []);
 
-  const fetchDocs = useCallback(
-    async (cursor?: QueryDocumentSnapshot<T>) => {
-      setLoading(true);
-      try {
-        const q = buildPaginatedQuery(cursor);
-        const res = await getDocs(q);
-        handleSnapshot(res);
-      } catch (err) {
-        handleError(err);
-      } finally {
-        setLoading(false);
-      }
-    },
+  const fetchDocs = useMemo(
+    () =>
+      debounce(async (cursor?: QueryDocumentSnapshot<T>) => {
+        setLoading(true);
+        try {
+          const q = buildPaginatedQuery(cursor);
+          const res = await getDocs(q);
+          handleSnapshot(res);
+        } catch (err) {
+          handleError(err);
+        } finally {
+          setLoading(false);
+        }
+      }, 500),
     [buildPaginatedQuery, handleSnapshot, handleError]
   );
 
