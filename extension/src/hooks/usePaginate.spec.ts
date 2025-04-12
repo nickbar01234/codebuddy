@@ -75,7 +75,7 @@ describe("usePaginate", () => {
     expect(result.current.hasNext).toBe(false);
   });
 
-  it("fetches previous page using getPrevious", async () => {
+  it("starts on page 2 and goes back to page 1 using getPrevious", async () => {
     (getCountFromServer as any).mockResolvedValue({
       data: () => ({ count: 4 }),
     });
@@ -83,27 +83,33 @@ describe("usePaginate", () => {
     const firstDocs = generateDocs(2);
     const secondDocs = generateDocs(2).map((d) => ({ ...d, id: d.id + "-p2" }));
 
-    (getDocs as any)
-      .mockResolvedValueOnce({ size: 2, docs: firstDocs })
-      .mockResolvedValueOnce({ size: 2, docs: secondDocs });
+    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: secondDocs });
 
     const { result } = renderHook(() =>
       usePaginate({ query: mockQuery, limit })
     );
 
     await act(async () => {
-      vi.advanceTimersByTime(500);
+      await vi.advanceTimersByTimeAsync(500);
     });
 
-    await act(async () => {
-      result.current.getNext();
-      vi.advanceTimersByTime(500);
-    });
+    expect(result.current.data.docs.map((d) => d.id)).toEqual([
+      "doc-1-p2",
+      "doc-2-p2",
+    ]);
+
+    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: firstDocs });
 
     await act(async () => {
       result.current.getPrevious();
-      vi.advanceTimersByTime(500);
+      await vi.advanceTimersByTimeAsync(500);
     });
+    expect(result.current.data.docs.map((d) => d.id)).toEqual([
+      "doc-1",
+      "doc-2",
+      "doc-1-p2",
+      "doc-2-p2",
+    ]);
   });
 
   it("handles empty results correctly", async () => {
