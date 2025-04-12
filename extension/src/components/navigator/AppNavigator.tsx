@@ -1,4 +1,5 @@
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
+import { QuestionSelectorPanel } from "@cb/components/panel";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
@@ -11,7 +12,6 @@ import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import React, { useEffect, useState } from "react";
-import { QuestionSelectorPanel } from "@cb/components/panel";
 import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const AppNavigator = () => {
@@ -22,10 +22,7 @@ export const AppNavigator = () => {
   const currentTabInfo = getLocalStorage("tabs");
   const { roomId } = useRTC();
 
-  const [pastQuestionsId, setPastQuestionsId] = useState<string[]>([
-    "add-two-numbers",
-    "",
-  ]);
+  const [pastQuestionsId, setPastQuestionsId] = useState<string[]>([]);
   useEffect(() => {
     if (!roomId) {
       return;
