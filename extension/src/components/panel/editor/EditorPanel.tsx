@@ -10,6 +10,7 @@ import {
   useRTC,
   useWindowDimensions,
 } from "@cb/hooks/index";
+import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import { Separator } from "@cb/lib/components/ui/separator";
 import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import {
@@ -35,8 +36,14 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const { peers, activePeer, unblur, selectTest, isBuffer } =
-    usePeerSelection();
+  const {
+    peers,
+    activePeer,
+    unblur,
+    selectTest,
+    isBuffer,
+    activeUserInformation,
+  } = usePeerSelection();
   const { state: appState } = useAppState();
   const {
     setCodePreferenceHeight,
@@ -53,16 +60,19 @@ const EditorPanel = () => {
     },
     []
   );
+  const { getLanguageExtension } = useLanguageExtension();
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
-  const tabsConfig = React.useMemo(
-    () => [
+  const tabsConfig = React.useMemo(() => {
+    const extension =
+      getLanguageExtension(activeUserInformation?.code?.code.language) ?? "";
+    return [
       {
         value: "code",
-        label: "Code",
+        label: `Code${extension}`,
         Icon: CodeXml,
         Content: <CodeTab />,
       },
@@ -78,9 +88,14 @@ const EditorPanel = () => {
           />
         ),
       },
-    ],
-    [activePeer, activeTest, selectTest]
-  );
+    ];
+  }, [
+    activePeer,
+    activeTest,
+    selectTest,
+    activeUserInformation,
+    getLanguageExtension,
+  ]);
 
   return (
     <div
@@ -195,7 +210,7 @@ const EditorPanel = () => {
                   value={value}
                   forceMount
                   className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full"
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
                   )}
                 >
                   {Content}

@@ -21,8 +21,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
   const canDropdown = peers.length >= 2;
 
   return (
-    <SkeletonWrapper loading={activePeer == undefined} className=" h-4 w-44">
-      <div>
+    <div className="w-48">
+      <SkeletonWrapper loading={activePeer == undefined} className="h-4 w-44">
         <div className="flex w-44 items-center">
           <button
             data-dropdown-toggle="dropdown"
@@ -80,8 +80,8 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ isOpen, toggle }) => {
             ))}
           </ul>
         </div>
-      </div>
-    </SkeletonWrapper>
+      </SkeletonWrapper>
+    </div>
   );
 };
 

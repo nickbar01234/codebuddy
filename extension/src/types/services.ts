@@ -45,6 +45,10 @@ interface CloseSignInTabRequest extends GenericMessage {
   signIn: LocalStorage["signIn"];
 }
 
+interface GetLanguageExtensionRequest extends GenericMessage {
+  action: "getLanguageExtension";
+}
+
 export type ServiceRequest =
   | GetValueRequest
   | PastCodeRequest
@@ -53,7 +57,8 @@ export type ServiceRequest =
   | SetupLeetCodeModel
   | ReloadExtensionRequest
   | GetActiveTabIdRequest
-  | CloseSignInTabRequest;
+  | CloseSignInTabRequest
+  | GetLanguageExtensionRequest;
 
 export enum ResponseStatus {
   SUCCESS,
@@ -78,5 +83,6 @@ export type ServiceResponse = GenericResponse<
     reloadExtension: void;
     getActiveTabId: number;
     closeSignInTab: ServiceGenericResponse;
+    getLanguageExtension: Array<{ id: string; extensions: string[] }>;
   }
 >;
