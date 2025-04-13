@@ -634,44 +634,39 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const handleSucessfulSubmissionRef = React.useRef(handleSucessfulSubmission);
   const handleFailedSubmissionRef = React.useRef(handleFailedSubmission);
 
-  const joiningBackRoom = React.useCallback(
-    async (reload: boolean = false) => {
-      const refreshInfo = getLocalStorage("tabs");
-      if (refreshInfo == undefined) return;
-      const prevRoomId = refreshInfo.roomId;
-      await leaveRoom(prevRoomId, false);
-      await setRoom(getRoomRef(prevRoomId), {
-        usernames: arrayUnion(username),
-      });
+  const joiningBackRoom = React.useCallback(async () => {
+    const refreshInfo = getLocalStorage("tabs");
+    if (refreshInfo == undefined) return;
+    console.log("Joining back room", refreshInfo);
+    const prevRoomId = refreshInfo.roomId;
+    const allQuestions = await getAllSessionId(prevRoomId);
+    const lastQuestionId = allQuestions[allQuestions.length - 1];
+    console.log("Last question ID", lastQuestionId);
+    if (
+      lastQuestionId != null &&
+      lastQuestionId !== getQuestionIdFromUrl(window.location.href)
+    ) {
+      setLocalStorage("navigate", "true");
+      history.pushState(null, "", constructUrlFromQuestionId(lastQuestionId));
+      location.reload();
+    }
+  }, []);
 
-      const allQuestions = await getAllSessionId(prevRoomId);
-      const lastQuestionId = allQuestions[allQuestions.length - 1];
-      console.log("Last question ID", lastQuestionId);
-      if (
-        lastQuestionId != null &&
-        lastQuestionId !== getQuestionIdFromUrl(window.location.href) &&
-        !reload
-      ) {
-        setLocalStorage("navigate", "true");
-        history.pushState(null, "", constructUrlFromQuestionId(lastQuestionId));
-        location.reload();
-      } else {
-        // todo(nickbar01234): Dummy fix to mitigate a race
-        // 1. User A reload and triggers leave room
-        // 2. User B detects that A leaves the room and attempts to delete peer from local state
-        // 3. User A join sessions before (2) is completed
-        // 4. User B haven't finished cleaning A from local state
-        // 5. User A doesn't receive an offer
-        setTimeout(async () => {
-          const join = await joinRoom(prevRoomId);
-          if (!join) {
-            toast.error("Failed to join room");
-          }
-        }, 1500);
+  const afterReloadJoin = React.useCallback(async () => {
+    const refreshInfo = getLocalStorage("tabs");
+    if (refreshInfo == undefined) return;
+    const prevRoomId = refreshInfo.roomId;
+    await leaveRoom(prevRoomId, true);
+    await setRoom(getRoomRef(prevRoomId), {
+      usernames: arrayUnion(username),
+    });
+    setTimeout(async () => {
+      const join = await joinRoom(prevRoomId);
+      if (!join) {
+        toast.error("Failed to join room");
       }
-    },
-    [joinRoom, username, leaveRoom]
-  );
+    }, 1500);
+  }, [joinRoom, username, leaveRoom]);
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (roomId == null) return;
@@ -747,10 +742,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
+    console.log("After reload join", refreshInfo);
     if (appState === AppState.LOADING && refreshInfo?.roomId) {
-      joiningBackRoom(true);
+      afterReloadJoin();
     }
-  }, [joiningBackRoom, appState]);
+  }, [afterReloadJoin, appState]);
 
   React.useEffect(() => {
     deletePeersRef.current = deletePeers;
