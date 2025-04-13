@@ -509,9 +509,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
           })
         );
         await batch.commit();
-        await setRoom(getRoomRef(roomId), {
-          usernames: arrayRemove(username),
-        });
+        if (!reload) {
+          await setRoom(getRoomRef(roomId), {
+            usernames: arrayRemove(username),
+          });
+        }
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
       }
@@ -666,8 +668,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
-    setLocalStorage("navigate", "true");
     if (roomId == null) return;
+    setLocalStorage("navigate", "true");
     const sessionDoc = await getSession(roomId, sessionId);
     const sessionData = sessionDoc.data();
     const nextQuestion = sessionData?.nextQuestion ?? "";
