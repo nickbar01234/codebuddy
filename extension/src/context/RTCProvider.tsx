@@ -402,10 +402,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return false;
       }
       // console.log("Joining room", roomId);
-      setRoomId(roomId);
+
       await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
+      setRoomId(roomId);
       const sessionDoc = await getSession(roomId, sessionId);
       if (!sessionDoc.exists()) {
         toast.error("Session does not exist");
@@ -543,7 +544,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           })
         );
         await batch.commit();
-        setRoom(getRoomRef(roomId), {
+        await setRoom(getRoomRef(roomId), {
           usernames: arrayRemove(username),
         });
       } catch (e: unknown) {
