@@ -73,6 +73,7 @@ export const RoomInfoTab = () => {
           const data = snapshot.data();
           // todo(nickbar01234): Clear and report room if deleted?
           if (data == undefined) return;
+          setSessionDoc(data);
 
           const usernames = data.usernames;
           const sessionDoc = await getSession(roomId, sessionId);

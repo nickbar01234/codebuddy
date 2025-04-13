@@ -12,13 +12,13 @@ export const Wait = () => {
   );
 
   return (
-    <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+    <h1 className="mb-4 text-center text-lg font-semibold text-tertiary">
       Waiting for other to finish
-      <ul>
+      <div className="flex">
         {unfinishedPeers.map(({ peerId, latency }) => (
-          <li key={peerId + latency}> {peerId} </li>
+          <span key={peerId + latency}> {peerId} </span>
         ))}
-      </ul>
+      </div>
     </h1>
   );
 };
