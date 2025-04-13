@@ -29,7 +29,7 @@ export const RejoinPrompt = () => {
           label="Yes"
           isYes
           onClick={() => {
-            joiningBackRoom(true);
+            joiningBackRoom();
             setAppState(AppState.LOADING);
           }}
         />

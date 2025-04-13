@@ -86,7 +86,7 @@ export interface RTCContext {
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
-  joiningBackRoom: (join: boolean) => Promise<void>;
+  joiningBackRoom: () => Promise<void>;
   handleChooseQuestion: (questionId: string) => void;
   handleNavigateToNextQuestion: () => void;
 }
@@ -635,43 +635,39 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const handleFailedSubmissionRef = React.useRef(handleFailedSubmission);
 
   const joiningBackRoom = React.useCallback(
-    async (join: boolean) => {
+    async (reload: boolean = false) => {
       const refreshInfo = getLocalStorage("tabs");
       if (refreshInfo == undefined) return;
       const prevRoomId = refreshInfo.roomId;
-      await leaveRoom(prevRoomId, join);
-      if (join) {
-        await setRoom(getRoomRef(prevRoomId), {
-          usernames: arrayUnion(username),
-        });
-        const allQuestions = await getAllSessionId(prevRoomId);
-        const lastQuestionId = allQuestions[allQuestions.length - 1];
-        console.log("Last question ID", lastQuestionId);
-        if (
-          lastQuestionId != null &&
-          lastQuestionId !== getQuestionIdFromUrl(window.location.href)
-        ) {
-          setLocalStorage("navigate", "true");
-          history.pushState(
-            null,
-            "",
-            constructUrlFromQuestionId(lastQuestionId)
-          );
-          location.reload();
-        } else {
-          // todo(nickbar01234): Dummy fix to mitigate a race
-          // 1. User A reload and triggers leave room
-          // 2. User B detects that A leaves the room and attempts to delete peer from local state
-          // 3. User A join sessions before (2) is completed
-          // 4. User B haven't finished cleaning A from local state
-          // 5. User A doesn't receive an offer
-          setTimeout(async () => {
-            const join = await joinRoom(prevRoomId);
-            if (!join) {
-              toast.error("Failed to join room");
-            }
-          }, 1500);
-        }
+      await leaveRoom(prevRoomId, false);
+      await setRoom(getRoomRef(prevRoomId), {
+        usernames: arrayUnion(username),
+      });
+
+      const allQuestions = await getAllSessionId(prevRoomId);
+      const lastQuestionId = allQuestions[allQuestions.length - 1];
+      console.log("Last question ID", lastQuestionId);
+      if (
+        lastQuestionId != null &&
+        lastQuestionId !== getQuestionIdFromUrl(window.location.href) &&
+        !reload
+      ) {
+        setLocalStorage("navigate", "true");
+        history.pushState(null, "", constructUrlFromQuestionId(lastQuestionId));
+        location.reload();
+      } else {
+        // todo(nickbar01234): Dummy fix to mitigate a race
+        // 1. User A reload and triggers leave room
+        // 2. User B detects that A leaves the room and attempts to delete peer from local state
+        // 3. User A join sessions before (2) is completed
+        // 4. User B haven't finished cleaning A from local state
+        // 5. User A doesn't receive an offer
+        setTimeout(async () => {
+          const join = await joinRoom(prevRoomId);
+          if (!join) {
+            toast.error("Failed to join room");
+          }
+        }, 1500);
       }
     },
     [joinRoom, username, leaveRoom]
