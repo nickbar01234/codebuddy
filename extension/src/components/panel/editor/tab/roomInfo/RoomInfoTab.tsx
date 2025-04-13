@@ -5,6 +5,9 @@ import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import { onSnapshot, Unsubscribe } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
+import { Choose } from "./stage/Choose";
+import { Decision } from "./stage/Decision";
+import { Wait } from "./stage/Wait";
 
 export enum ROOMSTATE {
   CODE,
@@ -74,5 +77,11 @@ export const RoomInfoTab = () => {
     getSnapshot,
     cleanupSnapshot,
   ]);
-  return <div>RoomInfoTab</div>;
+  return (
+    <div className="h-full w-full ">
+      {roomState === ROOMSTATE.WAIT && <Wait />}
+      {roomState === ROOMSTATE.CHOOSE && <Choose />}
+      {roomState === ROOMSTATE.DECISION && <Decision />}
+    </div>
+  );
 };

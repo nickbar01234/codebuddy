@@ -122,7 +122,7 @@ const EditorPanel = () => {
         minConstraints={[Infinity, height * 0.2]}
         maxConstraints={[Infinity, height * 0.5]}
         handle={
-          <div className="bg-layer-bg-gray dark:bg-layer-bg-gray absolute bottom-0 h-2 w-full">
+          <div className="bg-layer-bg-gray dark:bg-layer-bg-gray absolute bottom-0 h-2 w-full z-[100]">
             <div className="flexlayout__splitter flexlayout__splitter_horz relative top-1/2 h-[2px] w-full -translate-y-1/2 cursor-ns-resize after:h-[2px] after:bg-[--color-splitter] hover:after:h-full hover:after:bg-[--color-splitter-drag]" />
           </div>
         }
@@ -161,13 +161,9 @@ const EditorPanel = () => {
           >
             <Tabs
               defaultValue="code"
-              className={cn("h-full w-full bg-inherit text-inherit")}
+              className="h-full w-full bg-inherit text-inherit"
             >
-              <TabsList
-                className={cn(
-                  "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
-                )}
-              >
+              <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
                 <UserDropdown
                   key="user-dropdown"
                   isOpen={isUserDropdownOpen}
@@ -176,18 +172,14 @@ const EditorPanel = () => {
 
                 <Separator
                   orientation="vertical"
-                  className={
-                    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                  }
+                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                 />
 
                 {upperTabConfigs.map((tab, index) => (
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
                       value={tab.value}
-                      className={
-                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                      }
+                      className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                     >
                       <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
@@ -195,9 +187,7 @@ const EditorPanel = () => {
                     {index !== upperTabConfigs.length - 1 && (
                       <Separator
                         orientation="vertical"
-                        className={
-                          "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                        }
+                        className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                       />
                     )}
                   </React.Fragment>
@@ -209,9 +199,7 @@ const EditorPanel = () => {
                   key={value}
                   value={value}
                   forceMount
-                  className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
-                  )}
+                  className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
                 >
                   {Content}
                 </TabsContent>
@@ -221,25 +209,21 @@ const EditorPanel = () => {
         </div>
       </ResizableBox>
       <div
-        className="relative w-full overflow-auto"
-        style={{ height: height - codePreference.height - 128 }}
+        className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1"
+        style={{
+          height: height - codePreference.height - 128,
+        }}
       >
         <Tabs
           defaultValue="activity"
-          className={cn("h-full w-full bg-inherit text-inherit")}
+          className="h-full w-full bg-inherit text-inherit"
         >
-          <TabsList
-            className={cn(
-              "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
-            )}
-          >
+          <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit  text-inherit">
             {lowerTabConfigs.map((tab, index) => (
               <React.Fragment key={tab.value}>
                 <TabsTrigger
                   value={tab.value}
-                  className={
-                    "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                  }
+                  className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                 >
                   <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                   {tab.label}
@@ -247,9 +231,7 @@ const EditorPanel = () => {
                 {index !== lowerTabConfigs.length - 1 && (
                   <Separator
                     orientation="vertical"
-                    className={
-                      "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                    }
+                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                   />
                 )}
               </React.Fragment>
@@ -261,9 +243,7 @@ const EditorPanel = () => {
               key={value}
               value={value}
               forceMount
-              className={cn(
-                "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
-              )}
+              className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
             >
               {Content}
             </TabsContent>
