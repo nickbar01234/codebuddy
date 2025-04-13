@@ -14,9 +14,10 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@cb/lib/components/ui/dropdown-menu";
-import { clearLocalStorage } from "@cb/services";
+import { clearLocalStorage, sendServiceRequest } from "@cb/services";
 import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
+import { Hammer } from "lucide-react";
 import React from "react";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
@@ -101,6 +102,16 @@ export const RoomControlMenu = () => {
             <ResetIcon /> <span>Reset Extension</span>
           </span>
         </RoomControlDropdownMenuItem>
+        {import.meta.env.MODE === "development" && (
+          <RoomControlDropdownMenuItem
+            onSelect={() => sendServiceRequest({ action: "reloadExtension" })}
+          >
+            <span className="flex items-center gap-2">
+              <Hammer />
+              <span>Reload extension</span>
+            </span>
+          </RoomControlDropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
