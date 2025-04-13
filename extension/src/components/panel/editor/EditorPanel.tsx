@@ -1,13 +1,12 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
+import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
 import { AppState } from "@cb/context/AppStateProvider";
-import { ROOMSTATE } from "@cb/context/RTCProvider";
 import { LogEvent } from "@cb/db/converter";
 import {
   useAppState,
   usePeerSelection,
-  useRTC,
   useWindowDimensions,
 } from "@cb/hooks/index";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
@@ -20,14 +19,10 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { cn } from "@cb/utils/cn";
-import { CodeXml, FlaskConical } from "lucide-react";
+import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
-import { ActivityLog } from "./activity/ActivityLog";
-import { Choose } from "./stage/Choose";
-import { Decision } from "./stage/Decision";
-import { Wait } from "./stage/Wait";
-
+import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -51,7 +46,6 @@ const EditorPanel = () => {
     preference: { codePreference },
     height,
   } = useWindowDimensions();
-  const { roomState } = useRTC();
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = React.useCallback(
     (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -66,7 +60,7 @@ const EditorPanel = () => {
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom = peers.length === 0;
 
-  const tabsConfig = React.useMemo(() => {
+  const upperTabConfigs = React.useMemo(() => {
     const extension =
       getLanguageExtension(activeUserInformation?.code?.code.language) ?? "";
     return [
@@ -97,6 +91,23 @@ const EditorPanel = () => {
     getLanguageExtension,
   ]);
 
+  const lowerTabConfigs = React.useMemo(() => {
+    return [
+      {
+        value: "activity",
+        label: "Activity Log",
+        Icon: Activity,
+        Content: <ActivityLogTab logEntries={logEntries} />,
+      },
+      {
+        value: "roomInfo",
+        label: "Room Info",
+        Icon: Info,
+        Content: <RoomInfoTab />,
+      },
+    ];
+  }, []);
+
   return (
     <div
       className={cn("relative z-50 flex h-full w-full grow flex-col gap-y-2", {
@@ -118,16 +129,6 @@ const EditorPanel = () => {
         onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
         onResizeStop={onResizeStop}
       >
-        {roomState !== ROOMSTATE.CODE &&
-          (isBuffer ? (
-            <Skeleton className="h-[30vh] w-full" />
-          ) : (
-            <div className="flex h-[30vh] w-full items-center justify-center rounded-t-lg p-2">
-              {roomState === ROOMSTATE.WAIT && <Wait />}
-              {roomState === ROOMSTATE.CHOOSE && <Choose />}
-              {roomState === ROOMSTATE.DECISION && <Decision />}
-            </div>
-          ))}
         {emptyRoom &&
           (isBuffer ? (
             <Skeleton className="h-full w-full" />
@@ -138,7 +139,6 @@ const EditorPanel = () => {
           className={cn(
             "relative flex h-full w-full flex-col justify-between",
             {
-              "max-h-[30vh]": roomState !== ROOMSTATE.CODE,
               hidden: emptyRoom,
             }
           )}
@@ -181,7 +181,7 @@ const EditorPanel = () => {
                   }
                 />
 
-                {tabsConfig.map((tab, index) => (
+                {upperTabConfigs.map((tab, index) => (
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
                       value={tab.value}
@@ -192,7 +192,7 @@ const EditorPanel = () => {
                       <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
                     </TabsTrigger>
-                    {index !== tabsConfig.length - 1 && (
+                    {index !== upperTabConfigs.length - 1 && (
                       <Separator
                         orientation="vertical"
                         className={
@@ -204,7 +204,7 @@ const EditorPanel = () => {
                 ))}
               </TabsList>
 
-              {tabsConfig.map(({ value, Content }) => (
+              {upperTabConfigs.map(({ value, Content }) => (
                 <TabsContent
                   key={value}
                   value={value}
@@ -224,7 +224,51 @@ const EditorPanel = () => {
         className="relative w-full overflow-auto"
         style={{ height: height - codePreference.height - 128 }}
       >
-        <ActivityLog logEntries={logEntries} />
+        <Tabs
+          defaultValue="activity"
+          className={cn("h-full w-full bg-inherit text-inherit")}
+        >
+          <TabsList
+            className={cn(
+              "hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit text-inherit"
+            )}
+          >
+            {lowerTabConfigs.map((tab, index) => (
+              <React.Fragment key={tab.value}>
+                <TabsTrigger
+                  value={tab.value}
+                  className={
+                    "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                  }
+                >
+                  <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
+                  {tab.label}
+                </TabsTrigger>
+                {index !== lowerTabConfigs.length - 1 && (
+                  <Separator
+                    orientation="vertical"
+                    className={
+                      "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                    }
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </TabsList>
+
+          {lowerTabConfigs.map(({ value, Content }) => (
+            <TabsContent
+              key={value}
+              value={value}
+              forceMount
+              className={cn(
+                "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
+              )}
+            >
+              {Content}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );

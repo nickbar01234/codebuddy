@@ -83,7 +83,6 @@ export interface RTCContext {
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
-  sessionId: string;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
@@ -123,9 +122,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
-  );
-  const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
-    null
   );
 
   const {
@@ -712,6 +708,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
           deletePeersRef.current(removedPeers);
           addedPeers.forEach((peer) => {
             createOffer(roomId, peer);
+          });
+          const finishedUsers = data.finishedUsers;
+          setPeerState((prev) => {
+            const updatedState = { ...prev };
+
+            finishedUsers.forEach((peer) => {
+              if (updatedState[peer]) {
+                updatedState[peer] = {
+                  ...updatedState[peer],
+                  finished: true,
+                };
+              }
+            });
+            return updatedState;
           });
         }
       );
