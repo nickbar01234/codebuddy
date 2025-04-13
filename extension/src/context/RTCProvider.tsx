@@ -401,7 +401,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("This room is already at max capacity.");
         return false;
       }
-      // console.log("Joining room", roomId);
 
       await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
