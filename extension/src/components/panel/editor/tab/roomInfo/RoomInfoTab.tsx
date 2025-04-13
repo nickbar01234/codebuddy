@@ -1,3 +1,4 @@
+import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { getRoom, getSession, getSessionRef } from "@cb/db";
 import { Room, Session } from "@cb/db/converter";
 import { useAppState, useRTC } from "@cb/hooks/index";
@@ -8,9 +9,7 @@ import { onSnapshot, Unsubscribe } from "firebase/firestore";
 import { Timer, Users } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
-import { Choose } from "./stage/Choose";
 import { Decision } from "./stage/Decision";
-import { Wait } from "./stage/Wait";
 
 export enum ROOMSTATE {
   BEGIN,
@@ -28,7 +27,7 @@ export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAppState();
-  const { roomId, peerState } = useRTC();
+  const { roomId, peerState, handleChooseQuestion } = useRTC();
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
@@ -38,6 +37,13 @@ export const RoomInfoTab = () => {
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
   const [elapsed, setElapsed] = React.useState<number>(
     Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
+  );
+  const unfinishedPeers = React.useMemo(
+    () =>
+      Object.entries(peerState)
+        .filter(([_, state]) => !state.finished)
+        .map(([peerId, state]) => ({ peerId, ...state })),
+    [peerState]
   );
 
   React.useEffect(() => {
@@ -133,30 +139,37 @@ export const RoomInfoTab = () => {
           </span>
         </div>
       </div>
-      <div className="rounded-lg border-solid border-4 p-2 shadow-sm w-full">
-        <div className="text-tertiary text-sm mb-1">Next Problem</div>
-        <h2 className="text-xl font-bold mb-3">
-          {sessionDoc?.nextQuestion != ""
-            ? sessionDoc?.nextQuestion
-            : "No question chosen yet"}
-          <span className="text-orange-400 ml-2">[Medium]</span>
-        </h2>
 
-        <div className="flex gap-2 mb-4">
-          <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
-            Hash Table
-          </span>
-          <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
-            String
-          </span>
-          <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
-            Sliding Window
-          </span>
+      {roomState === ROOMSTATE.CHOOSE ? (
+        <QuestionSelectorPanel handleQuestionSelect={handleChooseQuestion} />
+      ) : (
+        <div className="flex flex-col gap-2 w-full">
+          <div className="rounded-lg border-solid border-4 p-2 shadow-sm w-full">
+            <div className="text-tertiary text-sm mb-1">Next Problem</div>
+            <h2 className="text-xl font-bold mb-3">
+              {sessionDoc?.nextQuestion != ""
+                ? sessionDoc?.nextQuestion
+                : "No question chosen yet"}
+              <span className="text-orange-400 ml-2">[Medium]</span>
+            </h2>
+            <div className="flex gap-2 mb-4">
+              <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+                Hash Table
+              </span>
+              <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+                String
+              </span>
+              <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+                Sliding Window
+              </span>
+            </div>
+          </div>
+          <div className="w-full text-lg text-tertiary text-left">
+            Waiting for {unfinishedPeers.length} members to finish...
+          </div>
         </div>
-      </div>
+      )}
 
-      {roomState === ROOMSTATE.WAIT && <Wait />}
-      {roomState === ROOMSTATE.CHOOSE && <Choose />}
       {roomState === ROOMSTATE.DECISION && <Decision />}
     </div>
   );
