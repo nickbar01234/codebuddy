@@ -526,8 +526,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
     },
     [username, cleanupSnapshot, cleanupConnection]
   );
+
   const handleSucessfulSubmission = React.useCallback(async () => {
-    if (!roomId || !sessionId) return;
+    if (!roomId) return;
 
     sendMessageToAll(
       withPayload({
@@ -605,6 +606,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       console.log("Choose question URL", questionURL);
       toast.info("You have selected question " + chosenQuestionId);
       if (roomId == null) return;
+      // todo(nickbar01234): Firebase security rule that should reject this write
       await setSession(getSessionRef(roomId, sessionId), {
         nextQuestion: chosenQuestionId,
       });
