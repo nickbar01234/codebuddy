@@ -630,13 +630,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       if (refreshInfo == undefined) return;
       const prevRoomId = refreshInfo.roomId;
       await leaveRoom(prevRoomId, join);
-      // todo(nickbar01234): Dummy fix to mitigate a race
-      // 1. User A reload and triggers leave room
-      // 2. User B detects that A leaves the room and attempts to delete peer from local state
-      // 3. User A join sessions before (2) is completed
-      // 4. User B haven't finished cleaning A from local state
-      // 5. User A doesn't receive an offer
-
       if (join) {
         await setRoom(getRoomRef(prevRoomId), {
           usernames: arrayUnion(username),
@@ -655,6 +648,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
           );
           location.reload();
         } else {
+          // todo(nickbar01234): Dummy fix to mitigate a race
+          // 1. User A reload and triggers leave room
+          // 2. User B detects that A leaves the room and attempts to delete peer from local state
+          // 3. User A join sessions before (2) is completed
+          // 4. User B haven't finished cleaning A from local state
+          // 5. User A doesn't receive an offer
           setTimeout(async () => {
             const join = await joinRoom(prevRoomId);
             if (!join) {
@@ -676,14 +675,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await deleteMeRef.current();
     history.pushState(null, "", constructUrlFromQuestionId(nextQuestion));
     location.reload();
-    // window.location.href = constructUrlFromQuestionId(chooseQuestion);
   }, [roomId, sessionId]);
 
   React.useEffect(() => {
     if (roomId != null && getSnapshot()[roomId] == undefined) {
       const unsubscribe = onSnapshot(
         getSessionRef(roomId, sessionId),
-        async (snapshot) => {
+        (snapshot) => {
           const data = snapshot.data();
           // todo(nickbar01234): Clear and report room if deleted?
           if (data == undefined) return;
@@ -698,48 +696,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
             .filter((username) => !getConnection()[username]);
 
           deletePeersRef.current(removedPeers);
-
-          for (const peer of addedPeers) {
+          addedPeers.forEach((peer) => {
             createOffer(roomId, peer);
-          }
-
-          removedPeers.forEach((peer) => {
-            toast.error(`${peer} has left the room`);
           });
-
-          // const sessionDoc = await getSession(roomId, sessionId);
-          // const sessionData = sessionDoc.data();
-          // const newUsernames = sessionData?.usernames ?? [];
-          // if (!sessionData) return;
-
-          // const nextQuestionChosen = sessionData.nextQuestion !== "";
-          // const finishedUsers = sessionData.finishedUsers;
-          // console.log(
-          //   "finishedUsers",
-          //   getUnixTs(),
-          //   finishedUsers,
-          //   newUsernames
-          // );
-          // setPeerState((prev) => {
-          //   const updatedState = { ...prev };
-
-          //   finishedUsers.forEach((peer) => {
-          //     if (updatedState[peer]) {
-          //       updatedState[peer] = { ...updatedState[peer], finished: true };
-          //     }
-          //   });
-          //   return updatedState;
-          // });
-          // if (
-          //   nextQuestionChosen &&
-          //   newUsernames.every((user) => finishedUsers.includes(user))
-          // ) {
-          //   toast.info(
-          //     "All users have finished the question. " +
-          //       "Navigating to the next question: " +
-          //       constructUrlFromQuestionId(sessionData.nextQuestion)
-          //   );
-          // }
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
