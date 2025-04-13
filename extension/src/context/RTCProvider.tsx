@@ -646,6 +646,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         });
         const allQuestions = await getAllSessionId(prevRoomId);
         const lastQuestionId = allQuestions[allQuestions.length - 1];
+        console.log("Last question ID", lastQuestionId);
         if (
           lastQuestionId != null &&
           lastQuestionId !== getQuestionIdFromUrl(window.location.href)
