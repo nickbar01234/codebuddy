@@ -88,7 +88,6 @@ export interface RTCContext {
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
   joiningBackRoom: (join: boolean) => Promise<void>;
-  roomState: RoomState | null;
   handleChooseQuestion: (questionId: string) => void;
   handleNavigateToNextQuestion: () => void;
   chooseQuestion: string | null;
@@ -125,9 +124,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
-  );
-  const [roomState, setRoomState] = React.useState<RoomState | null>(
-    RoomState.CODE
   );
   const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
     null
@@ -313,7 +309,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     console.log("Created room", newRoomId);
     setRoomId(newRoomId);
     navigator.clipboard.writeText(newRoomId);
-    setRoomState(RoomState.CODE);
     toast.success(`Session ID ${newRoomId} copied to clipboard`);
   };
 
@@ -487,22 +482,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.success(
           `You have successfully joined the room with ID ${roomId}.`
         );
-      }
-      const navigate =
-        getLocalStorage("roomState") == RoomState.NAVIGATE.toString();
-      const sessionData = sessionDoc.data();
-      const finished = sessionData.finishedUsers.includes(username);
-      const nextQuestionChosen = sessionData.nextQuestion !== "";
-      if (navigate) {
-        setRoomState(RoomState.CODE);
-      } else if (finished && !nextQuestionChosen) {
-        setRoomState(RoomState.CHOOSE);
-      } else if (finished && nextQuestionChosen) {
-        setRoomState(RoomState.DECISION);
-      } else if (finished) {
-        setRoomState(RoomState.WAIT);
-      } else {
-        setRoomState(RoomState.CODE);
       }
       return true;
     },
@@ -750,25 +729,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
             });
             return updatedState;
           });
-          if (!nextQuestionChosen) {
-            if (
-              finishedUsers.length !== 0 &&
-              finishedUsers.includes(username)
-            ) {
-              setRoomState(RoomState.CHOOSE);
-            }
-          } else {
-            if (usernames.every((user) => finishedUsers.includes(user))) {
-              toast.info(
-                "All users have finished the question. " +
-                  "Navigating to the next question: " +
-                  constructUrlFromQuestionId(sessionData.nextQuestion)
-              );
-              setChooseQuestion(sessionData.nextQuestion);
-              setRoomState(RoomState.DECISION);
-            } else if (finishedUsers.includes(username)) {
-              setRoomState(RoomState.WAIT);
-            }
+          if (
+            nextQuestionChosen &&
+            usernames.every((user) => finishedUsers.includes(user))
+          ) {
+            toast.info(
+              "All users have finished the question. " +
+                "Navigating to the next question: " +
+                constructUrlFromQuestionId(sessionData.nextQuestion)
+            );
+            setChooseQuestion(sessionData.nextQuestion);
           }
         }
       );
@@ -813,11 +783,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   React.useEffect(() => {
     handleFailedSubmissionRef.current = handleFailedSubmission;
   }, [handleFailedSubmission]);
-
-  React.useEffect(() => {
-    if (roomState == null) return;
-    setLocalStorage("roomState", roomState.toString());
-  }, [roomState]);
 
   useOnMount(() => {
     const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
@@ -929,7 +894,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         peerState,
         joiningBackRoom,
         sessionId,
-        roomState,
         handleChooseQuestion,
         chooseQuestion,
         handleNavigateToNextQuestion,
