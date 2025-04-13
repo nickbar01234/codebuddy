@@ -34,11 +34,13 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
     const maybeReload = performance.getEntriesByType(
       "navigation"
     )[0] as PerformanceNavigationTiming;
-
+    const navigate = getLocalStorage("navigate") == "true";
     if (refreshInfo?.roomId)
-      setState(
-        maybeReload.type === "reload" ? AppState.LOADING : AppState.REJOINING
-      );
+      if (maybeReload.type === "reload" || navigate) {
+        setState(AppState.LOADING);
+      } else {
+        setState(AppState.REJOINING);
+      }
   });
 
   return (
