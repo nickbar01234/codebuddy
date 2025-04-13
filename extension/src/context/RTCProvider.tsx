@@ -38,6 +38,7 @@ import {
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
+import { fetchQuestion } from "@cb/utils/graphql";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
 import { poll } from "@cb/utils/poll";
@@ -396,6 +397,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await setSession(getSessionRef(roomId, sessionId), {
         usernames: arrayUnion(username),
       });
+      const questionInfo = await fetchQuestion(sessionId);
+      console.log("Question info", questionInfo);
 
       const unsubscribe = onSnapshot(
         getSessionPeerConnectionRefs(roomId, sessionId, username),

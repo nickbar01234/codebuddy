@@ -53,19 +53,17 @@ export const fetchQuestion = async (
   });
 
   const config = {
-    method: "get",
+    method: "post",
     maxBodyLength: Infinity,
     url: "https://leetcode.com/graphql",
     headers: {
       "Content-Type": "application/json",
-      Cookie:
-        "csrftoken=NsiF0FFCwJcgg7CCjfyS7EmQuHK0nuXa230vMrDzDnUYRNHmjCy5bA8OfNxP4ElG",
     },
     data: data,
   };
 
   try {
-    const response: LeetcodeResponse = await axios.request(config);
+    const response: LeetcodeResponse = (await axios.request(config)).data;
     const question = response.data.problemsetQuestionList.questions[0];
     const result = {
       id: question.frontendQuestionId,
