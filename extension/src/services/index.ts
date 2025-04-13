@@ -6,8 +6,7 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "tabs",
   "lastActivePeer",
   "signIn",
-  "roomState",
-  "chooseQuestion",
+  "navigate",
   "preference",
 ];
 

@@ -649,16 +649,20 @@ export const RTCProvider = (props: RTCProviderProps) => {
       // 5. User A doesn't receive an offer
 
       if (join) {
-        const prevQuestionId = getLocalStorage("chooseQuestion");
+        await setRoom(getRoomRef(prevRoomId), {
+          usernames: arrayUnion(username),
+        });
+        const allQuestions = await getAllSessionId(prevRoomId);
+        const lastQuestionId = allQuestions[allQuestions.length - 1];
         if (
-          prevQuestionId != null &&
-          prevQuestionId !== getQuestionIdFromUrl(window.location.href)
+          lastQuestionId != null &&
+          lastQuestionId !== getQuestionIdFromUrl(window.location.href)
         ) {
-          setLocalStorage("roomState", RoomState.NAVIGATE.toString());
+          setLocalStorage("navigate", "true");
           history.pushState(
             null,
             "",
-            constructUrlFromQuestionId(prevQuestionId)
+            constructUrlFromQuestionId(lastQuestionId)
           );
           location.reload();
         } else {
@@ -671,13 +675,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       }
     },
-    [joinRoom, leaveRoom]
+    [joinRoom, username, leaveRoom]
   );
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (!chooseQuestion) return;
-    setLocalStorage("roomState", RoomState.NAVIGATE.toString());
-    setLocalStorage("chooseQuestion", chooseQuestion);
+    setLocalStorage("navigate", "true");
     await deleteMeRef.current();
     history.pushState(null, "", constructUrlFromQuestionId(chooseQuestion));
     location.reload();
