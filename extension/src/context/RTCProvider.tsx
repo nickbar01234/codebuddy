@@ -83,7 +83,6 @@ export interface RTCContext {
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
-  sessionId: string;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
   peerState: Record<string, PeerState>;
@@ -95,14 +94,6 @@ export interface RTCContext {
 
 interface RTCProviderProps {
   children: React.ReactNode;
-}
-
-export enum RoomState {
-  CODE,
-  CHOOSE,
-  WAIT,
-  DECISION,
-  NAVIGATE,
 }
 
 export const RTCContext = React.createContext({} as RTCContext);
@@ -896,7 +887,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         informations,
         peerState,
         joiningBackRoom,
-        sessionId,
         handleChooseQuestion,
         chooseQuestion,
         handleNavigateToNextQuestion,
