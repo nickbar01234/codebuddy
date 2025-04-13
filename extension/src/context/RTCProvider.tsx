@@ -74,6 +74,8 @@ const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
   roomId?: string;
+  roomName?: string;
+  isPublic: boolean;
 }
 
 export interface RTCContext {
@@ -291,13 +293,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [receiveCode, receiveTests, setConnection]
   );
 
-  const createRoom = async ({ roomId }: CreateRoom) => {
-    const questionId = getQuestionIdFromUrl(window.location.href);
+  const createRoom = async ({ roomId, roomName, isPublic }: CreateRoom) => {
     const newRoomRef = getRoomRef(roomId);
     const newRoomId = newRoomRef.id;
     const sessionRef = getSessionRef(newRoomId, sessionId);
     await setRoom(newRoomRef, {
       usernames: arrayUnion(username),
+      roomName,
+      isPublic,
     });
     await setSession(sessionRef, {
       finishedUsers: [],
@@ -393,24 +396,21 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Room does not exist");
         return false;
       }
-
-      const sessionDoc = await getSession(roomId, sessionId);
-      if (!sessionDoc.exists()) {
-        toast.error("Session does not exist");
-        return false;
-      }
-      const sessionData = sessionDoc.data();
-      const usernames = roomDoc.data().usernames;
-      if (usernames.length >= MAX_CAPACITY) {
+      if (roomDoc.data().usernames.length >= MAX_CAPACITY) {
         console.log("The room is at max capacity");
         toast.error("This room is already at max capacity.");
         return false;
       }
       // console.log("Joining room", roomId);
       setRoomId(roomId);
-      setRoom(getRoomRef(roomId), {
+      await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
+      const sessionDoc = await getSession(roomId, sessionId);
+      if (!sessionDoc.exists()) {
+        toast.error("Session does not exist");
+        return false;
+      }
       await setSession(getSessionRef(roomId, sessionId), {
         usernames: arrayUnion(username),
       });
@@ -490,6 +490,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       const navigate =
         getLocalStorage("roomState") == RoomState.NAVIGATE.toString();
+      const sessionData = sessionDoc.data();
       const finished = sessionData.finishedUsers.includes(username);
       const nextQuestionChosen = sessionData.nextQuestion !== "";
       if (navigate) {
@@ -541,10 +542,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
             myAnswers.docs.forEach((doc) => batch.delete(doc.ref));
           })
         );
-        batch.update(getRoomRef(roomId), {
+        await batch.commit();
+        setRoom(getRoomRef(roomId), {
           usernames: arrayRemove(username),
         });
-        await batch.commit();
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
       }
