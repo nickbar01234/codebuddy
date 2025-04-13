@@ -90,7 +90,6 @@ export interface RTCContext {
   joiningBackRoom: (join: boolean) => Promise<void>;
   handleChooseQuestion: (questionId: string) => void;
   handleNavigateToNextQuestion: () => void;
-  chooseQuestion: string | null;
 }
 
 interface RTCProviderProps {
@@ -124,9 +123,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
-  );
-  const [chooseQuestion, setChooseQuestion] = React.useState<string | null>(
-    null
   );
 
   const {
@@ -679,13 +675,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
   );
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
-    if (!chooseQuestion) return;
     setLocalStorage("navigate", "true");
+    if (roomId == null) return;
+    const sessionDoc = await getSession(roomId, sessionId);
+    const sessionData = sessionDoc.data();
+    const nextQuestion = sessionData?.nextQuestion ?? "";
     await deleteMeRef.current();
-    history.pushState(null, "", constructUrlFromQuestionId(chooseQuestion));
+    history.pushState(null, "", constructUrlFromQuestionId(nextQuestion));
     location.reload();
     // window.location.href = constructUrlFromQuestionId(chooseQuestion);
-  }, [chooseQuestion]);
+  }, [roomId, sessionId]);
 
   React.useEffect(() => {
     if (roomId != null && getSnapshot()[roomId] == undefined) {
@@ -705,44 +704,49 @@ export const RTCProvider = (props: RTCProviderProps) => {
             .slice(data.usernames.indexOf(username) + 1)
             .filter((username) => !getConnection()[username]);
 
-          await deletePeersRef.current(removedPeers);
+          deletePeersRef.current(removedPeers);
 
           for (const peer of addedPeers) {
-            await createOffer(roomId, peer);
+            createOffer(roomId, peer);
           }
 
           removedPeers.forEach((peer) => {
             toast.error(`${peer} has left the room`);
           });
 
-          const sessionDoc = await getSession(roomId, sessionId);
-          const sessionData = sessionDoc.data();
-          if (!sessionData) return;
+          // const sessionDoc = await getSession(roomId, sessionId);
+          // const sessionData = sessionDoc.data();
+          // const newUsernames = sessionData?.usernames ?? [];
+          // if (!sessionData) return;
 
-          const nextQuestionChosen = sessionData.nextQuestion !== "";
-          const finishedUsers = sessionData.finishedUsers;
-          console.log("finishedUsers", getUnixTs(), finishedUsers, usernames);
-          setPeerState((prev) => {
-            const updatedState = { ...prev };
+          // const nextQuestionChosen = sessionData.nextQuestion !== "";
+          // const finishedUsers = sessionData.finishedUsers;
+          // console.log(
+          //   "finishedUsers",
+          //   getUnixTs(),
+          //   finishedUsers,
+          //   newUsernames
+          // );
+          // setPeerState((prev) => {
+          //   const updatedState = { ...prev };
 
-            finishedUsers.forEach((peer) => {
-              if (updatedState[peer]) {
-                updatedState[peer] = { ...updatedState[peer], finished: true };
-              }
-            });
-            return updatedState;
-          });
-          if (
-            nextQuestionChosen &&
-            usernames.every((user) => finishedUsers.includes(user))
-          ) {
-            toast.info(
-              "All users have finished the question. " +
-                "Navigating to the next question: " +
-                constructUrlFromQuestionId(sessionData.nextQuestion)
-            );
-            setChooseQuestion(sessionData.nextQuestion);
-          }
+          //   finishedUsers.forEach((peer) => {
+          //     if (updatedState[peer]) {
+          //       updatedState[peer] = { ...updatedState[peer], finished: true };
+          //     }
+          //   });
+          //   return updatedState;
+          // });
+          // if (
+          //   nextQuestionChosen &&
+          //   newUsernames.every((user) => finishedUsers.includes(user))
+          // ) {
+          //   toast.info(
+          //     "All users have finished the question. " +
+          //       "Navigating to the next question: " +
+          //       constructUrlFromQuestionId(sessionData.nextQuestion)
+          //   );
+          // }
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
@@ -898,7 +902,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         joiningBackRoom,
         sessionId,
         handleChooseQuestion,
-        chooseQuestion,
         handleNavigateToNextQuestion,
       }}
     >
