@@ -36,6 +36,19 @@ export const RoomInfoTab = () => {
   const [roomState, setRoomState] = React.useState<ROOMSTATE>(ROOMSTATE.BEGIN);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
+  const [elapsed, setElapsed] = React.useState<number>(
+    Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
+  );
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsed(
+        Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [sessionDoc]);
 
   React.useEffect(() => {
     async function fetchRoomInfo() {
@@ -101,33 +114,44 @@ export const RoomInfoTab = () => {
     cleanupSnapshot,
   ]);
   return (
-    <div className="h-full w-full flex-col items-center justify-center ">
-      <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+    <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-10 ">
+      <h1 className="text-center text-lg font-semibold">
         {roomDoc?.roomName ?? "Room Name"}
       </h1>
-      <div className="w-full flex items-center">
+      <div className="flex w-full justify-center gap-4 items-center">
         <div className="flex items-center">
-          <Users className="mr-2" />
+          <Users className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
             {Object.keys(peerState).length}/4
           </span>
         </div>
         <div className="flex items-center">
-          <Timer className="mr-2" />
+          <Timer className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
-            {formatTime(
-              Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
-            )}
+            {formatTime(elapsed)}
           </span>
         </div>
       </div>
-      <div className="flex flex-col w-full">
-        <h1 className="text-tertiary"> Next Problem</h1>
-        <h1 className="text-tertiary">
+      <div className="rounded-lg border-solid border-4 p-2 shadow-sm w-full">
+        <div className="text-tertiary text-sm mb-1">Next Problem</div>
+        <h2 className="text-xl font-bold mb-3">
           {sessionDoc?.nextQuestion != ""
             ? sessionDoc?.nextQuestion
-            : "No next problem"}
-        </h1>
+            : "No question chosen yet"}
+          <span className="text-orange-400 ml-2">[Medium]</span>
+        </h2>
+
+        <div className="flex gap-2 mb-4">
+          <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+            Hash Table
+          </span>
+          <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+            String
+          </span>
+          <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+            Sliding Window
+          </span>
+        </div>
       </div>
 
       {roomState === ROOMSTATE.WAIT && <Wait />}
