@@ -46,7 +46,11 @@ const usePaginate = <T>({
   const buildPaginatedQuery = useCallback(
     (isNext: boolean, cursor?: QueryDocumentSnapshot<T>) => {
       const cursorConstraint =
-        cursor && (isNext ? startAfter(cursor) : endBefore(cursor));
+        cursor != undefined
+          ? isNext
+            ? startAfter(cursor)
+            : endBefore(cursor)
+          : undefined;
       return firestoreQuery(
         baseQuery,
         ...(cursorConstraint ? [cursorConstraint] : []),
