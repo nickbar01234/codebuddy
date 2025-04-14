@@ -67,10 +67,6 @@ const usePaginate = <T>({
     []
   );
 
-  const handleError = useCallback((err: unknown) => {
-    setError(err as Error);
-  }, []);
-
   const fetchDocs = useMemo(
     () =>
       debounce(
@@ -81,25 +77,25 @@ const usePaginate = <T>({
             const res = await getDocs(q);
             handleSnapshot(res, isNext);
           } catch (err) {
-            handleError(err);
+            setError(err as Error);
           } finally {
             setLoading(false);
           }
         },
         500
       ),
-    [buildPaginatedQuery, handleSnapshot, handleError]
+    [buildPaginatedQuery, handleSnapshot]
   );
 
   useEffect(() => {
     const interval = setInterval(() => {
       getCountFromServer(baseQuery)
         .then((res) => setCollectionSize(res.data().count))
-        .catch(handleError);
+        .catch(setError);
     }, 120000);
 
     return () => clearInterval(interval);
-  }, [baseQuery, handleError]);
+  }, [baseQuery]);
 
   useEffect(() => {
     fetchDocs();
