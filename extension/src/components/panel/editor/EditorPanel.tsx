@@ -2,6 +2,7 @@ import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { AppState } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
 import {
@@ -11,7 +12,6 @@ import {
 } from "@cb/hooks/index";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import { Separator } from "@cb/lib/components/ui/separator";
-import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import {
   Tabs,
   TabsContent,
@@ -129,12 +129,11 @@ const EditorPanel = () => {
         onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
         onResizeStop={onResizeStop}
       >
-        {emptyRoom &&
-          (isBuffer ? (
-            <Skeleton className="h-full w-full" />
-          ) : (
+        {emptyRoom && (
+          <SkeletonWrapper loading={isBuffer}>
             <CreateRoomLoadingPanel />
-          ))}
+          </SkeletonWrapper>
+        )}
         <div
           className={cn(
             "relative flex h-full w-full flex-col justify-between",
