@@ -1,5 +1,6 @@
 /// <reference types="vitest" />
 import react from "@vitejs/plugin-react";
+import { closeSync, existsSync, openSync, unlinkSync } from "fs";
 import { join, resolve } from "path";
 import tailwindcss from "tailwindcss";
 import { defineConfig } from "vite";
@@ -13,13 +14,24 @@ export default defineConfig(() => {
       : process.env.TYPE === "service_worker"
         ? "./src/services/background.ts"
         : null;
+  const devScriptHint = `./dist/${process.env.TYPE}`;
 
   if (input == null) {
     throw new Error("Invalid entry point");
   }
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        // https://vite.dev/guide/api-plugin#universal-hooks
+        // Only execute on dev mode
+        buildStart: () => {
+          if (existsSync(devScriptHint)) unlinkSync(devScriptHint);
+        },
+        closeBundle: () => closeSync(openSync(devScriptHint, "w")),
+      },
+    ],
     publicDir: "public",
     base: "./",
     css: {
@@ -35,11 +47,15 @@ export default defineConfig(() => {
     build: {
       outDir: "dist",
       emptyOutDir: false,
+      cssCodeSplit: false,
       rollupOptions: {
         input: input,
         output: {
           entryFileNames: "assets/[name].js",
           assetFileNames: (assetInfo) => {
+            if (assetInfo.names[0] === "style.css") {
+              return "assets/index.css";
+            }
             return `assets/[name][extname]`;
           },
         },
