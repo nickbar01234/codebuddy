@@ -1,6 +1,5 @@
 /* eslint-disable */
 
-import chokidar from "chokidar";
 import _ from "lodash";
 import puppeteer from "puppeteer";
 
@@ -22,6 +21,11 @@ const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
   peer: USERNAMES[idx],
 }));
 const ROOM_ID = `CODE_BUDDY_TEST_${Date.now()}`;
+
+// Keep in sync with package.json / vite.config.ts
+const DEV_SCRIPT_HINT = ["content_script", "service_worker"].map(
+  (file) => `${EXTENSION_PATH}/${file}`
+);
 
 const setup = async () => {
   const createBrowser = async (peer) => {
@@ -87,8 +91,8 @@ const reload = _.debounce(() => {
 setup()
   .then(() => {
     chokidar
-      .watch(EXTENSION_PATH, { awaitWriteFinish: true })
-      .on("change", reload);
+      .watch(DEV_SCRIPT_HINT, { awaitWriteFinish: true })
+      .on("add", reload);
   })
   .catch((e) => console.error("Failed with", e));
 

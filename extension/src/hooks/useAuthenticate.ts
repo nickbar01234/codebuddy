@@ -1,6 +1,7 @@
 import { auth } from "@cb/db";
 import { getLocalStorage } from "@cb/services";
 import { AuthenticationStatus, Status } from "@cb/types";
+import { poll } from "@cb/utils/poll";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -24,17 +25,26 @@ const useAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
       return;
     }
 
-    const user = getLocalStorage("test");
-    if (user != undefined) {
-      const { peer } = user;
-      createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
-        .catch((error) => {
-          if (error.code !== "auth/email-already-in-use") {
-            console.error(error);
-          }
-        })
-        .finally(() => signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD"));
-    }
+    const selfAuthenticate = async () => {
+      const user = await poll({
+        fn: async () => getLocalStorage("test"),
+        until: (x) => x != undefined,
+      });
+      if (user != undefined) {
+        const { peer } = user;
+        createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
+          .catch((error) => {
+            if (error.code !== "auth/email-already-in-use") {
+              console.error(error);
+            }
+          })
+          .finally(() =>
+            signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
+          );
+      }
+    };
+
+    selfAuthenticate();
   });
 
   useOnMount(() => {
