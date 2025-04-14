@@ -24,7 +24,7 @@ const CreateRoomLoadingPanel = () => {
         />
       </div>
 
-      <div className="relative z-20 top-[8vh] justify-center flex flex-col gap-1 items-center">
+      <div className="relative z-20 top-[15vh] justify-center flex flex-col gap-1 items-center">
         <span className="text-3xl font-bold text-[#1E1E1E] dark:text-white">
           Room created successfully!
         </span>
@@ -60,8 +60,8 @@ const CreateRoomLoadingPanel = () => {
           <div>
             <Ripple
               numCircles={5}
-              mainCircleSize={40}
-              distanceBetweenCircles={13}
+              mainCircleSize={70}
+              distanceBetweenCircles={20}
               mainCircleOpacity={0.15}
               opacityDecrement={0.02}
               delay={0.09}
