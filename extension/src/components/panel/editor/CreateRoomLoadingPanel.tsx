@@ -60,8 +60,8 @@ const CreateRoomLoadingPanel = () => {
           <div>
             <Ripple
               numCircles={5}
-              mainCircleSize={70}
-              distanceBetweenCircles={20}
+              mainCircleSize={74}
+              distanceBetweenCircles={22}
               mainCircleOpacity={0.15}
               opacityDecrement={0.02}
               delay={0.09}
