@@ -95,14 +95,6 @@ interface RTCProviderProps {
   children: React.ReactNode;
 }
 
-export enum ROOMSTATE {
-  CODE,
-  CHOOSE,
-  WAIT,
-  DECISION,
-  NAVIGATE,
-}
-
 export const RTCContext = React.createContext({} as RTCContext);
 
 export const MAX_CAPACITY = 4;
@@ -642,10 +634,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const allQuestions = await getAllSessionId(prevRoomId);
     const lastQuestionId = allQuestions[allQuestions.length - 1];
     console.log("Last question ID", lastQuestionId);
-    if (
-      lastQuestionId != null &&
-      lastQuestionId !== getQuestionIdFromUrl(window.location.href)
-    ) {
+    if (lastQuestionId !== getQuestionIdFromUrl(window.location.href)) {
       setLocalStorage("navigate", "true");
       history.pushState(null, "", constructUrlFromQuestionId(lastQuestionId));
       location.reload();
@@ -660,6 +649,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     await setRoom(getRoomRef(prevRoomId), {
       usernames: arrayUnion(username),
     });
+    // todo(nickbar01234): Dummy fix to mitigate a race
+    // 1. User A reload and triggers leave room
+    // 2. User B detects that A leaves the room and attempts to delete peer from local state
+    // 3. User A join sessions before (2) is completed
+    // 4. User B haven't finished cleaning A from local state
+    // 5. User A doesn't receive an offer
     setTimeout(async () => {
       const join = await joinRoom(prevRoomId);
       if (!join) {
