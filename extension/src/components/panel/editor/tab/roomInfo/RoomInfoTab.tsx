@@ -49,7 +49,7 @@ export const RoomInfoTab = () => {
   React.useEffect(() => {
     const interval = setInterval(() => {
       setElapsed(
-        Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
+        Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? Date.now())
       );
     }, 1000);
 
