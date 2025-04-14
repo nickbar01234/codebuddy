@@ -1,51 +1,37 @@
-import { AppState } from "@cb/context/AppStateProvider";
-import { useAppState, useRTC } from "@cb/hooks/index";
-import { cn } from "@cb/utils/cn";
+import { RenderButton } from "@cb/components/ui/RenderButton";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@cb/lib/components/ui/dialog";
+import React from "react";
 
 export const RejoinPrompt = () => {
+  const [open, setOpen] = React.useState(true);
   return (
-    <div className="rounded-lg shadow-2xl w-[90%] max-w-sm">
-      <h1 className="text-lg font-semibold text-black dark:text-white  mb-4 text-center">
-        Do you want to rejoin the room?
-      </h1>
-
-      <div className="flex gap-4 justify-center">
-        <RenderButton label="No" />
-        <RenderButton label="Yes" isYes />
-      </div>
-    </div>
-  );
-};
-const RenderButton = ({
-  label,
-  isYes = false,
-}: {
-  label: string;
-  isYes?: boolean;
-}) => {
-  const { joiningBackRoom } = useRTC();
-  const { setState } = useAppState();
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        joiningBackRoom(isYes);
-        if (isYes) {
-          setState(AppState.LOADING);
-        } else {
-          setState(AppState.HOME);
-        }
-      }}
-      className={cn(
-        "px-4 py-2 rounded-lg transition-colors flex items-center justify-center",
-        {
-          "bg-blue-600 text-white hover:bg-blue-700": isYes,
-          "bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-400 dark:hover:bg-gray-600":
-            !isYes,
-        }
-      )}
-    >
-      {label}
-    </button>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="text-left text-xl">
+            Do you want to rejoin the room?
+          </DialogTitle>
+          <DialogDescription className="text-left font-medium">
+            You will be disconnected, and you may not be able to rejoin unless
+            invited again.
+          </DialogDescription>
+          <div className="mt-4 flex w-full items-center justify-end gap-2 self-end">
+            <DialogClose asChild>
+              <RenderButton label="Yes" isYes />
+            </DialogClose>
+            <DialogClose asChild>
+              <RenderButton label="No" />
+            </DialogClose>
+          </div>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
   );
 };
