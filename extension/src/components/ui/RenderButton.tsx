@@ -1,3 +1,4 @@
+import { Button } from "@cb/lib/components/ui/button";
 import { cn } from "@cb/utils/cn";
 
 export const RenderButton = ({
@@ -10,7 +11,7 @@ export const RenderButton = ({
   onClick: () => void;
 }) => {
   return (
-    <button
+    <Button
       type="button"
       onClick={onClick}
       className={cn(
@@ -23,6 +24,6 @@ export const RenderButton = ({
       )}
     >
       {label}
-    </button>
+    </Button>
   );
 };

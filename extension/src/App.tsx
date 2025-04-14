@@ -1,8 +1,8 @@
 import RootNavigator from "@cb/components/navigator/RootNavigator";
 import { AppPanel } from "@cb/components/panel";
+import { Toaster } from "sonner";
 import SessionProvider from "./context/SessionProvider";
 import { WindowProvider } from "./context/WindowProvider";
-import { Toaster } from "sonner";
 
 const App = () => {
   return (
@@ -13,7 +13,7 @@ const App = () => {
         closeButton
         visibleToasts={3}
         toastOptions={{
-          duration: 1.5 * 1000,
+          duration: 5 * 1000,
         }}
       />
       <AppPanel>
