@@ -7,12 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@cb/lib/components/ui/dialog";
-import React from "react";
 
 export const RejoinPrompt = () => {
-  const [open, setOpen] = React.useState(true);
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={true} modal={true}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-left text-xl">
