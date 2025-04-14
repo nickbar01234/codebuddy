@@ -14,10 +14,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Data<T> {
   docs: QueryDocumentSnapshot<T>[];
+  collectionSize: number;
 }
 
 interface HookReturnValue<T> {
-  totalDocs: number;
   data: Data<T>;
   error?: Error;
   loading: boolean;
@@ -36,7 +36,7 @@ const usePaginate = <T>({
   limit,
 }: HookProps<T>): HookReturnValue<T> => {
   const [docs, setDocs] = useState<QueryDocumentSnapshot<T>[]>([]);
-  const [totalDocs, setTotalDocs] = useState(0);
+  const [collectionSize, setCollectionSize] = useState(0);
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -94,7 +94,7 @@ const usePaginate = <T>({
   useEffect(() => {
     const interval = setInterval(() => {
       getCountFromServer(baseQuery)
-        .then((res) => setTotalDocs(res.data().count))
+        .then((res) => setCollectionSize(res.data().count))
         .catch(handleError);
     }, 120000);
 
@@ -106,10 +106,10 @@ const usePaginate = <T>({
   }, [fetchDocs]);
 
   const getNext = useCallback(() => {
-    if (docs.length === totalDocs) return;
+    if (docs.length === collectionSize) return;
     const lastDoc = getLastDoc();
     if (lastDoc) fetchDocs(lastDoc, true);
-  }, [getLastDoc, fetchDocs, docs, totalDocs]);
+  }, [getLastDoc, fetchDocs, docs, collectionSize]);
 
   const getPrevious = useCallback(() => {
     const firstDoc = getFirstDoc();
@@ -122,13 +122,13 @@ const usePaginate = <T>({
       loading,
       getNext,
       getPrevious,
-      hasNext: docs.length < totalDocs,
+      hasNext: docs.length < collectionSize,
       data: {
         docs,
+        collectionSize,
       },
-      totalDocs,
     }),
-    [docs, totalDocs, error, getNext, getPrevious, loading]
+    [docs, collectionSize, error, getNext, getPrevious, loading]
   );
 };
 
