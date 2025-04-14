@@ -1,6 +1,7 @@
 import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
+import { removeLocalStorage } from "@cb/services";
 import { cn } from "@cb/utils/cn";
 
 export const RenderButton = ({
@@ -16,6 +17,7 @@ export const RenderButton = ({
     <Button
       type="button"
       onClick={() => {
+        removeLocalStorage("closingTabs");
         joiningBackRoom(isYes);
         if (isYes) {
           setState(AppState.LOADING);

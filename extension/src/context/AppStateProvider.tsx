@@ -1,5 +1,5 @@
 import { useOnMount } from "@cb/hooks";
-import { getLocalStorage } from "@cb/services";
+import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { AppUser } from "@cb/types";
 import React from "react";
 
@@ -35,10 +35,12 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
       "navigation"
     )[0] as PerformanceNavigationTiming;
     const navigate = getLocalStorage("navigate") == "true";
+    const closingTabs = getLocalStorage("closingTabs");
     if (refreshInfo?.roomId)
-      if (maybeReload.type === "reload" || navigate) {
+      if ((maybeReload.type === "reload" || navigate) && !closingTabs) {
         setState(AppState.LOADING);
       } else {
+        setLocalStorage("closingTabs", true);
         setState(AppState.REJOINING);
       }
   });

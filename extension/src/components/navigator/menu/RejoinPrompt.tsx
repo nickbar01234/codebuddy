@@ -11,7 +11,7 @@ import {
 export const RejoinPrompt = () => {
   return (
     <Dialog open={true} modal={true}>
-      <DialogContent>
+      <DialogContent className="hidden-close">
         <DialogHeader>
           <DialogTitle className="text-left text-xl">
             Do you want to rejoin the room?
