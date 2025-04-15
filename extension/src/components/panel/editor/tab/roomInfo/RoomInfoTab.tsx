@@ -11,7 +11,7 @@ import React from "react";
 import { toast } from "sonner";
 import { Decision } from "./stage/Decision";
 
-export enum ROOMSTATE {
+export enum RoomState {
   BEGIN,
   CHOOSE,
   WAIT,
@@ -32,7 +32,7 @@ export const RoomInfoTab = () => {
     () => getQuestionIdFromUrl(window.location.href),
     []
   );
-  const [roomState, setRoomState] = React.useState<ROOMSTATE>(ROOMSTATE.BEGIN);
+  const [roomState, setRoomState] = React.useState<RoomState>(RoomState.BEGIN);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
   const [elapsed, setElapsed] = React.useState<number>(
@@ -93,7 +93,7 @@ export const RoomInfoTab = () => {
               finishedUsers.length !== 0 &&
               finishedUsers.includes(username)
             ) {
-              setRoomState(ROOMSTATE.CHOOSE);
+              setRoomState(RoomState.CHOOSE);
             }
           } else {
             if (usernames.every((user) => finishedUsers.includes(user))) {
@@ -102,9 +102,9 @@ export const RoomInfoTab = () => {
                   "Navigating to the next question: " +
                   constructUrlFromQuestionId(sessionData.nextQuestion)
               );
-              setRoomState(ROOMSTATE.DECISION);
+              setRoomState(RoomState.DECISION);
             } else if (finishedUsers.includes(username)) {
-              setRoomState(ROOMSTATE.WAIT);
+              setRoomState(RoomState.WAIT);
             }
           }
         }
@@ -120,6 +120,7 @@ export const RoomInfoTab = () => {
     getSnapshot,
     cleanupSnapshot,
   ]);
+
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-10 ">
       <h1 className="text-center text-lg font-semibold">
@@ -140,7 +141,7 @@ export const RoomInfoTab = () => {
         </div>
       </div>
 
-      {roomState === ROOMSTATE.CHOOSE ? (
+      {roomState === RoomState.CHOOSE ? (
         <QuestionSelectorPanel handleQuestionSelect={handleChooseQuestion} />
       ) : (
         <div className="flex flex-col gap-2 w-full">
@@ -170,7 +171,7 @@ export const RoomInfoTab = () => {
         </div>
       )}
 
-      {roomState === ROOMSTATE.DECISION && <Decision />}
+      {roomState === RoomState.DECISION && <Decision />}
     </div>
   );
 };
