@@ -3,7 +3,6 @@ import { Button } from "@cb/lib/components/ui/button";
 export const RenderButton = ({
   label,
   onClick,
-  isYes,
 }: {
   label: string;
   isYes?: boolean;
