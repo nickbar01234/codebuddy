@@ -1,4 +1,9 @@
-import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
+import {
+  disablePointerEvents,
+  getQuestionIdFromUrl,
+  hideToRoot,
+  waitForElement,
+} from "@cb/utils";
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { SelectQuestionButton } from "./SelectProblemButton";
@@ -43,12 +48,7 @@ export const QuestionSelectorPanel = React.memo(
                 question as unknown as Document
               )) as HTMLAnchorElement;
 
-              const url = new URL(link.href);
-              const currQuestionId = url.pathname
-                .split("/")
-                .filter(Boolean)
-                .pop();
-
+              const currQuestionId = getQuestionIdFromUrl(link.href);
               if (currQuestionId && pastQuestionsId.includes(currQuestionId)) {
                 console.log("past question Id", pastQuestionsId);
                 try {
