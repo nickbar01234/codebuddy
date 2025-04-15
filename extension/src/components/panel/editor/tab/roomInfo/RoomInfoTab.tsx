@@ -1,22 +1,23 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
+import { RenderButton } from "@cb/components/ui/RenderButton";
 import { getRoom, getSession, getSessionRef } from "@cb/db";
 import { Room, Session } from "@cb/db/converter";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import useResource from "@cb/hooks/useResource";
+import { Button } from "@cb/lib/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@cb/lib/components/ui/dialog";
 import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import { formatTime } from "@cb/utils/heartbeat";
 import { onSnapshot, Unsubscribe } from "firebase/firestore";
 import { Timer, Users } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
-import { Decision } from "./stage/Decision";
-
-export enum RoomState {
-  BEGIN,
-  CHOOSE,
-  WAIT,
-  DECISION,
-}
 
 export const RoomInfoTab = () => {
   const {
@@ -27,17 +28,26 @@ export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAppState();
-  const { roomId, peerState, handleChooseQuestion } = useRTC();
+  const {
+    roomId,
+    peerState,
+    handleChooseQuestion,
+    handleNavigateToNextQuestion,
+  } = useRTC();
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
   );
-  const [roomState, setRoomState] = React.useState<RoomState>(RoomState.BEGIN);
+  const [chooseNextQuestion, setChooseNextQuestion] =
+    React.useState<boolean>(false);
+  const [showNavigatePrompt, setShowNavigatePrompt] =
+    React.useState<boolean>(false);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
   const [elapsed, setElapsed] = React.useState<number>(
     Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
   );
+  const [open, setOpen] = React.useState(false);
   const unfinishedPeers = React.useMemo(
     () =>
       Object.entries(peerState)
@@ -93,18 +103,17 @@ export const RoomInfoTab = () => {
               finishedUsers.length !== 0 &&
               finishedUsers.includes(username)
             ) {
-              setRoomState(RoomState.CHOOSE);
+              setChooseNextQuestion(true);
             }
           } else {
+            setChooseNextQuestion(false);
             if (usernames.every((user) => finishedUsers.includes(user))) {
               toast.info(
                 "All users have finished the question. " +
                   "Navigating to the next question: " +
                   constructUrlFromQuestionId(sessionData.nextQuestion)
               );
-              setRoomState(RoomState.DECISION);
-            } else if (finishedUsers.includes(username)) {
-              setRoomState(RoomState.WAIT);
+              setShowNavigatePrompt(true);
             }
           }
         }
@@ -140,38 +149,91 @@ export const RoomInfoTab = () => {
           </span>
         </div>
       </div>
-
-      {roomState === RoomState.CHOOSE ? (
-        <QuestionSelectorPanel handleQuestionSelect={handleChooseQuestion} />
-      ) : (
-        <div className="flex flex-col gap-2 w-full">
-          <div className="rounded-lg border-solid border-4 p-2 shadow-sm w-full">
-            <div className="text-tertiary text-sm mb-1">Next Problem</div>
-            <h2 className="text-xl font-bold mb-3">
-              {sessionDoc?.nextQuestion != ""
-                ? sessionDoc?.nextQuestion
-                : "No question chosen yet"}
-              <span className="text-orange-400 ml-2">[Medium]</span>
-            </h2>
-            <div className="flex gap-2 mb-4">
-              <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
-                Hash Table
-              </span>
-              <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
-                String
-              </span>
-              <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
-                Sliding Window
-              </span>
-            </div>
+      <div className="flex flex-col gap-2 w-full">
+        <div className="rounded-lg border-solid border-4 p-2 shadow-sm w-full">
+          <div className="text-tertiary text-sm mb-1">
+            {showNavigatePrompt ? "Next" : "Current"} Problem
           </div>
-          <div className="w-full text-lg text-tertiary text-left">
-            Waiting for {unfinishedPeers.length} members to finish...
+          <h2 className="text-xl font-bold mb-3">
+            {sessionDoc?.nextQuestion != ""
+              ? sessionDoc?.nextQuestion
+              : "No question chosen yet"}
+            <span className="text-orange-400 ml-2">[Medium]</span>
+          </h2>
+          <div className="flex gap-2 mb-4">
+            <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+              Hash Table
+            </span>
+            <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+              String
+            </span>
+            <span className="bg-[--color-tabset-tabbar-background] text-tertiary px-4 py-1 rounded-full text-sm">
+              Sliding Window
+            </span>
+          </div>
+        </div>
+        <div className="w-full text-lg text-tertiary text-left">
+          Waiting for {unfinishedPeers.length} members to finish...
+        </div>
+      </div>
+
+      {chooseNextQuestion && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <div className="relative inline-block">
+              <Button className="bg-rose-400 hover:bg-rose-500 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="lucide lucide-layout-grid"
+                >
+                  <rect width="7" height="7" x="3" y="3" rx="1" />
+                  <rect width="7" height="7" x="14" y="3" rx="1" />
+                  <rect width="7" height="7" x="14" y="14" rx="1" />
+                  <rect width="7" height="7" x="3" y="14" rx="1" />
+                </svg>
+                Select next problem
+              </Button>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+            </div>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-left text-xl">
+                Select Next Problem
+              </DialogTitle>
+              <QuestionSelectorPanel
+                handleQuestionSelect={(question) => {
+                  handleChooseQuestion(question);
+                  setOpen(false); // Close the dialog
+                }}
+              />
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showNavigatePrompt && (
+        <div className="flex w-full flex-col">
+          <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+            Do you want to go on to next question?
+          </h1>
+          <div className="flex justify-center gap-4">
+            <RenderButton
+              label="YES"
+              isYes={true}
+              onClick={handleNavigateToNextQuestion}
+            />
           </div>
         </div>
       )}
-
-      {roomState === RoomState.DECISION && <Decision />}
     </div>
   );
 };
