@@ -88,6 +88,18 @@ describe("Firebase security test", () => {
     await assertFails(invalidSessionRef.set({}));
   });
 
+  it("only one user can set the next question", async () => {
+    const roomRef = createRoom(authenticatedDb);
+    const sessionRef = createSession(roomRef);
+
+    await assertSucceeds(roomRef.set(roomData));
+    await assertSucceeds(sessionRef.set({ nextQuestion: "" }));
+    await assertSucceeds(sessionRef.update({ nextQuestion: "new-problem-id" }));
+    await assertFails(
+      sessionRef.update({ nextQuestion: "another-problem-id" })
+    );
+  });
+
   it("should deny random path", async () => {
     const randomCollection = authenticatedDb
       .collection("randomCollection")
