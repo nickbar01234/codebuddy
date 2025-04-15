@@ -157,7 +157,7 @@ export const RoomInfoTab = () => {
           <h2 className="text-xl font-bold mb-3">
             {sessionDoc?.nextQuestion != ""
               ? sessionDoc?.nextQuestion
-              : "No question chosen yet"}
+              : getQuestionIdFromUrl(window.location.href)}
             <span className="text-orange-400 ml-2">[Medium]</span>
           </h2>
           <div className="flex gap-2 mb-4">
@@ -181,14 +181,14 @@ export const RoomInfoTab = () => {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <div className="relative inline-block">
-              <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-sm flex items-center gap-2 px-4 py-2 font-medium">
+              <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
                 <Grid className="h-5 w-5 text-white" />
                 Select next problem
               </Button>
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF3B30] rounded-full border-2 border-white"></div>
             </div>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="h-full w-full">
             <DialogHeader>
               <DialogTitle className="text-left text-xl">
                 Select Next Problem
@@ -206,7 +206,7 @@ export const RoomInfoTab = () => {
 
       {showNavigatePrompt && (
         <div className="flex w-full flex-col">
-          <h1 className="mb-4 text-center text-lg font-semibold text-black dark:text-white">
+          <h1 className="mb-4 text-center text-lg font-semibold">
             Do you want to go on to next question?
           </h1>
           <div className="flex justify-center gap-4">

@@ -309,4 +309,60 @@ const logEntries: LogEvent[] = [
     message: "lmao",
     timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
   },
+  {
+    type: "submission",
+    username: "Buddy",
+    output: "Accepted",
+    status: "success",
+    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
+  },
+  {
+    type: "submission",
+    username: "Code",
+    output: "Time limit exceeded",
+    status: "error",
+    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
+  },
+  {
+    type: "connection",
+    username: "Dev",
+    status: "join",
+    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Code",
+    message: "RAHHHhHHH can someone take a look at my code",
+    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Buddy",
+    message: "um no sry",
+    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
+  },
+  {
+    type: "connection",
+    username: "Buddy",
+    status: "leave",
+    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Code",
+    message: "???",
+    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "Dev",
+    message: "lmao",
+    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
+  },
+  {
+    type: "message",
+    username: "5bigBooms",
+    message: "lmao",
+    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
+  },
 ];

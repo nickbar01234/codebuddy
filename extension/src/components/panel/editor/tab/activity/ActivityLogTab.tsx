@@ -1,5 +1,4 @@
 import { LogEvent } from "@cb/db/converter";
-import { useWindowDimensions } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Send } from "lucide-react";
@@ -13,16 +12,9 @@ interface ActivityLogTabProps {
 export const ActivityLogTab: React.FC<ActivityLogTabProps> = ({
   logEntries,
 }) => {
-  const {
-    height,
-    preference: { codePreference },
-  } = useWindowDimensions();
   return (
     <div className="bg-layer-1 dark:bg-dark-layer-1 flex h-full w-full flex-col items-center gap-2 overflow-hidden rounded-lg p-4 shadow-md">
-      <div
-        className="hide-scrollbar flex w-full flex-col gap-1 overflow-y-auto p-4"
-        style={{ height: height - codePreference.height - 150 }}
-      >
+      <div className="hide-scrollbar flex w-full justify-start flex-col gap-1 overflow-y-auto p-4">
         {logEntries.map((entry, index) => (
           <LogEntry key={index} entry={entry} />
         ))}
