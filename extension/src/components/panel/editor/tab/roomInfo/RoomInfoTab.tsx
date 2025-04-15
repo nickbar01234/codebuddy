@@ -185,7 +185,7 @@ export const RoomInfoTab = () => {
                 <Grid className="h-5 w-5 text-white" />
                 Select next problem
               </Button>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF3B30] rounded-full border-2 border-white"></div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF3B30] rounded-bl border-l-2 border-b-2 border-white"></div>
             </div>
           </DialogTrigger>
           <DialogContent className="h-full w-full">
