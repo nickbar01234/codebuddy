@@ -15,7 +15,7 @@ import {
 import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import { formatTime } from "@cb/utils/heartbeat";
 import { onSnapshot, Unsubscribe } from "firebase/firestore";
-import { Timer, Users } from "lucide-react";
+import { Grid, Timer, Users } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
@@ -181,27 +181,11 @@ export const RoomInfoTab = () => {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <div className="relative inline-block">
-              <Button className="bg-rose-400 hover:bg-rose-500 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-layout-grid"
-                >
-                  <rect width="7" height="7" x="3" y="3" rx="1" />
-                  <rect width="7" height="7" x="14" y="3" rx="1" />
-                  <rect width="7" height="7" x="14" y="14" rx="1" />
-                  <rect width="7" height="7" x="3" y="14" rx="1" />
-                </svg>
+              <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-sm flex items-center gap-2 px-4 py-2 font-medium">
+                <Grid className="h-5 w-5 text-white" />
                 Select next problem
               </Button>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF3B30] rounded-full border-2 border-white"></div>
             </div>
           </DialogTrigger>
           <DialogContent>
