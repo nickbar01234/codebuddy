@@ -23,8 +23,7 @@ service cloud.firestore {
       allow update: if request.auth != null && request.resource.data.diff(resource.data).changedKeys().hasOnly(['usernames']);
 
       match /sessions/{document=**} {
-        allow read: if isPermittedToModify()
-        allow create, delete: if isPermittedToModify();
+        allow read, create, delete: if isPermittedToModify();
         allow update: if isPermittedToModify() 
         && resource.data.nextQuestion == "" 
         && request.resource.data.nextQuestion != "";   

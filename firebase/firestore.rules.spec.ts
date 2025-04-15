@@ -98,6 +98,7 @@ describe("Firebase security test", () => {
     await assertFails(
       sessionRef.update({ nextQuestion: "another-problem-id" })
     );
+    await assertFails(sessionRef.update({ nextQuestion: "" }));
   });
 
   it("should deny random path", async () => {
