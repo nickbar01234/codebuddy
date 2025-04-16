@@ -1,3 +1,5 @@
+import { poll } from "./poll";
+
 export const waitForElement = (
   selector: string,
   timeout: number = 3000,
@@ -54,7 +56,15 @@ export const disablePointerEvents = (context: Document = document) => {
   context.head.appendChild(style);
 };
 
-export const waitForStableElements = async (
+type WaitForStableElementsOptions = {
+  timeout?: number;
+  interval?: number;
+  minCount?: number;
+  stableDuration?: number;
+  root?: ParentNode;
+};
+
+export async function waitForStableElements(
   selector: string,
   {
     timeout = 3000,
@@ -62,42 +72,43 @@ export const waitForStableElements = async (
     minCount = 0,
     stableDuration = 500,
     root = document,
-  }: {
-    timeout?: number;
-    interval?: number;
-    minCount?: number;
-    stableDuration?: number;
-    root?: ParentNode;
-  } = {}
-): Promise<Element[]> => {
+  }: WaitForStableElementsOptions = {}
+): Promise<Element[]> {
   let lastCount = 0;
   let stableTime = 0;
 
-  return new Promise((resolve) => {
-    const start = Date.now();
+  const start = Date.now();
 
-    const check = () => {
+  const result = await poll<Element[]>({
+    ms: interval,
+    fn: async () => {
       const elements = Array.from(root.querySelectorAll(selector));
-      const currentCount = elements.length;
+      const count = elements.length;
 
-      if (currentCount >= minCount && currentCount === lastCount) {
+      if (count >= minCount && count === lastCount) {
         stableTime += interval;
-        if (stableTime >= stableDuration) return resolve(elements);
       } else {
-        lastCount = currentCount;
+        lastCount = count;
         stableTime = 0;
       }
 
-      if (Date.now() - start > timeout) {
+      return elements;
+    },
+    until: () => {
+      const now = Date.now();
+      const timeoutExceeded = now - start > timeout;
+      const isStable = stableTime >= stableDuration;
+
+      if (timeoutExceeded) {
         console.warn(
           `Timed out waiting for stable elements of selector "${selector}"`
         );
-        return resolve(elements);
+        return true;
       }
 
-      setTimeout(check, interval);
-    };
-
-    check();
+      return isStable;
+    },
   });
-};
+
+  return result;
+}
