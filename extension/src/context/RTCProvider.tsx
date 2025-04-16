@@ -303,7 +303,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       finishedUsers: [],
 
       usernames: arrayUnion(username),
-      nextQuestion: "",
 
       createdAt: serverTimestamp(),
     });
@@ -681,7 +680,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await setSession(newSessionRef, {
         finishedUsers: [],
         usernames: [],
-        nextQuestion: "",
         createdAt: serverTimestamp(),
       });
     },
