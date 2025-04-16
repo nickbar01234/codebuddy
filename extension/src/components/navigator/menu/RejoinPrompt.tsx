@@ -20,7 +20,7 @@ export const RejoinPrompt = () => {
             You will be disconnected, and you may not be able to rejoin unless
             invited again.
           </DialogDescription>
-          <div className="mt-4 flex w-full items-center justify-end gap-2 self-end">
+          <div className="mt-6 flex w-full items-center justify-end gap-2 self-end">
             <DialogClose asChild>
               <RenderButton label="Yes" isYes />
             </DialogClose>

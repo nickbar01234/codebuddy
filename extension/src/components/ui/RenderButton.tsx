@@ -24,7 +24,7 @@ export const RenderButton = ({
           setState(AppState.HOME);
         }
       }}
-      className="w-full rounded-md  py-2 font-medium text-base transition text-[#1E1E1E] dark:text-[#FFFFFF] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
+      className="w-full max-w-28 rounded-md  py-2 font-medium text-base transition text-[#1E1E1E] dark:text-[#FFFFFF] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
     >
       {label}
     </Button>
