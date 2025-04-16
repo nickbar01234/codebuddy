@@ -25,8 +25,8 @@ service cloud.firestore {
       match /sessions/{document=**} {
         allow read, create, delete: if isPermittedToModify();
         allow update: if isPermittedToModify() 
-        && resource.data.nextQuestion == "" 
-        && request.resource.data.nextQuestion != "";   
+        && (resource.data.nextQuestion == "" || resource.data.nextQuestion == null)
+        && (request.resource.data.nextQuestion != "" && request.resource.data.nextQuestion != null);  
       }
 
       match /events/{document=**} {
