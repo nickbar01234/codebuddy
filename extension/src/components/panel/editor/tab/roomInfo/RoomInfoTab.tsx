@@ -8,15 +8,13 @@ import { Button } from "@cb/lib/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogTitle,
   DialogTrigger,
 } from "@cb/lib/components/ui/dialog";
-import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
+import { getQuestionIdFromUrl } from "@cb/utils";
 import { formatTime } from "@cb/utils/heartbeat";
 import { onSnapshot, Unsubscribe } from "firebase/firestore";
 import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
-import { toast } from "sonner";
 
 export const RoomInfoTab = () => {
   const {
@@ -107,11 +105,6 @@ export const RoomInfoTab = () => {
           } else {
             setChooseNextQuestion(false);
             if (usernames.every((user) => finishedUsers.includes(user))) {
-              toast.info(
-                "All users have finished the question. " +
-                  "Navigating to the next question: " +
-                  constructUrlFromQuestionId(sessionData.nextQuestion)
-              );
               setShowNavigatePrompt(true);
             }
           }
@@ -188,15 +181,12 @@ export const RoomInfoTab = () => {
             </div>
           </DialogTrigger>
           <DialogContent className="h-[80%] w-full min-w-[75%]">
-            <DialogTitle className="h-full w-full text-left text-xl">
-              Select Next Problem
-              <QuestionSelectorPanel
-                handleQuestionSelect={(question) => {
-                  handleChooseQuestion(question);
-                  setOpen(false); // Close the dialog
-                }}
-              />
-            </DialogTitle>
+            <QuestionSelectorPanel
+              handleQuestionSelect={(question) => {
+                handleChooseQuestion(question);
+                setOpen(false); // Close the dialog
+              }}
+            />
           </DialogContent>
         </Dialog>
       )}
