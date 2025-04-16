@@ -8,14 +8,13 @@ import { Button } from "@cb/lib/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@cb/lib/components/ui/dialog";
 import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
 import { formatTime } from "@cb/utils/heartbeat";
 import { onSnapshot, Unsubscribe } from "firebase/firestore";
-import { Grid, Timer, Users } from "lucide-react";
+import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
@@ -182,24 +181,22 @@ export const RoomInfoTab = () => {
           <DialogTrigger asChild>
             <div className="relative inline-block">
               <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
-                <Grid className="h-5 w-5 text-white" />
+                <Grid2X2 className="h-5 w-5 text-white" />
                 Select next problem
               </Button>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-[#FF3B30] rounded-bl border-l-2 border-b-2 border-white"></div>
+              <div className="absolute -top-[0.3rem] -right-[0.3rem] w-3 h-3 bg-[#FF3B30] rounded-full border-[4px] border-background" />
             </div>
           </DialogTrigger>
-          <DialogContent className="h-full w-full">
-            <DialogHeader>
-              <DialogTitle className="text-left text-xl">
-                Select Next Problem
-              </DialogTitle>
+          <DialogContent className="h-[80%] w-full min-w-[75%]">
+            <DialogTitle className="h-full w-full text-left text-xl">
+              Select Next Problem{" "}
               <QuestionSelectorPanel
                 handleQuestionSelect={(question) => {
                   handleChooseQuestion(question);
                   setOpen(false); // Close the dialog
                 }}
               />
-            </DialogHeader>
+            </DialogTitle>
           </DialogContent>
         </Dialog>
       )}

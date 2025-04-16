@@ -14,7 +14,7 @@ export const SkeletonWrapper: FC<SkelentonWrapperProps> = ({
   loading,
 }) => {
   return (
-    <>
+    <div className="relative h-full w-full">
       {loading && (
         <Skeleton
           className={cn(
@@ -30,6 +30,6 @@ export const SkeletonWrapper: FC<SkelentonWrapperProps> = ({
       >
         {children}
       </div>
-    </>
+    </div>
   );
 };

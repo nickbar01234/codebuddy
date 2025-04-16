@@ -1,3 +1,4 @@
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useOnMount } from "@cb/hooks";
 import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
 import React from "react";
@@ -13,6 +14,7 @@ interface QuestionSelectorPanelProps {
 
 export const QuestionSelectorPanel = React.memo(
   ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
+    const [loading, setLoading] = React.useState(true);
     useOnMount(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
@@ -76,22 +78,32 @@ export const QuestionSelectorPanel = React.memo(
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
           if (iframeDoc != undefined) {
-            handleIframeStyle(iframeDoc).catch((e) => {
-              console.error("Unable to mount Leetcode iframe", e);
-            });
+            handleIframeStyle(iframeDoc)
+              .then(() => {
+                setLoading(false);
+                console.log("Leetcode iframe mounted successfully");
+              })
+              .catch((e) => {
+                console.error("Unable to mount Leetcode iframe", e);
+              });
           }
         };
       });
     });
 
     return (
-      <iframe
-        src="https://leetcode.com/problemset/"
-        title="LeetCode Question"
-        id="leetcode_question"
-        className="z-100 h-full w-full"
-        sandbox="allow-scripts allow-same-origin"
-      />
+      <SkeletonWrapper
+        loading={loading}
+        className="w-[70vw] h-[80vh] bg-gray-700"
+      >
+        <iframe
+          src="https://leetcode.com/problemset/"
+          title="LeetCode Question"
+          id="leetcode_question"
+          className="h-full w-full"
+          sandbox="allow-scripts allow-same-origin"
+        />
+      </SkeletonWrapper>
     );
   }
 );
