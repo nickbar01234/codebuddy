@@ -204,7 +204,7 @@ const EditorPanel = () => {
           </div>
         </ResizableBox>
         <div
-          className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1"
+          className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1 pb-10" //add for the absolute footer so we need to push the content up by adding bottom padding
           style={{
             height: height - codePreference.height - 128,
           }}

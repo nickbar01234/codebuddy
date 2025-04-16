@@ -94,7 +94,7 @@ export const QuestionSelectorPanel = React.memo(
     return (
       <SkeletonWrapper
         loading={loading}
-        className="w-[70vw] h-[80vh] bg-gray-700"
+        className="w-[70vw] h-[60vh] bg-gray-700"
       >
         <iframe
           src="https://leetcode.com/problemset/"

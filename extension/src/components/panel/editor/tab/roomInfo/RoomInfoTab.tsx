@@ -130,7 +130,7 @@ export const RoomInfoTab = () => {
   ]);
 
   return (
-    <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-10 ">
+    <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
       <h1 className="text-center text-lg font-semibold">
         {roomDoc?.roomName ?? "Room Name"}
       </h1>
@@ -138,7 +138,7 @@ export const RoomInfoTab = () => {
         <div className="flex items-center">
           <Users className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
-            {Object.keys(peerState).length}/4
+            {Object.keys(peerState).length + 1}/4
           </span>
         </div>
         <div className="flex items-center">
@@ -189,7 +189,7 @@ export const RoomInfoTab = () => {
           </DialogTrigger>
           <DialogContent className="h-[80%] w-full min-w-[75%]">
             <DialogTitle className="h-full w-full text-left text-xl">
-              Select Next Problem{" "}
+              Select Next Problem
               <QuestionSelectorPanel
                 handleQuestionSelect={(question) => {
                   handleChooseQuestion(question);

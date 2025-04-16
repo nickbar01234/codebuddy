@@ -19,7 +19,7 @@ export const ActivityLogTab: React.FC<ActivityLogTabProps> = ({
           <LogEntry key={index} entry={entry} />
         ))}
       </div>
-      <div className="mb-2 flex w-full justify-center items-center gap-2 p-4">
+      <div className="flex w-full justify-center items-center gap-2 p-4">
         <Input type="message" placeholder="Enter message" />
         <Button
           type="submit"
