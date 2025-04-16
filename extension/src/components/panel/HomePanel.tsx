@@ -16,6 +16,7 @@ import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
 import { throttle } from "lodash";
 import React from "react";
+import { QuestionSelectorPanel } from "./problem";
 
 const HomePanel = () => {
   const { joinRoom, createRoom } = useRTC();
@@ -61,6 +62,8 @@ const HomePanel = () => {
 
   return (
     <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll justify-center">
+      {/* testing only will remove before merging */}
+      <QuestionSelectorPanel handleQuestionSelect={() => {}} />
       <div className="flex w-full flex-col items-center justify-end gap-3">
         <ThemeAwaredLogo
           containerProps={{

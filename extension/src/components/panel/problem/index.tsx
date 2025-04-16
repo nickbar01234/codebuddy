@@ -1,5 +1,11 @@
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useOnMount } from "@cb/hooks";
-import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
+import {
+  disablePointerEvents,
+  hideToRoot,
+  waitForElement,
+  waitForStableElements,
+} from "@cb/utils";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { SelectQuestionButton } from "./SelectProblemButton";
@@ -13,6 +19,7 @@ interface QuestionSelectorPanelProps {
 
 export const QuestionSelectorPanel = React.memo(
   ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
+    const [loading, setLoading] = React.useState(true);
     useOnMount(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
@@ -29,35 +36,47 @@ export const QuestionSelectorPanel = React.memo(
           TIMEOUT,
           table as unknown as Document
         );
-        // The order currently: status, title, solution, acceptance, difficulty, frequency
-        rows?.querySelectorAll("div[role='row']").forEach(async (question) => {
-          try {
-            // Technically, the selector can either match on status (if daily question) or title -- in either cases,
-            // we have the link to the actual problem
-            const link = (await waitForElement(
-              "div[role='cell'] a",
-              TIMEOUT,
-              question as unknown as Document
-            )) as HTMLAnchorElement;
-            const injected = iframeDoc.createElement("span");
-            question.append(injected);
-            createRoot(injected).render(
-              <SelectQuestionButton
-                onClick={() => {
-                  // Handle the question select
-                  handleQuestionSelect(link.href);
-                  // Prevent further action
-                  return;
-                }}
-              />
-            );
-          } catch {
-            // If no link exist, there's no point in displaying the question
-            rows.removeChild(question);
-          }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        const stableRows = await waitForStableElements("div[role='row']", {
+          timeout: 4000,
+          minCount: 5,
+          root: rows,
+          interval: 100,
         });
+        // The order currently: status, title, solution, acceptance, difficulty, frequency
+        const rowPromises = Array.from(stableRows ?? []).map(
+          async (question) => {
+            try {
+              // Technically, the selector can either match on status (if daily question) or title -- in either cases,
+              // we have the link to the actual problem
+              const link = (await waitForElement(
+                "div[role='cell'] a",
+                TIMEOUT,
+                question as unknown as Document
+              )) as HTMLAnchorElement;
+              const injected = iframeDoc.createElement("span");
+              question.append(injected);
+              createRoot(injected).render(
+                <SelectQuestionButton
+                  onClick={() => {
+                    // Handle the question select
+                    handleQuestionSelect(link.href);
+                    // Prevent further action
+                    return;
+                  }}
+                />
+              );
+            } catch (e) {
+              console.error("Unable to inject button into question", e);
+              // If no link exists, there's no point in displaying the question
+              rows.removeChild(question);
+            }
+          }
+        );
 
-        waitForElement(
+        await Promise.all(rowPromises);
+
+        await waitForElement(
           "div[role='columnheader']:first-child",
           TIMEOUT,
           iframeDoc
@@ -76,22 +95,32 @@ export const QuestionSelectorPanel = React.memo(
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
           if (iframeDoc != undefined) {
-            handleIframeStyle(iframeDoc).catch((e) => {
-              console.error("Unable to mount Leetcode iframe", e);
-            });
+            handleIframeStyle(iframeDoc)
+              .then(() => {
+                setLoading(false);
+                console.log("Leetcode iframe mounted successfully");
+              })
+              .catch((e) => {
+                console.error("Unable to mount Leetcode iframe", e);
+              });
           }
         };
       });
     });
 
     return (
-      <iframe
-        src="https://leetcode.com/problemset/"
-        title="LeetCode Question"
-        id="leetcode_question"
-        className="z-100 h-full w-full"
-        sandbox="allow-scripts allow-same-origin"
-      />
+      <SkeletonWrapper
+        loading={loading}
+        className="w-[70vw] h-[60vh] bg-gray-700"
+      >
+        <iframe
+          src="https://leetcode.com/problemset/"
+          title="LeetCode Question"
+          id="leetcode_question"
+          className="h-full w-full"
+          sandbox="allow-scripts allow-same-origin"
+        />
+      </SkeletonWrapper>
     );
   }
 );

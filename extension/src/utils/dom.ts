@@ -53,3 +53,51 @@ export const disablePointerEvents = (context: Document = document) => {
   style.textContent = "a { pointer-events: none; }";
   context.head.appendChild(style);
 };
+
+export const waitForStableElements = async (
+  selector: string,
+  {
+    timeout = 3000,
+    interval = 200,
+    minCount = 0,
+    stableDuration = 500,
+    root = document,
+  }: {
+    timeout?: number;
+    interval?: number;
+    minCount?: number;
+    stableDuration?: number;
+    root?: ParentNode;
+  } = {}
+): Promise<Element[]> => {
+  let lastCount = 0;
+  let stableTime = 0;
+
+  return new Promise((resolve) => {
+    const start = Date.now();
+
+    const check = () => {
+      const elements = Array.from(root.querySelectorAll(selector));
+      const currentCount = elements.length;
+
+      if (currentCount >= minCount && currentCount === lastCount) {
+        stableTime += interval;
+        if (stableTime >= stableDuration) return resolve(elements);
+      } else {
+        lastCount = currentCount;
+        stableTime = 0;
+      }
+
+      if (Date.now() - start > timeout) {
+        console.warn(
+          `Timed out waiting for stable elements of selector "${selector}"`
+        );
+        return resolve(elements);
+      }
+
+      setTimeout(check, interval);
+    };
+
+    check();
+  });
+};
