@@ -38,6 +38,8 @@ export const Ripple = React.memo(function Ripple({
           <div
             key={i}
             className={cn(
+              // note(nickbar01234): [--i:${i}] is used in tailwind.config.js
+              // https://github.com/nickbar01234/codebuddy/blob/9d58d89002cfeb9ecb7e08144557aa95ea9c2e6c/extension/tailwind.config.js#L11
               `animate-ripple absolute rounded-full border shadow-xl [--i:${i}]`,
               "bg-foreground dark:bg-foreground/25"
             )}
