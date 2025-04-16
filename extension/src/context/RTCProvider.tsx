@@ -626,21 +626,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const handleSucessfulSubmissionRef = React.useRef(handleSucessfulSubmission);
   const handleFailedSubmissionRef = React.useRef(handleFailedSubmission);
 
-  const joiningBackRoom = React.useCallback(async () => {
-    const refreshInfo = getLocalStorage("tabs");
-    if (refreshInfo == undefined) return;
-    console.log("Joining back room", refreshInfo);
-    const prevRoomId = refreshInfo.roomId;
-    const allQuestions = await getAllSessionId(prevRoomId);
-    const lastQuestionId = allQuestions[allQuestions.length - 1];
-    console.log("Last question ID", lastQuestionId);
-    if (lastQuestionId !== getQuestionIdFromUrl(window.location.href)) {
-      setLocalStorage("navigate", "true");
-      history.pushState(null, "", constructUrlFromQuestionId(lastQuestionId));
-      location.reload();
-    }
-  }, []);
-
   const afterReloadJoin = React.useCallback(async () => {
     const refreshInfo = getLocalStorage("tabs");
     if (refreshInfo == undefined) return;
@@ -662,6 +647,26 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
     }, 1500);
   }, [joinRoom, username, leaveRoom]);
+
+  const joiningBackRoom = React.useCallback(async () => {
+    const refreshInfo = getLocalStorage("tabs");
+    if (refreshInfo == undefined) return;
+    console.log("Joining back room", refreshInfo);
+    const prevRoomId = refreshInfo.roomId;
+    const allQuestions = await getAllSessionId(prevRoomId);
+    const lastQuestionId = allQuestions[allQuestions.length - 1];
+    const currentQuestionId = getQuestionIdFromUrl(window.location.href);
+    console.log("Last question ID", lastQuestionId);
+    if (!allQuestions.includes(currentQuestionId)) {
+      setLocalStorage("navigate", "true");
+      toast.info('Redirecting to the last question "' + lastQuestionId + '"');
+      history.pushState(null, "", constructUrlFromQuestionId(lastQuestionId));
+      location.reload();
+    } else {
+      toast.info('Joining back to the room "' + prevRoomId + '"');
+      await afterReloadJoin();
+    }
+  }, [afterReloadJoin]);
 
   const handleNavigateToNextQuestion = React.useCallback(async () => {
     if (roomId == null) return;
