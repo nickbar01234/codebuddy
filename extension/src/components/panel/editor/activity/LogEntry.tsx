@@ -91,7 +91,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
   const getPrompt = () => {
     const baseClass =
-      "flex-shrink-0 hide-scrollbar overflow-x-auto break-words w-full flex flex-wrap items-center gap-1";
+      "hide-scrollbar overflow-x-auto whitespace-nowrap w-full flex items-center gap-1";
 
     switch (type) {
       case "submission":
@@ -125,7 +125,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="grid grid-cols-[auto_1fr_auto] items-start py-1 relative h-full w-full">
+    <div className="grid grid-cols-[auto_1fr_auto] items-start py-1 relative h-full min-w-max">
       <span className="flex-shrink-0 mr-1">{getIcon()}</span>
       {getPrompt()}
       <span className="ml-1 text-tertiary text-xs justify-self-end">

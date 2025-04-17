@@ -2,7 +2,6 @@
 
 import _ from "lodash";
 import puppeteer from "puppeteer";
-
 const EXTENSION_PATH = "./dist/";
 
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
