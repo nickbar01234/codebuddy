@@ -1,3 +1,4 @@
+import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
@@ -8,7 +9,6 @@ import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import React from "react";
-import { RejoinPrompt } from "./menu/RejoinPrompt";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -35,7 +35,7 @@ export const AppNavigator = () => {
               }
             />
           ) : state === AppState.REJOINING ? (
-            <RejoinPrompt />
+            <RejoinPromptDialog />
           ) : state === AppState.HOME ? (
             <HomePanel />
           ) : null}

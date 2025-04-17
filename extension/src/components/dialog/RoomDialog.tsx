@@ -8,6 +8,10 @@ import {
 } from "@cb/lib/components/ui/dialog";
 import React from "react";
 
+//note that the classname from leetcode is not applying because dialog is not in leetcode environment. We could still use classname from our tailwind tho.
+export const baseButtonClassName =
+  "rounded-md text-black dark:text-white py-2 font-medium text-base transition hover:bg-[--color-button-hover-background] bg-[--color-button-background] border-transparent hover:border-black dark:hover:border-white border";
+
 export interface RoomDialogProps {
   trigger: React.ReactNode;
   open?: boolean;
@@ -19,28 +23,32 @@ export interface RoomDialogProps {
   description?: string;
   children?: React.ReactNode;
   footer?: React.ReactNode;
+  onContentClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export const RoomDialog: React.FC<RoomDialogProps> = ({
   trigger,
   open,
   onOpenChange,
-  modal = false,
+  modal,
   contentClassName = "w-auto",
   headerClassName = "",
   title,
   description,
   children,
   footer,
+  onContentClick,
 }) => (
-  <Dialog open={open} onOpenChange={onOpenChange} modal={modal}>
+  <Dialog {...{ open, onOpenChange, modal }}>
     <DialogTrigger asChild>{trigger}</DialogTrigger>
-    <DialogContent
-      className={contentClassName}
-      onClick={(e) => e.stopPropagation()}
-    >
+    <DialogContent className={contentClassName}>
       <DialogHeader className={headerClassName}>
-        <DialogTitle className="text-left text-xl">{title}</DialogTitle>
+        <DialogTitle
+          className="text-left text-xl font-semibold"
+          onClick={onContentClick}
+        >
+          {title}
+        </DialogTitle>
         {description && (
           <DialogDescription className="text-left font-medium">
             {description}

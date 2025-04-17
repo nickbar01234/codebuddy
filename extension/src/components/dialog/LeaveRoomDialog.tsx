@@ -4,13 +4,12 @@ import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { throttle } from "lodash";
 import React, { ReactNode } from "react";
-import { RoomDialog } from "./RoomDialog";
+import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 interface LeaveRoomDialogProps {
   trigger: ReactNode;
 }
 
-const baseButtonClassName = "";
 export function LeaveRoomDialog({ trigger }: LeaveRoomDialogProps) {
   const { roomId, leaveRoom } = useRTC();
   const { setState: setAppState } = useAppState();
