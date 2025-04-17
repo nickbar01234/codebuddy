@@ -46,7 +46,7 @@ export const CreateRoomDialog = () => {
       onContentClick={(e) => e.stopPropagation()}
       contentClassName="w-[500px] space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]"
       title="Create Room"
-      description="You will rejoin on the current question of the room"
+      description="Please type the room name and select the visibility to create a room"
     >
       <div className="flex flex-col gap-4">
         <Label

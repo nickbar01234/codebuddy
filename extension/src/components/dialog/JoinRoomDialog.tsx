@@ -2,6 +2,7 @@ import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
+import { Label } from "@cb/lib/components/ui/label";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CodeIcon } from "lucide-react";
@@ -47,26 +48,34 @@ export const JoinRoomDialog = () => {
       onContentClick={(e) => e.stopPropagation()}
       contentClassName="w-[500px] [&>button]:hidden space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]"
       title="Join Room"
-      description="Input room ID"
+      description="Please type the room ID to join the room"
     >
-      <Input
-        className="bg-fill-3 dark:bg-dark-fill-3 w-full cursor-text rounded-lg border border-transparent px-3 py-[5px]"
-        placeholder="Enter room ID"
-        onChange={onChangeRoomIdInput}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            onJoinRoom(e);
-          }
-        }}
-      />
-
-      {/* user on ipad like me cannot hit enter to join the room so we need to have a button*/}
-      <Button
-        onClick={onJoinRoom}
-        className={cn(baseButtonClassName, "w-full")}
-      >
-        Join
-      </Button>
+      <div className="gap-8 flex flex-col">
+        <Label
+          htmlFor="roomId"
+          className="font-medium text-base text-[#1E1E1E] dark:text-[#FFFFFF]"
+        >
+          Input Room ID
+        </Label>
+        <Input
+          id="roomId"
+          className="w-full rounded-lg border border-[#787880] py-2 cursor-text px-3 placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] focus:border-transparent"
+          placeholder="Enter room ID"
+          onChange={onChangeRoomIdInput}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onJoinRoom(e);
+            }
+          }}
+        />
+        {/* user on ipad like me cannot hit enter to join the room so we need to have a button*/}
+        <Button
+          onClick={onJoinRoom}
+          className={cn(baseButtonClassName, "w-full")}
+        >
+          Join
+        </Button>
+      </div>
     </RoomDialog>
   );
 };
