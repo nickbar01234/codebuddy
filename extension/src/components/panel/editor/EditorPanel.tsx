@@ -1,6 +1,5 @@
 import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
-import { ActivityLog } from "@cb/components/panel/editor/activity/ActivityLog";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
@@ -17,6 +16,7 @@ import { cn } from "@cb/utils/cn";
 import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
+import { ActivityLog } from "./activity/ActivityLog";
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -116,7 +116,7 @@ const EditorPanel = () => {
             height={codePreference.height}
             axis="y"
             resizeHandles={canViewCode ? ["s"] : undefined}
-            className="relative flex h-full w-full"
+            className="relative flex h-full w-full overflow-hidden"
             minConstraints={[Infinity, height * 0.2]}
             maxConstraints={[Infinity, height * 0.5]}
             handle={
