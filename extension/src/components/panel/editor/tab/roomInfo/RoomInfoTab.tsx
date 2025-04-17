@@ -42,9 +42,9 @@ export const RoomInfoTab = () => {
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
   const [elapsed, setElapsed] = React.useState<number>(
-    Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? 0)
+    Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? Date.now())
   );
-  const [open, setOpen] = React.useState(false);
+  const [chooseOpen, setChoosePopup] = React.useState(false);
   const unfinishedPeers = React.useMemo(
     () =>
       Object.entries(peerState)
@@ -62,6 +62,12 @@ export const RoomInfoTab = () => {
 
     return () => clearInterval(interval);
   }, [sessionDoc]);
+
+  React.useEffect(() => {
+    if (!chooseNextQuestion) {
+      setChoosePopup(false);
+    }
+  }, [chooseNextQuestion]);
 
   React.useEffect(() => {
     async function fetchRoomInfo() {
@@ -95,19 +101,13 @@ export const RoomInfoTab = () => {
 
           const nextQuestionChosen = sessionData.nextQuestion !== "";
           const finishedUsers = sessionData.finishedUsers;
-          if (!nextQuestionChosen) {
-            if (
-              finishedUsers.length !== 0 &&
-              finishedUsers.includes(username)
-            ) {
-              setChooseNextQuestion(true);
-            }
-          } else {
-            setChooseNextQuestion(false);
-            if (usernames.every((user) => finishedUsers.includes(user))) {
-              setShowNavigatePrompt(true);
-            }
-          }
+          setChooseNextQuestion(
+            !nextQuestionChosen && finishedUsers.includes(username)
+          );
+          setShowNavigatePrompt(
+            nextQuestionChosen &&
+              usernames.every((user) => finishedUsers.includes(user))
+          );
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
@@ -170,7 +170,7 @@ export const RoomInfoTab = () => {
       </div>
 
       {chooseNextQuestion && (
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={chooseOpen} onOpenChange={setChoosePopup}>
           <DialogTrigger asChild>
             <div className="relative inline-block">
               <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
@@ -184,7 +184,7 @@ export const RoomInfoTab = () => {
             <QuestionSelectorPanel
               handleQuestionSelect={(question) => {
                 handleChooseQuestion(question);
-                setOpen(false); // Close the dialog
+                setChoosePopup(false); // Close the dialog
               }}
             />
           </DialogContent>
