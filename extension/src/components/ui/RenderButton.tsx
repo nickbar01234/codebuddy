@@ -2,7 +2,6 @@ import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { removeLocalStorage } from "@cb/services";
-import { cn } from "@cb/utils/cn";
 
 export const RenderButton = ({
   label,
@@ -25,9 +24,7 @@ export const RenderButton = ({
           setState(AppState.HOME);
         }
       }}
-      className={cn(
-        "px-4 py-2 rounded-lg transition-colors flex items-center justify-center"
-      )}
+      className="w-full max-w-28 rounded-md  py-2 font-medium text-base transition text-[#1E1E1E] dark:text-[#FFFFFF] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
     >
       {label}
     </Button>
