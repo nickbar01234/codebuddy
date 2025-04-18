@@ -1,8 +1,9 @@
-import { getRoomRef, setRoom } from "@cb/db";
-import { useAppState, useOnMount, useRTC } from ".";
-import { arrayRemove } from "firebase/firestore";
+import { getRoomRef, getSessionRef, setRoom, setSession } from "@cb/db";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
+import { poll } from "@cb/utils/poll";
+import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
+import { useAppState, useOnMount, useRTC } from ".";
 
 const useDevSetupRoom = () => {
   const { joinRoom } = useRTC();
@@ -12,20 +13,34 @@ const useDevSetupRoom = () => {
     if (import.meta.env.MODE !== "development") {
       return;
     }
+    const setupRoom = async () => {
+      const test = await poll({
+        fn: async () => getLocalStorage("test"),
+        until: (test) => test != null,
+        ms: 100,
+      });
 
-    const test = getLocalStorage("test");
-    const roomId = test?.roomId;
-    if (test != undefined && roomId != undefined) {
-      setLocalStorage("test", { peer: test?.peer });
-      setRoom(getRoomRef(roomId), {
-        usernames: arrayRemove(user.username),
-        questionId: getQuestionIdFromUrl(window.location.href),
-      })
-        .then(() => joinRoom(roomId))
-        .catch((error) => {
+      const roomId = test?.roomId;
+      const sessionId = getQuestionIdFromUrl(window.location.href);
+      const roomRef = getRoomRef(roomId);
+      await setRoom(roomRef, {
+        usernames: arrayUnion(user.username),
+      });
+      if (test != undefined && roomId != undefined) {
+        setLocalStorage("test", { peer: test?.peer });
+        try {
+          await setSession(getSessionRef(roomId, sessionId), {
+            usernames: arrayRemove(user.username),
+            createdAt: serverTimestamp(),
+          });
+          joinRoom(roomId);
+        } catch (error) {
           console.log("error when removing", error);
-        });
-    }
+        }
+      }
+    };
+
+    setupRoom();
   });
 };
 

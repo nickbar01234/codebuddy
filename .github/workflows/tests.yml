@@ -1,0 +1,38 @@
+name: Tests
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ["22.x"]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm i
+      - name: Start Firebase emulator 
+        run: docker compose up -d
+      - name: Wait for firebase emulator
+        run: | 
+          echo "Waiting to check firebase to be healthy"
+          until [ "$(docker inspect --format='{{.State.Health.Status}}' firebase)" = "healthy" ]; do
+            echo "Waiting..."
+            sleep 2
+          done
+          echo "Firebase is healthy"
+      - name: Run tests
+        run: pnpm test

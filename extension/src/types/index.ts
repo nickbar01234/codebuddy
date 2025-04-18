@@ -1,12 +1,12 @@
-export * from "./services";
 export * from "./peers";
-export * from "./window";
+export * from "./services";
 export * from "./user-session";
 export type {
-  MessagePayload,
   ExtractMessage,
   LeetCodeContentChange,
+  MessagePayload,
 } from "./utils";
+export * from "./window";
 
 interface AppPreference {
   width: number;
@@ -42,13 +42,14 @@ export interface Preference {
 export interface LocalStorage {
   tabs: {
     roomId: string;
-    peers: Record<string, Peer>;
+    sessions: Record<string, Record<string, Peer>>;
   };
   test?: {
     peer: string;
     roomId?: string;
   };
   lastActivePeer: string;
+  navigate: string;
   signIn: {
     email: string;
     url: string;

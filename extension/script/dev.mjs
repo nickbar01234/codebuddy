@@ -1,10 +1,11 @@
+/* eslint-disable */
+
 import chokidar from "chokidar";
-import puppeteer from "puppeteer";
 import _ from "lodash";
+import puppeteer from "puppeteer";
 
 const EXTENSION_PATH = "./dist/";
 
-const EXTENSION_HOST = "https://leetcode.com/problems/";
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 
 // eslint-disable-next-line no-undef
@@ -22,6 +23,11 @@ const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
 }));
 const ROOM_ID = `CODE_BUDDY_TEST_${Date.now()}`;
 
+// Keep in sync with package.json / vite.config.ts
+const DEV_SCRIPT_HINT = ["content_script", "service_worker"].map(
+  (file) => `${EXTENSION_PATH}/${file}`
+);
+
 const setup = async () => {
   const createBrowser = async (peer) => {
     const browser = await puppeteer.launch({
@@ -36,8 +42,18 @@ const setup = async () => {
       ],
       devtools: true,
     });
+
     const page = await browser.newPage();
-    await page.goto(EXTENSION_HOST);
+    // Enable browser dev-mode for extensions.
+    await page.goto("chrome://extensions");
+    const devModeToggle = await page.evaluateHandle(() =>
+      document
+        .querySelector("body > extensions-manager")
+        .shadowRoot.querySelector("extensions-toolbar")
+        .shadowRoot.querySelector("#devMode")
+    );
+    await devModeToggle.click();
+    await page.goto(TARGET_QUESTION);
     await page.evaluate(
       (peer, roomId) => {
         localStorage.setItem(
@@ -51,7 +67,6 @@ const setup = async () => {
       peer,
       NUM_USERS > 1 ? ROOM_ID : undefined
     );
-    await page.goto(TARGET_QUESTION);
     return { browser, page };
   };
   const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {
@@ -77,8 +92,8 @@ const reload = _.debounce(() => {
 setup()
   .then(() => {
     chokidar
-      .watch(EXTENSION_PATH, { awaitWriteFinish: true })
-      .on("change", reload);
+      .watch(DEV_SCRIPT_HINT, { awaitWriteFinish: true })
+      .on("add", reload);
   })
   .catch((e) => console.error("Failed with", e));
 

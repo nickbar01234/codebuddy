@@ -1,15 +1,25 @@
+import { cn } from "@cb/utils/cn";
 import React from "react";
+
 interface RippleProps {
   mainCircleSize?: number;
   mainCircleOpacity?: number;
   numCircles?: number;
   className?: string;
+  distanceBetweenCircles?: number;
+  delay?: number;
+  opacityDecrement?: number;
+  unit?: string;
 }
 
 export const Ripple = React.memo(function Ripple({
   mainCircleSize = 210,
   mainCircleOpacity = 0.24,
   numCircles = 8,
+  distanceBetweenCircles = 70,
+  delay = 0.06,
+  opacityDecrement = 0.03,
+  unit = "px",
 }: RippleProps) {
   return (
     <div
@@ -18,20 +28,25 @@ export const Ripple = React.memo(function Ripple({
       }
     >
       {Array.from({ length: numCircles }, (_, i) => {
-        const size = mainCircleSize + i * 70;
-        const opacity = mainCircleOpacity - i * 0.03;
-        const animationDelay = `${i * 0.06}s`;
-        const borderStyle = i === numCircles - 1 ? "dashed" : "solid";
+        const size = mainCircleSize + i * distanceBetweenCircles;
+        const opacity = mainCircleOpacity - i * opacityDecrement;
+        const animationDelay = `${i * delay}s`;
+        const borderStyle = "solid";
         const borderOpacity = 5 + i * 5;
 
         return (
           <div
             key={i}
-            className={`absolute animate-ripple rounded-full bg-foreground/25 shadow-xl border [--i:${i}]`}
+            className={cn(
+              // note(nickbar01234): [--i:${i}] is used in tailwind.config.js
+              // https://github.com/nickbar01234/codebuddy/blob/9d58d89002cfeb9ecb7e08144557aa95ea9c2e6c/extension/tailwind.config.js#L11
+              `animate-ripple absolute rounded-full border shadow-xl [--i:${i}]`,
+              "bg-foreground dark:bg-foreground/25"
+            )}
             style={
               {
-                width: `${size}px`,
-                height: `${size}px`,
+                width: `${size}` + unit,
+                height: `${size}` + unit,
                 opacity,
                 animationDelay,
                 borderStyle,

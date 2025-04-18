@@ -1,74 +1,122 @@
 import { LogEvent } from "@cb/db/converter";
+import { useAppState } from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
+import { assertUnreachable } from "@cb/utils/error";
+import { timeAgo } from "@cb/utils/heartbeat";
 import { History, MessageCircleIcon, Users } from "lucide-react";
-
 interface LogEntryProps {
   entry: LogEvent;
 }
-function timeAgo(timestamp: number) {
-  const diff = Math.floor((Date.now() - timestamp) / 1000); // Difference in seconds
 
-  if (diff < 60) return "0s";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m`;
-
-  return `${Math.floor(diff / 3600)}h`;
-}
+const colorVariants = {
+  green: "text-[#34C759]",
+  red: "text-[#FF3B30]",
+  orange: "text-[#FF9500]",
+  blue: "text-[#007AFF]",
+  gray: "text-[#757575]",
+  coral: "text-[#FF6F61]",
+  cyan: "text-[#40C4FF]",
+  pink: "text-[#FF6586]",
+};
+const userColors: (keyof typeof colorVariants)[] = [
+  "pink",
+  "blue",
+  "green",
+  "orange",
+];
 
 export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
-  const { type, payload, timestamp } = entry;
+  const { type, timestamp } = entry;
+  // const { peers } = usePeerSelection(); // will use in production. Now use mock data for displaying
+  const peers = [{ id: "Buddy" }, { id: "Dev" }, { id: "5bigBooms" }];
+  const {
+    user: { username },
+  } = useAppState();
+
   const getColorClass = () => {
     switch (type) {
-      case "submission":
-        switch (payload.status) {
+      case "submission": {
+        const { status } = entry;
+        switch (status) {
           case "success":
-            return "text-green-500";
+            return "green";
           case "error":
-            return "text-red-500";
+            return "red";
+          default:
+            return assertUnreachable(status);
         }
-        break;
-      case "connection":
-        switch (payload.status) {
+      }
+      case "connection": {
+        const { status } = entry;
+        switch (status) {
           case "leave":
-            return "text-orange-500";
           case "join":
-            return "text-cyan-500";
+            return "cyan";
+          default:
+            return assertUnreachable(status);
         }
-        break;
+      }
       case "message":
-        return "text-gray-500";
+        return "gray";
       default:
-        return "text-gray-500";
+        return assertUnreachable(type);
     }
   };
-  const color = getColorClass();
+
+  const color = colorVariants[getColorClass()]; // Get color class based on type and status
+  const userColor =
+    colorVariants[
+      userColors[
+        entry.username === username
+          ? 0
+          : Math.min(
+              peers.findIndex((peer) => peer.id === entry.username) + 1,
+              userColors.length - 1
+            )
+      ]
+    ];
+  const getIcon = () => {
+    switch (type) {
+      case "submission":
+        return <History className={cn("inline-block h-4 w-4", color)} />;
+      case "connection":
+        return <Users className={cn("inline-block h-4 w-4", color)} />;
+      case "message":
+        return (
+          <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
+        );
+      default:
+        return assertUnreachable(type);
+    }
+  };
   const getPrompt = () => {
+    const baseClass =
+      "flex-shrink-0 hide-scrollbar overflow-x-auto break-words w-full flex flex-wrap items-center gap-1";
+
     switch (type) {
       case "submission":
         return (
-          <div className="flex items-center gap-1 italic text-gray-700 dark:text-gray-400">
-            <History className={cn("inline-block h-4 w-4", color)} />
-            <span className="font-bold">{payload.username} </span>
+          <div className={cn(baseClass, "text-secondary italic")}>
+            <span className="font-bold">{entry.username} </span>
             submitted their code
-            <span className={color}>{`[${payload.output}]`}</span>
+            <span className={color}>{`[${entry.output}]`}</span>
           </div>
         );
 
       case "connection":
         return (
-          <div className="flex items-center gap-1 italic text-gray-700 dark:text-gray-400">
-            <Users className={cn("inline-block h-4 w-4", color)} />
-            <span className="font-bold">{payload.username} </span>
-            {payload.status === "join" ? " joined" : " left"} the room
+          <div className={cn(baseClass, "text-secondary italic")}>
+            <span className="font-bold">{entry.username} </span>
+            {entry.status === "join" ? " joined" : " left"} the room
           </div>
         );
       case "message":
         return (
-          <div className="flex items-center gap-1">
-            <MessageCircleIcon className={cn("inline-block h-4 w-4", color)} />
-            <span className={cn("font-bold", payload.color)}>
-              {payload.username}:
+          <div className={cn(baseClass, "")}>
+            <span className={cn("font-bold", userColor)}>
+              {entry.username}:
             </span>
-            {payload.message}
+            {entry.message}
           </div>
         );
       default:
@@ -77,9 +125,12 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   };
 
   return (
-    <div className="flex items-center py-1">
-      <span className={`flex-grow`}>{getPrompt()}</span>
-      <span className="text-xs text-gray-400">{timeAgo(timestamp)}</span>
+    <div className="grid grid-cols-[auto_1fr_auto] items-start py-1 relative h-full w-full">
+      <span className="flex-shrink-0 mr-1">{getIcon()}</span>
+      {getPrompt()}
+      <span className="ml-1 text-tertiary text-xs justify-self-end">
+        {timeAgo(timestamp)}
+      </span>
     </div>
   );
 };
