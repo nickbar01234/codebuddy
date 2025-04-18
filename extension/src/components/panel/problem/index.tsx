@@ -1,4 +1,8 @@
 import {
+  SkelentonWrapperProps,
+  SkeletonWrapper,
+} from "@cb/components/ui/SkeletonWrapper";
+import {
   disablePointerEvents,
   getQuestionIdFromUrl,
   hideToRoot,
@@ -14,11 +18,18 @@ const TIMEOUT = 10_000;
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
   pastQuestionsId: string[];
+  container?: Omit<SkelentonWrapperProps, "loading">;
 }
 //run useEffect when the entire iframedoc is finished loading
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect, pastQuestionsId }: QuestionSelectorPanelProps) => {
+  ({
+    handleQuestionSelect,
+    pastQuestionsId,
+    container = {},
+  }: QuestionSelectorPanelProps) => {
+    const [loading, setLoading] = React.useState(true);
     useEffect(() => {
+      let timeOut: ReturnType<typeof setTimeout>;
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -37,7 +48,7 @@ export const QuestionSelectorPanel = React.memo(
         // The order currently: status, title, solution, acceptance, difficulty, frequency
 
         const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
-        setTimeout(async () => {
+        timeOut = setTimeout(async () => {
           for (const question of rowList) {
             try {
               // Technically, the selector can either match on status (if daily question) or title -- in either cases,
@@ -97,22 +108,36 @@ export const QuestionSelectorPanel = React.memo(
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
           if (iframeDoc != undefined) {
-            handleIframeStyle(iframeDoc).catch((e) => {
-              console.error("Unable to mount Leetcode iframe", e);
-            });
+            handleIframeStyle(iframeDoc)
+              .then(() => {
+                setLoading(false);
+                console.log("Leetcode iframe mounted successfully");
+              })
+              .catch((e) => {
+                console.error("Unable to mount Leetcode iframe", e);
+              });
           }
         };
       });
+      return () => {
+        clearTimeout(timeOut);
+      };
     }, [pastQuestionsId, handleQuestionSelect]);
 
     return (
-      <iframe
-        src="https://leetcode.com/problemset/"
-        title="LeetCode Question"
-        id="leetcode_question"
-        className="z-100 h-full w-full"
-        sandbox="allow-scripts allow-same-origin"
-      />
+      <SkeletonWrapper
+        loading={loading}
+        className="w-full h-full"
+        {...container}
+      >
+        <iframe
+          src="https://leetcode.com/problemset/"
+          title="LeetCode Question"
+          id="leetcode_question"
+          className="h-full w-full border-2 border-[#78788033]"
+          sandbox="allow-scripts allow-same-origin"
+        />
+      </SkeletonWrapper>
     );
   }
 );
