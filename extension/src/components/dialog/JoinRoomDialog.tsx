@@ -41,23 +41,20 @@ export const JoinRoomDialog = () => {
         node: (
           <>
             <CodeIcon />
-            <span className="text-base">Join Room</span>
+            <span>Join Room</span>
           </>
         ),
       }}
       title={{ node: "Join room" }}
-      description={{
-        node: "Please type the room ID to join the room",
-      }}
       content={{
         props: {
           onClick: (e) => e.stopPropagation(),
           className:
-            "w-[500px] [&>button]:hidden space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]",
+            "w-[500px] [&>button]:hidden gap-y-4 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]",
         },
       }}
     >
-      <div className="gap-8 flex flex-col">
+      <div className="gap-4 flex flex-col">
         <Label
           htmlFor="roomId"
           className="font-medium text-base text-[#1E1E1E] dark:text-[#FFFFFF]"
@@ -75,7 +72,6 @@ export const JoinRoomDialog = () => {
             }
           }}
         />
-        {/* user on ipad like me cannot hit enter to join the room so we need to have a button*/}
         <Button
           onClick={onJoinRoom}
           className={cn(baseButtonClassName, "w-full")}

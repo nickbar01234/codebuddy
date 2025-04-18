@@ -1,10 +1,9 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { useRTC } from "@cb/hooks";
-import React from "react";
-import { RoomDialog } from "./RoomDialog";
+import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
 interface SelectProblemDialog {
-  trigger: React.ReactNode;
+  trigger: Partial<RoomDialogProps["trigger"]>;
   open: boolean;
   setOpen: (open: boolean) => void;
 }
@@ -19,8 +18,9 @@ export const SelectProblemDialog = ({
   return (
     <RoomDialog
       trigger={{
-        node: trigger,
         label: "Select next problem",
+        node: "Select next problem",
+        ...(trigger ?? {}),
       }}
       dialog={{
         props: {

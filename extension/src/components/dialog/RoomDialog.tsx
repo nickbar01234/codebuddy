@@ -15,7 +15,7 @@ import React, { ReactNode } from "react";
 export const baseButtonClassName =
   "rounded-md text-black dark:text-white py-2 font-medium text-base transition hover:bg-[--color-button-hover-background] bg-[--color-button-background] border-transparent hover:border-black dark:hover:border-white border";
 
-interface RoomDialogProps {
+export interface RoomDialogProps {
   dialog?: {
     props: React.ComponentProps<typeof Dialog>;
   };
@@ -23,6 +23,8 @@ interface RoomDialogProps {
     label: string;
     node: ReactNode;
     props?: React.ComponentProps<typeof DialogTrigger>;
+    // If true, node is treated as a trigger and no Button is wrapped over
+    customTrigger?: boolean;
   };
   title?: {
     node: React.ReactNode;
@@ -36,7 +38,6 @@ interface RoomDialogProps {
     props: React.ComponentProps<typeof DialogDescription>;
   };
   children?: React.ReactNode;
-  footer?: React.ReactNode;
 }
 
 export const RoomDialog: React.FC<RoomDialogProps> = ({
@@ -46,22 +47,25 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
   content,
   children,
   description,
-  footer,
 }) => {
   return (
     <Dialog {...d(dialog?.props, {})}>
       {trigger && (
         <DialogTrigger asChild>
-          <Button
-            {...d(trigger?.props, {})}
-            className={cn(
-              "flex items-center justify-center dark:text-white text-black w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]",
-              trigger?.props?.className
-            )}
-            aria-label={trigger.label}
-          >
-            {trigger.node}
-          </Button>
+          {trigger.customTrigger ? (
+            trigger.node
+          ) : (
+            <Button
+              {...d(trigger?.props, {})}
+              className={cn(
+                "flex items-center justify-center dark:text-white text-black w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]",
+                trigger?.props?.className
+              )}
+              aria-label={trigger.label}
+            >
+              {trigger.node}
+            </Button>
+          )}
         </DialogTrigger>
       )}
       <DialogContent
@@ -92,13 +96,7 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
             )}
           </DialogHeader>
         )}
-
         {children}
-        {footer && (
-          <div className="mt-6 flex w-full items-center justify-end gap-2">
-            {footer}
-          </div>
-        )}
       </DialogContent>
     </Dialog>
   );

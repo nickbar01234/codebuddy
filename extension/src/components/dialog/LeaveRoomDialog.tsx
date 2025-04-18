@@ -3,14 +3,12 @@ import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { throttle } from "lodash";
-import React, { ReactNode } from "react";
-import { RoomDialog, baseButtonClassName } from "./RoomDialog";
+import React from "react";
+import { RoomDialog, RoomDialogProps, baseButtonClassName } from "./RoomDialog";
 
-interface LeaveRoomDialogProps {
-  trigger: ReactNode;
-}
+type LeaveRoomDialogProps = Partial<RoomDialogProps["trigger"]>;
 
-export function LeaveRoomDialog({ trigger }: LeaveRoomDialogProps) {
+export function LeaveRoomDialog(props: LeaveRoomDialogProps) {
   const { roomId, leaveRoom } = useRTC();
   const { setState: setAppState } = useAppState();
 
@@ -26,16 +24,15 @@ export function LeaveRoomDialog({ trigger }: LeaveRoomDialogProps) {
 
   return (
     <RoomDialog
-      // trigger={trigger}
       title={{ node: "Are you sure that you want to leave the room?" }}
       description={{
         node: "You will be disconnected, and you may not be able to rejoin unless invited again.",
       }}
       trigger={{
         label: "Leave Room",
-        node: trigger,
+        node: "Leave Room",
+        ...(props ?? {}),
       }}
-      // description="You will be disconnected, and you may not be able to rejoin unless invited again."
     >
       <div className="flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>
