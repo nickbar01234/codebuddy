@@ -6,15 +6,17 @@ interface SkelentonWrapperProps extends React.ComponentProps<typeof Skeleton> {
   loading: boolean;
   children?: React.ReactNode;
   className?: string;
+  outerClassName?: string;
 }
 
 export const SkeletonWrapper: FC<SkelentonWrapperProps> = ({
   children,
   className,
   loading,
+  outerClassName,
 }) => {
   return (
-    <>
+    <div className={cn("relative h-full w-full", outerClassName)}>
       {loading && (
         <Skeleton
           className={cn(
@@ -30,6 +32,6 @@ export const SkeletonWrapper: FC<SkelentonWrapperProps> = ({
       >
         {children}
       </div>
-    </>
+    </div>
   );
 };

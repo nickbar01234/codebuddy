@@ -24,7 +24,7 @@ const CreateRoomLoadingPanel = () => {
         />
       </div>
 
-      <div className="relative z-20 top-[20vh] justify-center flex flex-col gap-1 items-center">
+      <div className="relative z-20 top-[15vh] justify-center flex flex-col gap-1 items-center">
         <span className="text-3xl font-bold text-[#1E1E1E] dark:text-white">
           Room created successfully!
         </span>
@@ -52,16 +52,16 @@ const CreateRoomLoadingPanel = () => {
         </div>
       </div>
 
-      <div className="absolute inset-0 h-full w-full z-10">
+      <div className="absolute inset-0 h-full w-full z-10 overflow-hidden">
         <div
-          className="absolute top-[25%] h-[200%] w-full"
+          className="absolute top-[40%] h-[200%] w-full"
           style={{ clipPath: "inset(0 0 50% 0)" }}
         >
           <div>
             <Ripple
               numCircles={5}
-              mainCircleSize={70}
-              distanceBetweenCircles={20}
+              mainCircleSize={74}
+              distanceBetweenCircles={22}
               mainCircleOpacity={0.15}
               opacityDecrement={0.02}
               delay={0.09}
