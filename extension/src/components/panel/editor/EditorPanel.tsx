@@ -169,9 +169,7 @@ const EditorPanel = () => {
 
                 <Separator
                   orientation="vertical"
-                  className={
-                    "flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                  }
+                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                 />
 
                 {upperTabConfigs.map((tab, index) => (
