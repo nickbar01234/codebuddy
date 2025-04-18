@@ -21,6 +21,7 @@ export const RejoinPromptDialog = () => {
       }
     }, 1000);
   }, [roomId, leaveRoom, setAppState]);
+
   return (
     <RoomDialog
       trigger={<></>}
