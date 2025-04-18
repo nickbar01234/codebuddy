@@ -2,7 +2,8 @@ import { Skeleton } from "@cb/lib/components/ui/skeleton";
 import { cn } from "@cb/utils/cn";
 import React, { FC } from "react";
 
-interface SkelentonWrapperProps extends React.ComponentProps<typeof Skeleton> {
+export interface SkelentonWrapperProps
+  extends React.ComponentProps<typeof Skeleton> {
   loading: boolean;
   children?: React.ReactNode;
   className?: string;

@@ -1,4 +1,4 @@
-import { QuestionSelectorPanel } from "@cb/components/panel/problem";
+import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { RenderButton } from "@cb/components/ui/RenderButton";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoom, getSession, getSessionRef } from "@cb/db";
@@ -6,12 +6,8 @@ import { Room, Session } from "@cb/db/converter";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import useResource from "@cb/hooks/useResource";
 import { Button } from "@cb/lib/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@cb/lib/components/ui/dialog";
 import { getQuestionIdFromUrl } from "@cb/utils";
+import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
 import { onSnapshot, Unsubscribe } from "firebase/firestore";
 import { Grid2X2, Timer, Users } from "lucide-react";
@@ -26,12 +22,7 @@ export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAppState();
-  const {
-    roomId,
-    peerState,
-    handleChooseQuestion,
-    handleNavigateToNextQuestion,
-  } = useRTC();
+  const { roomId, peerState, handleNavigateToNextQuestion } = useRTC();
   const sessionId = React.useMemo(
     () => getQuestionIdFromUrl(window.location.href),
     []
@@ -46,10 +37,7 @@ export const RoomInfoTab = () => {
   );
 
   const unfinishedPeers = React.useMemo(
-    () =>
-      Object.entries(peerState)
-        .filter(([_, state]) => !state.finished)
-        .map(([peerId, state]) => ({ peerId, ...state })),
+    () => Object.values(peerState).filter((state) => !state.finished).length,
     [peerState]
   );
 
@@ -62,12 +50,6 @@ export const RoomInfoTab = () => {
 
     return () => clearInterval(interval);
   }, [sessionDoc]);
-
-  React.useEffect(() => {
-    if (!chooseNextQuestion) {
-      setChoosePopup(false);
-    }
-  }, [chooseNextQuestion]);
 
   React.useEffect(() => {
     async function fetchRoomInfo() {
@@ -165,31 +147,25 @@ export const RoomInfoTab = () => {
           </div>
         </div>
         <div className="w-full text-lg text-tertiary text-left">
-          Waiting for {unfinishedPeers.length} members to finish...
+          Waiting for {unfinishedPeers} members to finish...
         </div>
       </div>
 
-      {chooseNextQuestion && (
-        <Dialog open={chooseOpen} onOpenChange={setChoosePopup}>
-          <DialogTrigger asChild>
-            <div className="relative inline-block">
-              <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
-                <Grid2X2 className="h-5 w-5 text-white" />
-                Select next problem
-              </Button>
-              <div className="absolute -top-[0.3rem] -right-[0.3rem] w-3 h-3 bg-[#FF3B30] rounded-full border-[4px] border-background" />
-            </div>
-          </DialogTrigger>
-          <DialogContent className="h-[80%] w-full min-w-[75%]">
-            <QuestionSelectorPanel
-              handleQuestionSelect={(question) => {
-                handleChooseQuestion(question);
-                setChoosePopup(false); // Close the dialog
-              }}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
+      <SelectProblemDialog
+        trigger={
+          <div
+            className={cn("relative inline-block", {
+              hidden: !chooseNextQuestion,
+            })}
+          >
+            <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
+              <Grid2X2 className="h-5 w-5 text-white" />
+              Select next problem
+            </Button>
+            <div className="absolute -top-[0.3rem] -right-[0.3rem] w-3 h-3 bg-[#FF3B30] rounded-full border-[4px] border-background" />
+          </div>
+        }
+      />
 
       {showNavigatePrompt && (
         <div className="flex w-full flex-col">
