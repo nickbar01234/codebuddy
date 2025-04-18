@@ -6,7 +6,6 @@ import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
-import { PlusIcon } from "lucide-react";
 import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
@@ -33,20 +32,10 @@ export const CreateRoomDialog = () => {
 
   return (
     <RoomDialog
-      trigger={
-        <Button
-          className="flex items-center justify-center w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
-          variant="secondary"
-          aria-label="Create a new room"
-        >
-          <PlusIcon />
-          <span className="text-base">Create Room</span>
-        </Button>
-      }
-      onContentClick={(e) => e.stopPropagation()}
-      contentClassName="w-[500px] space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]"
-      title="Create Room"
-      description="Please type the room name and select the visibility to create a room"
+      title={{ node: "Create Room" }}
+      trigger={{
+        label: "Create Room",
+      }}
     >
       <div className="flex flex-col gap-4">
         <Label
@@ -75,7 +64,7 @@ export const CreateRoomDialog = () => {
               <RadioGroupItem
                 value="public"
                 id="public"
-                className="form-radio accent-black dark:accent-white self-center"
+                className="form-radio self-center border-[#1E1E1E] dark:border-white text-[#1E1E1E] dark:text-white"
               />
               <label htmlFor="public">
                 <span>Public</span>
@@ -94,7 +83,7 @@ export const CreateRoomDialog = () => {
               <RadioGroupItem
                 value="private"
                 id="private"
-                className="form-radio accent-black dark:accent-white self-center"
+                className="form-radio self-center border-[#1E1E1E] dark:border-white text-[#1E1E1E] dark:text-white"
               />
               <label htmlFor="private">
                 <span>Private</span>

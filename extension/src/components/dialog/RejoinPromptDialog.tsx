@@ -21,11 +21,12 @@ export const RejoinPromptDialog = () => {
 
   return (
     <RoomDialog
-      trigger={<></>}
-      open={true}
-      modal={true}
-      title="Do you want to rejoin the room?"
-      description="You will rejoin on the current question of the room"
+      title={{ node: "" }}
+      // trigger={<></>}
+      // open={true}
+      // modal={true}
+      // title="Do you want to rejoin the room?"
+      // description="You will rejoin on the current question of the room"
     >
       <div className="mt-6 flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>
