@@ -631,9 +631,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     if (refreshInfo == undefined) return;
     const prevRoomId = refreshInfo.roomId;
     await leaveRoom(prevRoomId, true);
-    await setRoom(getRoomRef(prevRoomId), {
-      usernames: arrayUnion(username),
-    });
     // todo(nickbar01234): Dummy fix to mitigate a race
     // 1. User A reload and triggers leave room
     // 2. User B detects that A leaves the room and attempts to delete peer from local state
@@ -646,7 +643,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         toast.error("Failed to join room");
       }
     }, 1500);
-  }, [joinRoom, username, leaveRoom]);
+  }, [joinRoom, leaveRoom]);
 
   const joiningBackRoom = React.useCallback(async () => {
     const refreshInfo = getLocalStorage("tabs");

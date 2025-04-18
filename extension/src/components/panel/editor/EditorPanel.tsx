@@ -128,7 +128,7 @@ const EditorPanel = () => {
           height={codePreference.height}
           axis="y"
           resizeHandles={canViewCode ? ["s"] : undefined}
-          className="relative flex h-full w-full flex-col"
+          className="relative flex h-full w-full flex-col overflow-hidden"
           minConstraints={[Infinity, height * 0.2]}
           maxConstraints={[Infinity, height * 0.5]}
           handle={
@@ -204,10 +204,8 @@ const EditorPanel = () => {
           </div>
         </ResizableBox>
         <div
-          className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1 pb-10" //add for the absolute footer so we need to push the content up by adding bottom padding
-          style={{
-            height: height - codePreference.height - 128,
-          }}
+          className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1"
+          style={{ height: height - codePreference.height }}
         >
           <Tabs
             defaultValue="activity"
