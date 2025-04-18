@@ -9,25 +9,11 @@ import {
 import { defaultTo as d } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import React from "react";
+import React, { ReactNode } from "react";
 
 //note that the classname from leetcode is not applying because dialog is not in leetcode environment. We could still use classname from our tailwind tho.
 export const baseButtonClassName =
   "rounded-md text-black dark:text-white py-2 font-medium text-base transition hover:bg-[--color-button-hover-background] bg-[--color-button-background] border-transparent hover:border-black dark:hover:border-white border";
-
-// export interface RoomDialogProps {
-//   trigger: React.ReactNode;
-//   open?: boolean;
-//   onOpenChange?: (open: boolean) => void;
-//   modal?: boolean;
-//   contentClassName?: string;
-//   headerClassName?: string;
-//   title: string;
-//   description?: string;
-//   children?: React.ReactNode;
-//   footer?: React.ReactNode;
-//   onContentClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
-// }
 
 interface RoomDialogProps {
   dialog?: {
@@ -35,16 +21,22 @@ interface RoomDialogProps {
   };
   trigger?: {
     label: string;
+    node: ReactNode;
     props?: React.ComponentProps<typeof DialogTrigger>;
   };
   title: {
     node: React.ReactNode;
     props?: React.ComponentProps<typeof DialogHeader>;
   };
+  description: {
+    node: React.ReactNode;
+    props?: React.ComponentProps<typeof DialogDescription>;
+  };
   content?: {
     props: React.ComponentProps<typeof DialogDescription>;
   };
   children?: React.ReactNode;
+  footer?: React.ReactNode;
 }
 
 export const RoomDialog: React.FC<RoomDialogProps> = ({
@@ -53,6 +45,8 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
   title,
   content,
   children,
+  description,
+  footer,
 }) => {
   return (
     <Dialog {...d(dialog?.props, {})}>
@@ -77,13 +71,30 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
           content?.props.className
         )}
       >
-        <DialogTitle
-          {...d(title.props, {})}
-          className={cn("text-left text-xl font-semibold")}
-        >
-          {title.node}
-        </DialogTitle>
+        <DialogHeader>
+          <DialogTitle
+            {...d(title.props, {})}
+            className={cn("text-left text-xl font-semibold")}
+          >
+            {title.node}
+          </DialogTitle>
+          <DialogDescription
+            {...d(description.props, {})}
+            className={cn(
+              "text-left text-base font-medium",
+              description?.props?.className
+            )}
+          >
+            {description.node}
+          </DialogDescription>
+        </DialogHeader>
+
         {children}
+        {footer && (
+          <div className="mt-6 flex w-full items-center justify-end gap-2">
+            {footer}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

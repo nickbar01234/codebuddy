@@ -6,6 +6,7 @@ import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
+import { PlusIcon } from "lucide-react";
 import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
@@ -35,6 +36,22 @@ export const CreateRoomDialog = () => {
       title={{ node: "Create Room" }}
       trigger={{
         label: "Create Room",
+        node: (
+          <div className="flex">
+            <PlusIcon />
+            <span className="text-base">Create Room</span>
+          </div>
+        ),
+      }}
+      description={{
+        node: "Please type the room name and select the visibility to create a room",
+      }}
+      content={{
+        props: {
+          className:
+            "w-[500px] [&>button]:hidden space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]",
+          onClick: (e) => e.stopPropagation(),
+        },
       }}
     >
       <div className="flex flex-col gap-4">
