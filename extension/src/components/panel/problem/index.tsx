@@ -17,7 +17,7 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  pastQuestionsId: string[];
+  pastQuestionsId?: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
 //run useEffect when the entire iframedoc is finished loading
