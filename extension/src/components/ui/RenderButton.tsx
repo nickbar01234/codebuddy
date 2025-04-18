@@ -1,6 +1,8 @@
 import { Button } from "@cb/lib/components/ui/button";
 import { cn } from "@cb/utils/cn";
 
+//DONOT TOUCH OR DELETE THIS FILE IT WILL CAUSE PROBLEM IN CSS NOT APPLYING THE COLOR DARK OR LIGHT THEME. THIS FILE IS NOT USED ELSE WHERE AND DONT USE IT
+
 export const RenderButton = ({
   label,
   onClick,

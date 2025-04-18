@@ -24,11 +24,11 @@ interface RoomDialogProps {
     node: ReactNode;
     props?: React.ComponentProps<typeof DialogTrigger>;
   };
-  title: {
+  title?: {
     node: React.ReactNode;
     props?: React.ComponentProps<typeof DialogHeader>;
   };
-  description: {
+  description?: {
     node: React.ReactNode;
     props?: React.ComponentProps<typeof DialogDescription>;
   };
@@ -55,12 +55,12 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
           <Button
             {...d(trigger?.props, {})}
             className={cn(
-              "flex items-center justify-center w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]",
+              "flex items-center justify-center dark:text-white text-black w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]",
               trigger?.props?.className
             )}
             aria-label={trigger.label}
           >
-            {trigger.label}
+            {trigger.node}
           </Button>
         </DialogTrigger>
       )}
@@ -71,23 +71,27 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
           content?.props.className
         )}
       >
-        <DialogHeader>
-          <DialogTitle
-            {...d(title.props, {})}
-            className={cn("text-left text-xl font-semibold")}
-          >
-            {title.node}
-          </DialogTitle>
-          <DialogDescription
-            {...d(description.props, {})}
-            className={cn(
-              "text-left text-base font-medium",
-              description?.props?.className
+        {title && (
+          <DialogHeader>
+            <DialogTitle
+              {...d(title.props, {})}
+              className={cn("text-left text-xl font-semibold")}
+            >
+              {title.node}
+            </DialogTitle>
+            {description && (
+              <DialogDescription
+                {...d(description.props, {})}
+                className={cn(
+                  "text-left text-base font-medium",
+                  description?.props?.className
+                )}
+              >
+                {description.node}
+              </DialogDescription>
             )}
-          >
-            {description.node}
-          </DialogDescription>
-        </DialogHeader>
+          </DialogHeader>
+        )}
 
         {children}
         {footer && (

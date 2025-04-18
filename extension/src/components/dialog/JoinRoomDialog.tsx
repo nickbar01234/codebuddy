@@ -39,10 +39,10 @@ export const JoinRoomDialog = () => {
       trigger={{
         label: "Join Room",
         node: (
-          <div className="flex">
+          <>
             <CodeIcon />
             <span className="text-base">Join Room</span>
-          </div>
+          </>
         ),
       }}
       title={{ node: "Join room" }}

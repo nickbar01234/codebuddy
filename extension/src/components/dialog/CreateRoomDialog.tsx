@@ -37,10 +37,10 @@ export const CreateRoomDialog = () => {
       trigger={{
         label: "Create Room",
         node: (
-          <div className="flex">
+          <>
             <PlusIcon />
             <span className="text-base">Create Room</span>
-          </div>
+          </>
         ),
       }}
       description={{
