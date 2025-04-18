@@ -26,9 +26,9 @@ export function LeaveRoomDialog({ trigger }: LeaveRoomDialogProps) {
 
   return (
     <RoomDialog
-      trigger={trigger}
-      title="Are you sure that you want to leave the room?"
-      description="You will be disconnected, and you may not be able to rejoin unless invited again."
+      // trigger={trigger}
+      title={{ node: "Are you sure that you want to leave the room?" }}
+      // description="You will be disconnected, and you may not be able to rejoin unless invited again."
     >
       <div className="flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>

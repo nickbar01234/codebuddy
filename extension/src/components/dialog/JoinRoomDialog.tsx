@@ -5,7 +5,6 @@ import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
-import { CodeIcon } from "lucide-react";
 import React from "react";
 import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
@@ -33,22 +32,26 @@ export const JoinRoomDialog = () => {
     e.preventDefault();
     setInputRoomId(e.target.value);
   };
+
   return (
     <RoomDialog
-      trigger={
-        <Button
-          className="flex items-center justify-center w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background]"
-          variant="secondary"
-          aria-label="Create a new room"
-        >
-          <CodeIcon />
-          <span className="text-base">Join Room</span>
-        </Button>
-      }
-      onContentClick={(e) => e.stopPropagation()}
-      contentClassName="w-[500px] [&>button]:hidden space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]"
-      title="Join Room"
-      description="Please type the room ID to join the room"
+      trigger={{
+        label: "Join Room",
+      }}
+      // trigger={
+      //   <Button
+      //     className="flex items-center justify-center w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background]"
+      //     variant="secondary"
+      //     aria-label="Create a new room"
+      //   >
+      //     <CodeIcon />
+      //     <span className="text-base">Join Room</span>
+      //   </Button>
+      // }
+      // onContentClick={(e) => e.stopPropagation()}
+      // contentClassName="w-[500px] [&>button]:hidden space-y-3 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]"
+      title={{ node: "Join room" }}
+      // description="Please type the room ID to join the room"
     >
       <div className="gap-8 flex flex-col">
         <Label
