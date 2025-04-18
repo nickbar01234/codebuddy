@@ -29,14 +29,17 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({ logEntries }) => {
           <LogEntry key={index} entry={entry} />
         ))}
       </div>
-      <div className="mb-2 flex w-full justify-center items-center gap-2 p-4">
-        <Input type="message" placeholder="Enter message" />
-        <Button
-          type="submit"
-          className="hover:bg-[--color-tab-hover-background]"
-        >
-          <Send className="h-5 w-5 text-black dark:text-white" />
-        </Button>
+
+      <div className="mb-2 w-full overflow-x-auto overflow-y-hidden p-4">
+        <div className="flex min-w-max items-center gap-2">
+          <Input type="message" placeholder="Enter message" />
+          <Button
+            type="submit"
+            className="hover:bg-[--color-tab-hover-background]"
+          >
+            <Send className="h-5 w-5 text-black dark:text-white" />
+          </Button>
+        </div>
       </div>
     </div>
   );
