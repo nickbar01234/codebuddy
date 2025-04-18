@@ -1,3 +1,7 @@
+import {
+  SkelentonWrapperProps,
+  SkeletonWrapper,
+} from "@cb/components/ui/SkeletonWrapper";
 import { useOnMount } from "@cb/hooks";
 import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
 import React from "react";
@@ -9,10 +13,12 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
+  container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
+  ({ handleQuestionSelect, container = {} }: QuestionSelectorPanelProps) => {
+    const [loading, setLoading] = React.useState(true);
     useOnMount(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
@@ -76,22 +82,33 @@ export const QuestionSelectorPanel = React.memo(
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
           if (iframeDoc != undefined) {
-            handleIframeStyle(iframeDoc).catch((e) => {
-              console.error("Unable to mount Leetcode iframe", e);
-            });
+            handleIframeStyle(iframeDoc)
+              .then(() => {
+                setLoading(false);
+                console.log("Leetcode iframe mounted successfully");
+              })
+              .catch((e) => {
+                console.error("Unable to mount Leetcode iframe", e);
+              });
           }
         };
       });
     });
 
     return (
-      <iframe
-        src="https://leetcode.com/problemset/"
-        title="LeetCode Question"
-        id="leetcode_question"
-        className="z-100 h-full w-full"
-        sandbox="allow-scripts allow-same-origin"
-      />
+      <SkeletonWrapper
+        loading={loading}
+        className="w-full h-full"
+        {...container}
+      >
+        <iframe
+          src="https://leetcode.com/problemset/"
+          title="LeetCode Question"
+          id="leetcode_question"
+          className="h-full w-full border-2 border-[#78788033]"
+          sandbox="allow-scripts allow-same-origin"
+        />
+      </SkeletonWrapper>
     );
   }
 );
