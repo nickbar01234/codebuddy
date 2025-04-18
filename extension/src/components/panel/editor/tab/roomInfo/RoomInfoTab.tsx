@@ -14,11 +14,8 @@ import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 
 export const RoomInfoTab = () => {
-  const {
-    register: registerSnapshot,
-    get: getSnapshot,
-    cleanup: cleanupSnapshot,
-  } = useResource<Unsubscribe>({ name: "snapshot" });
+  const { register: registerSnapshot, get: getSnapshot } =
+    useResource<Unsubscribe>({ name: "snapshot" });
   const {
     user: { username },
   } = useAppState();
@@ -29,7 +26,6 @@ export const RoomInfoTab = () => {
   );
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
-  const [chooseOpen, setChoosePopup] = React.useState(false);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
   const [elapsed, setElapsed] = React.useState(
@@ -94,15 +90,7 @@ export const RoomInfoTab = () => {
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
     }
-    return () => cleanupSnapshot();
-  }, [
-    roomId,
-    sessionId,
-    registerSnapshot,
-    username,
-    getSnapshot,
-    cleanupSnapshot,
-  ]);
+  }, [roomId, sessionId, registerSnapshot, username, getSnapshot]);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
