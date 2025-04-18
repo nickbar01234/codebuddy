@@ -60,7 +60,7 @@ export const QuestionSelectorPanel = React.memo(
               )) as HTMLAnchorElement;
 
               const currQuestionId = getQuestionIdFromUrl(link.href);
-              if (currQuestionId && pastQuestionsId.includes(currQuestionId)) {
+              if (currQuestionId && pastQuestionsId?.includes(currQuestionId)) {
                 console.log("past question Id", pastQuestionsId);
                 try {
                   rows.removeChild(question);
