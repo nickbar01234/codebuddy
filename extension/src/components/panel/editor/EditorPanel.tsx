@@ -163,7 +163,6 @@ const EditorPanel = () => {
               <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
                 <UserDropdown
                   key="user-dropdown"
-                  key="user-dropdown"
                   isOpen={isUserDropdownOpen}
                   toggle={toggleUserDropdown}
                 />

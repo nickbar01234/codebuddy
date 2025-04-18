@@ -28,6 +28,7 @@ export interface MessageEvent extends BaseEvent {
   username: string;
   message: string;
 }
+
 export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface Room {
@@ -36,37 +37,6 @@ export interface Room {
   roomName: string;
   activityLog: LogEvent[];
 }
-export interface BaseEvent {
-  type: string;
-  timestamp: number;
-}
-
-export interface SubmissionEvent extends BaseEvent {
-  type: "submission";
-  payload: {
-    username: string;
-    output: string;
-    status: "success" | "error";
-  };
-}
-
-export interface ConnectionEvent extends BaseEvent {
-  type: "connection";
-  payload: {
-    username: string;
-    status: "join" | "leave";
-  };
-}
-
-export interface MessageEvent extends BaseEvent {
-  type: "message";
-  payload: {
-    username: string;
-    message: string;
-    color: string;
-  };
-}
-export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface PeerConnection {
   username?: string;
@@ -89,13 +59,36 @@ export const logEventConverter: FirestoreDataConverter<LogEvent, LogEvent> = {
     snapshot: QueryDocumentSnapshot,
     options: SnapshotOptions
   ): LogEvent => {
-    const data = snapshot.data(options)! ?? {};
-    return {
-      ...data,
-      type: data.type ?? "",
-      timestamp: data.timestamp ?? 0,
-      payload: data.payload ?? {},
-    };
+    const data = snapshot.data(options) ?? {};
+    if (!data.type) {
+      throw new Error("Log event type is missing");
+    }
+    switch (data.type) {
+      case "submission":
+        return {
+          type: "submission",
+          timestamp: data.timestamp ?? 0,
+          username: data.username ?? "",
+          output: data.output ?? "",
+          status: data.status ?? "error", // Default fallback
+        };
+      case "connection":
+        return {
+          type: "connection",
+          timestamp: data.timestamp ?? 0,
+          username: data.username ?? "",
+          status: data.status ?? "join",
+        };
+      case "message":
+        return {
+          type: "message",
+          timestamp: data.timestamp ?? 0,
+          username: data.username ?? "",
+          message: data.message ?? "",
+        };
+      default:
+        throw new Error(`Unknown log event type: ${data.type}`);
+    }
   },
 };
 
