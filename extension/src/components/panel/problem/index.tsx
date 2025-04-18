@@ -1,4 +1,7 @@
-import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import {
+  SkelentonWrapperProps,
+  SkeletonWrapper,
+} from "@cb/components/ui/SkeletonWrapper";
 import { useOnMount } from "@cb/hooks";
 import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
 import React from "react";
@@ -10,10 +13,11 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
+  container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
+  ({ handleQuestionSelect, container = {} }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     useOnMount(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
@@ -94,13 +98,14 @@ export const QuestionSelectorPanel = React.memo(
     return (
       <SkeletonWrapper
         loading={loading}
-        className="w-[70vw] h-[60vh] bg-gray-700"
+        className="w-full h-full"
+        {...container}
       >
         <iframe
           src="https://leetcode.com/problemset/"
           title="LeetCode Question"
           id="leetcode_question"
-          className="h-full w-full"
+          className="h-full w-full border-2 border-[#78788033]"
           sandbox="allow-scripts allow-same-origin"
         />
       </SkeletonWrapper>
