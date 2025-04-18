@@ -1,5 +1,6 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { RenderButton } from "@cb/components/ui/RenderButton";
+import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoom, getSession, getSessionRef } from "@cb/db";
 import { Room, Session } from "@cb/db/converter";
 import { useAppState, useRTC } from "@cb/hooks/index";
@@ -35,16 +36,15 @@ export const RoomInfoTab = () => {
     () => getQuestionIdFromUrl(window.location.href),
     []
   );
-  const [chooseNextQuestion, setChooseNextQuestion] =
-    React.useState<boolean>(false);
-  const [showNavigatePrompt, setShowNavigatePrompt] =
-    React.useState<boolean>(false);
+  const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
+  const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
+  const [chooseOpen, setChoosePopup] = React.useState(false);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
-  const [elapsed, setElapsed] = React.useState<number>(
+  const [elapsed, setElapsed] = React.useState(
     Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? Date.now())
   );
-  const [chooseOpen, setChoosePopup] = React.useState(false);
+
   const unfinishedPeers = React.useMemo(
     () =>
       Object.entries(peerState)
@@ -131,7 +131,7 @@ export const RoomInfoTab = () => {
         <div className="flex items-center">
           <Users className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
-            {Object.keys(peerState).length + 1}/4
+            {Object.keys(peerState).length + 1}/{MAX_CAPACITY}
           </span>
         </div>
         <div className="flex items-center">
