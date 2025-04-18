@@ -3,21 +3,12 @@ import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { removeLocalStorage } from "@cb/services";
+import { LeaveRoomDialog } from "./LeaveRoomDialog";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const RejoinPromptDialog = () => {
   const { joiningBackRoom } = useRTC();
   const { setState } = useAppState();
-
-  const handleClick = (yes: boolean) => {
-    removeLocalStorage("closingTabs");
-    joiningBackRoom(yes);
-    if (yes) {
-      setState(AppState.LOADING);
-    } else {
-      setState(AppState.HOME);
-    }
-  };
 
   return (
     <RoomDialog
@@ -31,18 +22,29 @@ export const RejoinPromptDialog = () => {
         <DialogClose asChild>
           <Button
             className={baseButtonClassName}
-            onClick={() => handleClick(true)}
+            onClick={() => {
+              removeLocalStorage("closingTabs");
+              joiningBackRoom();
+              setState(AppState.LOADING);
+            }}
           >
             <span className="text-sm font-medium">Yes</span>
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button
-            className={baseButtonClassName}
-            onClick={() => handleClick(false)}
-          >
-            <span className="text-sm font-medium">No</span>
-          </Button>
+          <LeaveRoomDialog
+            trigger={
+              <Button
+                className={baseButtonClassName}
+                onClick={() => {
+                  removeLocalStorage("closingTabs");
+                  setState(AppState.HOME);
+                }}
+              >
+                <span className="text-sm font-medium">No</span>
+              </Button>
+            }
+          />
         </DialogClose>
       </div>
     </RoomDialog>
