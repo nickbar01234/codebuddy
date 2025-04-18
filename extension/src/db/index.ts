@@ -38,6 +38,11 @@ export const setRoom = (
   data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
 
+export const addEventToRoom = (data: LogEvent, roomId: string) => {
+  const roomRef = getRoomRef(roomId);
+  addDoc(collection(roomRef, "logs"), data);
+};
+
 export const getSessionRefs = (roomId: string) =>
   collection(getRoomRef(roomId), "sessions").withConverter(sessionConverter);
 
@@ -60,10 +65,7 @@ export const getSessionPeerConnectionRefs = (
   collection(getSessionRef(roomId, sessionId), username).withConverter(
     peerConnectionConverter
   );
-export const addEventToRoom = (data: LogEvent, roomId: string) => {
-  const roomRef = getRoomRef(roomId);
-  addDoc(collection(roomRef, "logs"), data);
-};
+
 export const getAllSessionId = async (roomId: string) => {
   // This function will return all sessions in a room.
   // Note: This is not efficient for large datasets, consider using query for pagination or filtering.

@@ -35,7 +35,6 @@ export interface Room {
   usernames: string[];
   isPublic: boolean;
   roomName: string;
-  activityLog: LogEvent[];
 }
 
 export interface PeerConnection {
@@ -119,7 +118,6 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
       isPublic: data.isPublic ?? true,
       roomName: data.roomName ?? "",
       usernames: data.usernames ?? [],
-      activityLog: data.activityLog ?? [],
     };
   },
 };
