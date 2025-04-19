@@ -1,9 +1,9 @@
 import {
   endBefore,
-  limit as firestoreLimit,
-  query as firestoreQuery,
   getCountFromServer,
   getDocs,
+  limit,
+  query,
   Query,
   QueryDocumentSnapshot,
   QuerySnapshot,
@@ -27,13 +27,13 @@ interface HookReturnValue<T> {
 }
 
 interface HookProps<T> {
-  query: Query<T>;
-  limit: number;
+  baseQuery: Query<T>;
+  hookLimit: number;
 }
 
 const usePaginate = <T>({
-  query: baseQuery,
-  limit,
+  baseQuery,
+  hookLimit,
 }: HookProps<T>): HookReturnValue<T> => {
   const [docs, setDocs] = useState<QueryDocumentSnapshot<T>[]>([]);
   const [collectionSize, setCollectionSize] = useState(0);
@@ -53,13 +53,13 @@ const usePaginate = <T>({
             ? startAfter(cursor)
             : endBefore(cursor)
           : undefined;
-      return firestoreQuery(
+      return query(
         baseQuery,
         ...(cursorConstraint ? [cursorConstraint] : []),
-        firestoreLimit(limit)
+        limit(hookLimit)
       );
     },
-    [baseQuery, limit]
+    [baseQuery, hookLimit]
   );
 
   const handleSnapshot = useCallback(
