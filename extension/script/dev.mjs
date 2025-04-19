@@ -1,5 +1,6 @@
 /* eslint-disable */
 
+import chokidar from "chokidar";
 import _ from "lodash";
 import puppeteer from "puppeteer";
 
