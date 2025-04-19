@@ -1,9 +1,10 @@
-import React from "react";
-import { RTCContext } from "@cb/context/RTCProvider";
 import { appStateContext } from "@cb/context/AppStateProvider";
 import { PeerSelectionContext } from "@cb/context/PeerSelectionProvider";
-import { windowContext } from "@cb/context/WindowProvider";
+import { RTCContext } from "@cb/context/RTCProvider";
 import { sessionContext } from "@cb/context/SessionProvider";
+import { windowContext } from "@cb/context/WindowProvider";
+import React from "react";
+import { useOnMount } from "./useOnMount";
 
 export const useRTC = () => React.useContext(RTCContext);
 
@@ -13,8 +14,6 @@ export const useAppState = () => React.useContext(appStateContext);
 
 export const useSession = () => React.useContext(sessionContext);
 
-export const useOnMount = (effect: React.EffectCallback) =>
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useEffect(effect, []);
-
 export const useWindowDimensions = () => React.useContext(windowContext);
+
+export { useOnMount };

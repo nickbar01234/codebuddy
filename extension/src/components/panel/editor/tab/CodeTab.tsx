@@ -1,15 +1,37 @@
+import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { usePeerSelection } from "@cb/hooks";
+import { cn } from "@cb/utils/cn";
+import { Copy } from "lucide-react";
 import React from "react";
-import { EDITOR_NODE_ID } from "../EditorPanel";
-import { EditorToolBar } from "../EditorToolBar";
 
 export const CodeTab: React.FC = () => {
+  const { isBuffer } = usePeerSelection();
+  const { pasteCode } = usePeerSelection();
+
   return (
-    <div className="h-full w-full">
-      <EditorToolBar />
+    <SkeletonWrapper loading={isBuffer} className="relative">
       <div
-        id={EDITOR_NODE_ID}
-        className="h-full min-h-[50vh] w-full overflow-hidden"
-      />
-    </div>
+        className={cn("relative flex h-full w-full grow flex-col gap-y-2", {
+          hidden: isBuffer,
+        })}
+      >
+        <div className="absolute top-2 right-0 pr-6 z-50">
+          <button
+            title="Paste code"
+            type="button"
+            data-tooltip-target="tooltip-default"
+            onClick={pasteCode}
+            className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none focus:ring-4"
+          >
+            <Copy size={16} />
+          </button>
+        </div>
+        <div
+          id={EDITOR_NODE_ID}
+          className={cn("h-full w-full overflow-hidden")}
+        />
+      </div>
+    </SkeletonWrapper>
   );
 };

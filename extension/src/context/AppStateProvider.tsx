@@ -1,5 +1,5 @@
 import { useOnMount } from "@cb/hooks";
-import { getLocalStorage } from "@cb/services";
+import { getLocalStorage, removeLocalStorage } from "@cb/services";
 import { AppUser } from "@cb/types";
 import React from "react";
 
@@ -34,11 +34,14 @@ export const AppStateProvider = (props: AppStateProviderProps) => {
     const maybeReload = performance.getEntriesByType(
       "navigation"
     )[0] as PerformanceNavigationTiming;
-
+    const navigate = getLocalStorage("navigate") == "true";
+    removeLocalStorage("navigate");
     if (refreshInfo?.roomId)
-      setState(
-        maybeReload.type === "reload" ? AppState.LOADING : AppState.REJOINING
-      );
+      if (maybeReload.type === "reload" || navigate) {
+        setState(AppState.LOADING);
+      } else {
+        setState(AppState.REJOINING);
+      }
   });
 
   return (

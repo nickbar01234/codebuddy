@@ -2,10 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 
- * Leetcode className flexlayout__layout
- */
 :root {
+  --color-button-background: var(--fill-tertiary);
+  --color-button-hover-background: rgba(0, 0, 0, 0.1);
   --color-drag: var(--blue-60);
   --color-drag-background: #007aff14;
   --color-tabset-background: var(--layer-01);
@@ -34,6 +33,8 @@
 }
 
 .dark {
+  --color-button-background: var(--fill-tertiary);
+  --color-button-hover-background: rgba(255, 255, 255, 0.2);
   --text-secondary: #f1f1f1b2;
   --text-tertiary: #ffffff66;
 }
