@@ -39,6 +39,8 @@ const usePaginate = <T>({
   const [collectionSize, setCollectionSize] = useState(0);
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
+  const REFRESH_INTERVAL_MS = 120000;
+  const DEBOUNCE_DELAY_MS = 500;
 
   const getFirstDoc = useCallback(() => docs[0], [docs]);
   const getLastDoc = useCallback(() => docs[docs.length - 1], [docs]);
@@ -86,7 +88,7 @@ const usePaginate = <T>({
             setLoading(false);
           }
         },
-        500
+        DEBOUNCE_DELAY_MS
       ),
     [buildPaginatedQuery, handleSnapshot]
   );
@@ -96,7 +98,7 @@ const usePaginate = <T>({
       getCountFromServer(baseQuery)
         .then((res) => setCollectionSize(res.data().count))
         .catch(setError);
-    }, 120000);
+    }, REFRESH_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, [baseQuery]);
