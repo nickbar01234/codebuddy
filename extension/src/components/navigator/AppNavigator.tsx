@@ -2,6 +2,7 @@ import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
+import JoinRoomPanel from "@cb/components/panel/join/JoinRoomPanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
@@ -38,6 +39,8 @@ export const AppNavigator = () => {
             <RejoinPromptDialog />
           ) : state === AppState.HOME ? (
             <HomePanel />
+          ) : state === AppState.PUBLIC_ROOMS ? (
+            <JoinRoomPanel />
           ) : null}
         </div>
         <EditorPanel />

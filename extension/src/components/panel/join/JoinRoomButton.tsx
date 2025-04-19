@@ -1,3 +1,7 @@
+import {
+  baseButtonClassName,
+  RoomDialog,
+} from "@cb/components/dialog/RoomDialog";
 import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
@@ -7,11 +11,41 @@ import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CodeIcon } from "lucide-react";
 import React from "react";
-import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
-export const JoinRoomDialog = () => {
-  const { joinRoom } = useRTC();
+export const JoinRoomButton = () => {
   const { setState: setAppState } = useAppState();
+
+  return (
+    <RoomDialog
+      title={{ node: "Join Room" }}
+      trigger={{
+        label: "Join Room",
+        // customTrigger: true, // Use a custom trigger
+        node: (
+          // <button
+          //   onClick={() => setAppState(AppState.PUBLIC_ROOMS)} // Navigate to public rooms
+          //   className={cn(baseButtonClassName, "w-full")}
+          //   aria-label="Join Room"
+          // >
+          <>
+            <CodeIcon />
+            <span>Join Room</span>
+          </>
+        ),
+        props: {
+          onClick: () => setAppState(AppState.PUBLIC_ROOMS),
+        },
+      }}
+      content={{
+        props: {
+          className:
+            "w-[500px] [&>button]:hidden gap-y-4 rounded-xl bg-white p-6 text-lg text-[#1E1E1E] dark:bg-[#262626] shadow-lg dark:text-[#FFFFFF]",
+          onClick: (e) => e.stopPropagation(),
+        },
+      }}
+    ></RoomDialog>
+  );
+  const { joinRoom } = useRTC();
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const onJoinRoom = React.useMemo(() => {

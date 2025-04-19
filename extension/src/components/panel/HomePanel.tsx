@@ -1,8 +1,11 @@
 import { CreateRoomDialog } from "@cb/components/dialog/CreateRoomDialog";
-import { JoinRoomDialog } from "@cb/components/dialog/JoinRoomDialog";
 import { ThemeAwaredLogo } from "@cb/components/icons/Logo";
+import { JoinRoomButton } from "@cb/components/panel/join/JoinRoomButton";
+import { useAppState } from "@cb/hooks/index";
 
 const HomePanel = () => {
+  const { setState: setAppState } = useAppState();
+
   return (
     <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll justify-center">
       <div className="flex w-full flex-col items-center justify-end gap-3">
@@ -19,7 +22,7 @@ const HomePanel = () => {
 
       <div className="flex w-full flex-col items-center gap-3">
         <CreateRoomDialog />
-        <JoinRoomDialog />
+        <JoinRoomButton />
       </div>
     </div>
   );
