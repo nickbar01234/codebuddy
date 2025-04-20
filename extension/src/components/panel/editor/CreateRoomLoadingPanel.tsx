@@ -2,7 +2,6 @@ import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
 import { useRTC } from "@cb/hooks/index";
-import { Button } from "@cb/lib/components/ui/button";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
@@ -12,14 +11,11 @@ const CreateRoomLoadingPanel = () => {
     <div className="flex h-full w-full flex-col relative items-center p-4">
       <div className="left-7 top-5 absolute self-start z-30">
         <LeaveRoomDialog
-          trigger={
-            <Button
-              variant="outline"
-              className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border border-[#78788033] dark:border-[#4A4A4E] hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] px-4 py-2"
-            >
+          node={
+            <div className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border px-4 py-2">
               <LeaveIcon />
               <span className="text-base font-medium">Leave Room</span>
-            </Button>
+            </div>
           }
         />
       </div>

@@ -1,5 +1,5 @@
+import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
-import { RenderButton } from "@cb/components/ui/RenderButton";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoom, getSession, getSessionRef } from "@cb/db";
 import { Room, Session } from "@cb/db/converter";
@@ -36,6 +36,13 @@ export const RoomInfoTab = () => {
     () => Object.values(peerState).filter((state) => !state.finished).length,
     [peerState]
   );
+
+  //we need this to prevent other user from choosing the question if there is already someone choose it
+  React.useEffect(() => {
+    if (!chooseNextQuestion) {
+      setChoosePopup(false);
+    }
+  }, [chooseNextQuestion]);
 
   React.useEffect(() => {
     const interval = setInterval(() => {
@@ -138,34 +145,38 @@ export const RoomInfoTab = () => {
           Waiting for {unfinishedPeers} members to finish...
         </div>
       </div>
-
       <SelectProblemDialog
-        trigger={
-          <div
-            className={cn("relative inline-block", {
-              hidden: !chooseNextQuestion,
-            })}
-          >
-            <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
-              <Grid2X2 className="h-5 w-5 text-white" />
-              Select next problem
-            </Button>
-            <div className="absolute -top-[0.3rem] -right-[0.3rem] w-3 h-3 bg-[#FF3B30] rounded-full border-[4px] border-background" />
-          </div>
-        }
+        trigger={{
+          customTrigger: true,
+          node: (
+            <div
+              className={cn("relative inline-block", {
+                hidden: !chooseNextQuestion,
+              })}
+            >
+              <Button className="bg-[#DD5471] hover:bg-[#DD5471]/80 text-white rounded-md flex items-center gap-2 px-4 py-2 font-medium">
+                <Grid2X2 className="h-5 w-5 text-white" />
+                Select next problem
+              </Button>
+              <div className="absolute -top-[0.3rem] -right-[0.3rem] w-3 h-3 bg-[#FF3B30] rounded-full border-[4px] border-background" />
+            </div>
+          ),
+        }}
+        open={choosePopUp}
+        setOpen={setChoosePopup}
       />
-
       {showNavigatePrompt && (
         <div className="flex w-full flex-col">
           <h1 className="mb-4 text-center text-lg font-semibold">
             Do you want to go on to next question?
           </h1>
           <div className="flex justify-center gap-4">
-            <RenderButton
-              label="YES"
-              isYes={true}
+            <Button
               onClick={handleNavigateToNextQuestion}
-            />
+              className={baseButtonClassName}
+            >
+              Yes
+            </Button>
           </div>
         </div>
       )}

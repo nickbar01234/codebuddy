@@ -56,4 +56,5 @@ export interface LocalStorage {
     tabId: number;
   };
   preference: Preference;
+  closingTabs: boolean;
 }
