@@ -33,8 +33,8 @@ describe("usePaginate", () => {
     vi.useRealTimers();
   });
 
-  const mockQuery: any = "MOCK_QUERY";
-  const limit = 2;
+  const baseQuery: any = "MOCK_QUERY";
+  const hookLimit = 2;
 
   it("fetches next page using getNext, which updates lastDoc, docs but not firstDoc", async () => {
     (getCountFromServer as any).mockResolvedValue({
@@ -46,9 +46,7 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockResolvedValueOnce({ size: 2, docs: firstDocs });
 
-    const { result } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
+    const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
     await act(async () => {
       vi.advanceTimersByTimeAsync(REFRESH_INTERVAL_MS);
       vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
@@ -88,9 +86,7 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockResolvedValueOnce({ size: 2, docs: secondDocs });
 
-    const { result } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
+    const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DEBOUNCE_DELAY_MS);
@@ -122,9 +118,7 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockResolvedValue({ size: 0, docs: [] });
 
-    const { result } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
+    const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(DEBOUNCE_DELAY_MS);
@@ -148,9 +142,7 @@ describe("usePaginate", () => {
       });
     });
 
-    const { result } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
+    const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
     await act(async () => {
       vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
@@ -174,9 +166,7 @@ describe("usePaginate", () => {
 
     (getDocs as any).mockRejectedValue(error);
 
-    const { result } = renderHook(() =>
-      usePaginate({ query: mockQuery, limit })
-    );
+    const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
     await act(async () => {
       vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
