@@ -44,7 +44,8 @@ const _RoomControlMenu = ({
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <LeaveRoomDialog
-              trigger={
+              customTrigger
+              node={
                 <span className="flex items-center gap-2">
                   <LeaveIcon /> Leave Room
                 </span>

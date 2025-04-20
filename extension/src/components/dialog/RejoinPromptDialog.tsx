@@ -2,18 +2,18 @@ import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
+import { removeLocalStorage } from "@cb/services";
 import { throttle } from "lodash";
 import React from "react";
-import { RoomDialog, RoomDialogProps, baseButtonClassName } from "./RoomDialog";
+import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
-type LeaveRoomDialogProps = Partial<RoomDialogProps["trigger"]>;
-
-export function LeaveRoomDialog(props: LeaveRoomDialogProps) {
-  const { roomId, leaveRoom } = useRTC();
+export const RejoinPromptDialog = () => {
+  const { joiningBackRoom, roomId, leaveRoom } = useRTC();
   const { setState: setAppState } = useAppState();
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
+      removeLocalStorage("closingTabs");
       event.stopPropagation?.();
       setAppState(AppState.HOME);
       if (roomId) {
@@ -24,28 +24,36 @@ export function LeaveRoomDialog(props: LeaveRoomDialogProps) {
 
   return (
     <RoomDialog
-      title={{ node: "Are you sure that you want to leave the room?" }}
+      title={{ node: "Do you want to rejoin the room?" }}
       description={{
-        node: "You will be disconnected, and you may not be able to rejoin unless invited again.",
+        node: "You will rejoin on the current question of the room",
       }}
-      trigger={{
-        label: "Leave Room",
-        node: "Leave Room",
-        ...(props ?? {}),
+      dialog={{
+        props: {
+          open: true,
+          modal: true,
+        },
       }}
     >
-      <div className="flex w-full items-center justify-end gap-2 self-end">
+      <div className="mt-6 flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>
-          <Button className={baseButtonClassName} onClick={leaveRoomThrottled}>
+          <Button
+            className={baseButtonClassName}
+            onClick={() => {
+              removeLocalStorage("closingTabs");
+              joiningBackRoom();
+              setAppState(AppState.LOADING);
+            }}
+          >
             <span className="text-sm font-medium">Yes</span>
           </Button>
         </DialogClose>
         <DialogClose asChild>
-          <Button className={baseButtonClassName}>
+          <Button className={baseButtonClassName} onClick={leaveRoomThrottled}>
             <span className="text-sm font-medium">No</span>
           </Button>
         </DialogClose>
       </div>
     </RoomDialog>
   );
-}
+};
