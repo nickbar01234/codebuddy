@@ -4,6 +4,7 @@ import {
   AggregateQuerySnapshot,
   getCountFromServer,
   getDocs,
+  Query,
   QuerySnapshot,
 } from "firebase/firestore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -23,7 +24,7 @@ vi.mock("firebase/firestore", async () => {
   };
 });
 
-const mockDoc = (id: string) => ({ id }) as any;
+const mockDoc = (id: string) => ({ id });
 const generateDocs = (count: number) =>
   Array.from({ length: count }, (_, i) => mockDoc(`doc-${i + 1}`));
 
@@ -38,11 +39,10 @@ describe("usePaginate", () => {
     vi.useRealTimers();
   });
 
-  const baseQuery: any = "MOCK_QUERY";
+  const baseQuery = "MOCK_QUERY" as unknown as Query;
   const hookLimit = 2;
 
   it("fetches documents by default on initialization", async () => {
-    // vi.mocked(getCountFromServer).mockResolvedValue({count: 2 } as AggregateQuerySnapshot);
     vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 2 }),
     } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
@@ -156,7 +156,9 @@ describe("usePaginate", () => {
       data: () => ({ count: 0 }),
     } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
-    (getDocs as any).mockResolvedValue({ size: 0, docs: [] });
+    vi.mocked(getDocs).mockResolvedValueOnce({
+      docs: [],
+    } as unknown as QuerySnapshot);
 
     const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
