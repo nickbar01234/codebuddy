@@ -36,6 +36,30 @@ describe("usePaginate", () => {
   const baseQuery: any = "MOCK_QUERY";
   const hookLimit = 2;
 
+  it("fetches documents by default on initialization", async () => {
+    (getCountFromServer as any).mockResolvedValue({
+      data: () => ({ count: 2 }),
+    });
+
+    const initialDocs = generateDocs(2);
+
+    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: initialDocs });
+
+    const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
+
+    await act(async () => {
+      vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
+    });
+
+    expect(result.current.data.docs.length).toBe(2);
+    expect(result.current.data.docs.map((d) => d.id)).toEqual([
+      "doc-1",
+      "doc-2",
+    ]);
+    expect(result.current.hasNext).toBe(false);
+    expect(result.current.loading).toBe(false);
+  });
+
   it("fetches next page using getNext, which updates lastDoc, docs but not firstDoc", async () => {
     (getCountFromServer as any).mockResolvedValue({
       data: () => ({ count: 4 }),
