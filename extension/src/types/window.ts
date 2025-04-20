@@ -21,8 +21,17 @@ interface ReloadExtension extends GenericMessage {
   action: "reloadExtension";
 }
 
+interface SubmitSuccess extends GenericMessage {
+  action: "submitSuccess";
+}
+
+interface SubmitFail extends GenericMessage {
+  action: "submitFail";
+}
 export type WindowMessage =
   | LeetCodeOnChangeMessage
   | CreateRoomMessage
   | JoinRoomMessage
-  | ReloadExtension;
+  | ReloadExtension
+  | SubmitFail
+  | SubmitSuccess;

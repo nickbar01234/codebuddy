@@ -739,7 +739,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    console.log("After reload join", refreshInfo);
+    // console.log("After reload join", refreshInfo);
     if (appState === AppState.LOADING && refreshInfo?.roomId) {
       afterReloadJoin();
     }
@@ -843,7 +843,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "joinRoom":
           case "reloadExtension":
             break;
-
+          case "submitSuccess":
+            handleSucessfulSubmissionRef.current();
+            break;
+          case "submitFail":
+            handleFailedSubmissionRef.current();
+            break;
           default:
             console.error("Unhandled window message", windowMessage);
             break;
