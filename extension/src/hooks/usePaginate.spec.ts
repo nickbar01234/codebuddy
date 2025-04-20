@@ -1,4 +1,4 @@
-import { act, renderHook } from "@testing-library/react-hooks";
+import { act, renderHook } from "@testing-library/react";
 
 import { getCountFromServer, getDocs } from "firebase/firestore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
