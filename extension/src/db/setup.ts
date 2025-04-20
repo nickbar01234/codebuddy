@@ -33,5 +33,5 @@ export const firestore = getFirestore(app);
 if (env.MODE === "development") {
   // See firebase.json
   connectFirestoreEmulator(firestore, "localhost", 3001);
-  connectAuthEmulator(auth, "http://localhost:3003");
+  connectAuthEmulator(auth, "http://localhost:3003", { disableWarnings: true });
 }
