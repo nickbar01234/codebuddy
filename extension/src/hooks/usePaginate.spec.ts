@@ -1,5 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
-import { getCountFromServer, getDocs } from "firebase/firestore";
+import {
+  AggregateField,
+  AggregateQuerySnapshot,
+  getCountFromServer,
+  getDocs,
+  QuerySnapshot,
+} from "firebase/firestore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import usePaginate, {
   DEBOUNCE_DELAY_MS,
@@ -36,13 +42,16 @@ describe("usePaginate", () => {
   const hookLimit = 2;
 
   it("fetches documents by default on initialization", async () => {
-    (getCountFromServer as any).mockResolvedValue({
+    // vi.mocked(getCountFromServer).mockResolvedValue({count: 2 } as AggregateQuerySnapshot);
+    vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 2 }),
-    });
+    } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
     const initialDocs = generateDocs(2);
 
-    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: initialDocs });
+    vi.mocked(getDocs).mockResolvedValueOnce({
+      docs: initialDocs,
+    } as QuerySnapshot);
 
     const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
@@ -60,14 +69,16 @@ describe("usePaginate", () => {
   });
 
   it("fetches next page using getNext, which updates lastDoc, docs but not firstDoc", async () => {
-    (getCountFromServer as any).mockResolvedValue({
+    vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 4 }),
-    });
+    } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
     const firstDocs = generateDocs(2);
     const secondDocs = generateDocs(2).map((d) => ({ ...d, id: d.id + "-p2" }));
 
-    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: firstDocs });
+    vi.mocked(getDocs).mockResolvedValueOnce({
+      docs: firstDocs,
+    } as QuerySnapshot);
 
     const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
     await act(async () => {
@@ -82,7 +93,9 @@ describe("usePaginate", () => {
     ]);
     expect(result.current.hasNext).toBe(true);
 
-    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: secondDocs });
+    vi.mocked(getDocs).mockResolvedValueOnce({
+      docs: secondDocs,
+    } as QuerySnapshot);
 
     await act(async () => {
       result.current.getNext();
@@ -100,14 +113,16 @@ describe("usePaginate", () => {
   });
 
   it("starts on page 2 and goes back to page 1 using getPrevious", async () => {
-    (getCountFromServer as any).mockResolvedValue({
+    vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 4 }),
-    });
+    } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
     const firstDocs = generateDocs(2);
     const secondDocs = generateDocs(2).map((d) => ({ ...d, id: d.id + "-p2" }));
 
-    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: secondDocs });
+    vi.mocked(getDocs).mockResolvedValueOnce({
+      docs: secondDocs,
+    } as QuerySnapshot);
 
     const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
@@ -120,7 +135,9 @@ describe("usePaginate", () => {
       "doc-2-p2",
     ]);
 
-    (getDocs as any).mockResolvedValueOnce({ size: 2, docs: firstDocs });
+    vi.mocked(getDocs).mockResolvedValueOnce({
+      docs: firstDocs,
+    } as QuerySnapshot);
 
     await act(async () => {
       result.current.getPrevious();
@@ -135,9 +152,9 @@ describe("usePaginate", () => {
   });
 
   it("handles empty results correctly", async () => {
-    (getCountFromServer as any).mockResolvedValue({
+    vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 0 }),
-    });
+    } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
     (getDocs as any).mockResolvedValue({ size: 0, docs: [] });
 
@@ -152,14 +169,14 @@ describe("usePaginate", () => {
   });
 
   it("sets loading state correctly during fetch", async () => {
-    (getCountFromServer as any).mockResolvedValue({
+    vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 2 }),
-    });
+    } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
     const docs = generateDocs(2);
     let resolveDocs: (val: any) => void;
 
-    (getDocs as any).mockImplementation(() => {
+    vi.mocked(getDocs).mockImplementation(() => {
       return new Promise((resolve) => {
         resolveDocs = resolve;
       });
@@ -183,11 +200,11 @@ describe("usePaginate", () => {
   it("handles errors during fetch", async () => {
     const error = new Error("Fetch failed");
 
-    (getCountFromServer as any).mockResolvedValue({
+    vi.mocked(getCountFromServer).mockResolvedValue({
       data: () => ({ count: 0 }),
-    });
+    } as AggregateQuerySnapshot<{ count: AggregateField<number> }>);
 
-    (getDocs as any).mockRejectedValue(error);
+    vi.mocked(getDocs).mockRejectedValue(error);
 
     const { result } = renderHook(() => usePaginate({ baseQuery, hookLimit }));
 
