@@ -44,5 +44,5 @@ export interface PeerInformation {
 
 export interface PeerState {
   latency: number;
-  deviation: number;
+  finished: boolean;
 }

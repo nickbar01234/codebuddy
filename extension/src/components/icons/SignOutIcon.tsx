@@ -1,4 +1,4 @@
-export const SignOutIcon = ({ ...props }) => {
+export const SignOutIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -1,8 +1,6 @@
-import { FirebaseOptions } from "firebase/app";
-import { initializeApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
-import { connectAuthEmulator } from "firebase/auth/web-extension";
+import { FirebaseOptions, initializeApp } from "firebase/app";
+import { connectAuthEmulator, getAuth } from "firebase/auth/web-extension";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 
 const env = (import.meta as any).env;
 const DEV_VALUE = "demo-code-buddy-development";
@@ -35,5 +33,5 @@ export const firestore = getFirestore(app);
 if (env.MODE === "development") {
   // See firebase.json
   connectFirestoreEmulator(firestore, "localhost", 3001);
-  connectAuthEmulator(auth, "http://localhost:3003");
+  connectAuthEmulator(auth, "http://localhost:3003", { disableWarnings: true });
 }

@@ -49,10 +49,12 @@ export interface LocalStorage {
     roomId?: string;
   };
   lastActivePeer: string;
+  navigate: string;
   signIn: {
     email: string;
     url: string;
     tabId: number;
   };
   preference: Preference;
+  closingTabs: boolean;
 }

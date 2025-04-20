@@ -27,3 +27,4 @@ draft.ts
 .pnpm-store
 
 extension/redux_devtools
+/extension/redux_devtools/
