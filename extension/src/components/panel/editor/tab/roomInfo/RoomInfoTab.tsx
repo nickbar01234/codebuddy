@@ -34,8 +34,10 @@ export const RoomInfoTab = () => {
   );
 
   const unfinishedPeers = React.useMemo(
-    () => Object.values(peerState).filter((state) => !state.finished).length,
-    [peerState]
+    () =>
+      (sessionDoc?.usernames?.length ?? 0) -
+      (sessionDoc?.finishedUsers?.length ?? 0),
+    [sessionDoc]
   );
 
   //we need this to prevent other user from choosing the question if there is already someone choose it
