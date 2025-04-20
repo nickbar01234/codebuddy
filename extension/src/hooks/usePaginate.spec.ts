@@ -2,7 +2,10 @@ import { act, renderHook } from "@testing-library/react-hooks";
 
 import { getCountFromServer, getDocs } from "firebase/firestore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import usePaginate from "./usePaginate";
+import usePaginate, {
+  DEBOUNCE_DELAY_MS,
+  REFRESH_INTERVAL_MS,
+} from "./usePaginate";
 
 vi.mock("firebase/firestore", async () => {
   return {
@@ -47,8 +50,8 @@ describe("usePaginate", () => {
       usePaginate({ query: mockQuery, limit })
     );
     await act(async () => {
-      vi.advanceTimersByTimeAsync(120000);
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTimeAsync(REFRESH_INTERVAL_MS);
+      vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
     });
 
     expect(result.current.data.docs.length).toBe(2);
@@ -62,7 +65,7 @@ describe("usePaginate", () => {
 
     await act(async () => {
       result.current.getNext();
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
     });
 
     expect(result.current.data.docs.length).toBe(4);
@@ -90,7 +93,7 @@ describe("usePaginate", () => {
     );
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(500);
+      await vi.advanceTimersByTimeAsync(DEBOUNCE_DELAY_MS);
     });
 
     expect(result.current.data.docs.map((d) => d.id)).toEqual([
@@ -102,7 +105,7 @@ describe("usePaginate", () => {
 
     await act(async () => {
       result.current.getPrevious();
-      await vi.advanceTimersByTimeAsync(500);
+      await vi.advanceTimersByTimeAsync(DEBOUNCE_DELAY_MS);
     });
     expect(result.current.data.docs.map((d) => d.id)).toEqual([
       "doc-1",
@@ -124,7 +127,7 @@ describe("usePaginate", () => {
     );
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(500);
+      await vi.advanceTimersByTimeAsync(DEBOUNCE_DELAY_MS);
     });
 
     expect(result.current.data.docs).toEqual([]);
@@ -150,7 +153,7 @@ describe("usePaginate", () => {
     );
 
     await act(async () => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
     });
 
     expect(result.current.loading).toBe(true);
@@ -176,7 +179,7 @@ describe("usePaginate", () => {
     );
 
     await act(async () => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(DEBOUNCE_DELAY_MS);
     });
 
     expect(result.current.error).toEqual(error);

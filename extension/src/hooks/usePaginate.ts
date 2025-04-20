@@ -12,6 +12,9 @@ import {
 import { debounce } from "lodash";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+export const REFRESH_INTERVAL_MS = 120000;
+export const DEBOUNCE_DELAY_MS = 500;
+
 interface Data<T> {
   docs: QueryDocumentSnapshot<T>[];
   collectionSize: number;
@@ -39,8 +42,6 @@ const usePaginate = <T>({
   const [collectionSize, setCollectionSize] = useState(0);
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState<boolean>(false);
-  const REFRESH_INTERVAL_MS = 120000;
-  const DEBOUNCE_DELAY_MS = 500;
 
   const getFirstDoc = useCallback(() => docs[0], [docs]);
   const getLastDoc = useCallback(() => docs[docs.length - 1], [docs]);
