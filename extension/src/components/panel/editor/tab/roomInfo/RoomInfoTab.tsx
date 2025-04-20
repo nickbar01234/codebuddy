@@ -26,6 +26,7 @@ export const RoomInfoTab = () => {
   );
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
+  const [choosePopUp, setChoosePopup] = React.useState(false);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
   const [elapsed, setElapsed] = React.useState(
