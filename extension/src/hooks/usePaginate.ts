@@ -78,6 +78,7 @@ const usePaginate = <T>({
     () =>
       debounce(
         async (cursor?: QueryDocumentSnapshot<T>, isNext: boolean = true) => {
+          if (loading) return;
           setLoading(true);
           try {
             const q = buildPaginatedQuery(isNext, cursor);
@@ -91,10 +92,14 @@ const usePaginate = <T>({
         },
         DEBOUNCE_DELAY_MS
       ),
-    [buildPaginatedQuery, handleSnapshot]
+    [buildPaginatedQuery, handleSnapshot, loading]
   );
 
   useEffect(() => {
+    setDocs([]);
+    setCollectionSize(0);
+    setError(undefined);
+
     const interval = setInterval(() => {
       getCountFromServer(baseQuery)
         .then((res) => setCollectionSize(res.data().count))
@@ -106,6 +111,9 @@ const usePaginate = <T>({
 
   useEffect(() => {
     fetchDocs();
+    return () => {
+      fetchDocs.cancel?.();
+    };
   }, [fetchDocs]);
 
   const getNext = useCallback(() => {
