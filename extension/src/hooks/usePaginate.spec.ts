@@ -13,7 +13,7 @@ import usePaginate, {
   REFRESH_INTERVAL_MS,
 } from "./usePaginate";
 
-vi.mock("firebase/firestore", async () => {
+vi.mock("firebase/firestore", () => {
   return {
     getCountFromServer: vi.fn(),
     getDocs: vi.fn(),
