@@ -41,6 +41,7 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+      "@typescript-eslint/no-empty-object-type": "warn",
       "no-restricted-imports": [
         "error",
         {
