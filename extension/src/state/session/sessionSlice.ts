@@ -5,11 +5,14 @@ import {
   removeLocalStorage,
   sendServiceRequest,
 } from "@cb/services";
+import { AppDispatch } from "@cb/state/store";
 import { AuthenticationStatus, ResponseStatus, Status } from "@cb/types";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { poll } from "@cb/utils/poll";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   createUserWithEmailAndPassword,
   isSignInWithEmailLink,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithEmailLink,
 } from "firebase/auth/web-extension";
@@ -18,7 +21,7 @@ import { toast } from "sonner";
 interface SessionState {
   auth: AuthenticationStatus;
 }
-// Define initial state
+
 const initialState: SessionState = {
   auth: { status: Status.LOADING },
 };
@@ -68,13 +71,55 @@ export const initialAuthenticateCheck = createAsyncThunk(
   }
 );
 
+export const listenToAuthChanges = () => (dispatch: AppDispatch) => {
+  return onAuthStateChanged(auth, (user) => {
+    if (user == null) {
+      dispatch(setAuthStatus({ status: Status.UNAUTHENTICATED }));
+    } else {
+      dispatch(
+        setAuthStatus({
+          status: Status.AUTHENTICATED,
+          user: { username: user.displayName ?? user.email! },
+        })
+      );
+    }
+  });
+};
+
+export const devAutoAuth = createAsyncThunk(
+  "session/devAutoAuth",
+  async (_, { rejectWithValue }) => {
+    const user = await poll({
+      fn: async () => getLocalStorage("test"),
+      until: (x) => x != undefined,
+    });
+    if (!user) return;
+
+    const { peer } = user;
+    try {
+      await createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD");
+    } catch (error: any) {
+      if (error.code !== "auth/email-already-in-use") {
+        console.error(error);
+        return rejectWithValue(error);
+      }
+    }
+    try {
+      await signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD");
+    } catch (err) {
+      console.error(err);
+      return rejectWithValue(err);
+    }
+  }
+);
+
 // Create slice
 const sessionSlice = createSlice({
   name: "session",
   initialState,
   reducers: {
-    setAuthStatus: (state, action) => {
-      return action.payload;
+    setAuthStatus: (state, action: PayloadAction<AuthenticationStatus>) => {
+      state.auth = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -88,6 +133,8 @@ const sessionSlice = createSlice({
       })
       .addCase(initialAuthenticateCheck.rejected, (state) => {
         // Handle sign-in errors if needed
+        console.error("Error during initial authentication check");
+        state.auth = { status: Status.UNAUTHENTICATED };
       });
   },
 });

@@ -1,7 +1,11 @@
 import { auth } from "@cb/db";
 import { useOnMount } from "@cb/hooks";
 import { getLocalStorage } from "@cb/services";
-import { initialAuthenticateCheck } from "@cb/state/session/sessionSlice";
+import {
+  devAutoAuth,
+  initialAuthenticateCheck,
+} from "@cb/state/session/sessionSlice";
+import { store } from "@cb/state/store";
 import { AuthenticationStatus, Status } from "@cb/types";
 import { poll } from "@cb/utils/poll";
 import {
@@ -79,8 +83,8 @@ const SessionProvider = (props: SessionProviderProps) => {
     };
   });
   useOnMount(() => {
-    if (import.meta.env.MODE !== "development") {
-      return;
+    if (import.meta.env.MODE === "development") {
+      store.dispatch(devAutoAuth());
     }
 
     const selfAuthenticate = async () => {
