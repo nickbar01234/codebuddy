@@ -29,7 +29,6 @@ export const QuestionSelectorPanel = React.memo(
   }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     useEffect(() => {
-      let timeOut: ReturnType<typeof setTimeout>;
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -46,9 +45,9 @@ export const QuestionSelectorPanel = React.memo(
           table as unknown as Document
         );
         // The order currently: status, title, solution, acceptance, difficulty, frequency
-
-        const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
-        timeOut = setTimeout(async () => {
+        console.log("past question id in index", pastQuestionsId);
+        const observer = new MutationObserver(async () => {
+          const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
           for (const question of rowList) {
             try {
               // Technically, the selector can either match on status (if daily question) or title -- in either cases,
@@ -60,10 +59,12 @@ export const QuestionSelectorPanel = React.memo(
               )) as HTMLAnchorElement;
 
               const currQuestionId = getQuestionIdFromUrl(link.href);
+              console.log("curr question id", currQuestionId);
               if (currQuestionId && pastQuestionsId?.includes(currQuestionId)) {
                 console.log("past question Id", pastQuestionsId);
                 try {
-                  rows.removeChild(question);
+                  // rows.removeChild(question);
+                  question.remove();
                   console.log("remove ok", question);
                   return;
                 } catch (error) {
@@ -88,7 +89,10 @@ export const QuestionSelectorPanel = React.memo(
               rows.removeChild(question);
             }
           }
-        }, 5000);
+        });
+        observer.observe(rows, {
+          childList: true,
+        });
 
         waitForElement(
           "div[role='columnheader']:first-child",
@@ -119,10 +123,7 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-      return () => {
-        clearTimeout(timeOut);
-      };
-    }, [pastQuestionsId, handleQuestionSelect]);
+    }, [handleQuestionSelect, pastQuestionsId]);
 
     return (
       <SkeletonWrapper

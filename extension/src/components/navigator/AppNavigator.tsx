@@ -6,7 +6,6 @@ import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { getAllSessionId } from "@cb/db";
-import { useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
@@ -18,8 +17,9 @@ export const AppNavigator = () => {
   useDevSetupRoom();
 
   const currentTabInfo = getLocalStorage("tabs");
-  const { roomId } = useRTC();
-
+  // const { roomId } = useRTC();
+  const roomId = currentTabInfo?.roomId;
+  console.log("room ID", roomId);
   const [pastQuestionsId, setPastQuestionsId] = useState<string[]>([]);
   useEffect(() => {
     if (!roomId) {
@@ -27,7 +27,6 @@ export const AppNavigator = () => {
     }
     const fetchPastQuestions = async () => {
       const pastSessionsId = await getAllSessionId(roomId);
-      console.log("roomId", roomId);
       console.log("past session id", pastSessionsId);
       setPastQuestionsId(pastSessionsId);
     };
