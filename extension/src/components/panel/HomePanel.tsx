@@ -17,7 +17,7 @@ const HomePanel = () => {
         </h1>
       </div>
 
-      <div className="flex w-full flex-col items-center gap-3">
+      <div className="flex min-w-max flex-col items-center gap-3">
         <CreateRoomDialog />
         <JoinRoomDialog />
       </div>
