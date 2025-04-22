@@ -1,21 +1,22 @@
 import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
-import { getRoom, getSession, getSessionRef } from "@cb/db";
-import { Room, Session } from "@cb/db/converter";
-import { useAppState, useRTC } from "@cb/hooks/index";
-import useResource from "@cb/hooks/useResource";
+import { getRoomRef, getSessionRef } from "@cb/db";
+import {
+  useAppState,
+  useFirebaseListener,
+  useOnMount,
+  useRTC,
+} from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
-import { onSnapshot, Unsubscribe } from "firebase/firestore";
+import { Timestamp } from "firebase/firestore";
 import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 
 export const RoomInfoTab = () => {
-  const { register: registerSnapshot, get: getSnapshot } =
-    useResource<Unsubscribe>({ name: "snapshot" });
   const {
     user: { username },
   } = useAppState();
@@ -27,11 +28,38 @@ export const RoomInfoTab = () => {
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
-  const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
-  const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
-  const [elapsed, setElapsed] = React.useState(
-    Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? Date.now())
-  );
+  const [elapsed, setElapsed] = React.useState(0);
+  const { data: roomDoc } = useFirebaseListener({
+    reference: getRoomRef(roomId ?? undefined),
+    init: { usernames: [], isPublic: true, roomName: "" },
+  });
+  const { data: sessionDoc } = useFirebaseListener({
+    reference: getSessionRef(roomId!, sessionId),
+    callback: async (sessionData) => {
+      const data = sessionData;
+      // todo(nickbar01234): Clear and report room if deleted?
+      if (data == undefined) return;
+      const usernames = data.usernames;
+      const nextQuestionChosen = sessionData.nextQuestion !== "";
+      const finishedUsers = sessionData.finishedUsers;
+      setChooseNextQuestion(
+        !nextQuestionChosen && finishedUsers.includes(username)
+      );
+      setShowNavigatePrompt(
+        nextQuestionChosen &&
+          usernames.every((user) => finishedUsers.includes(user))
+      );
+      setElapsed(
+        Date.now() - (data.createdAt?.toDate()?.getTime() ?? Date.now())
+      );
+    },
+    init: {
+      usernames: [],
+      finishedUsers: [],
+      nextQuestion: "",
+      createdAt: Timestamp.fromDate(new Date()),
+    },
+  });
 
   const unfinishedPeers = React.useMemo(
     () =>
@@ -39,7 +67,6 @@ export const RoomInfoTab = () => {
       (sessionDoc?.finishedUsers?.length ?? 0),
     [sessionDoc]
   );
-
   //we need this to prevent other user from choosing the question if there is already someone choose it
   React.useEffect(() => {
     if (!chooseNextQuestion) {
@@ -47,60 +74,13 @@ export const RoomInfoTab = () => {
     }
   }, [chooseNextQuestion]);
 
-  React.useEffect(() => {
+  useOnMount(() => {
     const interval = setInterval(() => {
-      setElapsed(
-        Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? Date.now())
-      );
+      setElapsed((prevElapsed) => Date.now() - prevElapsed);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [sessionDoc]);
-
-  React.useEffect(() => {
-    async function fetchRoomInfo() {
-      if (roomId == null) return;
-      const sessionDoc = await getSession(roomId, sessionId);
-      const roomDoc = await getRoom(roomId);
-      const roomData = roomDoc.data();
-      const sessionData = sessionDoc.data();
-      if (sessionData && roomData) {
-        setRoomDoc(roomData);
-        setSessionDoc(sessionData as Session);
-      }
-    }
-    fetchRoomInfo();
-  }, [roomId, sessionId]);
-
-  React.useEffect(() => {
-    if (roomId != null && getSnapshot()[roomId] == undefined) {
-      const unsubscribe = onSnapshot(
-        getSessionRef(roomId, sessionId),
-        async (snapshot) => {
-          const data = snapshot.data();
-          // todo(nickbar01234): Clear and report room if deleted?
-          if (data == undefined) return;
-          setSessionDoc(data);
-
-          const usernames = data.usernames;
-          const sessionDoc = await getSession(roomId, sessionId);
-          const sessionData = sessionDoc.data();
-          if (!sessionData) return;
-
-          const nextQuestionChosen = sessionData.nextQuestion !== "";
-          const finishedUsers = sessionData.finishedUsers;
-          setChooseNextQuestion(
-            !nextQuestionChosen && finishedUsers.includes(username)
-          );
-          setShowNavigatePrompt(
-            nextQuestionChosen &&
-              usernames.every((user) => finishedUsers.includes(user))
-          );
-        }
-      );
-      registerSnapshot(roomId, unsubscribe, (prev) => prev());
-    }
-  }, [roomId, sessionId, registerSnapshot, username, getSnapshot]);
+  });
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
