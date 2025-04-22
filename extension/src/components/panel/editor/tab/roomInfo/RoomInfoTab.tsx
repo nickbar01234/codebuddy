@@ -1,5 +1,6 @@
 import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
+import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoom, getSession, getSessionRef } from "@cb/db";
 import { Room, Session } from "@cb/db/converter";
 import { useAppState, useRTC } from "@cb/hooks/index";
@@ -13,11 +14,8 @@ import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 
 export const RoomInfoTab = () => {
-  const {
-    register: registerSnapshot,
-    get: getSnapshot,
-    cleanup: cleanupSnapshot,
-  } = useResource<Unsubscribe>({ name: "snapshot" });
+  const { register: registerSnapshot, get: getSnapshot } =
+    useResource<Unsubscribe>({ name: "snapshot" });
   const {
     user: { username },
   } = useAppState();
@@ -26,19 +24,20 @@ export const RoomInfoTab = () => {
     () => getQuestionIdFromUrl(window.location.href),
     []
   );
-  const [chooseNextQuestion, setChooseNextQuestion] =
-    React.useState<boolean>(false);
-  const [showNavigatePrompt, setShowNavigatePrompt] =
-    React.useState<boolean>(false);
+  const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
+  const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
   const [roomDoc, setRoomDoc] = React.useState<Room | null>(null);
   const [sessionDoc, setSessionDoc] = React.useState<Session | null>(null);
-  const [elapsed, setElapsed] = React.useState<number>(
+  const [elapsed, setElapsed] = React.useState(
     Date.now() - (sessionDoc?.createdAt?.toDate()?.getTime() ?? Date.now())
   );
+
   const unfinishedPeers = React.useMemo(
-    () => Object.values(peerState).filter((state) => !state.finished).length,
-    [peerState]
+    () =>
+      (sessionDoc?.usernames?.length ?? 0) -
+      (sessionDoc?.finishedUsers?.length ?? 0),
+    [sessionDoc]
   );
 
   //we need this to prevent other user from choosing the question if there is already someone choose it
@@ -101,15 +100,7 @@ export const RoomInfoTab = () => {
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
     }
-    return () => cleanupSnapshot();
-  }, [
-    roomId,
-    sessionId,
-    registerSnapshot,
-    username,
-    getSnapshot,
-    cleanupSnapshot,
-  ]);
+  }, [roomId, sessionId, registerSnapshot, username, getSnapshot]);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
@@ -120,7 +111,7 @@ export const RoomInfoTab = () => {
         <div className="flex items-center">
           <Users className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
-            {Object.keys(peerState).length + 1}/4
+            {Object.keys(peerState).length + 1}/{MAX_CAPACITY}
           </span>
         </div>
         <div className="flex items-center">
