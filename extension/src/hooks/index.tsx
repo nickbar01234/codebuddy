@@ -13,4 +13,5 @@ export const useAppState = () => React.useContext(appStateContext);
 
 export const useSession = () => React.useContext(sessionContext);
 
+export { useFirebaseListener } from "./useFirebaseListener";
 export { useOnMount };
