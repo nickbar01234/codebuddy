@@ -1,8 +1,7 @@
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 import { VerticalHandle } from "@cb/components/panel/Handle";
-import { MIN_WIDTH } from "@cb/context/WindowProvider";
 import { useAppDispatch, useAppSelector } from "@cb/state/hooks"; // adjust path
-import { setAppWidth } from "@cb/state/slices/windowSlice";
+import { MIN_WIDTH, setAppWidth } from "@cb/state/slices/windowSlice";
 import {
   savePreferenceNow,
   toggleWidthAndSave,

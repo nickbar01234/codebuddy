@@ -2,11 +2,10 @@ import RootNavigator from "@cb/components/navigator/RootNavigator";
 import { AppPanel } from "@cb/components/panel";
 import { Toaster } from "sonner";
 import SessionProvider from "./context/SessionProvider";
-import { WindowProvider } from "./context/WindowProvider";
 
 const App = () => {
   return (
-    <WindowProvider>
+    <>
       <Toaster
         richColors
         expand
@@ -21,7 +20,7 @@ const App = () => {
           <RootNavigator />
         </SessionProvider>
       </AppPanel>
-    </WindowProvider>
+    </>
   );
 };
 

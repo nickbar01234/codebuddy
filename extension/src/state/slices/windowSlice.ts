@@ -9,7 +9,7 @@ export interface WindowState {
   preference: Preference;
 }
 
-const MIN_WIDTH = 40;
+export const MIN_WIDTH = 40;
 
 const getInitialWindowDimensions = () => {
   const { innerWidth: width, innerHeight: height } = window;

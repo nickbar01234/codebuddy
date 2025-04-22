@@ -5,12 +5,9 @@ import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/Activit
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { AppState } from "@cb/context/AppStateProvider";
 import { LogEvent } from "@cb/db/converter";
-import {
-  useAppState,
-  usePeerSelection,
-  useWindowDimensions,
-} from "@cb/hooks/index";
+import { useAppState, usePeerSelection } from "@cb/hooks/index";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
+import { useWindow } from "@cb/hooks/useWindow";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
@@ -45,7 +42,7 @@ const EditorPanel = () => {
     onResizeStop,
     preference: { codePreference },
     height,
-  } = useWindowDimensions();
+  } = useWindow();
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = React.useCallback(
     (e: React.MouseEvent<Element, MouseEvent>) => {
