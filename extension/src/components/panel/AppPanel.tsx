@@ -1,34 +1,39 @@
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 import { VerticalHandle } from "@cb/components/panel/Handle";
-import { useAppDispatch, useAppSelector } from "@cb/state/hooks"; // adjust path
-import { MIN_WIDTH, setAppWidth } from "@cb/state/slices/windowSlice";
-import {
-  savePreferenceNow,
-  toggleWidthAndSave,
-} from "@cb/state/thunks/windowThunks";
+import { useWindow } from "@cb/hooks/useWindow";
+import { MIN_WIDTH } from "@cb/state/slices/windowSlice";
 import React from "react";
-import { ResizableBox } from "react-resizable";
+import { ResizableBox, ResizeCallbackData } from "react-resizable";
 
 interface AppPanelProps {
   children?: React.ReactNode;
 }
 
 export const AppPanel = (props: AppPanelProps) => {
-  const dispatch = useAppDispatch();
-  const appPreference = useAppSelector(
-    (state) => state.window.preference.appPreference
-  );
+  const {
+    preference: { appPreference },
+    setAppWidth,
+    toggleWidth,
+    onResizeStop,
+  } = useWindow();
 
-  const handleResize = (_e: any, data: { size: { width: number } }) => {
-    dispatch(setAppWidth(data.size.width));
+  const handleResize = (
+    _e: React.SyntheticEvent<Element, Event>,
+    data: ResizeCallbackData
+  ) => {
+    setAppWidth(data.size.width);
   };
 
-  const handleResizeStop = () => {
-    dispatch(savePreferenceNow());
+  const handleResizeStop = (
+    _e: React.SyntheticEvent<Element, Event>,
+    data: ResizeCallbackData
+  ) => {
+    setAppWidth(data.size.width);
+    onResizeStop();
   };
 
   const handleDoubleClick = () => {
-    dispatch(toggleWidthAndSave());
+    toggleWidth();
   };
 
   return (
