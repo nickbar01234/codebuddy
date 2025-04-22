@@ -4,8 +4,8 @@ import { ThemeAwaredLogo } from "@cb/components/icons/Logo";
 
 const HomePanel = () => {
   return (
-    <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll justify-center">
-      <div className="flex w-full flex-col items-center justify-end gap-3">
+    <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-x-auto justify-center mr-4">
+      <div className="flex min-w-max flex-col items-center justify-end gap-3">
         <ThemeAwaredLogo
           containerProps={{
             className:
@@ -17,7 +17,7 @@ const HomePanel = () => {
         </h1>
       </div>
 
-      <div className="flex w-full flex-col items-center gap-3">
+      <div className="flex min-w-max flex-col items-center gap-3">
         <CreateRoomDialog />
         <JoinRoomDialog />
       </div>
