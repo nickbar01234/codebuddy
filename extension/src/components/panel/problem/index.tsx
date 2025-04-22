@@ -2,6 +2,7 @@ import {
   SkelentonWrapperProps,
   SkeletonWrapper,
 } from "@cb/components/ui/SkeletonWrapper";
+import useResource from "@cb/hooks/useResource";
 import {
   disablePointerEvents,
   getQuestionIdFromUrl,
@@ -17,17 +18,21 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  pastQuestionsId?: string[];
+  filterQuestionIds?: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
-//run useEffect when the entire iframedoc is finished loading
+
 export const QuestionSelectorPanel = React.memo(
   ({
     handleQuestionSelect,
-    pastQuestionsId,
+    filterQuestionIds,
     container = {},
   }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
+    const { register: registerObserver } = useResource<MutationObserver>({
+      name: "observer",
+    });
+
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
@@ -45,7 +50,6 @@ export const QuestionSelectorPanel = React.memo(
           table as unknown as Document
         );
         // The order currently: status, title, solution, acceptance, difficulty, frequency
-        console.log("past question id in index", pastQuestionsId);
         const observer = new MutationObserver(async () => {
           const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
           for (const question of rowList) {
@@ -58,14 +62,11 @@ export const QuestionSelectorPanel = React.memo(
                 question as unknown as Document
               )) as HTMLAnchorElement;
 
-              const currQuestionId = getQuestionIdFromUrl(link.href);
-              console.log("curr question id", currQuestionId);
-              if (currQuestionId && pastQuestionsId?.includes(currQuestionId)) {
-                console.log("past question Id", pastQuestionsId);
+              if (
+                filterQuestionIds?.includes(getQuestionIdFromUrl(link.href))
+              ) {
                 try {
-                  // rows.removeChild(question);
-                  question.remove();
-                  console.log("remove ok", question);
+                  rows.removeChild(question);
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
@@ -90,6 +91,8 @@ export const QuestionSelectorPanel = React.memo(
             }
           }
         });
+
+        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
         observer.observe(rows, {
           childList: true,
         });
@@ -123,7 +126,7 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-    }, [handleQuestionSelect, pastQuestionsId]);
+    }, [handleQuestionSelect, filterQuestionIds, registerObserver]);
 
     return (
       <SkeletonWrapper

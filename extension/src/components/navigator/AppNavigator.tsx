@@ -1,12 +1,12 @@
 import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
-import { QuestionSelectorPanel } from "@cb/components/panel";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { getAllSessionId } from "@cb/db";
+import { useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
@@ -17,9 +17,7 @@ export const AppNavigator = () => {
   useDevSetupRoom();
 
   const currentTabInfo = getLocalStorage("tabs");
-  // const { roomId } = useRTC();
-  const roomId = currentTabInfo?.roomId;
-  console.log("room ID", roomId);
+  const { roomId } = useRTC();
   const [pastQuestionsId, setPastQuestionsId] = useState<string[]>([]);
   useEffect(() => {
     if (!roomId) {
@@ -61,10 +59,11 @@ export const AppNavigator = () => {
             <HomePanel />
           ) : null}
         </div>
-        <QuestionSelectorPanel
+        {/* <QuestionSelectorPanel
+        key={roomId}
           handleQuestionSelect={handleQuestionSelect}
-          pastQuestionsId={pastQuestionsId}
-        />
+          filterQuestionIds={pastQuestionsId}
+        /> */}
         <EditorPanel />
       </div>
     </div>
