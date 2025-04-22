@@ -18,7 +18,7 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  filterQuestionIds?: string[];
+  filterQuestionIds: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
@@ -96,7 +96,7 @@ export const QuestionSelectorPanel = React.memo(
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
         timeOut = setTimeout(() => {
           observer.observe(rows, { childList: true });
-        });
+        }, TIMEOUT);
         waitForElement(
           "div[role='columnheader']:first-child",
           TIMEOUT,

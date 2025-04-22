@@ -44,6 +44,7 @@ export const SelectProblemDialog = ({
             handleChooseQuestion(question);
             setOpen(false);
           }}
+          filterQuestionIds={[]}
           container={{}}
         />
       </div>
