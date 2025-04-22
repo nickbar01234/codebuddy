@@ -35,13 +35,13 @@ export const RoomInfoTab = () => {
   });
   const { data: sessionDoc } = useFirebaseListener({
     reference: getSessionRef(roomId!, sessionId),
-    callback: async (_data) => {
-      const data = _data;
+    callback: async (sessionData) => {
+      const data = sessionData;
       // todo(nickbar01234): Clear and report room if deleted?
       if (data == undefined) return;
       const usernames = data.usernames;
-      const nextQuestionChosen = _data.nextQuestion !== "";
-      const finishedUsers = _data.finishedUsers;
+      const nextQuestionChosen = sessionData.nextQuestion !== "";
+      const finishedUsers = sessionData.finishedUsers;
       setChooseNextQuestion(
         !nextQuestionChosen && finishedUsers.includes(username)
       );
