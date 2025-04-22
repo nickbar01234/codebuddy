@@ -5,7 +5,6 @@ import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
@@ -16,7 +15,6 @@ export const AppNavigator = () => {
   useDevSetupRoom();
 
   const currentTabInfo = getLocalStorage("tabs");
-  const { roomId } = useRTC();
 
   return (
     <div className="flex h-full w-full flex-col">

@@ -18,7 +18,7 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  filterQuestionIds: string[];
+  filterQuestionIds?: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
@@ -34,6 +34,7 @@ export const QuestionSelectorPanel = React.memo(
     });
 
     useEffect(() => {
+      let timeOut: ReturnType<typeof setTimeout>;
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -93,10 +94,9 @@ export const QuestionSelectorPanel = React.memo(
         });
 
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
-        observer.observe(rows, {
-          childList: true,
+        timeOut = setTimeout(() => {
+          observer.observe(rows, { childList: true });
         });
-
         waitForElement(
           "div[role='columnheader']:first-child",
           TIMEOUT,
@@ -126,6 +126,9 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
+      return () => {
+        clearTimeout(timeOut);
+      };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleQuestionSelect, filterQuestionIds]);
 
