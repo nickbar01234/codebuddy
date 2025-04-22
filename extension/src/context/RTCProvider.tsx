@@ -671,7 +671,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const sessionDoc = await getSession(roomId, sessionId);
     const sessionData = sessionDoc.data();
     const nextQuestion = sessionData?.nextQuestion ?? "";
-    await deleteMeRef.current();
     history.pushState(null, "", constructUrlFromQuestionId(nextQuestion));
     location.reload();
   }, [roomId, sessionId]);

@@ -3,7 +3,6 @@
 import chokidar from "chokidar";
 import _ from "lodash";
 import puppeteer from "puppeteer";
-
 const EXTENSION_PATH = "./dist/";
 const REDUX_DEVTOOLS_PATH = "./redux_devtools/";
 
