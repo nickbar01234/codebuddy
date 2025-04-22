@@ -40,6 +40,7 @@ export const AppNavigator = () => {
             <HomePanel />
           ) : null}
         </div>
+
         <EditorPanel />
       </div>
     </div>
