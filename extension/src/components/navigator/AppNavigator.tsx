@@ -5,12 +5,11 @@ import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { getAllSessionId } from "@cb/db";
 import { useRTC } from "@cb/hooks/index";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -18,22 +17,6 @@ export const AppNavigator = () => {
 
   const currentTabInfo = getLocalStorage("tabs");
   const { roomId } = useRTC();
-  const [pastQuestionsId, setPastQuestionsId] = useState<string[]>([]);
-  useEffect(() => {
-    if (!roomId) {
-      return;
-    }
-    const fetchPastQuestions = async () => {
-      const pastSessionsId = await getAllSessionId(roomId);
-      console.log("past session id", pastSessionsId);
-      setPastQuestionsId(pastSessionsId);
-    };
-    fetchPastQuestions();
-  }, [roomId]);
-
-  const handleQuestionSelect = (link: string) => {
-    window.location.href = link;
-  };
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -59,11 +42,7 @@ export const AppNavigator = () => {
             <HomePanel />
           ) : null}
         </div>
-        {/* <QuestionSelectorPanel
-        key={roomId}
-          handleQuestionSelect={handleQuestionSelect}
-          filterQuestionIds={pastQuestionsId}
-        /> */}
+
         <EditorPanel />
       </div>
     </div>

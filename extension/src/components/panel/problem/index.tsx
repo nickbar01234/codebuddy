@@ -18,7 +18,7 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  filterQuestionIds?: string[];
+  filterQuestionIds: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
@@ -126,7 +126,8 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-    }, [handleQuestionSelect, filterQuestionIds, registerObserver]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handleQuestionSelect, filterQuestionIds]);
 
     return (
       <SkeletonWrapper
