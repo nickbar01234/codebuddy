@@ -133,10 +133,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
-        const originalOnClick = button.onclick;
-        button.onclick = function (event) {
-          if (originalOnClick) {
-            originalOnClick.call(this, event);
+        // const originalOnClick = button.onclick;
+        const mockBtn = button.cloneNode(true) as HTMLButtonElement;
+        button.replaceWith(mockBtn);
+        mockBtn.onclick = function (event) {
+          // if (originalOnClick) {
+          //   originalOnClick.call(this, event);
+          // }
+          event.preventDefault();
+          if (import.meta.env.MODE === "development") {
+            handleSucessfulSubmissionRef.current();
+            return;
           }
 
           waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
@@ -842,12 +849,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "createRoom":
           case "joinRoom":
           case "reloadExtension":
-            break;
-          case "submitSuccess":
-            handleSucessfulSubmissionRef.current();
-            break;
-          case "submitFail":
-            handleFailedSubmissionRef.current();
             break;
           default:
             console.error("Unhandled window message", windowMessage);

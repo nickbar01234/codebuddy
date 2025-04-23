@@ -67,12 +67,7 @@ const setup = async () => {
       peer,
       NUM_USERS > 1 ? ROOM_ID : undefined
     );
-    await page.evaluate(() => {
-      const mockSubmit = (type) => {
-        window.postMessage({action: type === "success" ? "submitSuccess" : "submitFail"})
-      }
-      setTimeout(() => mockSubmit("success"), 3000)
-    })
+    
     return { browser, page };
   };
   const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {
