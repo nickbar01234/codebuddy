@@ -133,26 +133,28 @@ export const RTCProvider = (props: RTCProviderProps) => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
-        // const originalOnClick = button.onclick;
-        const mockBtn = button.cloneNode(true) as HTMLButtonElement;
-        button.replaceWith(mockBtn);
-        mockBtn.onclick = function (event) {
-          // if (originalOnClick) {
-          //   originalOnClick.call(this, event);
-          // }
-          event.preventDefault();
-          if (import.meta.env.MODE === "development") {
+        const originalOnClick = button.onclick;
+        if (import.meta.env.MODE === "development") {
+          const mockBtn = button.cloneNode(true) as HTMLButtonElement;
+          button.replaceWith(mockBtn);
+          mockBtn.onclick = function (event) {
+            event.preventDefault();
             handleSucessfulSubmissionRef.current();
             return;
-          }
-
-          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-            .then(() => handleSucessfulSubmissionRef.current())
-            .catch(() => handleFailedSubmissionRef.current());
-        };
+          };
+        } else {
+          button.onclick = function (event) {
+            if (originalOnClick) {
+              originalOnClick.call(this, event);
+            }
+            waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
+              .then(() => handleSucessfulSubmissionRef.current())
+              .catch(() => handleFailedSubmissionRef.current());
+          };
+        }
       })
       .catch((error) => {
-        console.error("Error mounting callback on submit code button:", error);
+        console.log("Error mounting callback on submit code button:", error);
       });
   });
 
