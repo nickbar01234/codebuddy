@@ -65,7 +65,6 @@ export const QuestionSelectorPanel = React.memo(
 
               const questionId = getQuestionIdFromUrl(link.href);
               const buttonId = `select-question-btn-${questionId}`;
-
               const oldBtn = question.querySelector(`#${buttonId}`);
               if (oldBtn) oldBtn.remove();
 
