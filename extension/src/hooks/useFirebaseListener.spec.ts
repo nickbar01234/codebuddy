@@ -78,6 +78,13 @@ describe("useFirebaseListener", () => {
     expect(callback).toHaveBeenCalledExactlyOnceWith(data);
   });
 
+  it("undefined reference is no-op", () => {
+    renderHook(() =>
+      useFirebaseListener({ reference: undefined, init: INITIALIZED })
+    );
+    expect(mocks.onSnapshot).toHaveBeenCalledTimes(0);
+  });
+
   const guard = (data: Partial<DocumentSnapshot>) =>
     ({ ...data }) as DocumentSnapshot;
 });

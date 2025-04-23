@@ -1,6 +1,7 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRTC } from "@cb/hooks/index";
 import { CopyIcon } from "lucide-react";
 
@@ -28,10 +29,15 @@ const CreateRoomLoadingPanel = () => {
           Others can now join your room using the Room ID below
         </span>
         <div className="mt-5 flex w-full max-w-sm flex-col items-center">
-          <div className="flex w-full items-center overflow-hidden rounded-lg border border-[#78788033] dark:border-[#49494E] pl-4 gap-2 justify-between">
-            <span className="w-full truncate py-3 font-mono text-lg text-[#757575] dark:text-[#F1F1F1B2]">
-              {roomId}
-            </span>
+          <div className="flex w-full items-center overflow-hidden rounded-lg border border-[#78788033] dark:border-[#49494E] justify-between">
+            <SkeletonWrapper
+              loading={roomId == null}
+              outerClassName="min-h-[52px] py-3 px-4"
+            >
+              <span className="w-full truncate font-mono text-lg text-[#757575] dark:text-[#F1F1F1B2]">
+                {roomId}
+              </span>
+            </SkeletonWrapper>
             <div className="flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background] hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]">
               <button
                 type="button"
