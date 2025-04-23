@@ -119,108 +119,64 @@ const EditorPanel = () => {
         hidden: appState !== AppState.ROOM,
       })}
     >
-      {emptyRoom ? (
+      {emptyRoom && (
         <SkeletonWrapper loading={isBuffer}>
           <CreateRoomLoadingPanel />
         </SkeletonWrapper>
-      ) : (
-        <div
-          className={cn(
-            "relative flex h-full w-full flex-col justify-between",
-            {
-              hidden: emptyRoom,
-            }
-          )}
-        >
-          <ResizableBox
-            height={codePreference.height}
-            axis="y"
-            resizeHandles={canViewCode ? ["s"] : undefined}
-            className="relative flex h-full w-full flex-col overflow-hidden"
-            minConstraints={[Infinity, height * 0.2]}
-            maxConstraints={[Infinity, height * 0.5]}
-            handle={
-              <div className="bg-layer-bg-gray dark:bg-layer-bg-gray absolute bottom-0 h-2 w-full z-[100]">
-                <div className="flexlayout__splitter flexlayout__splitter_horz relative top-1/2 h-[2px] w-full -translate-y-1/2 cursor-ns-resize after:h-[2px] after:bg-[--color-splitter] hover:after:h-full hover:after:bg-[--color-splitter-drag]" />
-              </div>
-            }
-            onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
-            onResizeStop={onResizeStop}
-          >
-            {/* todo(nickbar01234): Fix styling */}
-            {!canViewCode && !isBuffer && (
-              <button
-                className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
-                onClick={unblur}
-                type="button"
-              >
-                View
-              </button>
-            )}
-            <div
-              data-view-code={canViewCode}
-              className={cn("h-full w-full", {
-                blur: !canViewCode,
-              })}
-            >
-              <Tabs
-                defaultValue="code"
-                className="h-full w-full bg-inherit text-inherit"
-              >
-                <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
-                  <UserDropdown
-                    key="user-dropdown"
-                    isOpen={isUserDropdownOpen}
-                    toggle={toggleUserDropdown}
-                  />
-
-                  <Separator
-                    orientation="vertical"
-                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                  />
-
-                  {upperTabConfigs.map((tab, index) => (
-                    <React.Fragment key={tab.value}>
-                      <TabsTrigger
-                        value={tab.value}
-                        className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                      >
-                        <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
-                        {tab.label}
-                      </TabsTrigger>
-                      {index !== upperTabConfigs.length - 1 && (
-                        <Separator
-                          orientation="vertical"
-                          className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                        />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </TabsList>
-
-                {upperTabConfigs.map(({ value, Content }) => (
-                  <TabsContent
-                    key={value}
-                    value={value}
-                    forceMount
-                    className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
-                  >
-                    {Content}
-                  </TabsContent>
-                ))}
-              </Tabs>
+      )}
+      <div
+        className={cn("relative flex h-full w-full flex-col justify-between", {
+          hidden: emptyRoom,
+        })}
+      >
+        <ResizableBox
+          height={codePreference.height}
+          axis="y"
+          resizeHandles={canViewCode ? ["s"] : undefined}
+          className="relative flex h-full w-full flex-col overflow-hidden"
+          minConstraints={[Infinity, height * 0.2]}
+          maxConstraints={[Infinity, height * 0.5]}
+          handle={
+            <div className="bg-layer-bg-gray dark:bg-layer-bg-gray absolute bottom-0 h-2 w-full z-[100]">
+              <div className="flexlayout__splitter flexlayout__splitter_horz relative top-1/2 h-[2px] w-full -translate-y-1/2 cursor-ns-resize after:h-[2px] after:bg-[--color-splitter] hover:after:h-full hover:after:bg-[--color-splitter-drag]" />
             </div>
-          </ResizableBox>
+          }
+          onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
+          onResizeStop={onResizeStop}
+        >
+          {/* todo(nickbar01234): Fix styling */}
+          {!canViewCode && !isBuffer && (
+            <button
+              className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
+              onClick={unblur}
+              type="button"
+            >
+              View
+            </button>
+          )}
           <div
-            className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1"
-            style={{ height: height - codePreference.height }}
+            data-view-code={canViewCode}
+            className={cn("h-full w-full", {
+              blur: !canViewCode,
+            })}
           >
             <Tabs
-              defaultValue="activity"
+              defaultValue="code"
               className="h-full w-full bg-inherit text-inherit"
             >
-              <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit  text-inherit">
-                {lowerTabConfigs.map((tab, index) => (
+              <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
+                <UserDropdown
+                  key="user-dropdown"
+                  isOpen={isUserDropdownOpen}
+                  toggle={toggleUserDropdown}
+                />
+
+                <Separator
+                  orientation="vertical"
+                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                />
+
+                {upperTabConfigs.map((tab, index) => (
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
                       value={tab.value}
@@ -229,7 +185,7 @@ const EditorPanel = () => {
                       <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
                     </TabsTrigger>
-                    {index !== lowerTabConfigs.length - 1 && (
+                    {index !== upperTabConfigs.length - 1 && (
                       <Separator
                         orientation="vertical"
                         className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
@@ -239,7 +195,7 @@ const EditorPanel = () => {
                 ))}
               </TabsList>
 
-              {lowerTabConfigs.map(({ value, Content }) => (
+              {upperTabConfigs.map(({ value, Content }) => (
                 <TabsContent
                   key={value}
                   value={value}
@@ -251,8 +207,48 @@ const EditorPanel = () => {
               ))}
             </Tabs>
           </div>
+        </ResizableBox>
+        <div
+          className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1"
+          style={{ height: height - codePreference.height }}
+        >
+          <Tabs
+            defaultValue="activity"
+            className="h-full w-full bg-inherit text-inherit"
+          >
+            <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit  text-inherit">
+              {lowerTabConfigs.map((tab, index) => (
+                <React.Fragment key={tab.value}>
+                  <TabsTrigger
+                    value={tab.value}
+                    className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                  >
+                    <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
+                    {tab.label}
+                  </TabsTrigger>
+                  {index !== lowerTabConfigs.length - 1 && (
+                    <Separator
+                      orientation="vertical"
+                      className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                    />
+                  )}
+                </React.Fragment>
+              ))}
+            </TabsList>
+
+            {lowerTabConfigs.map(({ value, Content }) => (
+              <TabsContent
+                key={value}
+                value={value}
+                forceMount
+                className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
+              >
+                {Content}
+              </TabsContent>
+            ))}
+          </Tabs>
         </div>
-      )}
+      </div>
     </div>
   );
 };
