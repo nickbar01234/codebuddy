@@ -2,9 +2,14 @@ import {
   SkelentonWrapperProps,
   SkeletonWrapper,
 } from "@cb/components/ui/SkeletonWrapper";
-import { useOnMount } from "@cb/hooks";
-import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
-import React from "react";
+import useResource from "@cb/hooks/useResource";
+import {
+  disablePointerEvents,
+  getQuestionIdFromUrl,
+  hideToRoot,
+  waitForElement,
+} from "@cb/utils";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { SelectQuestionButton } from "./SelectProblemButton";
 
@@ -13,13 +18,23 @@ const TIMEOUT = 10_000;
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
+  filterQuestionIds: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect, container = {} }: QuestionSelectorPanelProps) => {
+  ({
+    handleQuestionSelect,
+    filterQuestionIds,
+    container = {},
+  }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
-    useOnMount(() => {
+    const { register: registerObserver } = useResource<MutationObserver>({
+      name: "observer",
+    });
+
+    useEffect(() => {
+      let timeOut: ReturnType<typeof setTimeout>;
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -36,33 +51,52 @@ export const QuestionSelectorPanel = React.memo(
           table as unknown as Document
         );
         // The order currently: status, title, solution, acceptance, difficulty, frequency
-        rows?.querySelectorAll("div[role='row']").forEach(async (question) => {
-          try {
-            // Technically, the selector can either match on status (if daily question) or title -- in either cases,
-            // we have the link to the actual problem
-            const link = (await waitForElement(
-              "div[role='cell'] a",
-              TIMEOUT,
-              question as unknown as Document
-            )) as HTMLAnchorElement;
-            const injected = iframeDoc.createElement("span");
-            question.append(injected);
-            createRoot(injected).render(
-              <SelectQuestionButton
-                onClick={() => {
-                  // Handle the question select
-                  handleQuestionSelect(link.href);
-                  // Prevent further action
+        const observer = new MutationObserver(async () => {
+          const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
+          for (const question of rowList) {
+            try {
+              // Technically, the selector can either match on status (if daily question) or title -- in either cases,
+              // we have the link to the actual problem
+              const link = (await waitForElement(
+                "div[role='cell'] a",
+                TIMEOUT,
+                question as unknown as Document
+              )) as HTMLAnchorElement;
+
+              if (
+                filterQuestionIds?.includes(getQuestionIdFromUrl(link.href))
+              ) {
+                try {
+                  rows.removeChild(question);
                   return;
-                }}
-              />
-            );
-          } catch {
-            // If no link exist, there's no point in displaying the question
-            rows.removeChild(question);
+                } catch (error) {
+                  console.log("cannot remove", error);
+                }
+              }
+              const injected = iframeDoc.createElement("span");
+              question.append(injected);
+
+              createRoot(injected).render(
+                <SelectQuestionButton
+                  onClick={() => {
+                    // Handle the question select
+                    handleQuestionSelect(link.href);
+                    // Prevent further action
+                    return;
+                  }}
+                />
+              );
+            } catch {
+              // If no link exist, there's no point in displaying the question
+              rows.removeChild(question);
+            }
           }
         });
 
+        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
+        timeOut = setTimeout(() => {
+          observer.observe(rows, { childList: true });
+        }, TIMEOUT);
         waitForElement(
           "div[role='columnheader']:first-child",
           TIMEOUT,
@@ -77,7 +111,6 @@ export const QuestionSelectorPanel = React.memo(
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
         const iframe = element as HTMLIFrameElement;
-
         iframe.onload = async () => {
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
@@ -93,7 +126,11 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-    });
+      return () => {
+        clearTimeout(timeOut);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handleQuestionSelect, filterQuestionIds]);
 
     return (
       <SkeletonWrapper
