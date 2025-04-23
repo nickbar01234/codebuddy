@@ -34,7 +34,7 @@ export const RoomInfoTab = () => {
     init: { usernames: [], isPublic: true, roomName: "" },
   });
   const { data: sessionDoc } = useFirebaseListener({
-    reference: getSessionRef(roomId!, sessionId),
+    reference: roomId != null ? getSessionRef(roomId, sessionId) : undefined,
     callback: async (sessionData) => {
       const data = sessionData;
       // todo(nickbar01234): Clear and report room if deleted?

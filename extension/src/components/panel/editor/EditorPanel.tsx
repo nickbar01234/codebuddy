@@ -54,8 +54,7 @@ const EditorPanel = () => {
   );
   const { getLanguageExtension } = useLanguageExtension();
   const { data: roomInfo } = useFirebaseListener({
-    reference: getRoomRef(roomId ?? undefined),
-    callback: (_data) => {},
+    reference: roomId != null ? getRoomRef(roomId) : undefined,
     // todo(nickbar01234): Port to redux
     init: { usernames: [], isPublic: true, roomName: "" },
   });
