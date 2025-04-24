@@ -3,9 +3,11 @@ import { clearLocalStorage, sendServiceRequest } from "@cb/services";
 import { throttle } from "lodash";
 import { Hammer } from "lucide-react";
 import React from "react";
+import { Menu } from "./Menu";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
-export const AppControlMenu = () => {
+export const _AppControlMenu = () => {
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const resetExtensionThrottled = React.useMemo(() => {
     return throttle((event: Event) => {
       event.stopPropagation?.();
@@ -33,3 +35,9 @@ export const AppControlMenu = () => {
     </>
   );
 };
+
+export const AppControlMenu = () => (
+  <Menu>
+    <_AppControlMenu />
+  </Menu>
+);

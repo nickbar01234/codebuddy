@@ -6,19 +6,32 @@ import { useRTC } from "@cb/hooks/index";
 import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
 import React from "react";
-import { AppControlMenu } from "./AppControlMenu";
+import { _AppControlMenu } from "./AppControlMenu";
+import { Menu } from "./Menu";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
-const _RoomControlMenu = ({
-  appState,
-  roomId,
-}: {
-  appState: AppState;
-  roomId: string;
-}) => {
-  switch (appState) {
-    case AppState.ROOM:
-      return (
+export const RoomControlMenu = () => {
+  const { roomId, leaveRoom } = useRTC();
+  const { state: appState, setState: setAppState } =
+    React.useContext(appStateContext);
+
+  React.useEffect(() => {
+    if (roomId != null) {
+      setAppState(AppState.ROOM);
+    } else {
+      setAppState(AppState.HOME);
+    }
+  }, [roomId, setAppState]);
+
+  const signOutThrottled = React.useMemo(() => {
+    return throttle(() => {
+      leaveRoom(roomId).then(() => signOut(auth));
+    }, 1000);
+  }, [leaveRoom, roomId]);
+
+  return (
+    <Menu>
+      {appState === AppState.ROOM && (
         <>
           <RoomControlDropdownMenuItem
             onSelect={(e) => {
@@ -41,41 +54,13 @@ const _RoomControlMenu = ({
             />
           </RoomControlDropdownMenuItem>
         </>
-      );
-
-    default:
-      return <></>;
-  }
-};
-
-export const RoomControlMenu = () => {
-  const { roomId, leaveRoom } = useRTC();
-  const { state: appState, setState: setAppState } =
-    React.useContext(appStateContext);
-
-  React.useEffect(() => {
-    if (roomId != null) {
-      setAppState(AppState.ROOM);
-    } else {
-      setAppState(AppState.HOME);
-    }
-  }, [roomId, setAppState]);
-
-  const signOutThrottled = React.useMemo(() => {
-    return throttle(() => {
-      leaveRoom(roomId).then(() => signOut(auth));
-    }, 1000);
-  }, [leaveRoom, roomId]);
-
-  return (
-    <>
-      <_RoomControlMenu appState={appState} roomId={roomId ?? ""} />
+      )}
       <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
         <span className="flex items-center gap-2">
           <SignOutIcon /> <span>Sign Out</span>
         </span>
       </RoomControlDropdownMenuItem>
-      <AppControlMenu />
-    </>
+      <_AppControlMenu />
+    </Menu>
   );
 };
