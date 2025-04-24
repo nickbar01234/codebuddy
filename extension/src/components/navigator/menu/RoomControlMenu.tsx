@@ -1,24 +1,12 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
-import {
-  CopyIcon,
-  LeaveIcon,
-  MenuIcon,
-  ResetIcon,
-  SignOutIcon,
-} from "@cb/components/icons";
+import { CopyIcon, LeaveIcon, SignOutIcon } from "@cb/components/icons";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { auth } from "@cb/db";
 import { useRTC } from "@cb/hooks/index";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@cb/lib/components/ui/dropdown-menu";
-import { clearLocalStorage, sendServiceRequest } from "@cb/services";
 import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
-import { Hammer } from "lucide-react";
 import React from "react";
+import { AppControlMenu } from "./AppControlMenu";
 import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
 const _RoomControlMenu = ({
@@ -79,41 +67,15 @@ export const RoomControlMenu = () => {
     }, 1000);
   }, [leaveRoom, roomId]);
 
-  const resetExtensionThrottled = React.useMemo(() => {
-    return throttle((event: Event) => {
-      event.stopPropagation?.();
-      clearLocalStorage();
-    }, 1000);
-  }, []);
-
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger>
-        <MenuIcon />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="shadow-level3 dark:shadow-dark-level3 border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 absolute right-0 top-2 flex w-max flex-col rounded-lg border">
-        <_RoomControlMenu appState={appState} roomId={roomId ?? ""} />
-        <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
-          <span className="flex items-center gap-2">
-            <SignOutIcon /> <span>Sign Out</span>
-          </span>
-        </RoomControlDropdownMenuItem>
-        <RoomControlDropdownMenuItem onSelect={resetExtensionThrottled}>
-          <span className="flex items-center gap-2">
-            <ResetIcon /> <span>Reset Extension</span>
-          </span>
-        </RoomControlDropdownMenuItem>
-        {import.meta.env.MODE === "development" && (
-          <RoomControlDropdownMenuItem
-            onSelect={() => sendServiceRequest({ action: "reloadExtension" })}
-          >
-            <span className="flex items-center gap-2">
-              <Hammer />
-              <span>Reload extension</span>
-            </span>
-          </RoomControlDropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <_RoomControlMenu appState={appState} roomId={roomId ?? ""} />
+      <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
+        <span className="flex items-center gap-2">
+          <SignOutIcon /> <span>Sign Out</span>
+        </span>
+      </RoomControlDropdownMenuItem>
+      <AppControlMenu />
+    </>
   );
 };
