@@ -1,14 +1,10 @@
-import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import { RoomControlMenu } from "@cb/components/navigator/menu/RoomControlMenu";
-import EditorPanel from "@cb/components/panel/editor";
-import HomePanel from "@cb/components/panel/HomePanel";
-import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import Header from "@cb/components/ui/Header";
-import { AppState, appStateContext } from "@cb/context/AppStateProvider";
+import { appStateContext } from "@cb/context/AppStateProvider";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
-import { getQuestionIdFromUrl } from "@cb/utils";
 import React from "react";
+import { QuestionSelectorPanel } from "@cb/components/panel";
 
 export const AppNavigator = () => {
   const { state } = React.useContext(appStateContext);
@@ -23,7 +19,11 @@ export const AppNavigator = () => {
         <RoomControlMenu />
       </div>
       <div className="relative h-full w-full overflow-hidden">
-        <div className="absolute inset-0 flex h-full w-full items-center justify-center mx-2">
+        <QuestionSelectorPanel
+          handleQuestionSelect={() => {}}
+          filterQuestionIds={[]}
+        />
+        {/* <div className="absolute inset-0 flex h-full w-full items-center justify-center mx-2">
           {state === AppState.LOADING ? (
             <LoadingPanel
               numberOfUsers={
@@ -41,7 +41,7 @@ export const AppNavigator = () => {
           ) : null}
         </div>
 
-        <EditorPanel />
+        <EditorPanel /> */}
       </div>
     </div>
   );

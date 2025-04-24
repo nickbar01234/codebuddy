@@ -35,7 +35,7 @@ export const QuestionSelectorPanel = React.memo(
     });
 
     useEffect(() => {
-      const handleIframeStyle = async (iframeDoc: Document) => {
+      const handleIframeStyleDevMode = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
         // A collection of questions - for some reason, leetcode has empty tables
@@ -111,6 +111,77 @@ export const QuestionSelectorPanel = React.memo(
           (cloned as HTMLElement).style.visibility = "hidden";
           element.parentNode?.appendChild(cloned);
         });
+      };
+
+      const handleIframeStyleProdMode = async (iframeDoc: Document) => {
+        disablePointerEvents(iframeDoc);
+        const firstQuestion = await waitForElement(
+          "a#\\31 ",
+          TIMEOUT,
+          iframeDoc
+        );
+
+        const problemContainer = firstQuestion.parentNode;
+        if (problemContainer == null) {
+          console.error("Unable to locate problem container");
+          return;
+        }
+        hideToRoot(problemContainer as Element);
+        const observer = new MutationObserver(async () => {
+          console.log("mutation");
+          const rowList = problemContainer?.querySelectorAll("a") ?? [];
+          for (const question of rowList) {
+            try {
+              // Technically, the selector can either match on status (if daily question) or title -- in either cases,
+              // we have the link to the actual problem
+              const link = question.href;
+              const idTag = question.id;
+              const questionId = getQuestionIdFromUrl(link);
+
+              if (
+                filterQuestionIds?.includes(questionId) ||
+                (idTag && !isNaN(Number(idTag)))
+              ) {
+                try {
+                  problemContainer.removeChild(question);
+                  return;
+                } catch (error) {
+                  console.log("cannot remove", error);
+                }
+              }
+
+              const injected = iframeDoc.createElement("span");
+              injected.id = generateId(`select-question-btn-${questionId}`);
+              question.append(injected);
+
+              createRoot(injected).render(
+                <SelectQuestionButton
+                  id={link}
+                  onClick={() => {
+                    // Handle the question select
+                    handleQuestionSelect(link);
+                    // Prevent further action
+                    return;
+                  }}
+                />
+              );
+            } catch {
+              // If no link exist, there's no point in displaying the question
+              problemContainer.removeChild(question);
+            }
+          }
+        });
+        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
+        observer.observe(problemContainer, { childList: true });
+
+        console.log("problemContainer", problemContainer);
+      };
+      const handleIframeStyle = async (iframeDoc: Document) => {
+        if (import.meta.env.MODE === "development") {
+          await handleIframeStyleDevMode(iframeDoc);
+        } else {
+          await handleIframeStyleProdMode(iframeDoc);
+        }
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
