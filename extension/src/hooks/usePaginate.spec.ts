@@ -222,4 +222,31 @@ describe("usePaginate", () => {
     expect(result.current.error).toEqual(error);
     expect(result.current.loading).toBe(false);
   });
+
+  it("unsubscribes the previous interval when baseQuery changes", async () => {
+    const firstBaseQuery = "MOCK_QUERY_1" as unknown as Query;
+    const secondBaseQuery = "MOCK_QUERY_2" as unknown as Query;
+
+    vi.mocked(getCountFromServer).mockResolvedValue(mockAggregateSnapshot(2));
+
+    const { rerender } = renderHook(
+      ({ baseQuery }) => usePaginate({ baseQuery, hookLimit: 2 }),
+      { initialProps: { baseQuery: firstBaseQuery } }
+    );
+
+    await act(async () => {
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
+    });
+
+    expect(getCountFromServer).toHaveBeenCalledWith(firstBaseQuery);
+    vi.mocked(getCountFromServer).mockClear();
+    rerender({ baseQuery: secondBaseQuery });
+
+    await act(async () => {
+      vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
+    });
+
+    expect(getCountFromServer).toHaveBeenCalledWith(secondBaseQuery);
+    expect(getCountFromServer).not.toHaveBeenCalledWith(firstBaseQuery);
+  });
 });
