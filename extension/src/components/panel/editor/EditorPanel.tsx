@@ -4,12 +4,15 @@ import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { AppState } from "@cb/context/AppStateProvider";
+import { getRoomRef } from "@cb/db";
 import { LogEvent } from "@cb/db/converter";
 import {
   useAppState,
+  useFirebaseListener,
   usePeerSelection,
+  useRTC,
   useWindowDimensions,
-} from "@cb/hooks/index";
+} from "@cb/hooks";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
@@ -31,21 +34,16 @@ export interface TabMetadata {
 export const EDITOR_NODE_ID = "CodeBuddyEditor";
 
 const EditorPanel = () => {
-  const {
-    peers,
-    activePeer,
-    unblur,
-    selectTest,
-    isBuffer,
-    activeUserInformation,
-  } = usePeerSelection();
-  const { state: appState } = useAppState();
+  const { activePeer, unblur, selectTest, isBuffer, activeUserInformation } =
+    usePeerSelection();
+  const { state: appState, user } = useAppState();
   const {
     setCodePreferenceHeight,
     onResizeStop,
     preference: { codePreference },
     height,
   } = useWindowDimensions();
+  const { roomId } = useRTC();
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = React.useCallback(
     (e: React.MouseEvent<Element, MouseEvent>) => {
@@ -55,10 +53,17 @@ const EditorPanel = () => {
     []
   );
   const { getLanguageExtension } = useLanguageExtension();
+  const { data: roomInfo } = useFirebaseListener({
+    reference: roomId != null ? getRoomRef(roomId) : undefined,
+    // todo(nickbar01234): Port to redux
+    init: { usernames: [], isPublic: true, roomName: "" },
+  });
 
   const canViewCode = activePeer?.viewable ?? false;
   const activeTest = activePeer?.tests.find((test) => test.selected);
-  const emptyRoom = peers.length === 0;
+  const emptyRoom =
+    roomInfo.usernames.filter((username) => username !== user.username)
+      .length === 0;
 
   const upperTabConfigs = React.useMemo(() => {
     const extension =
