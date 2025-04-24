@@ -36,7 +36,7 @@ export const QuestionSelectorPanel = React.memo(
       name: "observer",
     });
 
-    const devMode = true;
+    const devMode = import.meta.env.MODE === "development";
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
