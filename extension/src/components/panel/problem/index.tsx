@@ -5,6 +5,7 @@ import {
 import useResource from "@cb/hooks/useResource";
 import {
   disablePointerEvents,
+  generateId,
   getQuestionIdFromUrl,
   hideToRoot,
   waitForElement,
@@ -34,7 +35,6 @@ export const QuestionSelectorPanel = React.memo(
     });
 
     useEffect(() => {
-      let timeOut: ReturnType<typeof setTimeout>;
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -64,7 +64,7 @@ export const QuestionSelectorPanel = React.memo(
               )) as HTMLAnchorElement;
 
               const questionId = getQuestionIdFromUrl(link.href);
-              const buttonId = `select-question-btn-${questionId}`;
+              const buttonId = generateId(`select-question-btn-${questionId}`);
               const oldBtn = question.querySelector(`#${buttonId}`);
               if (oldBtn) oldBtn.remove();
 

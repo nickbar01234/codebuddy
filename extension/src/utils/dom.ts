@@ -53,3 +53,7 @@ export const disablePointerEvents = (context: Document = document) => {
   style.textContent = "a { pointer-events: none; }";
   context.head.appendChild(style);
 };
+
+export const generateId = (suffix: string) => {
+  return `CodeBuddy-${suffix}`;
+};
