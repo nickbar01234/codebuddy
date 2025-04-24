@@ -17,6 +17,8 @@ import { SelectQuestionButton } from "./SelectProblemButton";
 // We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
 const TIMEOUT = 10_000;
 
+const INJECTED_ATTRIBUTE = "data-injected";
+
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
   filterQuestionIds: string[];
@@ -64,8 +66,10 @@ export const QuestionSelectorPanel = React.memo(
               )) as HTMLAnchorElement;
 
               const questionId = getQuestionIdFromUrl(link.href);
-              const buttonId = generateId(`select-question-btn-${questionId}`);
-              const oldBtn = question.querySelector(`#${buttonId}`);
+              const buttonId = generateId(`question-selector`);
+              const oldBtn = question.querySelector(
+                `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
+              );
               if (oldBtn) oldBtn.remove();
 
               if (filterQuestionIds?.includes(questionId)) {
@@ -78,7 +82,7 @@ export const QuestionSelectorPanel = React.memo(
               }
 
               const injected = iframeDoc.createElement("span");
-              injected.id = buttonId;
+              injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
               question.append(injected);
 
               createRoot(injected).render(
