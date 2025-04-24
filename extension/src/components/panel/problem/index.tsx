@@ -96,22 +96,30 @@ export const QuestionSelectorPanel = React.memo(
               const oldBtn = target.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
-              if (oldBtn) oldBtn.remove();
-              const injected = document.createElement("span");
-              injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
-              target.appendChild(injected);
 
-              createRoot(injected).render(
-                <SelectQuestionButton
-                  id={link}
-                  onClick={() => {
-                    // Handle the question select
-                    handleQuestionSelect(link);
-                    // Prevent further action
-                    return;
-                  }}
-                />
-              );
+              if (oldBtn) {
+                if (devMode) {
+                  oldBtn.remove();
+                } else {
+                  console.log("find button for", questionId);
+                }
+              } else {
+                const injected = document.createElement("span");
+                injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
+                target.appendChild(injected);
+
+                createRoot(injected).render(
+                  <SelectQuestionButton
+                    id={link}
+                    onClick={() => {
+                      // Handle the question select
+                      handleQuestionSelect(link);
+                      // Prevent further action
+                      return;
+                    }}
+                  />
+                );
+              }
             } catch (e) {
               console.error("Unable to locate question link", e);
               // If no link exist, there's no point in displaying the question
@@ -123,6 +131,7 @@ export const QuestionSelectorPanel = React.memo(
         const observer = new MutationObserver(addButton);
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
         observer.observe(problemContainer, { childList: true });
+
         if (devMode) {
           waitForElement(
             "div[role='columnheader']:first-child",
