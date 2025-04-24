@@ -127,7 +127,9 @@ export const QuestionSelectorPanel = React.memo(
             }
           }
         };
-        addButton();
+        if (!devMode) {
+          addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually
+        }
         const observer = new MutationObserver(addButton);
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
         observer.observe(problemContainer, { childList: true });
