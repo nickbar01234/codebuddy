@@ -5,6 +5,7 @@ import {
 import useResource from "@cb/hooks/useResource";
 import {
   disablePointerEvents,
+  generateId,
   getQuestionIdFromUrl,
   hideToRoot,
   waitForElement,
@@ -34,7 +35,6 @@ export const QuestionSelectorPanel = React.memo(
     });
 
     useEffect(() => {
-      let timeOut: ReturnType<typeof setTimeout>;
       const handleIframeStyle = async (iframeDoc: Document) => {
         disablePointerEvents(iframeDoc);
 
@@ -63,9 +63,12 @@ export const QuestionSelectorPanel = React.memo(
                 question as unknown as Document
               )) as HTMLAnchorElement;
 
-              if (
-                filterQuestionIds?.includes(getQuestionIdFromUrl(link.href))
-              ) {
+              const questionId = getQuestionIdFromUrl(link.href);
+              const buttonId = generateId(`select-question-btn-${questionId}`);
+              const oldBtn = question.querySelector(`#${buttonId}`);
+              if (oldBtn) oldBtn.remove();
+
+              if (filterQuestionIds?.includes(questionId)) {
                 try {
                   rows.removeChild(question);
                   return;
@@ -73,11 +76,14 @@ export const QuestionSelectorPanel = React.memo(
                   console.log("cannot remove", error);
                 }
               }
+
               const injected = iframeDoc.createElement("span");
+              injected.id = buttonId;
               question.append(injected);
 
               createRoot(injected).render(
                 <SelectQuestionButton
+                  id={link.href}
                   onClick={() => {
                     // Handle the question select
                     handleQuestionSelect(link.href);
@@ -94,9 +100,7 @@ export const QuestionSelectorPanel = React.memo(
         });
 
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
-        timeOut = setTimeout(() => {
-          observer.observe(rows, { childList: true });
-        }, TIMEOUT);
+        observer.observe(rows, { childList: true });
         waitForElement(
           "div[role='columnheader']:first-child",
           TIMEOUT,
@@ -126,9 +130,6 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-      return () => {
-        clearTimeout(timeOut);
-      };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleQuestionSelect, filterQuestionIds]);
 
