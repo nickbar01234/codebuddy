@@ -16,6 +16,7 @@ import {
   getDocs,
   orderBy,
   query,
+  QueryConstraint,
   setDoc,
   WithFieldValue,
 } from "firebase/firestore";
@@ -58,12 +59,19 @@ export const getSessionPeerConnectionRefs = (
     peerConnectionConverter
   );
 
+export const getSessionIds = (
+  roomId: string,
+  constraints: QueryConstraint[] = []
+) => {
+  const refs = getSessionRefs(roomId);
+  const q = constraints.reduce((q, current) => query(q, current), query(refs));
+  return getDocs(q);
+};
+
 export const getAllSessionId = async (roomId: string) => {
   // This function will return all sessions in a room.
   // Note: This is not efficient for large datasets, consider using query for pagination or filtering.
-  const sessionRefs = getSessionRefs(roomId);
-  const sessionQuery = query(sessionRefs, orderBy("createdAt"));
-  const snapshot = await getDocs(sessionQuery);
+  const snapshot = await getSessionIds(roomId, [orderBy("createdAt")]);
   return snapshot.docs.map((doc) => doc.id);
 };
 

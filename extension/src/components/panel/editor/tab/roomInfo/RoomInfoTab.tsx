@@ -1,20 +1,24 @@
+import { PromptNavigateDialog } from "@cb/components/dialog/PromptNavigateDialog";
 import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
-import { getRoomRef, getSessionRef } from "@cb/db";
+import { getRoomRef, getSessionIds, getSessionRef } from "@cb/db";
 import {
   useAppState,
   useFirebaseListener,
   useOnMount,
   useRTC,
 } from "@cb/hooks/index";
+import useResource from "@cb/hooks/useResource";
 import { Button } from "@cb/lib/components/ui/button";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
-import { Timestamp } from "firebase/firestore";
+import { limit, orderBy, Timestamp } from "firebase/firestore";
 import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
+
+const POLL_NEXT_QUESTION = "poll-next-question";
 
 export const RoomInfoTab = () => {
   const {
@@ -60,6 +64,10 @@ export const RoomInfoTab = () => {
       createdAt: Timestamp.fromDate(new Date()),
     },
   });
+  const { register, get, cleanup } = useResource<NodeJS.Timeout>({
+    name: "firebase-listener",
+  });
+  const [nextSessionId, setNextSessionId] = React.useState<string>();
 
   const unfinishedPeers = React.useMemo(
     () =>
@@ -81,6 +89,31 @@ export const RoomInfoTab = () => {
 
     return () => clearInterval(interval);
   });
+
+  // todo(nickbar01234): This kind of polling is gross, but hoping that it's only temporary
+  React.useEffect(() => {
+    if (roomId != null && get()[POLL_NEXT_QUESTION] == undefined) {
+      const interval = setInterval(async () => {
+        const docs = await getSessionIds(roomId, [
+          orderBy("createdAt", "desc"),
+          limit(1),
+        ]);
+        setNextSessionId(
+          docs.docs.map((doc) => doc.id).filter((id) => id != roomId)[0]
+        );
+      }, 1000);
+      register(POLL_NEXT_QUESTION, interval, clearInterval);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId, nextSessionId]);
+
+  React.useEffect(() => {
+    if (roomId == null) {
+      setNextSessionId(undefined);
+      cleanup();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomId]);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
@@ -163,6 +196,11 @@ export const RoomInfoTab = () => {
           </div>
         </div>
       )}
+      <PromptNavigateDialog
+        finished={
+          roomId != null && nextSessionId != undefined && unfinishedPeers === 0
+        }
+      />
     </div>
   );
 };
