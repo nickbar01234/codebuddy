@@ -39,7 +39,7 @@ export const AppNavigator = () => {
             <RejoinPromptDialog />
           ) : state === AppState.HOME ? (
             <HomePanel />
-          ) : state === AppState.PUBLIC_ROOMS ? (
+          ) : state === AppState.JOIN_ROOMS ? (
             <JoinRoomPanel />
           ) : null}
         </div>

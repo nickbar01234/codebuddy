@@ -10,7 +10,7 @@ import React from "react";
 enum AppState {
   HOME, // Home screen
   ROOM, // In-room
-  PUBLIC_ROOMS,
+  JOIN_ROOMS,
   LOADING,
   REJOINING,
 }

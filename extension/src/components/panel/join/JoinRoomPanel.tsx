@@ -207,7 +207,7 @@ const JoinRoomPanel: React.FC = () => {
     setPublicRooms(sampleRooms);
   }, []);
 
-  if (appState === AppState.PUBLIC_ROOMS) {
+  if (appState === AppState.JOIN_ROOMS) {
     return (
       <div className="flex flex-col p-4 gap-6">
         <Button
