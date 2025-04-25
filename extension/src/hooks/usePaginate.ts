@@ -41,7 +41,7 @@ const usePaginate = <T>({
   const [docs, setDocs] = useState<QueryDocumentSnapshot<T>[]>([]);
   const [collectionSize, setCollectionSize] = useState(0);
   const [error, setError] = useState<Error>();
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
   const getFirstDoc = useCallback(() => docs[0], [docs]);
   const getLastDoc = useCallback(() => docs[docs.length - 1], [docs]);
