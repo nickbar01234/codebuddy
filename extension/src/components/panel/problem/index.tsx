@@ -36,10 +36,10 @@ export const QuestionSelectorPanel = React.memo(
       name: "observer",
     });
 
-    const devMode = import.meta.env.MODE === "development";
-    const mode = devMode ? "true" : "false";
-
     useEffect(() => {
+      const devMode = import.meta.env.MODE === "development";
+      const mode = devMode ? "true" : "false";
+
       const handleIframeStyle = async (iframeDoc: Document) => {
         const table = await factory[mode].table(iframeDoc);
         hideToRoot(table!.parentElement?.parentElement as Element);
@@ -56,7 +56,6 @@ export const QuestionSelectorPanel = React.memo(
             )) as HTMLElement;
             try {
               target.style.marginBottom = "3px";
-
               const anchor = (
                 devMode
                   ? await waitForElement(
@@ -67,7 +66,6 @@ export const QuestionSelectorPanel = React.memo(
                   : question
               ) as HTMLAnchorElement;
               const link = anchor.href;
-
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds?.includes(questionId)) {
                 try {
@@ -77,12 +75,10 @@ export const QuestionSelectorPanel = React.memo(
                   console.log("cannot remove", error);
                 }
               }
-
               const buttonId = generateId(`question-selector`);
               const oldBtn = target.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
-
               if (oldBtn && devMode) {
                 oldBtn.remove();
               } else {
@@ -147,8 +143,7 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [handleQuestionSelect, filterQuestionIds]);
+    }, [handleQuestionSelect, filterQuestionIds, registerObserver]);
 
     return (
       <SkeletonWrapper
