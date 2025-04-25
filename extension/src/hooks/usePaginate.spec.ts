@@ -238,7 +238,7 @@ describe("usePaginate", () => {
       vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
     });
 
-    expect(getCountFromServer).toHaveBeenCalledWith(firstBaseQuery);
+    expect(getCountFromServer).toHaveBeenCalledExactlyOnceWith(firstBaseQuery);
     vi.mocked(getCountFromServer).mockClear();
     rerender({ baseQuery: secondBaseQuery });
 
@@ -246,7 +246,7 @@ describe("usePaginate", () => {
       vi.advanceTimersByTime(REFRESH_INTERVAL_MS);
     });
 
-    expect(getCountFromServer).toHaveBeenCalledWith(secondBaseQuery);
+    expect(getCountFromServer).toHaveBeenCalledExactlyOnceWith(secondBaseQuery);
     expect(getCountFromServer).not.toHaveBeenCalledWith(firstBaseQuery);
   });
 });
