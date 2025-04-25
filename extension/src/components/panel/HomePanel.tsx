@@ -1,11 +1,8 @@
 import { CreateRoomDialog } from "@cb/components/dialog/CreateRoomDialog";
 import { ThemeAwaredLogo } from "@cb/components/icons/Logo";
 import { JoinRoomButton } from "@cb/components/panel/join/JoinRoomButton";
-import { useAppState } from "@cb/hooks/index";
 
 const HomePanel = () => {
-  const { setState: setAppState } = useAppState();
-
   return (
     <div className="hide-scrollbar flex h-full w-full flex-col gap-10 overflow-scroll justify-center">
       <div className="flex w-full flex-col items-center justify-end gap-3">
