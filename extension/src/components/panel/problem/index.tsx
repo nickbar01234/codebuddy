@@ -36,11 +36,10 @@ export const QuestionSelectorPanel = React.memo(
       name: "observer",
     });
 
-    const devMode = import.meta.env.MODE === "development";
+    const devMode = true;
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        disablePointerEvents(iframeDoc);
         const table = devMode
           ? await waitForElement(
               "div[role='table']:nth-child(1)",
@@ -56,10 +55,7 @@ export const QuestionSelectorPanel = React.memo(
               table as unknown as Document
             )
           : table;
-        if (problemContainer == null) {
-          console.error("Unable to locate problem container");
-          return;
-        }
+
         const addButton = async () => {
           const rowList =
             problemContainer?.querySelectorAll(
@@ -67,38 +63,48 @@ export const QuestionSelectorPanel = React.memo(
             ) ?? [];
           for (const question of rowList) {
             try {
-              const link = (
-                (devMode
+              const anchor = (
+                devMode
                   ? await waitForElement(
                       "div[role='cell'] a",
                       TIMEOUT,
                       question as unknown as Document
                     )
-                  : question) as HTMLAnchorElement
-              ).href;
+                  : question
+              ) as HTMLAnchorElement;
+              const link = anchor.href;
+
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds?.includes(questionId)) {
                 try {
-                  problemContainer.removeChild(question);
+                  problemContainer!.removeChild(question);
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
                 }
               }
-              const target = devMode
-                ? question
-                : (question.childNodes[0] as HTMLElement);
+              let target = question; // default to the question itself in devmode will be modifed if not in devmode
+              if (!devMode) {
+                const divWrapper = document.createElement("div");
+                divWrapper.className = anchor.className;
+                divWrapper.innerHTML = anchor.innerHTML;
+                divWrapper.style.cssText = anchor.style.cssText;
+                [...anchor.attributes].forEach((attr) => {
+                  if (attr.name.startsWith("data-")) {
+                    divWrapper.setAttribute(attr.name, attr.value);
+                  }
+                });
+                anchor.parentNode!.replaceChild(divWrapper, anchor);
+                target = divWrapper.childNodes[0] as HTMLElement;
+              }
+
               const buttonId = generateId(`question-selector`);
               const oldBtn = target.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
 
-              if (oldBtn) {
-                if (devMode) {
-                  oldBtn.remove();
-                } else {
-                  console.log("find button for", questionId);
-                }
+              if (oldBtn && devMode) {
+                oldBtn.remove();
               } else {
                 const injected = document.createElement("span");
                 injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
@@ -110,6 +116,7 @@ export const QuestionSelectorPanel = React.memo(
                     onClick={() => {
                       // Handle the question select
                       handleQuestionSelect(link);
+                      console.log("Selected question:", link);
                       // Prevent further action
                       return;
                     }}
@@ -119,17 +126,11 @@ export const QuestionSelectorPanel = React.memo(
             } catch (e) {
               console.error("Unable to locate question link", e);
               // If no link exist, there's no point in displaying the question
-              problemContainer.removeChild(question);
+              problemContainer!.removeChild(question);
             }
           }
         };
-        if (!devMode) {
-          addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually. The observer still trigger on scrolling tho
-        }
-        const observer = new MutationObserver(addButton);
-        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
-        observer.observe(problemContainer, { childList: true });
-
+        disablePointerEvents(iframeDoc);
         if (devMode) {
           waitForElement(
             "div[role='columnheader']:first-child",
@@ -141,7 +142,13 @@ export const QuestionSelectorPanel = React.memo(
             (cloned as HTMLElement).style.visibility = "hidden";
             element.parentNode?.appendChild(cloned);
           });
+        } else {
+          // disableNavigateEvents(iframeDoc);
+          addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually. The observer still trigger on scrolling tho
         }
+        const observer = new MutationObserver(addButton);
+        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
+        observer.observe(problemContainer!, { childList: true });
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
