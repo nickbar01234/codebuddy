@@ -51,8 +51,12 @@ export const QuestionSelectorPanel = React.memo(
           const rowList =
             factory[mode].rowList(problemContainer as Document) ?? [];
           for (const question of rowList) {
-            const target = await factory[mode].target(question);
+            const target = (await factory[mode].target(
+              question
+            )) as HTMLElement;
             try {
+              target.style.marginBottom = "10px";
+
               const anchor = (
                 devMode
                   ? await waitForElement(
