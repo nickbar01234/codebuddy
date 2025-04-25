@@ -143,7 +143,6 @@ export const QuestionSelectorPanel = React.memo(
             element.parentNode?.appendChild(cloned);
           });
         } else {
-          // disableNavigateEvents(iframeDoc);
           addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually. The observer still trigger on scrolling tho
         }
         const observer = new MutationObserver(addButton);

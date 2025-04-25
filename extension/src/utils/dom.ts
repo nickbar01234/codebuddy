@@ -54,15 +54,6 @@ export const disablePointerEvents = (context: Document = document) => {
   context.head.appendChild(style);
 };
 
-export const disableNavigateEvents = (context: Document = document) => {
-  context.querySelectorAll("a").forEach((a) =>
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      console.log("Intercepted anchor click:", a);
-    })
-  );
-};
-
 export const generateId = (suffix: string) => {
   return `CodeBuddy-${suffix}`;
 };
