@@ -36,32 +36,22 @@ export const QuestionSelectorPanel = React.memo(
       name: "observer",
     });
 
-    const devMode = true;
+    const devMode = import.meta.env.MODE === "development";
+    const mode = devMode ? "true" : "false";
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const table = devMode
-          ? await waitForElement(
-              "div[role='table']:nth-child(1)",
-              TIMEOUT,
-              iframeDoc
-            )
-          : (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode;
+        const table = await factory[mode].table(iframeDoc);
         hideToRoot(table!.parentElement?.parentElement as Element);
-        const problemContainer = devMode
-          ? await waitForElement(
-              "div[role='rowgroup']",
-              TIMEOUT,
-              table as unknown as Document
-            )
-          : table;
+        const problemContainer = await factory[mode].problemContainer(
+          table as Document
+        );
 
         const addButton = async () => {
           const rowList =
-            problemContainer?.querySelectorAll(
-              devMode ? "div[role='row']" : "a"
-            ) ?? [];
+            factory[mode].rowList(problemContainer as Document) ?? [];
           for (const question of rowList) {
+            const target = await factory[mode].target(question);
             try {
               const anchor = (
                 devMode
@@ -77,25 +67,11 @@ export const QuestionSelectorPanel = React.memo(
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds?.includes(questionId)) {
                 try {
-                  problemContainer!.removeChild(question);
+                  problemContainer!.removeChild(target);
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
                 }
-              }
-              let target = question; // default to the question itself in devmode will be modifed if not in devmode
-              if (!devMode) {
-                const divWrapper = document.createElement("div");
-                divWrapper.className = anchor.className;
-                divWrapper.innerHTML = anchor.innerHTML;
-                divWrapper.style.cssText = anchor.style.cssText;
-                [...anchor.attributes].forEach((attr) => {
-                  if (attr.name.startsWith("data-")) {
-                    divWrapper.setAttribute(attr.name, attr.value);
-                  }
-                });
-                anchor.parentNode!.replaceChild(divWrapper, anchor);
-                target = divWrapper.childNodes[0] as HTMLElement;
               }
 
               const buttonId = generateId(`question-selector`);
@@ -126,7 +102,7 @@ export const QuestionSelectorPanel = React.memo(
             } catch (e) {
               console.error("Unable to locate question link", e);
               // If no link exist, there's no point in displaying the question
-              problemContainer!.removeChild(question);
+              problemContainer!.removeChild(target);
             }
           }
         };
@@ -187,3 +163,47 @@ export const QuestionSelectorPanel = React.memo(
     );
   }
 );
+const factory = {
+  true: {
+    table: async (iframeDoc: Document) =>
+      await waitForElement(
+        "div[role='table']:nth-child(1)",
+        TIMEOUT,
+        iframeDoc
+      ),
+    problemContainer: async (table: Document) =>
+      await waitForElement("div[role='rowgroup']", TIMEOUT, table),
+    rowList: (problemContainer: Document) =>
+      problemContainer.querySelectorAll("div[role='row']"),
+    anchor: async (question: Element) =>
+      await waitForElement(
+        "div[role='cell'] a",
+        TIMEOUT,
+        question as unknown as Document
+      ),
+    target: async (question: Element) => question,
+  },
+  false: {
+    table: async (iframeDoc: Document) =>
+      (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode,
+    problemContainer: async (table: Document) => table,
+    rowList: (problemContainer: Document) =>
+      problemContainer.querySelectorAll("a"),
+    anchor: async (question: Element) => question,
+    target: async (question: Element) => {
+      const divWrapper = document.createElement("div");
+      divWrapper.className = question.className;
+      divWrapper.innerHTML = question.innerHTML;
+      divWrapper.style.cssText = (question as HTMLElement).style.cssText;
+      [...question.attributes].forEach((attr) => {
+        if (attr.name.startsWith("data-")) {
+          divWrapper.setAttribute(attr.name, attr.value);
+        }
+      });
+      if (question.parentNode) {
+        question.parentNode.replaceChild(divWrapper, question);
+      }
+      return divWrapper.childNodes[0] as HTMLElement;
+    },
+  },
+};
