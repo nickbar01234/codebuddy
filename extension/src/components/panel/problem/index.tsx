@@ -48,11 +48,7 @@ export const QuestionSelectorPanel = React.memo(
               iframeDoc
             )
           : (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode;
-        if (!table) {
-          console.error("Unable to locate table");
-          return;
-        }
-        hideToRoot(table.parentElement?.parentElement as Element);
+        hideToRoot(table!.parentElement?.parentElement as Element);
         const problemContainer = devMode
           ? await waitForElement(
               "div[role='rowgroup']",

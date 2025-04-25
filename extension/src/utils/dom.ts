@@ -34,7 +34,7 @@ export const waitForElement = (
 /**
  * Hide all dom elements that does not contain {@param element} in its subtree up to root
  */
-export const hideToRoot = (element: Element | undefined) => {
+export const hideToRoot = (element: Element | undefined | null) => {
   let node = element;
   while (node != null) {
     (node as HTMLElement).style.display = "block";
@@ -44,7 +44,7 @@ export const hideToRoot = (element: Element | undefined) => {
         (sibling as HTMLElement).style.display = "none";
       }
     });
-    node = parent ?? undefined;
+    node = parent;
   }
 };
 
