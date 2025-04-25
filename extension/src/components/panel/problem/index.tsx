@@ -55,7 +55,7 @@ export const QuestionSelectorPanel = React.memo(
               question
             )) as HTMLElement;
             try {
-              target.style.marginBottom = "10px";
+              target.style.marginBottom = "3px";
 
               const anchor = (
                 devMode
