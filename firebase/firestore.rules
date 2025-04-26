@@ -25,6 +25,11 @@ service cloud.firestore {
       match /sessions/{document=**} {
          allow read, write: if isPermittedToModify()
       }
+
+      match /users/{username} {
+        allow read: if isPermittedToModify()
+        allow write: if isPermittedToModify() && request.auth.token.email == username
+      }
     }
   }
 }
