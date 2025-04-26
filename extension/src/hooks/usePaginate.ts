@@ -100,21 +100,19 @@ const usePaginate = <T>({
     setCollectionSize(0);
     setError(undefined);
 
+    fetchDocs();
+
     const interval = setInterval(() => {
       getCountFromServer(baseQuery)
         .then((res) => setCollectionSize(res.data().count))
         .catch(setError);
     }, REFRESH_INTERVAL_MS);
 
-    return () => clearInterval(interval);
-  }, [baseQuery]);
-
-  useEffect(() => {
-    fetchDocs();
     return () => {
+      clearInterval(interval);
       fetchDocs.cancel?.();
     };
-  }, [fetchDocs]);
+  }, [fetchDocs, baseQuery]);
 
   const getNext = useCallback(() => {
     if (docs.length === collectionSize) return;
