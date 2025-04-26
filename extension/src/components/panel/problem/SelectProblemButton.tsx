@@ -7,6 +7,8 @@ interface SelectButtonQuestionProps
   containerClassName?: string;
 }
 
+const dev = import.meta.env.MODE === "development";
+
 export const SelectQuestionButton = ({
   className,
   containerClassName,
@@ -16,13 +18,14 @@ export const SelectQuestionButton = ({
     // todo(nickbar01234) - Adding manual margin left to align the other columns. We should find a better method
     <div
       className={cn(
-        "z-[100] relative ml-7 mr-2 flex items-center py-[11px]",
+        "z-[100] relative flex items-center",
+        { "ml-7 mr-2 py-[11px]": dev },
         containerClassName
       )}
       role="cell"
     >
       <Button
-        className={cn("rounded-md p-2 text-white", className)}
+        className={cn("rounded-md p-2 text-white", { "h-8": !dev }, className)}
         style={{ backgroundColor: "#DD5471" }}
         {...props}
       >

@@ -63,11 +63,9 @@ const leetcodeFrameHandler: Record<typeof mode, IframeHandler> = {
       divWrapper.className = question.className;
       divWrapper.innerHTML = question.innerHTML;
       divWrapper.style.cssText = (question as HTMLElement).style.cssText;
-      [...question.attributes].forEach((attr) => {
-        if (attr.name.startsWith("data-")) {
-          divWrapper.setAttribute(attr.name, attr.value);
-        }
-      });
+      [...question.attributes].forEach((attr) =>
+        divWrapper.setAttribute(attr.name, attr.value)
+      );
       if (question.parentNode) {
         question.parentNode.replaceChild(divWrapper, question);
       }
@@ -106,32 +104,33 @@ export const QuestionSelectorPanel = React.memo(
         const addButton = async () => {
           const rowList = handler.rowList(rowContainer) ?? [];
           for (const question of rowList) {
-            const target = handler.anchorContainer(question) as HTMLElement;
+            const anchorContainer = handler.anchorContainer(
+              question
+            ) as HTMLElement;
+            // anchorContainer.classList.add("h-12");
             try {
-              target.style.marginBottom = "3px";
               const anchor = (await handler.anchor(
                 question
               )) as HTMLAnchorElement;
               const link = anchor.href;
-              console.log("Link", link);
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds.includes(questionId)) {
                 try {
-                  rowContainer.removeChild(target);
+                  rowContainer.removeChild(anchorContainer);
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
                 }
               }
               const buttonId = generateId(`question-selector`);
-              const oldBtn = target.querySelector(
+              const oldBtn = anchorContainer.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
               handler.handleOldButton(oldBtn);
               if (!oldBtn) {
                 const injected = document.createElement("span");
                 injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
-                target.appendChild(injected);
+                anchorContainer.appendChild(injected);
 
                 createRoot(injected).render(
                   <SelectQuestionButton
@@ -149,7 +148,7 @@ export const QuestionSelectorPanel = React.memo(
             } catch (e) {
               console.error("Unable to locate question link", e);
               // If no link exist, there's no point in displaying the question
-              rowContainer.removeChild(target);
+              rowContainer.removeChild(anchorContainer);
             }
           }
         };
