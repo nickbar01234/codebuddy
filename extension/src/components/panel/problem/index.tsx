@@ -78,7 +78,6 @@ const leetcodeFrameHandler: Record<typeof mode, IframeHandler> = {
 };
 
 const handler = leetcodeFrameHandler[mode];
-const QUESTION_BUTTON_ID_ATTRIBUTE = "data-question-button-id";
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
@@ -102,6 +101,7 @@ export const QuestionSelectorPanel = React.memo(
         const table = await handler.table(iframeDoc);
         hideToRoot(table.parentElement?.parentElement);
         const rowContainer = await handler.rowContainer(table);
+        rowContainer.classList.add("space-y-1", "mt-4");
 
         const addButton = async () => {
           const rowList = handler.rowList(rowContainer) ?? [];
