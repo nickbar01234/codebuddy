@@ -71,9 +71,10 @@ export const RoomInfoTab = () => {
 
   const unfinishedPeers = React.useMemo(
     () =>
-      (sessionDoc?.usernames?.length ?? 0) -
-      (sessionDoc?.finishedUsers?.length ?? 0),
-    [sessionDoc]
+      roomDoc.usernames.filter(
+        (username) => !sessionDoc.finishedUsers.includes(username)
+      ).length,
+    [roomDoc, sessionDoc]
   );
   //we need this to prevent other user from choosing the question if there is already someone choose it
   React.useEffect(() => {
