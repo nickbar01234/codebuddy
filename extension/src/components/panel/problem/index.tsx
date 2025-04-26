@@ -78,6 +78,7 @@ const leetcodeFrameHandler: Record<typeof mode, IframeHandler> = {
 };
 
 const handler = leetcodeFrameHandler[mode];
+const QUESTION_BUTTON_ID_ATTRIBUTE = "data-question-button-id";
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
@@ -112,6 +113,7 @@ export const QuestionSelectorPanel = React.memo(
                 question
               )) as HTMLAnchorElement;
               const link = anchor.href;
+              console.log("Link", link);
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds.includes(questionId)) {
                 try {
