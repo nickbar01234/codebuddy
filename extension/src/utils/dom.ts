@@ -50,7 +50,7 @@ export const hideToRoot = (element: Element | undefined | null) => {
 
 export const disablePointerEvents = (context: Document = document) => {
   const style = context.createElement("style");
-  style.textContent = "a { pointer-events: none !important; }";
+  style.textContent = "a { pointer-events: none; }";
   context.head.appendChild(style);
 };
 

@@ -16,7 +16,7 @@ export const SelectQuestionButton = ({
     // todo(nickbar01234) - Adding manual margin left to align the other columns. We should find a better method
     <div
       className={cn(
-        "z-[100] !pointer-events-auto relative ml-7 mr-2 flex items-center py-[11px]",
+        "z-[100] relative ml-7 mr-2 flex items-center py-[11px]",
         containerClassName
       )}
       role="cell"

@@ -10,6 +10,7 @@ import {
   hideToRoot,
   waitForElement,
 } from "@cb/utils";
+import { identity } from "lodash";
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { SelectQuestionButton } from "./SelectProblemButton";
@@ -38,38 +39,31 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const devMode = import.meta.env.MODE === "development";
-      const mode = devMode ? "true" : "false";
-
+      const mode = devMode ? "legacy" : "current";
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const table = await factory[mode].table(iframeDoc);
-        hideToRoot(table!.parentElement?.parentElement as Element);
-        const problemContainer = await factory[mode].problemContainer(
+        const table = await leetcodeFrameHandler[mode].table(iframeDoc);
+        hideToRoot(table?.parentElement?.parentElement);
+        const rowContainer = await leetcodeFrameHandler[mode].rowContainer(
           table as Document
         );
 
         const addButton = async () => {
           const rowList =
-            factory[mode].rowList(problemContainer as Document) ?? [];
+            leetcodeFrameHandler[mode].rowList(rowContainer as Element) ?? [];
           for (const question of rowList) {
-            const target = (await factory[mode].target(
+            const target = (await leetcodeFrameHandler[mode].target(
               question
             )) as HTMLElement;
             try {
               target.style.marginBottom = "3px";
-              const anchor = (
-                devMode
-                  ? await waitForElement(
-                      "div[role='cell'] a",
-                      TIMEOUT,
-                      question as unknown as Document
-                    )
-                  : question
-              ) as HTMLAnchorElement;
+              const anchor = (await leetcodeFrameHandler[mode].anchor(
+                question
+              )) as HTMLAnchorElement;
               const link = anchor.href;
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds?.includes(questionId)) {
                 try {
-                  problemContainer!.removeChild(target);
+                  rowContainer!.removeChild(target);
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
@@ -102,7 +96,7 @@ export const QuestionSelectorPanel = React.memo(
             } catch (e) {
               console.error("Unable to locate question link", e);
               // If no link exist, there's no point in displaying the question
-              problemContainer!.removeChild(target);
+              rowContainer!.removeChild(target);
             }
           }
         };
@@ -123,7 +117,7 @@ export const QuestionSelectorPanel = React.memo(
         }
         const observer = new MutationObserver(addButton);
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
-        observer.observe(problemContainer!, { childList: true });
+        observer.observe(rowContainer!, { childList: true });
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
@@ -162,34 +156,29 @@ export const QuestionSelectorPanel = React.memo(
     );
   }
 );
-const factory = {
-  true: {
-    table: async (iframeDoc: Document) =>
-      await waitForElement(
-        "div[role='table']:nth-child(1)",
-        TIMEOUT,
-        iframeDoc
-      ),
-    problemContainer: async (table: Document) =>
-      await waitForElement("div[role='rowgroup']", TIMEOUT, table),
-    rowList: (problemContainer: Document) =>
-      problemContainer.querySelectorAll("div[role='row']"),
-    anchor: async (question: Element) =>
-      await waitForElement(
+const leetcodeFrameHandler = {
+  legacy: {
+    table: (iframeDoc: Document) =>
+      waitForElement("div[role='table']:nth-child(1)", TIMEOUT, iframeDoc),
+    rowContainer: (table: Document) =>
+      waitForElement("div[role='rowgroup']", TIMEOUT, table),
+    rowList: (rowContainer: Element) =>
+      rowContainer.querySelectorAll("div[role='row']"),
+    anchor: (question: Element) =>
+      waitForElement(
         "div[role='cell'] a",
         TIMEOUT,
         question as unknown as Document
       ),
-    target: async (question: Element) => question,
+    target: identity<Element>,
   },
-  false: {
+  current: {
     table: async (iframeDoc: Document) =>
       (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode,
-    problemContainer: async (table: Document) => table,
-    rowList: (problemContainer: Document) =>
-      problemContainer.querySelectorAll("a"),
-    anchor: async (question: Element) => question,
-    target: async (question: Element) => {
+    rowContainer: identity<Document>,
+    rowList: (rowContainer: Element) => rowContainer.querySelectorAll("a"),
+    anchor: identity<Element>,
+    target: (question: Element) => {
       const divWrapper = document.createElement("div");
       divWrapper.className = question.className;
       divWrapper.innerHTML = question.innerHTML;
