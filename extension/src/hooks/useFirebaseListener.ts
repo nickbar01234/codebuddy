@@ -20,7 +20,7 @@ export const useFirebaseListener = <T>({
   init,
 }: UseFirebaseListenerProps<T>) => {
   const [data, setData] = React.useState<T>(init);
-  const { register } = useResource<Unsubscribe>({
+  const { register, evict } = useResource<Unsubscribe>({
     name: `${reference?.id ?? ""}DocumentReference`,
   });
 
@@ -35,8 +35,10 @@ export const useFirebaseListener = <T>({
       });
       register(reference.id, unsubscribe, (unsubscribe) => unsubscribe());
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reference, callback]);
+    return () => {
+      if (reference?.id != undefined) evict(reference.id);
+    };
+  }, [reference, callback, register, evict]);
 
   return {
     data,
