@@ -1,3 +1,4 @@
+import { TableCell, TableRow } from "@cb/lib/components/ui/table";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
 import React from "react";
@@ -24,32 +25,35 @@ const PublicRoomRow: React.FC<Props> = ({
   onSelect,
 }) => {
   return (
-    <tr
+    <TableRow
       onClick={onSelect}
       className={cn(
-        "cursor-pointer transition-colors",
+        // "cursor-pointer transition-colors",
+        "cursor-pointer",
         selected
-          ? "bg-gray-100 border-l-4 border-[#D92D20]"
-          : "hover:bg-gray-50"
+          ? "bg-black text-white hover:bg-black dark:bg-white dark:hover:bg-white"
+          : "hover:bg-gray-200 odd:bg-white even:bg-gray-100 dark:odd:bg-gray-900/50 dark:even:bg-gray-950"
       )}
     >
-      <td className="px-4 py-2">{name}</td>
-      <td className="px-4 py-2 truncate max-w-[140px]">{currentProblem}</td>
-      <td className="px-4 py-2">
+      <TableCell className="p-2 truncate">{name}</TableCell>
+      <TableCell className="p-2 truncate max-w-[140px]">
+        {currentProblem}
+      </TableCell>
+      <TableCell className="p-2 truncate">
         <span
           className={cn(
-            "rounded px-2 py-0.5 text-xs font-medium",
-            difficulty === "Easy" && "text-green-600 bg-green-50",
-            difficulty === "Medium" && "text-yellow-700 bg-yellow-50",
-            difficulty === "Hard" && "text-red-600 bg-red-50"
+            "text-xs font-medium",
+            difficulty === "Easy" && "text-green-600",
+            difficulty === "Medium" && "text-yellow-600",
+            difficulty === "Hard" && "text-red-600"
           )}
         >
           {difficulty}
         </span>
-      </td>
-      <td className="px-4 py-2">{`${users}/4`}</td>
-      <td className="px-4 py-2">{formatTime(timeElapsed)}</td>
-    </tr>
+      </TableCell>
+      <TableCell className="p-2  truncate">{`${users}/4`}</TableCell>
+      <TableCell className="p-2  truncate">{formatTime(timeElapsed)}</TableCell>
+    </TableRow>
   );
 };
 
