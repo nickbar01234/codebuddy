@@ -3,7 +3,6 @@ import { AppState } from "@cb/context/AppStateProvider";
 import { useAppState, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
-import { Label } from "@cb/lib/components/ui/label";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import React from "react";
@@ -35,16 +34,11 @@ export const JoinPrivateRoom = () => {
 
   return (
     <div className="gap-4 flex flex-col items-center">
-      <Label
-        htmlFor="roomId"
-        className="text-center font-medium text-base text-[#1E1E1E] dark:text-[#FFFFFF]"
-      >
-        Join a private room
-      </Label>
-      <div className="flex w-[70%] overflow-hidden rounded-md border border-[#787880] dark:border-[#4A4A4E]">
+      <h2 className="text-xl font-medium text-center">Join a private room</h2>
+      <div className="flex w-[70%] overflow-hidden rounded-md dark:border-[#4A4A4E]">
         <Input
           id="roomId"
-          className="rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-[#2A2A2A] px-3 py-2 w-full placeholder:text-gray-400"
+          className="rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-[#2A2A2A] px-3 py-2 w-full placeholder:text-gray-400"
           placeholder="Enter room ID"
           onChange={onChangeRoomIdInput}
           onKeyDown={(e) => {

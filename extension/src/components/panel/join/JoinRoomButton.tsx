@@ -23,7 +23,7 @@ export const JoinRoomButton = () => {
         // customTrigger: true, // Use a custom trigger
         node: (
           // <button
-          //   onClick={() => setAppState(AppState.PUBLIC_ROOMS)} // Navigate to public rooms
+          //   onClick={() => setAppState(AppState.JOIN_ROOMS)} // Navigate to public rooms
           //   className={cn(baseButtonClassName, "w-full")}
           //   aria-label="Join Room"
           // >
@@ -33,7 +33,7 @@ export const JoinRoomButton = () => {
           </>
         ),
         props: {
-          onClick: () => setAppState(AppState.PUBLIC_ROOMS),
+          onClick: () => setAppState(AppState.JOIN_ROOMS),
         },
       }}
       content={{
