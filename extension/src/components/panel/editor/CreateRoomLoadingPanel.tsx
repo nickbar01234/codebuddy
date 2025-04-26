@@ -1,8 +1,8 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRTC } from "@cb/hooks/index";
-import { Button } from "@cb/lib/components/ui/button";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
@@ -12,14 +12,11 @@ const CreateRoomLoadingPanel = () => {
     <div className="flex h-full w-full flex-col relative items-center p-4">
       <div className="left-7 top-5 absolute self-start z-30">
         <LeaveRoomDialog
-          trigger={
-            <Button
-              variant="outline"
-              className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border border-[#78788033] dark:border-[#4A4A4E] hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] px-4 py-2"
-            >
+          node={
+            <div className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border px-4 py-2">
               <LeaveIcon />
               <span className="text-base font-medium">Leave Room</span>
-            </Button>
+            </div>
           }
         />
       </div>
@@ -32,10 +29,15 @@ const CreateRoomLoadingPanel = () => {
           Others can now join your room using the Room ID below
         </span>
         <div className="mt-5 flex w-full max-w-sm flex-col items-center">
-          <div className="flex w-full items-center overflow-hidden rounded-lg border border-[#78788033] dark:border-[#49494E] pl-4 gap-2 justify-between">
-            <span className="w-full truncate py-3 font-mono text-lg text-[#757575] dark:text-[#F1F1F1B2]">
-              {roomId}
-            </span>
+          <div className="flex w-full items-center overflow-hidden rounded-lg border border-[#78788033] dark:border-[#49494E] justify-between">
+            <SkeletonWrapper
+              loading={roomId == null}
+              outerClassName="min-h-[52px] py-3 px-4"
+            >
+              <span className="w-full truncate font-mono text-lg text-[#757575] dark:text-[#F1F1F1B2]">
+                {roomId}
+              </span>
+            </SkeletonWrapper>
             <div className="flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background] hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]">
               <button
                 type="button"

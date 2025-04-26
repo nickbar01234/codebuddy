@@ -121,6 +121,7 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     };
   },
 };
+
 export const sessionConverter: FirestoreDataConverter<Session, Session> = {
   toFirestore: (data: Session) => {
     return data;
