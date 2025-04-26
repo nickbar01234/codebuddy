@@ -51,6 +51,10 @@ export interface Session {
   createdAt: Timestamp;
 }
 
+export interface RoomUser {
+  lastHeartBeat: Timestamp;
+}
+
 export const peerConnectionConverter: FirestoreDataConverter<
   PeerConnection,
   PeerConnection
@@ -97,6 +101,22 @@ export const sessionConverter: FirestoreDataConverter<Session, Session> = {
       usernames: data.usernames ?? [],
       nextQuestion: data.nextQuestion ?? "",
       createdAt: data.createdAt ?? Timestamp.now(),
+    };
+  },
+};
+
+export const roomUserConverter: FirestoreDataConverter<RoomUser, RoomUser> = {
+  toFirestore: (data: RoomUser) => {
+    return data;
+  },
+  fromFirestore: (
+    snapshot: QueryDocumentSnapshot,
+    options: SnapshotOptions
+  ): RoomUser => {
+    const data = snapshot.data(options) ?? {};
+    return {
+      ...data,
+      lastHeartBeat: data.lastHeartBeat,
     };
   },
 };

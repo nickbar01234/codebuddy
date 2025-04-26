@@ -3,6 +3,8 @@ import {
   peerConnectionConverter,
   Room,
   roomConverter,
+  RoomUser,
+  roomUserConverter,
   Session,
   sessionConverter,
 } from "@cb/db/converter";
@@ -17,6 +19,7 @@ import {
   orderBy,
   query,
   setDoc,
+  Timestamp,
   WithFieldValue,
 } from "firebase/firestore";
 
@@ -86,3 +89,19 @@ export const setSessionPeerConnection = (
 export const deleteSessionPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>
 ) => deleteDoc(ref);
+
+const getRoomUserRefs = (roomId: string) =>
+  collection(getRoomRef(roomId), "users").withConverter(roomUserConverter);
+
+const getRoomUserRef = (roomId: string, username: string) =>
+  doc(getRoomUserRefs(roomId), username).withConverter(roomUserConverter);
+
+const setRoomUser = (
+  ref: DocumentReference<RoomUser, RoomUser>,
+  data: Partial<WithFieldValue<RoomUser>>
+) => setDoc(ref, data, { merge: true });
+
+export const updateUserHeartbeat = (roomId: string, username: string) =>
+  setRoomUser(getRoomUserRef(roomId, username), {
+    lastHeartBeat: Timestamp.now(),
+  });
