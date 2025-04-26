@@ -64,7 +64,7 @@ export const RoomInfoTab = () => {
       createdAt: Timestamp.fromDate(new Date()),
     },
   });
-  const { register, get, cleanup } = useResource<NodeJS.Timeout>({
+  const { register, get, evict } = useResource<NodeJS.Timeout>({
     name: "firebase-listener",
   });
   const [nextSessionId, setNextSessionId] = React.useState<string>();
@@ -104,16 +104,8 @@ export const RoomInfoTab = () => {
       }, 1000);
       register(POLL_NEXT_QUESTION, interval, clearInterval);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId, nextSessionId]);
-
-  React.useEffect(() => {
-    if (roomId == null) {
-      setNextSessionId(undefined);
-      cleanup();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [roomId]);
+    return () => evict(POLL_NEXT_QUESTION);
+  }, [roomId, nextSessionId, evict, register, get]);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
