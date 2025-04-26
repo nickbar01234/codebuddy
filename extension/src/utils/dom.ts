@@ -1,7 +1,7 @@
 export const waitForElement = (
   selector: string,
   timeout: number = 3000,
-  context: Document | ShadowRoot = document
+  context: Document | ShadowRoot | Element = document
 ): Promise<Element> => {
   return new Promise((resolve, reject) => {
     const node = context.querySelector(selector);
