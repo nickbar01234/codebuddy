@@ -26,6 +26,9 @@ interface QuestionSelectorPanelProps {
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
+const devMode = import.meta.env.MODE === "development";
+const mode = devMode ? "legacy" : "current";
+
 export const QuestionSelectorPanel = React.memo(
   ({
     handleQuestionSelect,
@@ -38,8 +41,6 @@ export const QuestionSelectorPanel = React.memo(
     });
 
     useEffect(() => {
-      const devMode = import.meta.env.MODE === "development";
-      const mode = devMode ? "legacy" : "current";
       const handleIframeStyle = async (iframeDoc: Document) => {
         const table = await leetcodeFrameHandler[mode].table(iframeDoc);
         hideToRoot(table?.parentElement?.parentElement);
@@ -73,9 +74,8 @@ export const QuestionSelectorPanel = React.memo(
               const oldBtn = target.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
-              if (oldBtn && devMode) {
-                oldBtn.remove();
-              } else {
+              leetcodeFrameHandler[mode].handleOldButton(oldBtn);
+              if (!oldBtn) {
                 const injected = document.createElement("span");
                 injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
                 target.appendChild(injected);
@@ -171,6 +171,9 @@ const leetcodeFrameHandler = {
         question as unknown as Document
       ),
     target: identity<Element>,
+    handleOldButton: (oldBtn: Element | null) => {
+      if (devMode && oldBtn) oldBtn.remove();
+    },
   },
   current: {
     table: async (iframeDoc: Document) =>
@@ -193,5 +196,6 @@ const leetcodeFrameHandler = {
       }
       return divWrapper.childNodes[0] as HTMLElement;
     },
+    handleOldButton: () => {},
   },
 };
