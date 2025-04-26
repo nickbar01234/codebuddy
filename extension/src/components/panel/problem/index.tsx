@@ -8,9 +8,10 @@ import {
   generateId,
   getQuestionIdFromUrl,
   hideToRoot,
+  identity,
+  promisedIdentity,
   waitForElement,
 } from "@cb/utils";
-import { identity } from "lodash";
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { SelectQuestionButton } from "./SelectProblemButton";
@@ -20,14 +21,69 @@ const TIMEOUT = 10_000;
 
 const INJECTED_ATTRIBUTE = "data-injected";
 
+const devMode = import.meta.env.MODE === "development";
+const mode = devMode ? "legacy" : "current";
+
+interface IframeHandler {
+  table: (document: Document) => Promise<Element>;
+  rowContainer: (table: Element) => Promise<Element>;
+  rowList: (rowContainer: Element) => NodeListOf<Element>;
+  anchor: (row: Element) => Promise<Element>;
+  anchorContainer: (row: Element) => Element;
+  handleOldButton: (oldButton: Element | null) => void;
+}
+
+const leetcodeFrameHandler: Record<typeof mode, IframeHandler> = {
+  legacy: {
+    table: (iframeDoc) =>
+      waitForElement("div[role='table']:nth-child(1)", TIMEOUT, iframeDoc),
+    rowContainer: (table) =>
+      waitForElement("div[role='rowgroup']", TIMEOUT, table),
+    rowList: (rowContainer) => rowContainer.querySelectorAll("div[role='row']"),
+    anchor: (question) =>
+      waitForElement(
+        "div[role='cell'] a",
+        TIMEOUT,
+        question as unknown as Document
+      ),
+    anchorContainer: identity<Element>,
+    handleOldButton: (oldBtn) => {
+      if (oldBtn != null) oldBtn.remove();
+    },
+  },
+  current: {
+    table: async (iframeDoc) =>
+      (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc))
+        .parentNode as Element,
+    rowContainer: promisedIdentity,
+    rowList: (rowContainer) => rowContainer.querySelectorAll("a"),
+    anchor: promisedIdentity,
+    anchorContainer: (question) => {
+      const divWrapper = document.createElement("div");
+      divWrapper.className = question.className;
+      divWrapper.innerHTML = question.innerHTML;
+      divWrapper.style.cssText = (question as HTMLElement).style.cssText;
+      [...question.attributes].forEach((attr) => {
+        if (attr.name.startsWith("data-")) {
+          divWrapper.setAttribute(attr.name, attr.value);
+        }
+      });
+      if (question.parentNode) {
+        question.parentNode.replaceChild(divWrapper, question);
+      }
+      return divWrapper.childNodes[0] as HTMLElement;
+    },
+    handleOldButton: () => {},
+  },
+};
+
+const handler = leetcodeFrameHandler[mode];
+
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
   filterQuestionIds: string[];
   container?: Omit<SkelentonWrapperProps, "loading">;
 }
-
-const devMode = import.meta.env.MODE === "development";
-const mode = devMode ? "legacy" : "current";
 
 export const QuestionSelectorPanel = React.memo(
   ({
@@ -42,29 +98,24 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const table = await leetcodeFrameHandler[mode].table(iframeDoc);
-        hideToRoot(table?.parentElement?.parentElement);
-        const rowContainer = await leetcodeFrameHandler[mode].rowContainer(
-          table as Document
-        );
+        const table = await handler.table(iframeDoc);
+        hideToRoot(table.parentElement?.parentElement);
+        const rowContainer = await handler.rowContainer(table);
 
         const addButton = async () => {
-          const rowList =
-            leetcodeFrameHandler[mode].rowList(rowContainer as Element) ?? [];
+          const rowList = handler.rowList(rowContainer) ?? [];
           for (const question of rowList) {
-            const target = (await leetcodeFrameHandler[mode].target(
-              question
-            )) as HTMLElement;
+            const target = handler.anchorContainer(question) as HTMLElement;
             try {
               target.style.marginBottom = "3px";
-              const anchor = (await leetcodeFrameHandler[mode].anchor(
+              const anchor = (await handler.anchor(
                 question
               )) as HTMLAnchorElement;
               const link = anchor.href;
               const questionId = getQuestionIdFromUrl(link);
-              if (filterQuestionIds?.includes(questionId)) {
+              if (filterQuestionIds.includes(questionId)) {
                 try {
-                  rowContainer!.removeChild(target);
+                  rowContainer.removeChild(target);
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
@@ -74,7 +125,7 @@ export const QuestionSelectorPanel = React.memo(
               const oldBtn = target.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
-              leetcodeFrameHandler[mode].handleOldButton(oldBtn);
+              handler.handleOldButton(oldBtn);
               if (!oldBtn) {
                 const injected = document.createElement("span");
                 injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
@@ -96,10 +147,13 @@ export const QuestionSelectorPanel = React.memo(
             } catch (e) {
               console.error("Unable to locate question link", e);
               // If no link exist, there's no point in displaying the question
-              rowContainer!.removeChild(target);
+              rowContainer.removeChild(target);
             }
           }
         };
+        const observer = new MutationObserver(addButton);
+        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
+        observer.observe(rowContainer, { childList: true });
         disablePointerEvents(iframeDoc);
         if (devMode) {
           waitForElement(
@@ -115,9 +169,6 @@ export const QuestionSelectorPanel = React.memo(
         } else {
           addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually. The observer still trigger on scrolling tho
         }
-        const observer = new MutationObserver(addButton);
-        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
-        observer.observe(rowContainer!, { childList: true });
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
@@ -156,46 +207,3 @@ export const QuestionSelectorPanel = React.memo(
     );
   }
 );
-const leetcodeFrameHandler = {
-  legacy: {
-    table: (iframeDoc: Document) =>
-      waitForElement("div[role='table']:nth-child(1)", TIMEOUT, iframeDoc),
-    rowContainer: (table: Document) =>
-      waitForElement("div[role='rowgroup']", TIMEOUT, table),
-    rowList: (rowContainer: Element) =>
-      rowContainer.querySelectorAll("div[role='row']"),
-    anchor: (question: Element) =>
-      waitForElement(
-        "div[role='cell'] a",
-        TIMEOUT,
-        question as unknown as Document
-      ),
-    target: identity<Element>,
-    handleOldButton: (oldBtn: Element | null) => {
-      if (devMode && oldBtn) oldBtn.remove();
-    },
-  },
-  current: {
-    table: async (iframeDoc: Document) =>
-      (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode,
-    rowContainer: identity<Document>,
-    rowList: (rowContainer: Element) => rowContainer.querySelectorAll("a"),
-    anchor: identity<Element>,
-    target: (question: Element) => {
-      const divWrapper = document.createElement("div");
-      divWrapper.className = question.className;
-      divWrapper.innerHTML = question.innerHTML;
-      divWrapper.style.cssText = (question as HTMLElement).style.cssText;
-      [...question.attributes].forEach((attr) => {
-        if (attr.name.startsWith("data-")) {
-          divWrapper.setAttribute(attr.name, attr.value);
-        }
-      });
-      if (question.parentNode) {
-        question.parentNode.replaceChild(divWrapper, question);
-      }
-      return divWrapper.childNodes[0] as HTMLElement;
-    },
-    handleOldButton: () => {},
-  },
-};
