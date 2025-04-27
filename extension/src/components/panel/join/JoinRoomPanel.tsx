@@ -14,15 +14,15 @@ export interface Room {
   currentProblem: string;
   difficulty: "Easy" | "Medium" | "Hard";
   users: number;
-  timeElapsed: number; // in seconds
+  timeElapsed: number;
 }
 
 const JoinRoomPanel: React.FC = () => {
   const { joinRoom } = useRTC();
   const { state: appState, setState: setAppState } =
     useContext(appStateContext);
-  const [roomId, setRoomId] = useState<string>(""); // Room ID input
-  const [publicRooms, setPublicRooms] = useState<Room[]>([]); // List of public rooms
+  const [roomId, setRoomId] = useState<string>("");
+  const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,17 +65,11 @@ const JoinRoomPanel: React.FC = () => {
                 "Time Elapsed",
               ]}
             />
-            <div className="flex grow-0 justify-center p-2">
+            <div className="flex justify-center p-2">
               <Button
                 variant={selectedRoomId ? "destructive" : "secondary"}
                 disabled={!selectedRoomId}
                 className={"w-full"}
-                // className={cn(
-                //   "w-full",
-                //   selectedRoomId
-                //     ? "bg-[#D92D20] text-white hover:bg-[#b7221a]"
-                //     : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                // )}
                 onClick={() => {
                   if (selectedRoomId) joinRoom(selectedRoomId);
                 }}

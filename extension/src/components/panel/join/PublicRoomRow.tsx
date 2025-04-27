@@ -28,7 +28,6 @@ const PublicRoomRow: React.FC<Props> = ({
     <TableRow
       onClick={onSelect}
       className={cn(
-        // "cursor-pointer transition-colors",
         "cursor-pointer",
         selected
           ? "bg-black text-white hover:bg-black dark:bg-white dark:hover:bg-white"
