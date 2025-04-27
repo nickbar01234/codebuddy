@@ -63,13 +63,6 @@ const JoinRoomPanel: React.FC = () => {
               rooms={publicRooms}
               selectedRoomId={selectedRoomId}
               onSelectRoom={setSelectedRoomId}
-              headers={[
-                "Room Name",
-                "Current Problem",
-                "Difficulty",
-                "Users",
-                "Time Elapsed",
-              ]}
               loading={isLoading}
             />
             <div className="flex justify-center p-2">
