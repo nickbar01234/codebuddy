@@ -1,11 +1,9 @@
-import { updateUserHeartbeat } from "@cb/db";
+import { getRoomUserRefs, updateUserHeartbeat } from "@cb/db";
 import { RoomUser } from "@cb/db/converter";
 import { useAppState, useOnMount, useRTC } from "@cb/hooks";
+import { onSnapshot } from "firebase/firestore";
 import React from "react";
-
-export const HEARTBEAT_INTERVAL = 15000; // ms
-// const CHECK_ALIVE_INTERVAL = 15000; // ms
-// const TIMEOUT = 100; // seconds;
+import { HEARTBEAT_INTERVAL } from "./RTCProvider";
 
 interface HeartBeatProviderProps {
   children: React.ReactNode;
@@ -20,10 +18,11 @@ export const HeartBeatProvider = (props: HeartBeatProviderProps) => {
   const {
     user: { username },
   } = useAppState();
-  const roomUsers: Record<string, RoomUser> = {};
   const { roomId } = useRTC();
-
   const roomIdRef = React.useRef(roomId);
+  const [roomUsers, setRoomUsers] = React.useState<Record<string, RoomUser>>(
+    {}
+  );
 
   React.useEffect(() => {
     roomIdRef.current = roomId;
@@ -45,18 +44,27 @@ export const HeartBeatProvider = (props: HeartBeatProviderProps) => {
     };
   });
 
-  // React.useEffect(() => {
-  //   if (roomId != null) {
-  //     // const currentPeers = getConnection();
+  React.useEffect(() => {
+    if (!roomId) {
+      return;
+    }
 
-  //     const unsubscribe = onSnapshot(
-  //       getRoomUserRefs(roomId),
-  //       async (snapshot) => {
-  //         const data = snapshot.docs;
-  //       }
-  //     );
-  //   }
-  // });
+    const unsubscribe = onSnapshot(
+      getRoomUserRefs(roomId),
+      (snapshot) => {
+        const updatedRoomUsers: Record<string, RoomUser> = {};
+        snapshot.forEach((doc) => {
+          updatedRoomUsers[doc.id] = { ...doc.data() } as RoomUser;
+        });
+        setRoomUsers(updatedRoomUsers);
+      },
+      (err) => {
+        console.error("Error subscribing to room users:", err);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [roomId]);
 
   return (
     <HeartBeatContext.Provider value={{ roomUsers }}>
