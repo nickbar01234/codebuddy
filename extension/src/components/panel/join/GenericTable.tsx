@@ -26,7 +26,7 @@ const GenericTable = <T,>({
   return (
     <ScrollArea className="grow h-10 z-10">
       <Table className="min-w-full dark:bg-dark-layer-bg dark:text-gray-100">
-        <TableHeader className="sticky top-0 dark:bg-dark-layer-bg dark:text-gray-300 z-20">
+        <TableHeader className="sticky top-0 bg-white dark:bg-dark-layer-bg dark:text-gray-300 z-20">
           <TableRow>
             {headers.map((header, index) => (
               <TableHead key={index} className="align-bottom p-2 truncate">
