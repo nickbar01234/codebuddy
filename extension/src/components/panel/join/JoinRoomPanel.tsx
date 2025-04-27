@@ -23,9 +23,16 @@ const JoinRoomPanel: React.FC = () => {
     useContext(appStateContext);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setPublicRooms(sampleRooms);
+    // Simulate loading delay for 1 second
+    const timeout = setTimeout(() => {
+      setPublicRooms(sampleRooms);
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   if (appState === AppState.JOIN_ROOMS) {
@@ -63,6 +70,7 @@ const JoinRoomPanel: React.FC = () => {
                 "Users",
                 "Time Elapsed",
               ]}
+              loading={isLoading}
             />
             <div className="flex justify-center p-2">
               <Button

@@ -23,6 +23,7 @@ interface Props {
   selectedRoomId: string | null;
   onSelectRoom: (id: string) => void;
   headers: string[];
+  loading: boolean;
 }
 
 const PublicRoomTable: React.FC<Props> = ({
@@ -30,6 +31,7 @@ const PublicRoomTable: React.FC<Props> = ({
   selectedRoomId,
   onSelectRoom,
   headers,
+  loading,
 }) => {
   return (
     <ScrollArea className="grow h-10 z-10">
@@ -44,14 +46,34 @@ const PublicRoomTable: React.FC<Props> = ({
           </TableRow>
         </TableHeader>
         <TableBody className="">
-          {rooms.map((room) => (
-            <PublicRoomRow
-              key={room.id}
-              {...room}
-              selected={selectedRoomId === room.id}
-              onSelect={() => onSelectRoom(room.id)}
-            />
-          ))}
+          {loading ? (
+            <TableRow>
+              <TableHead
+                colSpan={headers.length}
+                className="text-center p-4 text-gray-500"
+              >
+                Loading rooms...
+              </TableHead>
+            </TableRow>
+          ) : rooms.length > 0 ? (
+            rooms.map((room) => (
+              <PublicRoomRow
+                key={room.id}
+                {...room}
+                selected={selectedRoomId === room.id}
+                onSelect={() => onSelectRoom(room.id)}
+              />
+            ))
+          ) : (
+            <TableRow>
+              <TableHead
+                colSpan={headers.length}
+                className="text-center p-4 text-gray-500 bg-white dark:bg-dark-layer-bg hover:bg-white dark:hover:bg-dark-layer-bg"
+              >
+                No rooms available
+              </TableHead>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
     </ScrollArea>
