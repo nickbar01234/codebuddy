@@ -21,7 +21,6 @@ const JoinRoomPanel: React.FC = () => {
   const { joinRoom } = useRTC();
   const { state: appState, setState: setAppState } =
     useContext(appStateContext);
-  const [roomId, setRoomId] = useState<string>("");
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
@@ -31,15 +30,15 @@ const JoinRoomPanel: React.FC = () => {
 
   if (appState === AppState.JOIN_ROOMS) {
     return (
-      <div className="flex flex-col h-[90vh] w-full max-w-[600px] relative p-4 gap-6">
+      <div className="flex flex-col h-[90vh] w-full max-w-[600px] p-4 gap-6">
         <Button
           variant={"outline"}
           className={
-            "left-2 top-2 relative w-24 dark:text-white hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
+            "left-2 top-2 w-24 dark:text-white hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
           }
           onClick={() => setAppState(AppState.HOME)}
         >
-          <div className="relative flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3">
             <LeaveIcon />
             <span className="text-base font-medium">Back</span>
           </div>
