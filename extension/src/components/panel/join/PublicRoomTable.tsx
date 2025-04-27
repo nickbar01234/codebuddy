@@ -33,7 +33,7 @@ const PublicRoomTable: React.FC<Props> = ({
 }) => {
   return (
     // <div className="w-full max-h-[300px] overflow-y-auto">
-    <ScrollArea className="h-[40vh] max-h-[500px] z-10">
+    <ScrollArea className="grow h-20 max-h-screen z-10">
       <Table className="min-w-full">
         <TableHeader className="sticky top-0 bg-white z-20">
           <TableRow>
