@@ -2,7 +2,7 @@ import React from "react";
 import GenericTable from "./GenericTable";
 import PublicRoomRow from "./PublicRoomRow";
 
-interface Room {
+export interface Room {
   id: string;
   name: string;
   currentProblem: string;

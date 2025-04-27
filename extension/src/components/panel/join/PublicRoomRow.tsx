@@ -2,20 +2,14 @@ import { TableCell, TableRow } from "@cb/lib/components/ui/table";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
 import React from "react";
+import { Room } from "./PublicRoomTable.tsx";
 
-interface Props {
-  id: string;
-  name: string;
-  currentProblem: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  users: number;
-  timeElapsed: number;
+interface Props extends Room {
   selected: boolean;
   onSelect: () => void;
 }
 
 const PublicRoomRow: React.FC<Props> = ({
-  id,
   name,
   currentProblem,
   difficulty,

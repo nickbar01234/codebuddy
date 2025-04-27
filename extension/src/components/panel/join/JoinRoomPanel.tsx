@@ -5,17 +5,8 @@ import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import React, { useContext, useEffect, useState } from "react";
+import { Room } from "./PublicRoomTable.tsx";
 import { sampleRooms } from "./sampleRooms.ts";
-
-// Define the Room type
-export interface Room {
-  id: string;
-  name: string;
-  currentProblem: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  users: number;
-  timeElapsed: number;
-}
 
 const JoinRoomPanel: React.FC = () => {
   const { joinRoom } = useRTC();

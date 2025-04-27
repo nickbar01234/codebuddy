@@ -1,4 +1,4 @@
-import { Room } from "./JoinRoomPanel";
+import { Room } from "./PublicRoomTable.tsx";
 
 export const sampleRooms: Room[] = [
   {
