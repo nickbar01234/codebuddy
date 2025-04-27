@@ -1,6 +1,7 @@
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import SignInPanel from "@cb/components/panel/SignInPanel";
 import { AppStateProvider } from "@cb/context/AppStateProvider";
+import { HeartBeatProvider } from "@cb/context/HeartBeatProvider";
 import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
 import { RTCProvider } from "@cb/context/RTCProvider";
 import { useSession } from "@cb/hooks/index";
@@ -21,7 +22,9 @@ const RootNavigator = () => {
           <RTCProvider>
             <PeerSelectionProvider>
               <ContainerNavigator menu={<RoomControlMenu />}>
-                <AppNavigator />
+                <HeartBeatProvider>
+                  <AppNavigator />
+                </HeartBeatProvider>
               </ContainerNavigator>
             </PeerSelectionProvider>
           </RTCProvider>

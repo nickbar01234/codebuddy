@@ -90,7 +90,7 @@ export const deleteSessionPeerConnection = (
   ref: DocumentReference<PeerConnection, PeerConnection>
 ) => deleteDoc(ref);
 
-const getRoomUserRefs = (roomId: string) =>
+export const getRoomUserRefs = (roomId: string) =>
   collection(getRoomRef(roomId), "users").withConverter(roomUserConverter);
 
 const getRoomUserRef = (roomId: string, username: string) =>

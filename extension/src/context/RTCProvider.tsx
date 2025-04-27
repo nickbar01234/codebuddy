@@ -14,7 +14,6 @@ import {
   setRoom,
   setSession,
   setSessionPeerConnection,
-  updateUserHeartbeat,
 } from "@cb/db";
 import { useAppState, useOnMount } from "@cb/hooks";
 import useResource from "@cb/hooks/useResource";
@@ -814,28 +813,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }, CHECK_ALIVE_INTERVAL);
     return () => {
       clearInterval(checkAliveInterval);
-      clearInterval(sendInterval);
-    };
-  });
-
-  const roomIdRef = React.useRef(roomId);
-
-  React.useEffect(() => {
-    roomIdRef.current = roomId;
-  }, [roomId]);
-
-  useOnMount(() => {
-    const updateHeartBeat = () => {
-      if (roomIdRef.current) {
-        updateUserHeartbeat(roomIdRef.current, username)
-          .then(() => console.log("Heartbeat updated successfully"))
-          .catch((error) => console.error("Error updating heartbeat:", error));
-      }
-    };
-
-    const sendInterval = setInterval(updateHeartBeat, HEARTBEAT_INTERVAL);
-
-    return () => {
       clearInterval(sendInterval);
     };
   });
