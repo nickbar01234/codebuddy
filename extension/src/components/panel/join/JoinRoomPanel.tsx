@@ -37,7 +37,7 @@ const JoinRoomPanel: React.FC = () => {
 
   if (appState === AppState.JOIN_ROOMS) {
     return (
-      <div className="flex flex-col h-[90vh] w-full max-w-[600px] p-4 gap-6">
+      <div className="flex flex-col h-[90vh] w-full max-w-[600px] p-4 gap-6 dark:bg-dark-layer-bg">
         <Button
           variant={"outline"}
           className={
@@ -54,22 +54,24 @@ const JoinRoomPanel: React.FC = () => {
         <JoinPrivateRoom />
 
         <div className="flex flex-col grow gap-4 items-center">
-          <h2 className="text-xl font-medium text-center">
+          <h2 className="text-xl font-medium text-center dark:text-white">
             Browse public rooms
           </h2>
 
-          <div className="flex flex-col grow overflow-hidden rounded-xl border">
+          <div className="flex flex-col grow overflow-hidden rounded-xl border dark:bg-dark-layer-bg">
             <PublicRoomTable
               rooms={publicRooms}
               selectedRoomId={selectedRoomId}
               onSelectRoom={setSelectedRoomId}
               loading={isLoading}
             />
-            <div className="flex justify-center p-2">
+            <div className="flex justify-center p-2 dark:bg-dark-layer-bg">
               <Button
                 variant={selectedRoomId ? "destructive" : "secondary"}
                 disabled={!selectedRoomId}
-                className={"w-full"}
+                className={
+                  "w-full dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
+                }
                 onClick={() => {
                   if (selectedRoomId) joinRoom(selectedRoomId);
                 }}

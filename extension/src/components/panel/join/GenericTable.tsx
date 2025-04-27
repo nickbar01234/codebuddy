@@ -25,8 +25,8 @@ const GenericTable = <T,>({
 }: Props<T>) => {
   return (
     <ScrollArea className="grow h-10 z-10">
-      <Table className="min-w-full">
-        <TableHeader className="sticky top-0 bg-white z-20">
+      <Table className="min-w-full dark:bg-dark-layer-bg dark:text-gray-100">
+        <TableHeader className="sticky top-0 dark:bg-dark-layer-bg dark:text-gray-300 z-20">
           <TableRow>
             {headers.map((header, index) => (
               <TableHead key={index} className="align-bottom p-2 truncate">
@@ -40,7 +40,7 @@ const GenericTable = <T,>({
             <TableRow>
               <TableHead
                 colSpan={headers.length}
-                className="text-center p-4 text-gray-500"
+                className="text-center p-4 text-gray-500 dark:text-gray-400"
               >
                 Loading...
               </TableHead>
@@ -53,7 +53,7 @@ const GenericTable = <T,>({
             <TableRow>
               <TableHead
                 colSpan={headers.length}
-                className="text-center p-4 text-gray-500 bg-white dark:bg-dark-layer-bg hover:bg-white dark:hover:bg-dark-layer-bg"
+                className="text-center p-4 text-gray-500 dark:text-gray-400 dark:bg-dark-layer-bg hover:bg-white dark:hover:bg-dark-layer-bg"
               >
                 {emptyMessage}
               </TableHead>
