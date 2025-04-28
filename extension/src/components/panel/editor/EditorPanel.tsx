@@ -5,7 +5,7 @@ import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/Activit
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { AppState } from "@cb/context/AppStateProvider";
 import { getRoomRef } from "@cb/db";
-import { LogEvent } from "@cb/db/converter";
+import { RoomEvent } from "@cb/db/converter";
 import {
   useAppState,
   useFirebaseListener,
@@ -256,7 +256,7 @@ const EditorPanel = () => {
 
 export default EditorPanel;
 
-const logEntries: LogEvent[] = [
+const logEntries: RoomEvent[] = [
   {
     type: "submission",
     username: "Buddy",

@@ -29,7 +29,7 @@ export interface MessageEvent extends BaseEvent {
   message: string;
 }
 
-export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
+export type RoomEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface Room {
   usernames: string[];
@@ -52,44 +52,37 @@ export interface Session {
   createdAt: Timestamp;
 }
 
-export const logEventConverter: FirestoreDataConverter<LogEvent, LogEvent> = {
-  toFirestore: (data: LogEvent) => data,
-  fromFirestore: (
-    snapshot: QueryDocumentSnapshot,
-    options: SnapshotOptions
-  ): LogEvent => {
-    const data = snapshot.data(options) ?? {};
-    if (!data.type) {
-      throw new Error("Log event type is missing");
-    }
-    switch (data.type) {
-      case "submission":
-        return {
-          type: "submission",
-          timestamp: data.timestamp ?? 0,
-          username: data.username ?? "",
-          output: data.output ?? "",
-          status: data.status ?? "error", // Default fallback
-        };
-      case "connection":
-        return {
-          type: "connection",
-          timestamp: data.timestamp ?? 0,
-          username: data.username ?? "",
-          status: data.status ?? "join",
-        };
-      case "message":
-        return {
-          type: "message",
-          timestamp: data.timestamp ?? 0,
-          username: data.username ?? "",
-          message: data.message ?? "",
-        };
-      default:
-        throw new Error(`Unknown log event type: ${data.type}`);
-    }
-  },
+const defaultEventValues: {
+  [K in RoomEvent["type"]]: Omit<
+    Partial<Extract<RoomEvent, { type: K }>>,
+    "type" | "timestamp"
+  >;
+} = {
+  submission: { username: "", output: "", status: "error" },
+  connection: { username: "", status: "join" },
+  message: { username: "", message: "" },
 };
+
+export const roomEventConverter: FirestoreDataConverter<RoomEvent, RoomEvent> =
+  {
+    toFirestore: (data: RoomEvent) => data,
+    fromFirestore: (
+      snapshot: QueryDocumentSnapshot,
+      options: SnapshotOptions
+    ): RoomEvent => {
+      const data = snapshot.data(options) ?? {};
+      if (!data.type || !(data.type in defaultEventValues)) {
+        throw new Error(`Unknown or missing event type: ${data.type}`);
+      }
+
+      return {
+        type: data.type,
+        timestamp: data.timestamp ?? 0,
+        ...defaultEventValues[data.type as RoomEvent["type"]],
+        ...data,
+      } as RoomEvent;
+    },
+  };
 
 export const peerConnectionConverter: FirestoreDataConverter<
   PeerConnection,

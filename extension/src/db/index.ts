@@ -1,9 +1,9 @@
 import {
-  LogEvent,
   PeerConnection,
   peerConnectionConverter,
   Room,
   roomConverter,
+  RoomEvent,
   Session,
   sessionConverter,
 } from "@cb/db/converter";
@@ -38,9 +38,9 @@ export const setRoom = (
   data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
 
-export const addEventToRoom = (data: LogEvent, roomId: string) => {
+export const addEventToRoom = (roomId: string, data: RoomEvent) => {
   const roomRef = getRoomRef(roomId);
-  addDoc(collection(roomRef, "logs"), data);
+  addDoc(collection(roomRef, "events"), data);
 };
 
 export const getSessionRefs = (roomId: string) =>

@@ -1,4 +1,4 @@
-import { LogEvent } from "@cb/db/converter";
+import { RoomEvent } from "@cb/db/converter";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Send } from "lucide-react";
@@ -6,7 +6,7 @@ import React from "react";
 import { LogEntry } from "./LogEntry";
 
 interface ActivityLogTabProps {
-  logEntries: LogEvent[];
+  logEntries: RoomEvent[];
 }
 
 export const ActivityLogTab: React.FC<ActivityLogTabProps> = ({
