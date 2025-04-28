@@ -44,7 +44,9 @@ export const PromptNavigateDialog = ({
         },
       }}
       // todo(nickbar01234): Actually specify the link
-      description={{ node: "You will be redirected to another url" }}
+      description={{
+        node: "All users have finished the current question. By clicking yes, you will be redirected to another url",
+      }}
     >
       <div className="mt-6 flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>

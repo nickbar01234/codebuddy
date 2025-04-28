@@ -59,7 +59,7 @@ export const getSessionPeerConnectionRefs = (
     peerConnectionConverter
   );
 
-export const getSessionIds = (
+export const getSessions = (
   roomId: string,
   constraints: QueryConstraint[] = []
 ) => {
@@ -71,7 +71,7 @@ export const getSessionIds = (
 export const getAllSessionId = async (roomId: string) => {
   // This function will return all sessions in a room.
   // Note: This is not efficient for large datasets, consider using query for pagination or filtering.
-  const snapshot = await getSessionIds(roomId, [orderBy("createdAt")]);
+  const snapshot = await getSessions(roomId, [orderBy("createdAt")]);
   return snapshot.docs.map((doc) => doc.id);
 };
 
