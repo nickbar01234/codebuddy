@@ -1,4 +1,4 @@
-import { ThemeAwaredLogo } from "@cb/components/icons/Logo";
+import { ThemeAwaredLogo } from "@cb/components/icons/ThemeAwaredLogo";
 import { cn } from "@cb/utils/cn";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
