@@ -15,14 +15,12 @@ interface Props {
   rooms: Room[];
   selectedRoomId: string | null;
   onSelectRoom: (id: string) => void;
-  loading: boolean;
 }
 
 const PublicRoomTable: React.FC<Props> = ({
   rooms,
   selectedRoomId,
   onSelectRoom,
-  loading,
 }) => {
   return (
     <GenericTable
@@ -34,7 +32,6 @@ const PublicRoomTable: React.FC<Props> = ({
         "Users",
         "Time Elapsed",
       ]}
-      loading={loading}
       renderRow={(room) => (
         <PublicRoomRow
           key={room.id}
@@ -43,7 +40,6 @@ const PublicRoomTable: React.FC<Props> = ({
           onSelect={() => onSelectRoom(room.id)}
         />
       )}
-      emptyMessage="No rooms available"
     />
   );
 };

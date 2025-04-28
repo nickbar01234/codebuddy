@@ -2,9 +2,9 @@ import { LeaveIcon } from "@cb/components/icons";
 import { JoinPrivateRoom } from "@cb/components/panel/join/JoinPrivateRoom";
 import PublicRoomTable from "@cb/components/panel/join/PublicRoomTable";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { useRTC } from "@cb/hooks/index";
+import { useOnMount, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { Room } from "./PublicRoomTable.tsx";
 import { sampleRooms } from "./sampleRooms.ts";
 
@@ -14,17 +14,15 @@ const JoinRoomPanel: React.FC = () => {
     useContext(appStateContext);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  useOnMount(() => {
     // Simulate loading delay for 1 second
     const timeout = setTimeout(() => {
       setPublicRooms(sampleRooms);
-      setIsLoading(false);
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, []);
+  });
 
   if (appState === AppState.JOIN_ROOMS) {
     return (
@@ -54,7 +52,6 @@ const JoinRoomPanel: React.FC = () => {
               rooms={publicRooms}
               selectedRoomId={selectedRoomId}
               onSelectRoom={setSelectedRoomId}
-              loading={isLoading}
             />
             <div className="flex justify-center p-2 dark:bg-dark-layer-bg">
               <Button
