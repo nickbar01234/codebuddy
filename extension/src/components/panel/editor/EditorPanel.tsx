@@ -103,7 +103,7 @@ const EditorPanel = () => {
         value: "activity",
         label: "Activity Log",
         Icon: Activity,
-        Content: <ActivityLogTab logEntries={logEntries} />,
+        Content: <ActivityLogTab roomEvents={roomEvents} />,
       },
       {
         value: "roomInfo",
@@ -256,7 +256,7 @@ const EditorPanel = () => {
 
 export default EditorPanel;
 
-const logEntries: RoomEvent[] = [
+const roomEvents: RoomEvent[] = [
   {
     type: "submission",
     username: "Buddy",

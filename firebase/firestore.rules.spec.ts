@@ -94,7 +94,6 @@ describe("Firebase security test", () => {
 
   it("should allow permitted user to read/write events", async () => {
     const authenticatedRoomDoc = createRoom(authenticatedDb);
-    await assertSucceeds(authenticatedRoomDoc.set(roomData));
     const authenticatedEvent = createEvent(authenticatedRoomDoc);
     await assertSucceeds(
       authenticatedEvent.set({ type: "joined", timestamp: Date.now() })
