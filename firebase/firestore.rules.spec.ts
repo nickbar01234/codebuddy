@@ -87,4 +87,43 @@ describe("Firebase security test", () => {
       .doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
   });
+
+  it("should allow permitted user to read/write events", async () => {
+    const authenticatedRoomDoc = createRoom(authenticatedDb);
+    await assertSucceeds(authenticatedRoomDoc.set(roomData));
+    const authenticatedEvent = authenticatedRoomDoc
+      .collection("events")
+      .doc("some-event");
+
+    await assertSucceeds(
+      authenticatedEvent.set({ type: "joined", timestamp: Date.now() })
+    );
+    await assertSucceeds(authenticatedEvent.get());
+  });
+
+  it("should deny unauthenticated user access to events", async () => {
+    const unauthenticatedRoomDoc = createRoom(unauthenticatedDb);
+    const unauthenticatedEvent = unauthenticatedRoomDoc
+      .collection("events")
+      .doc("some-event");
+
+    await assertFails(
+      unauthenticatedEvent.set({ type: "joined", timestamp: Date.now() })
+    );
+    await assertFails(unauthenticatedEvent.get());
+  });
+
+  it("only user in usernames array can access event document", async () => {
+    const anotherEmail = testEnv.authenticatedContext("anotherUser", {
+      email: "another@gmail.com",
+    });
+    const invalidRoomDoc = createRoom(anotherEmail.firestore());
+    const invalidEventRef = invalidRoomDoc
+      .collection("events")
+      .doc("some-event");
+
+    await assertFails(
+      invalidEventRef.set({ type: "joined", timestamp: Date.now() })
+    );
+  });
 });
