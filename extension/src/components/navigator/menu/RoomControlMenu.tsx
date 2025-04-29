@@ -45,12 +45,14 @@ export const RoomControlMenu = () => {
           </RoomControlDropdownMenuItem>
           <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <LeaveRoomDialog
-              customTrigger
-              node={
-                <span className="flex items-center gap-2">
-                  <LeaveIcon /> Leave Room
-                </span>
-              }
+              triggerProps={{
+                node: (
+                  <span className="flex items-center gap-2">
+                    <LeaveIcon /> Leave Room
+                  </span>
+                ),
+                customTrigger: true,
+              }}
             />
           </RoomControlDropdownMenuItem>
         </>

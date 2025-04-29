@@ -1,4 +1,4 @@
-import { LeaveIcon } from "@cb/components/icons";
+import ClosablePanel from "@cb/components/panel/ClosablePanel";
 import { JoinPrivateRoom } from "@cb/components/panel/join/JoinPrivateRoom";
 import PublicRoomTable from "@cb/components/panel/join/PublicRoomTable";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
@@ -26,22 +26,12 @@ const JoinRoomPanel: React.FC = () => {
 
   if (appState === AppState.JOIN_ROOMS) {
     return (
-      <div className="flex flex-col h-[90vh] w-full max-w-[600px] p-4 gap-6 dark:bg-dark-layer-bg">
-        <Button
-          variant={"outline"}
-          className={
-            "left-2 top-2 w-24 dark:text-white hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]"
-          }
-          onClick={() => setAppState(AppState.HOME)}
-        >
-          <div className="flex items-center justify-center gap-3">
-            <LeaveIcon />
-            <span className="text-base font-medium">Back</span>
-          </div>
-        </Button>
-
+      <ClosablePanel
+        onClose={() => setAppState(AppState.HOME)}
+        closeButtonName="Back"
+        className="gap-6 dark:bg-dark-layer-bg"
+      >
         <JoinPrivateRoom />
-
         <div className="flex flex-col grow gap-4 items-center">
           <h2 className="text-xl font-medium text-center dark:text-white">
             Browse public rooms
@@ -69,7 +59,7 @@ const JoinRoomPanel: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </ClosablePanel>
     );
   }
 };

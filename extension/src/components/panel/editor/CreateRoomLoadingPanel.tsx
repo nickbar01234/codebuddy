@@ -1,26 +1,21 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
-import { LeaveIcon } from "@cb/components/icons";
+import ClosablePanel from "@cb/components/panel/ClosablePanel";
 import { Ripple } from "@cb/components/panel/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRTC } from "@cb/hooks/index";
 import { CopyIcon } from "lucide-react";
+import { useState } from "react";
 
 const CreateRoomLoadingPanel = () => {
   const { roomId } = useRTC();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
-    <div className="flex h-full w-full flex-col relative items-center p-4">
-      <div className="left-7 top-5 absolute self-start z-30">
-        <LeaveRoomDialog
-          node={
-            <div className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border px-4 py-2">
-              <LeaveIcon />
-              <span className="text-base font-medium">Leave Room</span>
-            </div>
-          }
-        />
-      </div>
-
+    <ClosablePanel
+      onClose={() => setIsDialogOpen(true)}
+      closeButtonName="Leave Room"
+      className="relative items-center"
+    >
       <div className="relative z-20 top-[15vh] justify-center flex flex-col gap-1 items-center">
         <span className="text-3xl font-bold text-[#1E1E1E] dark:text-white">
           Room created successfully!
@@ -72,7 +67,12 @@ const CreateRoomLoadingPanel = () => {
           </div>
         </div>
       </div>
-    </div>
+      <LeaveRoomDialog
+        dialogProps={{
+          props: { open: isDialogOpen, onOpenChange: setIsDialogOpen },
+        }}
+      />
+    </ClosablePanel>
   );
 };
 
