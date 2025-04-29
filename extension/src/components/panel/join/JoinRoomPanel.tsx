@@ -10,8 +10,7 @@ import { sampleRooms } from "./sampleRooms.ts";
 
 const JoinRoomPanel: React.FC = () => {
   const { joinRoom } = useRTC();
-  const { state: appState, setState: setAppState } =
-    useContext(appStateContext);
+  const { setState: setAppState } = useContext(appStateContext);
   const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
 
@@ -24,44 +23,42 @@ const JoinRoomPanel: React.FC = () => {
     return () => clearTimeout(timeout);
   });
 
-  if (appState === AppState.JOIN_ROOMS) {
-    return (
-      <ClosablePanel
-        onClose={() => setAppState(AppState.HOME)}
-        closeButtonName="Back"
-        className="gap-6 dark:bg-dark-layer-bg"
-      >
-        <JoinPrivateRoom />
-        <div className="flex flex-col grow gap-4 items-center">
-          <h2 className="text-xl font-medium text-center dark:text-white">
-            Browse public rooms
-          </h2>
+  return (
+    <ClosablePanel
+      onClose={() => setAppState(AppState.HOME)}
+      closeButtonName="Back"
+      className="gap-6 dark:bg-dark-layer-bg"
+    >
+      <JoinPrivateRoom />
+      <div className="flex flex-col grow gap-4 items-center">
+        <h2 className="text-xl font-medium text-center dark:text-white">
+          Browse public rooms
+        </h2>
 
-          <div className="flex flex-col grow overflow-hidden rounded-xl border dark:bg-dark-layer-bg">
-            <PublicRoomTable
-              rooms={publicRooms}
-              selectedRoomId={selectedRoomId}
-              onSelectRoom={setSelectedRoomId}
-            />
-            <div className="flex justify-center p-2 dark:bg-dark-layer-bg">
-              <Button
-                variant={selectedRoomId ? "destructive" : "secondary"}
-                disabled={!selectedRoomId}
-                className={
-                  "w-full dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
-                }
-                onClick={() => {
-                  if (selectedRoomId) joinRoom(selectedRoomId);
-                }}
-              >
-                Join
-              </Button>
-            </div>
+        <div className="flex flex-col grow overflow-hidden rounded-xl border dark:bg-dark-layer-bg">
+          <PublicRoomTable
+            rooms={publicRooms}
+            selectedRoomId={selectedRoomId}
+            onSelectRoom={setSelectedRoomId}
+          />
+          <div className="flex justify-center p-2 dark:bg-dark-layer-bg">
+            <Button
+              variant={selectedRoomId ? "destructive" : "secondary"}
+              disabled={!selectedRoomId}
+              className={
+                "w-full dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
+              }
+              onClick={() => {
+                if (selectedRoomId) joinRoom(selectedRoomId);
+              }}
+            >
+              Join
+            </Button>
           </div>
         </div>
-      </ClosablePanel>
-    );
-  }
+      </div>
+    </ClosablePanel>
+  );
 };
 
 export default JoinRoomPanel;
