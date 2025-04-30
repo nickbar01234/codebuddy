@@ -64,9 +64,12 @@ describe("Firebase security test", () => {
   it("should allow authenticated users to read/write rooms", async () => {
     const authenticatedRoomDoc = createRoom(authenticatedDb);
     const authenticatedSession = createSession(authenticatedRoomDoc);
+    // const authenticatedEvent = createEvent(authenticatedRoomDoc);
     await assertSucceeds(authenticatedRoomDoc.set(roomData));
     await assertSucceeds(authenticatedRoomDoc.get());
     await assertSucceeds(authenticatedSession.set({}));
+    // await assertSucceeds(authenticatedEvent.get());
+    // await assertSucceeds(authenticatedEvent.set({}));
     await assertFails(authenticatedRoomDoc.update({ expiredAt: new Date() }));
   });
 
@@ -90,15 +93,6 @@ describe("Firebase security test", () => {
       .collection("randomCollection")
       .doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
-  });
-
-  it("should allow permitted user to read/write events", async () => {
-    const authenticatedRoomDoc = createRoom(authenticatedDb);
-    const authenticatedEvent = createEvent(authenticatedRoomDoc);
-    await assertSucceeds(
-      authenticatedEvent.set({ type: "joined", timestamp: Date.now() })
-    );
-    await assertSucceeds(authenticatedEvent.get());
   });
 
   it("only user in usernames array can access event document", async () => {

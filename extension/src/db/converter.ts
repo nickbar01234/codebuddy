@@ -71,7 +71,7 @@ export const roomEventConverter: FirestoreDataConverter<RoomEvent, RoomEvent> =
       options: SnapshotOptions
     ): RoomEvent => {
       const data = snapshot.data(options) ?? {};
-      if (!data.type || !(data.type in defaultEventValues)) {
+      if (!Object.keys(defaultEventValues).includes(data.type)) {
         throw new Error(`Unknown or missing event type: ${data.type}`);
       }
 
