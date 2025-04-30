@@ -71,21 +71,6 @@ export const initialAuthenticateCheck = createAsyncThunk(
   }
 );
 
-export const listenToAuthChanges = () => (dispatch: AppDispatch) => {
-  return onAuthStateChanged(auth, (user) => {
-    if (user == null) {
-      dispatch(setAuthStatus({ status: Status.UNAUTHENTICATED }));
-    } else {
-      dispatch(
-        setAuthStatus({
-          status: Status.AUTHENTICATED,
-          user: { username: user.displayName ?? user.email! },
-        })
-      );
-    }
-  });
-};
-
 export const devAutoAuth = createAsyncThunk(
   "session/devAutoAuth",
   async (_, { rejectWithValue }) => {
@@ -113,6 +98,21 @@ export const devAutoAuth = createAsyncThunk(
   }
 );
 
+export const listenToAuthChanges = () => (dispatch: AppDispatch) => {
+  return onAuthStateChanged(auth, (user) => {
+    if (user == null) {
+      dispatch(setAuthStatus({ status: Status.UNAUTHENTICATED }));
+    } else {
+      dispatch(
+        setAuthStatus({
+          status: Status.AUTHENTICATED,
+          user: { username: user.displayName ?? user.email! },
+        })
+      );
+    }
+  });
+};
+
 // Create slice
 const sessionSlice = createSlice({
   name: "session",
@@ -127,11 +127,15 @@ const sessionSlice = createSlice({
       .addCase(initialAuthenticateCheck.pending, (state) => {
         state.auth = { status: Status.LOADING };
       })
-      .addCase(initialAuthenticateCheck.fulfilled, (state) => {
-        // Note: The actual authentication status will be updated by the Firebase listener
-        // This just handles the email link sign-in process
-      })
       .addCase(initialAuthenticateCheck.rejected, (state) => {
+        // Handle sign-in errors if needed
+        console.error("Error during initial authentication check");
+        state.auth = { status: Status.UNAUTHENTICATED };
+      })
+      .addCase(devAutoAuth.pending, (state) => {
+        state.auth = { status: Status.LOADING };
+      })
+      .addCase(devAutoAuth.rejected, (state) => {
         // Handle sign-in errors if needed
         console.error("Error during initial authentication check");
         state.auth = { status: Status.UNAUTHENTICATED };
