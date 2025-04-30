@@ -3,7 +3,6 @@
 import chokidar from "chokidar";
 import _ from "lodash";
 import puppeteer from "puppeteer";
-
 const EXTENSION_PATH = "./dist/";
 const REDUX_DEVTOOLS_PATH = "./redux_devtools/";
 
@@ -67,6 +66,7 @@ const setup = async () => {
       peer,
       NUM_USERS > 1 ? ROOM_ID : undefined
     );
+    
     return { browser, page };
   };
   const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {

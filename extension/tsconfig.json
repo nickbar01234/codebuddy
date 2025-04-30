@@ -21,20 +21,7 @@
 
     "baseUrl": "./src",
     "paths": {
-      "@cb/hooks": ["./hooks/index.ts"],
-      "@cb/hooks/*": ["./hooks/*"],
-      "@cb/components/*": ["./components/*"],
-      "@cb/utils": ["./utils/index.ts"],
-      "@cb/utils/*": ["./utils/*"],
-      "@cb/types": ["./types/index.ts"],
-      "@cb/services": ["./services/index.ts"],
-      "@cb/context/*": ["./context/*"],
-      "@cb/db": ["./db/index.ts"],
-      "@cb/db/*": ["./db/*"],
-      "@cb/lib/*": ["./lib/*"],
-      "@cb/constants": ["./constants/index.ts"],
-      "@cb/constants/*": ["./constants/*"],
-      "@cb/state/*": ["./state/*"]
+      "@cb/*": ["./*"]
     }
   },
   "include": ["./src", "./src/services/index.ts"],

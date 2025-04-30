@@ -127,6 +127,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     register: registerSnapshot,
     get: getSnapshot,
     cleanup: cleanupSnapshot,
+    evict: evictSnapshot,
   } = useResource<Unsubscribe>({ name: "snapshot" });
 
   useOnMount(() => {
@@ -134,18 +135,27 @@ export const RTCProvider = (props: RTCProviderProps) => {
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
         const originalOnClick = button.onclick;
-        button.onclick = function (event) {
-          if (originalOnClick) {
-            originalOnClick.call(this, event);
-          }
-
-          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-            .then(() => handleSucessfulSubmissionRef.current())
-            .catch(() => handleFailedSubmissionRef.current());
-        };
+        if (import.meta.env.MODE === "development") {
+          const mockBtn = button.cloneNode(true) as HTMLButtonElement;
+          button.replaceWith(mockBtn);
+          mockBtn.onclick = function (event) {
+            event.preventDefault();
+            handleSucessfulSubmissionRef.current();
+            return;
+          };
+        } else {
+          button.onclick = function (event) {
+            if (originalOnClick) {
+              originalOnClick.call(this, event);
+            }
+            waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
+              .then(() => handleSucessfulSubmissionRef.current())
+              .catch(() => handleFailedSubmissionRef.current());
+          };
+        }
       })
       .catch((error) => {
-        console.error("Error mounting callback on submit code button:", error);
+        console.log("Error mounting callback on submit code button:", error);
       });
   });
 
@@ -224,6 +234,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
       },
     }));
   });
+
+  const onClose = React.useRef(
+    (peer: string) => () => evictConnection(peer)
+  ).current;
 
   const onmessage = React.useCallback(
     (peer: string) =>
@@ -324,6 +338,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       channel.onmessage = onmessage(peer);
       channel.onopen = onOpen.current(peer);
+      channel.onclose = onClose(peer);
 
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
@@ -363,7 +378,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       registerSnapshot(peer, unsubscribe, (prev) => prev());
     },
-    [username, onmessage, registerSnapshot, registerConnection, sessionId]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      sessionId,
+      onClose,
+    ]
   );
 
   const joinRoom = React.useCallback(
@@ -559,8 +581,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
-      if (peers.length === 0) return;
-      if (roomId == null) return;
+      if (peers.length === 0 || roomId == null) return;
+
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
       peers
@@ -585,7 +607,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      // console.log("Removed peers", peers);
     },
     [roomId, username, evictConnection, sessionId]
   );
@@ -671,7 +692,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const sessionDoc = await getSession(roomId, sessionId);
     const sessionData = sessionDoc.data();
     const nextQuestion = sessionData?.nextQuestion ?? "";
-    await deleteMeRef.current();
     history.pushState(null, "", constructUrlFromQuestionId(nextQuestion));
     location.reload();
   }, [roomId, sessionId]);
@@ -715,6 +735,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
+      return () => evictSnapshot(roomId);
     }
   }, [
     roomId,
@@ -724,6 +745,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     registerSnapshot,
     getConnection,
     sessionId,
+    evictSnapshot,
   ]);
 
   React.useEffect(() => {
@@ -739,7 +761,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    console.log("After reload join", refreshInfo);
     if (appState === AppState.LOADING && refreshInfo?.roomId) {
       afterReloadJoin();
     }
@@ -843,7 +864,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "joinRoom":
           case "reloadExtension":
             break;
-
           default:
             console.error("Unhandled window message", windowMessage);
             break;
