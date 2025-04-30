@@ -24,7 +24,7 @@ const PublicRoomRow: React.FC<Props> = ({
       className={cn(
         "cursor-pointer",
         selected
-          ? "bg-black text-white hover:bg-black dark:bg-white dark:hover:bg-white"
+          ? "bg-black text-white hover:bg-black dark:text-black dark:bg-white dark:hover:bg-white"
           : "hover:bg-gray-200 odd:bg-white even:bg-gray-100 dark:odd:bg-gray-900/50 dark:even:bg-gray-950"
       )}
     >

@@ -45,9 +45,11 @@ const JoinRoomPanel: React.FC = () => {
             <Button
               variant={selectedRoomId ? "destructive" : "secondary"}
               disabled={!selectedRoomId}
-              className={
-                "w-full dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
-              }
+              className={`w-full ${
+                selectedRoomId
+                  ? ""
+                  : "dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
+              }`}
               onClick={() => {
                 if (selectedRoomId) joinRoom(selectedRoomId);
               }}

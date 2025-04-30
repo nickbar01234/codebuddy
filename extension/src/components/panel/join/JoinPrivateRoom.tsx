@@ -36,7 +36,7 @@ export const JoinPrivateRoom = () => {
       <div className="flex w-[70%] rounded-md border overflow-hidden">
         <Input
           id="roomId"
-          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-[#2A2A2A]"
+          className="rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-[#2A2A2A]"
           placeholder="Enter room ID"
           onChange={onChangeRoomIdInput}
           onKeyDown={(e) => {
