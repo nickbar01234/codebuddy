@@ -761,7 +761,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    // console.log("After reload join", refreshInfo);
     if (appState === AppState.LOADING && refreshInfo?.roomId) {
       afterReloadJoin();
     }
