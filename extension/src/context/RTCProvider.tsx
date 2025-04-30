@@ -127,6 +127,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     register: registerSnapshot,
     get: getSnapshot,
     cleanup: cleanupSnapshot,
+    evict: evictSnapshot,
   } = useResource<Unsubscribe>({ name: "snapshot" });
 
   useOnMount(() => {
@@ -234,6 +235,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     }));
   });
 
+  const onClose = React.useRef(
+    (peer: string) => () => evictConnection(peer)
+  ).current;
+
   const onmessage = React.useCallback(
     (peer: string) =>
       function (event: MessageEvent) {
@@ -333,6 +338,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       channel.onmessage = onmessage(peer);
       channel.onopen = onOpen.current(peer);
+      channel.onclose = onClose(peer);
 
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
@@ -372,7 +378,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       registerSnapshot(peer, unsubscribe, (prev) => prev());
     },
-    [username, onmessage, registerSnapshot, registerConnection, sessionId]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      sessionId,
+      onClose,
+    ]
   );
 
   const joinRoom = React.useCallback(
@@ -568,8 +581,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
-      if (peers.length === 0) return;
-      if (roomId == null) return;
+      if (peers.length === 0 || roomId == null) return;
+
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
       peers
@@ -594,7 +607,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      // console.log("Removed peers", peers);
     },
     [roomId, username, evictConnection, sessionId]
   );
@@ -723,6 +735,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
+      return () => evictSnapshot(roomId);
     }
   }, [
     roomId,
@@ -732,6 +745,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     registerSnapshot,
     getConnection,
     sessionId,
+    evictSnapshot,
   ]);
 
   React.useEffect(() => {

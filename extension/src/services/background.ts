@@ -160,11 +160,9 @@ const setValueModel = async (
   await myEditor.executeEdits("apply changes", [editOperations]);
   const myCode = await myEditor.getValue();
   if (myCode !== code) {
-    console.log("Detected Conflict");
     await myEditor.setValue(code);
   }
   await myEditor.updateOptions({ readOnly: true });
-  console.log("Applied Changes");
 };
 
 export const getLanguageExtension = () => {

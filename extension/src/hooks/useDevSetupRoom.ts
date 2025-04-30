@@ -19,14 +19,13 @@ const useDevSetupRoom = () => {
         until: (test) => test != null,
         ms: 100,
       });
-
       const roomId = test?.roomId;
-      const sessionId = getQuestionIdFromUrl(window.location.href);
-      const roomRef = getRoomRef(roomId);
-      await setRoom(roomRef, {
-        usernames: arrayUnion(user.username),
-      });
       if (test != undefined && roomId != undefined) {
+        const sessionId = getQuestionIdFromUrl(window.location.href);
+        const roomRef = getRoomRef(roomId);
+        await setRoom(roomRef, {
+          usernames: arrayUnion(user.username),
+        });
         setLocalStorage("test", { peer: test?.peer });
         try {
           await setSession(getSessionRef(roomId, sessionId), {
