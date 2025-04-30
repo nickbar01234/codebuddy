@@ -135,18 +135,27 @@ export const RTCProvider = (props: RTCProviderProps) => {
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
         const originalOnClick = button.onclick;
-        button.onclick = function (event) {
-          if (originalOnClick) {
-            originalOnClick.call(this, event);
-          }
-
-          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-            .then(() => handleSucessfulSubmissionRef.current())
-            .catch(() => handleFailedSubmissionRef.current());
-        };
+        if (import.meta.env.MODE === "development") {
+          const mockBtn = button.cloneNode(true) as HTMLButtonElement;
+          button.replaceWith(mockBtn);
+          mockBtn.onclick = function (event) {
+            event.preventDefault();
+            handleSucessfulSubmissionRef.current();
+            return;
+          };
+        } else {
+          button.onclick = function (event) {
+            if (originalOnClick) {
+              originalOnClick.call(this, event);
+            }
+            waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
+              .then(() => handleSucessfulSubmissionRef.current())
+              .catch(() => handleFailedSubmissionRef.current());
+          };
+        }
       })
       .catch((error) => {
-        console.error("Error mounting callback on submit code button:", error);
+        console.log("Error mounting callback on submit code button:", error);
       });
   });
 
@@ -752,7 +761,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    console.log("After reload join", refreshInfo);
     if (appState === AppState.LOADING && refreshInfo?.roomId) {
       afterReloadJoin();
     }
@@ -856,7 +864,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "joinRoom":
           case "reloadExtension":
             break;
-
           default:
             console.error("Unhandled window message", windowMessage);
             break;
