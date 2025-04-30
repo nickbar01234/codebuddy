@@ -66,6 +66,7 @@ const setup = async () => {
       peer,
       NUM_USERS > 1 ? ROOM_ID : undefined
     );
+    
     return { browser, page };
   };
   const asyncBrowsers = PEERS.map(async ({ peer }, idx) => {
