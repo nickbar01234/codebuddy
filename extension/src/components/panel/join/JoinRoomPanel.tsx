@@ -2,26 +2,14 @@ import ClosablePanel from "@cb/components/panel/ClosablePanel";
 import { JoinPrivateRoom } from "@cb/components/panel/join/JoinPrivateRoom";
 import PublicRoomTable from "@cb/components/panel/join/PublicRoomTable";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
-import { useOnMount, useRTC } from "@cb/hooks/index";
+import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import React, { useContext, useState } from "react";
-import { Room } from "./PublicRoomTable.tsx";
-import { sampleRooms } from "./sampleRooms.ts";
 
 const JoinRoomPanel: React.FC = () => {
   const { joinRoom } = useRTC();
   const { setState: setAppState } = useContext(appStateContext);
-  const [publicRooms, setPublicRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
-
-  useOnMount(() => {
-    // Simulate loading delay for 1 second
-    const timeout = setTimeout(() => {
-      setPublicRooms(sampleRooms);
-    }, 1000);
-
-    return () => clearTimeout(timeout);
-  });
 
   return (
     <ClosablePanel
@@ -37,7 +25,6 @@ const JoinRoomPanel: React.FC = () => {
 
         <div className="flex flex-col grow overflow-hidden rounded-xl border dark:bg-dark-layer-bg">
           <PublicRoomTable
-            rooms={publicRooms}
             selectedRoomId={selectedRoomId}
             onSelectRoom={setSelectedRoomId}
           />
