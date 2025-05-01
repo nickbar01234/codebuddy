@@ -23,8 +23,9 @@ const SessionProvider = (props: SessionProviderProps) => {
     console.log("SessionProvider", auth);
   }, [auth]);
   React.useEffect(() => {
-    dispatch(initialAuthenticateCheck());
-    console.log("initialAuthenticateCheck");
+    setTimeout(() => {
+      dispatch(initialAuthenticateCheck());
+    }, AUTHENTICATION_DELAY); // wait for the auth emulator to be initialized
     lodash.delay(() => {
       unsubscribeRef.current = dispatch(listenToAuthChanges());
     }, AUTHENTICATION_DELAY);

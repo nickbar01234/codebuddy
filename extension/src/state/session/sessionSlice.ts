@@ -1,4 +1,3 @@
-// sessionSlice.ts
 import { auth } from "@cb/db";
 import {
   getLocalStorage,
