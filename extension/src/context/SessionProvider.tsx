@@ -21,10 +21,9 @@ const SessionProvider = (props: SessionProviderProps) => {
   });
 
   React.useEffect(() => {
-    setTimeout(() => {
-      dispatch(initialAuthenticateCheck());
-    }, AUTHENTICATION_DELAY); // wait for the auth emulator to be initialized
     lodash.delay(() => {
+      // wait for the auth emulator to be initialized
+      dispatch(initialAuthenticateCheck());
       const unsubscribe = dispatch(listenToAuthChanges());
       register("authentication", unsubscribe, (unsubscribe) => unsubscribe());
     }, AUTHENTICATION_DELAY);
