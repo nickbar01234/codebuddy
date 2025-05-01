@@ -1,6 +1,5 @@
-import { useAppDispatch } from "@cb/hooks";
+import { useAppDispatch, useSession } from "@cb/hooks";
 import {
-  devAutoAuth,
   initialAuthenticateCheck,
   listenToAuthChanges,
 } from "@cb/state/session/sessionSlice";
@@ -17,10 +16,13 @@ const SessionProvider = (props: SessionProviderProps) => {
   const { children } = props;
   const dispatch = useAppDispatch();
   const unsubscribeRef = React.useRef<Unsubscribe>();
+  const { auth } = useSession();
+  console.log("HELLO");
+  console.log("SessionProvider", auth);
   React.useEffect(() => {
-    if (import.meta.env.MODE === "development") {
-      dispatch(devAutoAuth());
-    }
+    console.log("SessionProvider", auth);
+  }, [auth]);
+  React.useEffect(() => {
     dispatch(initialAuthenticateCheck());
     lodash.delay(() => {
       unsubscribeRef.current = dispatch(listenToAuthChanges());

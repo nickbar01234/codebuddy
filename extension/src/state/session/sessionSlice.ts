@@ -30,7 +30,11 @@ export const initialAuthenticateCheck = createAsyncThunk(
   "session/initialAuthenticateCheck",
   async (_, { rejectWithValue }) => {
     if (import.meta.env.MODE === "development") {
-      const user = getLocalStorage("test");
+      const user = await poll({
+        fn: async () => getLocalStorage("test"),
+        until: (x) => x != undefined,
+      });
+      console.log("user", user);
       if (user != undefined) {
         const { peer } = user;
         createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
@@ -46,6 +50,7 @@ export const initialAuthenticateCheck = createAsyncThunk(
       }
     } else {
       const signIn = getLocalStorage("signIn");
+      console.log("signIn", signIn);
       if (
         signIn != undefined &&
         isSignInWithEmailLink(auth, window.location.href)
@@ -67,33 +72,6 @@ export const initialAuthenticateCheck = createAsyncThunk(
             removeLocalStorage("signIn");
           });
       }
-    }
-  }
-);
-
-export const devAutoAuth = createAsyncThunk(
-  "session/devAutoAuth",
-  async (_, { rejectWithValue }) => {
-    const user = await poll({
-      fn: async () => getLocalStorage("test"),
-      until: (x) => x != undefined,
-    });
-    if (!user) return;
-
-    const { peer } = user;
-    try {
-      await createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD");
-    } catch (error: any) {
-      if (error.code !== "auth/email-already-in-use") {
-        console.error(error);
-        return rejectWithValue(error);
-      }
-    }
-    try {
-      await signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD");
-    } catch (err) {
-      console.error(err);
-      return rejectWithValue(err);
     }
   }
 );
@@ -128,14 +106,6 @@ const sessionSlice = createSlice({
         state.auth = { status: Status.LOADING };
       })
       .addCase(initialAuthenticateCheck.rejected, (state) => {
-        // Handle sign-in errors if needed
-        console.error("Error during initial authentication check");
-        state.auth = { status: Status.UNAUTHENTICATED };
-      })
-      .addCase(devAutoAuth.pending, (state) => {
-        state.auth = { status: Status.LOADING };
-      })
-      .addCase(devAutoAuth.rejected, (state) => {
         // Handle sign-in errors if needed
         console.error("Error during initial authentication check");
         state.auth = { status: Status.UNAUTHENTICATED };
