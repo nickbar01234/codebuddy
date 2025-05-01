@@ -3,11 +3,14 @@ import {
   peerConnectionConverter,
   Room,
   roomConverter,
+  RoomEvent,
   Session,
   sessionConverter,
 } from "@cb/db/converter";
 import { auth, firestore } from "@cb/db/setup";
+
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -35,6 +38,11 @@ export const setRoom = (
   ref: DocumentReference<Room, Room>,
   data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
+
+export const addEventToRoom = (roomId: string, data: RoomEvent) => {
+  const roomRef = getRoomRef(roomId);
+  addDoc(collection(roomRef, "events"), data);
+};
 
 export const getSessionRefs = (roomId: string) =>
   collection(getRoomRef(roomId), "sessions").withConverter(sessionConverter);
