@@ -33,7 +33,6 @@ export const initialAuthenticateCheck = createAsyncThunk(
         fn: async () => getLocalStorage("test"),
         until: (x) => x != undefined,
       });
-      console.log("user", user);
       if (user != undefined) {
         const { peer } = user;
         createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
@@ -49,7 +48,6 @@ export const initialAuthenticateCheck = createAsyncThunk(
       }
     } else {
       const signIn = getLocalStorage("signIn");
-      console.log("signIn", signIn);
       if (
         signIn != undefined &&
         isSignInWithEmailLink(auth, window.location.href)

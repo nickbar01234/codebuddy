@@ -1,4 +1,5 @@
-import { useAppDispatch, useSession } from "@cb/hooks";
+import { useAppDispatch } from "@cb/hooks";
+import useResource from "@cb/hooks/useResource";
 import {
   initialAuthenticateCheck,
   listenToAuthChanges,
@@ -15,27 +16,22 @@ interface SessionProviderProps {
 const SessionProvider = (props: SessionProviderProps) => {
   const { children } = props;
   const dispatch = useAppDispatch();
-  const unsubscribeRef = React.useRef<Unsubscribe>();
-  const { auth } = useSession();
-  console.log("HELLO");
-  console.log("SessionProvider", auth);
-  React.useEffect(() => {
-    console.log("SessionProvider", auth);
-  }, [auth]);
+  const { register, evict } = useResource<Unsubscribe>({
+    name: "session",
+  });
+
   React.useEffect(() => {
     setTimeout(() => {
       dispatch(initialAuthenticateCheck());
     }, AUTHENTICATION_DELAY); // wait for the auth emulator to be initialized
     lodash.delay(() => {
-      unsubscribeRef.current = dispatch(listenToAuthChanges());
+      const unsubscribe = dispatch(listenToAuthChanges());
+      register("authentication", unsubscribe, (unsubscribe) => unsubscribe());
     }, AUTHENTICATION_DELAY);
-
     return () => {
-      if (unsubscribeRef.current) {
-        unsubscribeRef.current();
-      }
+      evict("authentication");
     };
-  }, [dispatch]);
+  }, [dispatch, register, evict]);
 
   return children;
 };
