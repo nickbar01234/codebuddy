@@ -24,6 +24,7 @@ const SessionProvider = (props: SessionProviderProps) => {
   }, [auth]);
   React.useEffect(() => {
     dispatch(initialAuthenticateCheck());
+    console.log("initialAuthenticateCheck");
     lodash.delay(() => {
       unsubscribeRef.current = dispatch(listenToAuthChanges());
     }, AUTHENTICATION_DELAY);
@@ -35,7 +36,7 @@ const SessionProvider = (props: SessionProviderProps) => {
     };
   }, [dispatch]);
 
-  return <div>{children}</div>;
+  return children;
 };
 
 export default SessionProvider;
