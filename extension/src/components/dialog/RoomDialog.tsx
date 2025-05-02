@@ -48,6 +48,10 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
   children,
   description,
 }) => {
+  console.log("RoomDialog", dialog?.props);
+  console.log("Trigger in room dialog", trigger);
+  console.log("Title in room dialog", title);
+  console.log("Children in room dialog", children);
   return (
     <Dialog {...d(dialog?.props, {})}>
       {trigger && (
@@ -75,6 +79,7 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
       )}
       <DialogContent
         {...d(content?.props, {})}
+        forceMount
         className={cn(
           "bg-white dark:bg-dark-layer-bg",
           content?.props.className
