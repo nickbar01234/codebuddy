@@ -15,7 +15,7 @@ export const SelectProblemDialog = ({
   setOpen,
 }: SelectProblemDialog) => {
   const { handleChooseQuestion, roomId } = useRTC();
-  const filterQuestionIds = useFetchPastQuestions(roomId);
+  const filterQuestionIds = useFetchPastQuestions({ roomId });
   return (
     <RoomDialog
       trigger={{
