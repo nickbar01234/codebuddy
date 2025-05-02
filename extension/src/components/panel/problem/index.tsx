@@ -8,7 +8,6 @@ import {
   generateId,
   getQuestionIdFromUrl,
   hideToRoot,
-  identity,
   promisedIdentity,
   waitForElement,
 } from "@cb/utils";
@@ -21,9 +20,6 @@ const TIMEOUT = 10_000;
 
 const INJECTED_ATTRIBUTE = "data-injected";
 
-const devMode = import.meta.env.MODE === "development";
-const mode = devMode ? "legacy" : "current";
-
 interface IframeHandler {
   table: (document: Document) => Promise<Element>;
   rowContainer: (table: Element) => Promise<Element>;
@@ -33,49 +29,27 @@ interface IframeHandler {
   handleOldButton: (oldButton: Element | null) => void;
 }
 
-const leetcodeFrameHandler: Record<typeof mode, IframeHandler> = {
-  legacy: {
-    table: (iframeDoc) =>
-      waitForElement("div[role='table']:nth-child(1)", TIMEOUT, iframeDoc),
-    rowContainer: (table) =>
-      waitForElement("div[role='rowgroup']", TIMEOUT, table),
-    rowList: (rowContainer) => rowContainer.querySelectorAll("div[role='row']"),
-    anchor: (question) =>
-      waitForElement(
-        "div[role='cell'] a",
-        TIMEOUT,
-        question as unknown as Document
-      ),
-    anchorContainer: identity<Element>,
-    handleOldButton: (oldBtn) => {
-      if (oldBtn != null) oldBtn.remove();
-    },
+const handler: IframeHandler = {
+  table: async (iframeDoc) =>
+    (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode as Element,
+  rowContainer: promisedIdentity,
+  rowList: (rowContainer) => rowContainer.querySelectorAll("a"),
+  anchor: promisedIdentity,
+  anchorContainer: (question) => {
+    const divWrapper = document.createElement("div");
+    divWrapper.className = question.className;
+    divWrapper.innerHTML = question.innerHTML;
+    divWrapper.style.cssText = (question as HTMLElement).style.cssText;
+    [...question.attributes].forEach((attr) =>
+      divWrapper.setAttribute(attr.name, attr.value)
+    );
+    if (question.parentNode) {
+      question.parentNode.replaceChild(divWrapper, question);
+    }
+    return divWrapper.childNodes[0] as HTMLElement;
   },
-  current: {
-    table: async (iframeDoc) =>
-      (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc))
-        .parentNode as Element,
-    rowContainer: promisedIdentity,
-    rowList: (rowContainer) => rowContainer.querySelectorAll("a"),
-    anchor: promisedIdentity,
-    anchorContainer: (question) => {
-      const divWrapper = document.createElement("div");
-      divWrapper.className = question.className;
-      divWrapper.innerHTML = question.innerHTML;
-      divWrapper.style.cssText = (question as HTMLElement).style.cssText;
-      [...question.attributes].forEach((attr) =>
-        divWrapper.setAttribute(attr.name, attr.value)
-      );
-      if (question.parentNode) {
-        question.parentNode.replaceChild(divWrapper, question);
-      }
-      return divWrapper.childNodes[0] as HTMLElement;
-    },
-    handleOldButton: () => {},
-  },
+  handleOldButton: () => {},
 };
-
-const handler = leetcodeFrameHandler[mode];
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
@@ -116,7 +90,8 @@ export const QuestionSelectorPanel = React.memo(
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds.includes(questionId)) {
                 try {
-                  rowContainer.removeChild(anchorContainer);
+                  // rowContainer.removeChild(anchorContainer);
+                  anchorContainer.remove();
                   return;
                 } catch (error) {
                   console.log("cannot remove", error);
@@ -156,20 +131,8 @@ export const QuestionSelectorPanel = React.memo(
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
         observer.observe(rowContainer, { childList: true });
         disablePointerEvents(iframeDoc);
-        if (devMode) {
-          waitForElement(
-            "div[role='columnheader']:first-child",
-            TIMEOUT,
-            iframeDoc
-          ).then((element) => {
-            // todo(nickbar01234): Append an empty cell to make padding somewhat consistent... we should fix this styling
-            const cloned = element.cloneNode(true);
-            (cloned as HTMLElement).style.visibility = "hidden";
-            element.parentNode?.appendChild(cloned);
-          });
-        } else {
-          addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually. The observer still trigger on scrolling tho
-        }
+
+        addButton(); //don't know why in the new UI, the observer is not triggered in the first load so I have to call it manually. The observer still trigger on scrolling tho
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {

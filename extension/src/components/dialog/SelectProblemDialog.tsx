@@ -1,5 +1,6 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { useRTC } from "@cb/hooks";
+import { useFetchPastQuestions } from "@cb/hooks/useFetchPastQuestions";
 import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
 interface SelectProblemDialog {
@@ -13,8 +14,8 @@ export const SelectProblemDialog = ({
   open,
   setOpen,
 }: SelectProblemDialog) => {
-  const { handleChooseQuestion } = useRTC();
-
+  const { handleChooseQuestion, roomId } = useRTC();
+  const filterQuestionIds = useFetchPastQuestions(roomId);
   return (
     <RoomDialog
       trigger={{
@@ -42,7 +43,7 @@ export const SelectProblemDialog = ({
           handleChooseQuestion(question);
           setOpen(false);
         }}
-        filterQuestionIds={[]}
+        filterQuestionIds={filterQuestionIds}
         container={{}}
       />
     </RoomDialog>
