@@ -42,7 +42,6 @@ export const QuestionSelectorPanel = React.memo(
           await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)
         ).parentNode as Element;
         hideToRoot(rowContainer.parentElement?.parentElement);
-        // const rowContainer = table;
         rowContainer.classList.add("space-y-1", "mt-4");
 
         const addButton = async () => {
