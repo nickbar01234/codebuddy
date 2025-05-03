@@ -9,7 +9,7 @@ export const waitForElement = (
       return resolve(node);
     }
 
-    const observer = new MutationObserver((_mutations) => {
+    const observer = new MutationObserver(() => {
       const node = context.querySelector(selector);
       if (node != null) {
         observer.disconnect();
