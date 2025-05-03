@@ -1,5 +1,5 @@
-import React from "react";
 import { motion } from "framer-motion";
+import React from "react";
 
 export interface AnimatedBeamProps {
   className?: string;
@@ -22,7 +22,6 @@ export interface AnimatedBeamProps {
 }
 
 export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
-  className,
   containerRef,
   fromRef,
   toRef,
@@ -93,9 +92,7 @@ export const AnimatedBeam: React.FC<AnimatedBeamProps> = ({
     // Initialize ResizeObserver
     const resizeObserver = new ResizeObserver((entries) => {
       // For all entries, recalculate the path
-      for (const entry of entries) {
-        updatePath();
-      }
+      entries.forEach(() => updatePath());
     });
 
     // Observe the container element

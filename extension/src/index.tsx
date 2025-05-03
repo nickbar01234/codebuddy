@@ -19,7 +19,7 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
       </React.StrictMode>
     );
   })
-  .catch((_reason) =>
+  .catch(() =>
     console.error(
       `Unable to mount Codebuddy within ${TIME_OUT}ms - most likely due to LeetCode changing HTML page`
     )
