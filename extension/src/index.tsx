@@ -5,6 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import "react-resizable/css/styles.css";
 import App from "./App";
+import { WindowListener } from "./components/listeners/WindowListener";
 import "./style/index.css";
 
 const TIME_OUT = 5000; // ms
@@ -19,6 +20,7 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
     createRoot(extensionRoot).render(
       <React.StrictMode>
         <Provider store={store}>
+          <WindowListener />
           <App />
         </Provider>
       </React.StrictMode>
