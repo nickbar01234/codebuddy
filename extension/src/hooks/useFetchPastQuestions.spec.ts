@@ -1,7 +1,7 @@
+import { getAllSessionId } from "@cb/db/";
+import { generateId } from "@cb/utils";
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getAllSessionId } from "@cb/db/index";
-import { generateId } from "@cb/utils/dom";
 import { useFetchPastQuestions } from "./useFetchPastQuestions";
 
 vi.mock("../db/index", () => ({
