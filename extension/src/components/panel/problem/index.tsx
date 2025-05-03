@@ -8,7 +8,6 @@ import {
   generateId,
   getQuestionIdFromUrl,
   hideToRoot,
-  promisedIdentity,
   waitForElement,
 } from "@cb/utils";
 import React, { useEffect } from "react";
@@ -19,37 +18,6 @@ import { SelectQuestionButton } from "./SelectProblemButton";
 const TIMEOUT = 10_000;
 
 const INJECTED_ATTRIBUTE = "data-injected";
-
-interface IframeHandler {
-  table: (document: Document) => Promise<Element>;
-  rowContainer: (table: Element) => Promise<Element>;
-  rowList: (rowContainer: Element) => NodeListOf<Element>;
-  anchor: (row: Element) => Promise<Element>;
-  anchorContainer: (row: Element) => Element;
-  handleOldButton: (oldButton: Element | null) => void;
-}
-
-const handler: IframeHandler = {
-  table: async (iframeDoc) =>
-    (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)).parentNode as Element,
-  rowContainer: promisedIdentity,
-  rowList: (rowContainer) => rowContainer.querySelectorAll("a"),
-  anchor: promisedIdentity,
-  anchorContainer: (question) => {
-    const divWrapper = document.createElement("div");
-    divWrapper.className = question.className;
-    divWrapper.innerHTML = question.innerHTML;
-    divWrapper.style.cssText = (question as HTMLElement).style.cssText;
-    [...question.attributes].forEach((attr) =>
-      divWrapper.setAttribute(attr.name, attr.value)
-    );
-    if (question.parentNode) {
-      question.parentNode.replaceChild(divWrapper, question);
-    }
-    return divWrapper.childNodes[0] as HTMLElement;
-  },
-  handleOldButton: () => {},
-};
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
@@ -70,27 +38,39 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const table = await handler.table(iframeDoc);
+        // const table = await handler.table(iframeDoc);
+        const table = (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc))
+          .parentNode as Element;
         hideToRoot(table.parentElement?.parentElement);
-        const rowContainer = await handler.rowContainer(table);
+        // const rowContainer = await handler.rowContainer(table);
+        const rowContainer = table;
         rowContainer.classList.add("space-y-1", "mt-4");
 
         const addButton = async () => {
-          const rowList = handler.rowList(rowContainer) ?? [];
+          const rowList = rowContainer.querySelectorAll("a");
           for (const question of rowList) {
-            const anchorContainer = handler.anchorContainer(
-              question
-            ) as HTMLElement;
+            const questionElement = question as HTMLElement;
+            const divWrapper = document.createElement("div");
+            divWrapper.className = questionElement.className;
+            divWrapper.innerHTML = questionElement.innerHTML;
+            divWrapper.style.cssText = questionElement.style.cssText;
+            [...questionElement.attributes].forEach((attr) =>
+              divWrapper.setAttribute(attr.name, attr.value)
+            );
+            if (questionElement.parentNode) {
+              questionElement.parentNode.replaceChild(
+                divWrapper,
+                questionElement
+              );
+            }
+            const anchorContainer = divWrapper.childNodes[0] as HTMLElement;
+
             // anchorContainer.classList.add("h-12");
             try {
-              const anchor = (await handler.anchor(
-                question
-              )) as HTMLAnchorElement;
-              const link = anchor.href;
+              const link = (question as HTMLAnchorElement).href;
               const questionId = getQuestionIdFromUrl(link);
               if (filterQuestionIds.includes(questionId)) {
                 try {
-                  // rowContainer.removeChild(anchorContainer);
                   anchorContainer.remove();
                   return;
                 } catch (error) {
@@ -101,7 +81,6 @@ export const QuestionSelectorPanel = React.memo(
               const oldBtn = anchorContainer.querySelector(
                 `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
               );
-              handler.handleOldButton(oldBtn);
               if (!oldBtn) {
                 const injected = document.createElement("span");
                 injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
