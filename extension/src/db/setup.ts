@@ -2,7 +2,7 @@ import { FirebaseOptions, initializeApp } from "firebase/app";
 import { connectAuthEmulator, getAuth } from "firebase/auth/web-extension";
 import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
 
-const env = (import.meta as any).env;
+const env = import.meta.env;
 const DEV_VALUE = "demo-code-buddy-development";
 
 export const firebaseOptions: FirebaseOptions =
