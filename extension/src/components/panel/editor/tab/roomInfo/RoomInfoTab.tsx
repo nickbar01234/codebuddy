@@ -1,3 +1,4 @@
+import { PromptNavigateDialog } from "@cb/components/dialog/PromptNavigateDialog";
 import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
@@ -34,7 +35,7 @@ export const RoomInfoTab = () => {
     init: { usernames: [], isPublic: true, roomName: "" },
   });
   const { data: sessionDoc } = useFirebaseListener({
-    reference: getSessionRef(roomId!, sessionId),
+    reference: roomId != null ? getSessionRef(roomId, sessionId) : undefined,
     callback: async (sessionData) => {
       const data = sessionData;
       // todo(nickbar01234): Clear and report room if deleted?
@@ -63,9 +64,10 @@ export const RoomInfoTab = () => {
 
   const unfinishedPeers = React.useMemo(
     () =>
-      (sessionDoc?.usernames?.length ?? 0) -
-      (sessionDoc?.finishedUsers?.length ?? 0),
-    [sessionDoc]
+      roomDoc.usernames.filter(
+        (username) => !sessionDoc.finishedUsers.includes(username)
+      ).length,
+    [roomDoc, sessionDoc]
   );
   //we need this to prevent other user from choosing the question if there is already someone choose it
   React.useEffect(() => {
@@ -163,6 +165,11 @@ export const RoomInfoTab = () => {
           </div>
         </div>
       )}
+      <PromptNavigateDialog
+        finished={
+          roomId != null && showNavigatePrompt && sessionDoc.nextQuestion !== ""
+        }
+      />
     </div>
   );
 };

@@ -1,11 +1,12 @@
+import { auth } from "@cb/db";
+import { sendServiceRequest, setLocalStorage } from "@cb/services";
 import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "@cb/utils";
-import React from "react";
+import { FirebaseError } from "firebase/app";
 import {
   ActionCodeSettings,
   sendSignInLinkToEmail,
 } from "firebase/auth/web-extension";
-import { auth } from "@cb/db";
-import { sendServiceRequest, setLocalStorage } from "@cb/services";
+import React from "react";
 
 interface SignInInit {
   status: "INIT";
@@ -53,14 +54,16 @@ export const useSignInWithEmailLink = () => {
         });
         setStatus({ status: "SENT" });
       })
-      .catch((error: any) => {
-        // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#sendsigninlinktoemail
-        const message =
-          error.code === "auth/invalid-email"
-            ? "Invalid email"
-            : "An error has occured";
-        setStatus({ status: "ERROR", message: message });
-        console.error(error);
+      .catch((error: unknown) => {
+        if (error instanceof FirebaseError) {
+          // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#sendsigninlinktoemail
+          const message =
+            error.code === "auth/invalid-email"
+              ? "Invalid email"
+              : "An error has occured";
+          setStatus({ status: "ERROR", message: message });
+          console.error(error);
+        }
       });
 
   const resetStatus = () => setStatus({ status: "INIT" });

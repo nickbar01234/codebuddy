@@ -13,7 +13,7 @@ import React, { ReactNode } from "react";
 
 //note that the classname from leetcode is not applying because dialog is not in leetcode environment. We could still use classname from our tailwind tho.
 export const baseButtonClassName =
-  "rounded-md text-black dark:text-white py-2 font-medium text-base transition hover:bg-[--color-button-hover-background] bg-[--color-button-background] border-transparent hover:border-black dark:hover:border-white border";
+  "rounded-md text-[#1E1E1E] dark:text-white py-2 font-medium text-base transition hover:bg-[--color-button-hover-background] bg-[--color-button-background] border-transparent hover:border-black dark:hover:border-white border";
 
 export interface RoomDialogProps {
   dialog?: {
@@ -55,16 +55,21 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
           {trigger.customTrigger ? (
             trigger.node
           ) : (
-            <Button
-              {...d(trigger?.props, {})}
-              className={cn(
-                "flex items-center justify-center dark:text-white text-black w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]",
-                trigger?.props?.className
-              )}
-              aria-label={trigger.label}
-            >
-              {trigger.node}
-            </Button>
+            // todo(nickbar01234): For some reason, background doesn't override in light mode?
+            <div className="bg-[--color-button-background]">
+              <Button
+                {...d(trigger?.props, {})}
+                className={cn(
+                  // "flex items-center justify-center dark:text-white text-[#1E1E1E] w-[150px] hover:bg-[--color-button-hover-background] bg-[--color-button-background] dark:hover:bg-[--color-button-hover-background] dark:bg-[--color-button-background]",
+                  "flex items-center justify-center w-[150px]",
+                  baseButtonClassName,
+                  trigger?.props?.className
+                )}
+                aria-label={trigger.label}
+              >
+                {trigger.node}
+              </Button>
+            </div>
           )}
         </DialogTrigger>
       )}

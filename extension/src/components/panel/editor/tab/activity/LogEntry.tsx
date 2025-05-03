@@ -1,11 +1,11 @@
-import { LogEvent } from "@cb/db/converter";
+import { RoomEvent } from "@cb/db/converter";
 import { useAppState } from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
 import { assertUnreachable } from "@cb/utils/error";
 import { timeAgo } from "@cb/utils/heartbeat";
 import { History, MessageCircleIcon, Users } from "lucide-react";
 interface LogEntryProps {
-  entry: LogEvent;
+  entry: RoomEvent;
 }
 
 const colorVariants = {

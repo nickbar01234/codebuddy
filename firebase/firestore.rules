@@ -25,6 +25,10 @@ service cloud.firestore {
       match /sessions/{document=**} {
          allow read, write: if isPermittedToModify()
       }
+
+      match /events/{document=**} {
+         allow read, write: if isPermittedToModify()
+      }
     }
   }
 }

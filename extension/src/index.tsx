@@ -1,5 +1,5 @@
 import { store } from "@cb/state/store";
-import { waitForElement } from "@cb/utils";
+import { generateId, waitForElement } from "@cb/utils";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
@@ -10,12 +10,11 @@ import "./style/index.css";
 
 const TIME_OUT = 5000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
-const EXTENSION_ID = "CodeBuddy";
 
 waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
   .then((leetCodeNode) => {
     const extensionRoot = document.createElement("div");
-    extensionRoot.id = EXTENSION_ID;
+    extensionRoot.id = generateId("root");
     leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
     createRoot(extensionRoot).render(
       <React.StrictMode>
@@ -26,8 +25,8 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
       </React.StrictMode>
     );
   })
-  .catch((_reason) =>
+  .catch(() =>
     console.error(
-      `Unable to mount ${EXTENSION_ID} within ${TIME_OUT}ms - most likely due to LeetCode changing HTML page`
+      `Unable to mount Codebuddy within ${TIME_OUT}ms - most likely due to LeetCode changing HTML page`
     )
   );

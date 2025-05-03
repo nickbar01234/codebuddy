@@ -40,7 +40,7 @@ import {
 } from "@cb/utils";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
-import { poll } from "@cb/utils/poll";
+import { poll, wait } from "@cb/utils/poll";
 import {
   arrayRemove,
   arrayUnion,
@@ -102,6 +102,7 @@ export const MAX_CAPACITY = 4;
 export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
+    setState: setAppState,
   } = useAppState();
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const { state: appState } = useAppState();
@@ -127,6 +128,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     register: registerSnapshot,
     get: getSnapshot,
     cleanup: cleanupSnapshot,
+    evict: evictSnapshot,
   } = useResource<Unsubscribe>({ name: "snapshot" });
 
   useOnMount(() => {
@@ -134,18 +136,27 @@ export const RTCProvider = (props: RTCProviderProps) => {
       .then((button) => button as HTMLButtonElement)
       .then((button) => {
         const originalOnClick = button.onclick;
-        button.onclick = function (event) {
-          if (originalOnClick) {
-            originalOnClick.call(this, event);
-          }
-
-          waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-            .then(() => handleSucessfulSubmissionRef.current())
-            .catch(() => handleFailedSubmissionRef.current());
-        };
+        if (import.meta.env.MODE === "development") {
+          const mockBtn = button.cloneNode(true) as HTMLButtonElement;
+          button.replaceWith(mockBtn);
+          mockBtn.onclick = function (event) {
+            event.preventDefault();
+            handleSucessfulSubmissionRef.current();
+            return;
+          };
+        } else {
+          button.onclick = function (event) {
+            if (originalOnClick) {
+              originalOnClick.call(this, event);
+            }
+            waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
+              .then(() => handleSucessfulSubmissionRef.current())
+              .catch(() => handleFailedSubmissionRef.current());
+          };
+        }
       })
       .catch((error) => {
-        console.error("Error mounting callback on submit code button:", error);
+        console.log("Error mounting callback on submit code button:", error);
       });
   });
 
@@ -224,6 +235,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
       },
     }));
   });
+
+  const onClose = React.useRef(
+    (peer: string) => () => evictConnection(peer)
+  ).current;
 
   const onmessage = React.useCallback(
     (peer: string) =>
@@ -324,6 +339,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       channel.onmessage = onmessage(peer);
       channel.onopen = onOpen.current(peer);
+      channel.onclose = onClose(peer);
 
       pc.onicecandidate = async (event) => {
         if (event.candidate) {
@@ -363,10 +379,17 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
       registerSnapshot(peer, unsubscribe, (prev) => prev());
     },
-    [username, onmessage, registerSnapshot, registerConnection, sessionId]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      sessionId,
+      onClose,
+    ]
   );
 
-  const joinRoom = React.useCallback(
+  const joinRoomInternal = React.useCallback(
     async (roomId: string): Promise<boolean> => {
       console.log("Joining room", roomId);
       if (!roomId) {
@@ -482,6 +505,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
     ]
   );
 
+  const joinRoom = React.useCallback(
+    (roomId: string) => {
+      try {
+        return joinRoomInternal(roomId);
+      } catch {
+        toast.error("Failed to join room");
+        setAppState(AppState.HOME);
+        return Promise.resolve(false);
+      }
+    },
+    [joinRoomInternal, setAppState]
+  );
+
   const leaveRoom = React.useCallback(
     async (roomId: string | null, reload = false) => {
       if (roomId == null) return;
@@ -559,8 +595,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
-      if (peers.length === 0) return;
-      if (roomId == null) return;
+      if (peers.length === 0 || roomId == null) return;
+
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
       peers
@@ -585,7 +621,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           Object.entries(prev).filter(([key]) => !peers.includes(key))
         )
       );
-      // console.log("Removed peers", peers);
     },
     [roomId, username, evictConnection, sessionId]
   );
@@ -630,19 +665,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const refreshInfo = getLocalStorage("tabs");
     if (refreshInfo == undefined) return;
     const prevRoomId = refreshInfo.roomId;
-    await leaveRoom(prevRoomId, true);
     // todo(nickbar01234): Dummy fix to mitigate a race
     // 1. User A reload and triggers leave room
     // 2. User B detects that A leaves the room and attempts to delete peer from local state
     // 3. User A join sessions before (2) is completed
     // 4. User B haven't finished cleaning A from local state
     // 5. User A doesn't receive an offer
-    setTimeout(async () => {
-      const join = await joinRoom(prevRoomId);
-      if (!join) {
-        toast.error("Failed to join room");
-      }
-    }, 1500);
+    leaveRoom(prevRoomId, true)
+      .then(() => wait(1500))
+      .then(() => joinRoom(prevRoomId));
   }, [joinRoom, leaveRoom]);
 
   const joiningBackRoom = React.useCallback(async () => {
@@ -714,6 +745,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
+      return () => evictSnapshot(roomId);
     }
   }, [
     roomId,
@@ -723,6 +755,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     registerSnapshot,
     getConnection,
     sessionId,
+    evictSnapshot,
   ]);
 
   React.useEffect(() => {
@@ -738,7 +771,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    console.log("After reload join", refreshInfo);
     if (appState === AppState.LOADING && refreshInfo?.roomId) {
       afterReloadJoin();
     }
@@ -842,7 +874,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           case "joinRoom":
           case "reloadExtension":
             break;
-
           default:
             console.error("Unhandled window message", windowMessage);
             break;
