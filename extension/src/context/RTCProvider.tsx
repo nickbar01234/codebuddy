@@ -40,7 +40,7 @@ import {
 } from "@cb/utils";
 import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
-import { poll } from "@cb/utils/poll";
+import { poll, wait } from "@cb/utils/poll";
 import {
   arrayRemove,
   arrayUnion,
@@ -102,6 +102,7 @@ export const MAX_CAPACITY = 4;
 export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
+    setState: setAppState,
   } = useAppState();
   const [roomId, setRoomId] = React.useState<null | string>(null);
   const { state: appState } = useAppState();
@@ -388,7 +389,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     ]
   );
 
-  const joinRoom = React.useCallback(
+  const joinRoomInternal = React.useCallback(
     async (roomId: string): Promise<boolean> => {
       console.log("Joining room", roomId);
       if (!roomId) {
@@ -502,6 +503,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
       getConnection,
       sessionId,
     ]
+  );
+
+  const joinRoom = React.useCallback(
+    (roomId: string) => {
+      try {
+        return joinRoomInternal(roomId);
+      } catch {
+        toast.error("Failed to join room");
+        setAppState(AppState.HOME);
+        return Promise.resolve(false);
+      }
+    },
+    [joinRoomInternal, setAppState]
   );
 
   const leaveRoom = React.useCallback(
@@ -651,19 +665,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const refreshInfo = getLocalStorage("tabs");
     if (refreshInfo == undefined) return;
     const prevRoomId = refreshInfo.roomId;
-    await leaveRoom(prevRoomId, true);
     // todo(nickbar01234): Dummy fix to mitigate a race
     // 1. User A reload and triggers leave room
     // 2. User B detects that A leaves the room and attempts to delete peer from local state
     // 3. User A join sessions before (2) is completed
     // 4. User B haven't finished cleaning A from local state
     // 5. User A doesn't receive an offer
-    setTimeout(async () => {
-      const join = await joinRoom(prevRoomId);
-      if (!join) {
-        toast.error("Failed to join room");
-      }
-    }, 1500);
+    leaveRoom(prevRoomId, true)
+      .then(() => wait(1500))
+      .then(() => joinRoom(prevRoomId));
   }, [joinRoom, leaveRoom]);
 
   const joiningBackRoom = React.useCallback(async () => {
