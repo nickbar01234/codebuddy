@@ -389,7 +389,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     ]
   );
 
-  const joinRoom = React.useCallback(
+  const joinRoomInternal = React.useCallback(
     async (roomId: string): Promise<boolean> => {
       console.log("Joining room", roomId);
       if (!roomId) {
@@ -503,6 +503,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
       getConnection,
       sessionId,
     ]
+  );
+
+  const joinRoom = React.useCallback(
+    (roomId: string) => {
+      try {
+        return joinRoomInternal(roomId);
+      } catch {
+        toast.error("Failed to join room");
+        setAppState(AppState.HOME);
+        return Promise.resolve(false);
+      }
+    },
+    [joinRoomInternal, setAppState]
   );
 
   const leaveRoom = React.useCallback(
@@ -660,14 +673,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     // 5. User A doesn't receive an offer
     leaveRoom(prevRoomId, true)
       .then(() => wait(1500))
-      .then(async () => {
-        const join = await joinRoom(prevRoomId);
-        if (!join) {
-          toast.error("Failed to join room");
-        }
-      })
-      .catch(() => setAppState(AppState.HOME));
-  }, [joinRoom, leaveRoom, setAppState]);
+      .then(() => joinRoom(prevRoomId));
+  }, [joinRoom, leaveRoom]);
 
   const joiningBackRoom = React.useCallback(async () => {
     const refreshInfo = getLocalStorage("tabs");
