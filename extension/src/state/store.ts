@@ -10,7 +10,15 @@ export const store = configureStore({
     getDefaultMiddleware({
       serializableCheck: false,
     }),
+  devTools: true,
 });
+const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__?.connect({
+  name: "LeetCodeExtension",
+});
+console.log("Redux DevTools Extension", devTools);
+
+devTools?.init(store.getState()); // show initial state
+store.subscribe(() => devTools?.send("update", store.getState()));
 // Infer the `RootState`,  `AppDispatch`, and `AppStore` types from the store itself
 export type RootState = ReturnType<typeof store.getState>;
 // Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
