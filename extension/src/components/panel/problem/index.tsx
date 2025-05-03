@@ -38,10 +38,11 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const table = (await waitForElement("a#\\31 ", TIMEOUT, iframeDoc))
-          .parentNode as Element;
-        hideToRoot(table.parentElement?.parentElement);
-        const rowContainer = table;
+        const rowContainer = (
+          await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)
+        ).parentNode as Element;
+        hideToRoot(rowContainer.parentElement?.parentElement);
+        // const rowContainer = table;
         rowContainer.classList.add("space-y-1", "mt-4");
 
         const addButton = async () => {

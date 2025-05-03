@@ -2,36 +2,37 @@ import { getAllSessionId } from "@cb/db/";
 import { generateId } from "@cb/utils";
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useFetchPastQuestions } from "./useFetchPastQuestions";
+import { useSelectedQuestions } from "./useSelectedQuestions";
 
-vi.mock("../db/index", () => ({
+const mocks = vi.hoisted(() => ({
   getAllSessionId: vi.fn(),
 }));
 
-describe("useFetchPastQuestions", () => {
+vi.mock("../db/index", () => ({
+  getAllSessionId: mocks.getAllSessionId,
+}));
+
+describe("useSelectedQuestions", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it("it should return past questions ID in the roomId", async () => {
+  it("it should return selected questions ID in the roomId", async () => {
     const mockQuestionIds = ["two-sum", "add-two-numbers"];
-    (getAllSessionId as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      mockQuestionIds
-    );
+    mocks.getAllSessionId.mockResolvedValueOnce(mockQuestionIds);
     const mockRoomId = generateId(`ROOM_${Date.now()}`);
+
     const { result } = renderHook(() =>
-      useFetchPastQuestions({ roomId: mockRoomId })
+      useSelectedQuestions({ roomId: mockRoomId })
     );
     await waitFor(() => {
       expect(result.current).toEqual(mockQuestionIds);
     });
-    expect(getAllSessionId).toHaveBeenCalledWith(mockRoomId);
+    expect(getAllSessionId).toHaveBeenCalledExactlyOnceWith(mockRoomId);
   });
 
   it("it should return empty array when roomId is null", () => {
-    const { result } = renderHook(() =>
-      useFetchPastQuestions({ roomId: null })
-    );
+    const { result } = renderHook(() => useSelectedQuestions({ roomId: null }));
     expect(result.current).toEqual([]);
     expect(getAllSessionId).not.toHaveBeenCalled();
   });
