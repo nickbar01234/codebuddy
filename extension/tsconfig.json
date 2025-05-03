@@ -23,7 +23,7 @@
     "paths": {
       "@cb/*": ["./*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "chrome"]
   },
   "include": ["./src", "./src/services/index.ts"],
   "exclude": ["./src/services/**/*.ts", "./**/*.spec.ts"],
