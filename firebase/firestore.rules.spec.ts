@@ -36,6 +36,10 @@ describe("Firebase security test", () => {
     return roomDoc.collection("sessions").doc("two-sum");
   };
 
+  const createEvent = (roomDoc: ReturnType<typeof createRoom>) => {
+    return roomDoc.collection("events").doc("some-event");
+  };
+
   beforeAll(async () => {
     testEnv = await initializeTestEnvironment({
       projectId: "demo-code-buddy-development",
@@ -60,9 +64,12 @@ describe("Firebase security test", () => {
   it("should allow authenticated users to read/write rooms", async () => {
     const authenticatedRoomDoc = createRoom(authenticatedDb);
     const authenticatedSession = createSession(authenticatedRoomDoc);
+    const authenticatedEvent = createEvent(authenticatedRoomDoc);
     await assertSucceeds(authenticatedRoomDoc.set(roomData));
     await assertSucceeds(authenticatedRoomDoc.get());
     await assertSucceeds(authenticatedSession.set({}));
+    await assertSucceeds(authenticatedEvent.get());
+    await assertSucceeds(authenticatedEvent.set({}));
     await assertFails(authenticatedRoomDoc.update({ expiredAt: new Date() }));
   });
 
@@ -86,5 +93,16 @@ describe("Firebase security test", () => {
       .collection("randomCollection")
       .doc("randomDoc");
     await assertFails(randomCollection.set(roomData));
+  });
+
+  it("only user in usernames array can access event document", async () => {
+    const anotherEmail = testEnv.authenticatedContext("anotherUser", {
+      email: "another@gmail.com",
+    });
+    const invalidRoomDoc = createRoom(anotherEmail.firestore());
+    const invalidEventRef = createEvent(invalidRoomDoc);
+    await assertFails(
+      invalidEventRef.set({ type: "joined", timestamp: Date.now() })
+    );
   });
 });

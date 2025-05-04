@@ -1,5 +1,6 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { useRTC } from "@cb/hooks";
+import { useSelectedQuestions } from "@cb/hooks/useSelectedQuestions";
 import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
 interface SelectProblemDialog {
@@ -13,8 +14,8 @@ export const SelectProblemDialog = ({
   open,
   setOpen,
 }: SelectProblemDialog) => {
-  const { handleChooseQuestion } = useRTC();
-
+  const { handleChooseQuestion, roomId } = useRTC();
+  const filterQuestionIds = useSelectedQuestions({ roomId });
   return (
     <RoomDialog
       trigger={{
@@ -32,7 +33,7 @@ export const SelectProblemDialog = ({
       content={{
         props: {
           className:
-            "h-[90vh] min-w-[80%] max-w-[80%] py-6 px-3 bg-layer-1 bg-white dark:bg-dark-layer-bg flex flex-col gap-4",
+            "h-[90vh] max-w-[1100px] py-6 px-3 bg-layer-1 bg-white dark:bg-dark-layer-bg flex flex-col gap-4",
         },
       }}
       title={{ node: "Select next problem" }}
@@ -42,7 +43,7 @@ export const SelectProblemDialog = ({
           handleChooseQuestion(question);
           setOpen(false);
         }}
-        filterQuestionIds={[]}
+        filterQuestionIds={filterQuestionIds}
         container={{}}
       />
     </RoomDialog>

@@ -5,7 +5,7 @@ import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/Activit
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { AppState } from "@cb/context/AppStateProvider";
 import { getRoomRef } from "@cb/db";
-import { LogEvent } from "@cb/db/converter";
+import { RoomEvent } from "@cb/db/converter";
 import {
   useAppState,
   useFirebaseListener,
@@ -26,6 +26,7 @@ import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
 import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
+
 export interface TabMetadata {
   id: string;
   displayHeader: string;
@@ -102,7 +103,7 @@ const EditorPanel = () => {
         value: "activity",
         label: "Activity Log",
         Icon: Activity,
-        Content: <ActivityLogTab logEntries={logEntries} />,
+        Content: <ActivityLogTab roomEvents={roomEvents} />,
       },
       {
         value: "roomInfo",
@@ -255,7 +256,7 @@ const EditorPanel = () => {
 
 export default EditorPanel;
 
-const logEntries: LogEvent[] = [
+const roomEvents: RoomEvent[] = [
   {
     type: "submission",
     username: "Buddy",

@@ -4,15 +4,12 @@ import {
 } from "@cb/components/ui/SkeletonWrapper";
 import useResource from "@cb/hooks/useResource";
 import {
-  disablePointerEvents,
-  generateId,
+  appendClassIdempotent,
   getQuestionIdFromUrl,
   hideToRoot,
   waitForElement,
 } from "@cb/utils";
 import React, { useEffect } from "react";
-import { createRoot } from "react-dom/client";
-import { SelectQuestionButton } from "./SelectProblemButton";
 
 // We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
 const TIMEOUT = 10_000;
@@ -38,83 +35,40 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        disablePointerEvents(iframeDoc);
+        const rowContainer = (
+          await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)
+        ).parentNode as Element;
+        hideToRoot(rowContainer.parentElement?.parentElement);
 
-        // A collection of questions - for some reason, leetcode has empty tables
-        const table = await waitForElement(
-          "div[role='table']:nth-child(1)",
-          TIMEOUT,
-          iframeDoc
-        );
-        hideToRoot(table);
-        const rows = await waitForElement(
-          "div[role='rowgroup']",
-          TIMEOUT,
-          table as unknown as Document
-        );
-        // The order currently: status, title, solution, acceptance, difficulty, frequency
-        const observer = new MutationObserver(async () => {
-          const rowList = rows?.querySelectorAll("div[role='row']") ?? [];
-          for (const question of rowList) {
+        const addButton = async () => {
+          const rowList = rowContainer.querySelectorAll("a");
+          appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
+          for (const anchorContainer of rowList) {
             try {
-              // Technically, the selector can either match on status (if daily question) or title -- in either cases,
-              // we have the link to the actual problem
-              const link = (await waitForElement(
-                "div[role='cell'] a",
-                TIMEOUT,
-                question as unknown as Document
-              )) as HTMLAnchorElement;
-
-              const questionId = getQuestionIdFromUrl(link.href);
-              const buttonId = generateId(`question-selector`);
-              const oldBtn = question.querySelector(
-                `span[${INJECTED_ATTRIBUTE}=${buttonId}]`
-              );
-              if (oldBtn) oldBtn.remove();
-
-              if (filterQuestionIds?.includes(questionId)) {
-                try {
-                  rows.removeChild(question);
-                  return;
-                } catch (error) {
-                  console.log("cannot remove", error);
-                }
+              const link = anchorContainer.href;
+              const questionId = getQuestionIdFromUrl(link);
+              if (filterQuestionIds.includes(questionId)) {
+                anchorContainer.style.display = "none";
               }
 
-              const injected = iframeDoc.createElement("span");
-              injected.setAttribute(INJECTED_ATTRIBUTE, buttonId);
-              question.append(injected);
-
-              createRoot(injected).render(
-                <SelectQuestionButton
-                  id={link.href}
-                  onClick={() => {
-                    // Handle the question select
-                    handleQuestionSelect(link.href);
-                    // Prevent further action
-                    return;
-                  }}
-                />
-              );
-            } catch {
-              // If no link exist, there's no point in displaying the question
-              rows.removeChild(question);
+              if (!anchorContainer.hasAttribute(INJECTED_ATTRIBUTE)) {
+                anchorContainer.removeAttribute("onclick");
+                anchorContainer.addEventListener("click", (e) => {
+                  handleQuestionSelect(link);
+                  e.preventDefault();
+                });
+                anchorContainer.setAttribute(INJECTED_ATTRIBUTE, "");
+              }
+            } catch (e) {
+              console.error("Unable to locate question link", e);
             }
           }
-        });
+        };
 
+        const observer = new MutationObserver(addButton);
         registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
-        observer.observe(rows, { childList: true });
-        waitForElement(
-          "div[role='columnheader']:first-child",
-          TIMEOUT,
-          iframeDoc
-        ).then((element) => {
-          // todo(nickbar01234): Append an empty cell to make padding somewhat consistent... we should fix this styling
-          const cloned = element.cloneNode(true);
-          (cloned as HTMLElement).style.visibility = "hidden";
-          element.parentNode?.appendChild(cloned);
-        });
+        observer.observe(rowContainer, { childList: true });
+        addButton();
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
@@ -134,8 +88,7 @@ export const QuestionSelectorPanel = React.memo(
           }
         };
       });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [handleQuestionSelect, filterQuestionIds]);
+    }, [handleQuestionSelect, filterQuestionIds, registerObserver]);
 
     return (
       <SkeletonWrapper

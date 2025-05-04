@@ -41,8 +41,8 @@ export const RejoinPromptDialog = () => {
             className={baseButtonClassName}
             onClick={() => {
               removeLocalStorage("closingTabs");
-              joiningBackRoom();
               setAppState(AppState.LOADING);
+              joiningBackRoom();
             }}
           >
             <span className="text-sm font-medium">Yes</span>

@@ -28,7 +28,8 @@ export interface MessageEvent extends BaseEvent {
   username: string;
   message: string;
 }
-export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
+
+export type RoomEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface Room {
   usernames: string[];
@@ -54,6 +55,38 @@ export interface Session {
 export interface RoomUser {
   lastHeartBeat: Timestamp;
 }
+
+const defaultEventValues: {
+  [K in RoomEvent["type"]]: Omit<
+    Partial<Extract<RoomEvent, { type: K }>>,
+    "type" | "timestamp"
+  >;
+} = {
+  submission: { username: "", output: "", status: "error" },
+  connection: { username: "", status: "join" },
+  message: { username: "", message: "" },
+};
+
+export const roomEventConverter: FirestoreDataConverter<RoomEvent, RoomEvent> =
+  {
+    toFirestore: (data: RoomEvent) => data,
+    fromFirestore: (
+      snapshot: QueryDocumentSnapshot,
+      options: SnapshotOptions
+    ): RoomEvent => {
+      const data = snapshot.data(options) ?? {};
+      if (!Object.keys(defaultEventValues).includes(data.type)) {
+        throw new Error(`Unknown or missing event type: ${data.type}`);
+      }
+
+      return {
+        type: data.type,
+        timestamp: data.timestamp ?? 0,
+        ...defaultEventValues[data.type as RoomEvent["type"]],
+        ...data,
+      } as RoomEvent;
+    },
+  };
 
 export const peerConnectionConverter: FirestoreDataConverter<
   PeerConnection,

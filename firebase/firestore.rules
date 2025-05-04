@@ -30,6 +30,9 @@ service cloud.firestore {
         allow read: if isPermittedToModify()
         allow write: if isPermittedToModify() && request.auth.token.email == username
       }
+      match /events/{document=**} {
+         allow read, write: if isPermittedToModify()
+      }
     }
   }
 }

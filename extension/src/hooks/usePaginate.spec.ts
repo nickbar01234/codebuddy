@@ -3,11 +3,13 @@ import {
   AggregateField,
   AggregateQuerySnapshot,
   DocumentData,
+  DocumentReference,
   getCountFromServer,
   getDocs,
   Query,
   QueryDocumentSnapshot,
   QuerySnapshot,
+  SnapshotMetadata,
 } from "firebase/firestore";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import usePaginate, {
@@ -32,9 +34,9 @@ const mockQueryDocumentSnapshot = (id: string): QueryDocumentSnapshot => ({
   exists: function (): this is QueryDocumentSnapshot {
     return true;
   },
-  metadata: {} as any,
+  metadata: {} as SnapshotMetadata,
   get: vi.fn(),
-  ref: {} as any,
+  ref: {} as DocumentReference,
 });
 
 const generateDocs = (count: number): QueryDocumentSnapshot[] =>
@@ -184,6 +186,8 @@ describe("usePaginate", () => {
     vi.mocked(getCountFromServer).mockResolvedValue(mockAggregateSnapshot(2));
 
     const docs = generateDocs(2);
+    // todo(nickbar01234): Fix any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let resolveDocs: (val: any) => void;
 
     vi.mocked(getDocs).mockImplementation(() => {

@@ -3,13 +3,16 @@ import {
   peerConnectionConverter,
   Room,
   roomConverter,
+  RoomEvent,
   RoomUser,
   roomUserConverter,
   Session,
   sessionConverter,
 } from "@cb/db/converter";
 import { auth, firestore } from "@cb/db/setup";
+
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -18,6 +21,7 @@ import {
   getDocs,
   orderBy,
   query,
+  QueryConstraint,
   setDoc,
   Timestamp,
   WithFieldValue,
@@ -37,6 +41,11 @@ export const setRoom = (
   ref: DocumentReference<Room, Room>,
   data: Partial<WithFieldValue<Room>>
 ) => setDoc(ref, data, { merge: true });
+
+export const addEventToRoom = (roomId: string, data: RoomEvent) => {
+  const roomRef = getRoomRef(roomId);
+  addDoc(collection(roomRef, "events"), data);
+};
 
 export const getSessionRefs = (roomId: string) =>
   collection(getRoomRef(roomId), "sessions").withConverter(sessionConverter);
@@ -61,12 +70,19 @@ export const getSessionPeerConnectionRefs = (
     peerConnectionConverter
   );
 
+export const getSessions = (
+  roomId: string,
+  constraints: QueryConstraint[] = []
+) => {
+  const refs = getSessionRefs(roomId);
+  const q = constraints.reduce((q, current) => query(q, current), query(refs));
+  return getDocs(q);
+};
+
 export const getAllSessionId = async (roomId: string) => {
   // This function will return all sessions in a room.
   // Note: This is not efficient for large datasets, consider using query for pagination or filtering.
-  const sessionRefs = getSessionRefs(roomId);
-  const sessionQuery = query(sessionRefs, orderBy("createdAt"));
-  const snapshot = await getDocs(sessionQuery);
+  const snapshot = await getSessions(roomId, [orderBy("createdAt")]);
   return snapshot.docs.map((doc) => doc.id);
 };
 
