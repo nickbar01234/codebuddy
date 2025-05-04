@@ -57,3 +57,8 @@ export const disablePointerEvents = (context: Document = document) => {
 export const generateId = (suffix: string) => {
   return `CodeBuddy-${suffix}`;
 };
+
+export const appendClassIdempotent = (element: Element, tokens: string[]) =>
+  tokens
+    .filter((token) => !element.classList.contains(token))
+    .forEach((token) => element.classList.add(token));
