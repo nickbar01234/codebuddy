@@ -1,6 +1,6 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
+import { HEARTBEAT_INTERVAL } from "@cb/context/HeartBeatProvider";
 import { usePeerSelection, useRTC } from "@cb/hooks/index";
 import { cn } from "@cb/utils/cn";
 import React from "react";

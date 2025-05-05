@@ -7,6 +7,7 @@ import {
   getAllSessionId,
   getRoom,
   getRoomRef,
+  getRoomUserRef,
   getSession,
   getSessionPeerConnectionRef,
   getSessionPeerConnectionRefs,
@@ -85,11 +86,11 @@ export interface RTCContext {
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
-  setInformations: (information: Record<string, PeerInformation>) => void;
   peerState: Record<string, PeerState>;
   joiningBackRoom: () => Promise<void>;
   handleChooseQuestion: (questionId: string) => void;
   handleNavigateToNextQuestion: () => void;
+  deletePeers: (peers: string[]) => Promise<void>;
 }
 
 interface RTCProviderProps {
@@ -596,19 +597,25 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const deletePeers = React.useCallback(
     async (peers: string[]) => {
-      if (peers.length === 0 || roomId == null) return;
+      if (peers.length === 0 || roomIdRef.current! == null) return;
 
       peers.forEach(evictConnection);
       const batch = writeBatch(firestore);
-      peers
-        .map((peer) =>
-          getSessionPeerConnectionRef(roomId, sessionId, username, peer)
-        )
-        .forEach((docRef) => batch.delete(docRef));
-      batch.update(getSessionRef(roomId, sessionId), {
+      peers.forEach((peer) => {
+        batch.delete(
+          getSessionPeerConnectionRef(
+            roomIdRef.current!,
+            sessionId,
+            username,
+            peer
+          )
+        );
+        batch.delete(getRoomUserRef(roomIdRef.current!, peer));
+      });
+      batch.update(getSessionRef(roomIdRef.current, sessionId), {
         usernames: arrayRemove(...peers),
       });
-      batch.update(getRoomRef(roomId), {
+      batch.update(getRoomRef(roomIdRef.current), {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
@@ -623,7 +630,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         )
       );
     },
-    [roomId, username, evictConnection, sessionId]
+    [username, evictConnection, sessionId]
   );
 
   const deleteMe = React.useCallback(async () => {
@@ -657,6 +664,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     [sessionId, roomId]
   );
 
+  const roomIdRef = React.useRef(roomId);
   const deletePeersRef = React.useRef(deletePeers);
   const deleteMeRef = React.useRef(deleteMe);
   const handleSucessfulSubmissionRef = React.useRef(handleSucessfulSubmission);
@@ -758,6 +766,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
     sessionId,
     evictSnapshot,
   ]);
+
+  React.useEffect(() => {
+    roomIdRef.current = roomId;
+  }, [roomId]);
 
   React.useEffect(() => {
     deleteMeRef.current = deleteMe;
@@ -895,11 +907,11 @@ export const RTCProvider = (props: RTCProviderProps) => {
         roomId,
         setRoomId,
         informations,
-        setInformations,
         peerState,
         joiningBackRoom,
         handleChooseQuestion,
         handleNavigateToNextQuestion,
+        deletePeers,
       }}
     >
       {props.children}
