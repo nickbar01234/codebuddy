@@ -109,7 +109,7 @@ export const deleteSessionPeerConnection = (
 export const getRoomUserRefs = (roomId: string) =>
   collection(getRoomRef(roomId), "users").withConverter(roomUserConverter);
 
-const getRoomUserRef = (roomId: string, username: string) =>
+export const getRoomUserRef = (roomId: string, username: string) =>
   doc(getRoomUserRefs(roomId), username).withConverter(roomUserConverter);
 
 const setRoomUser = (

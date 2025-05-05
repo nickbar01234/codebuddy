@@ -27,8 +27,7 @@ service cloud.firestore {
       }
 
       match /users/{username} {
-        allow read: if isPermittedToModify()
-        allow write: if isPermittedToModify() && request.auth.token.email == username
+        allow read, write: if isPermittedToModify()
       }
       match /events/{document=**} {
          allow read, write: if isPermittedToModify()

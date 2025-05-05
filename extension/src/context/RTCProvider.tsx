@@ -85,6 +85,7 @@ export interface RTCContext {
   roomId: string | null;
   setRoomId: (id: string) => void;
   informations: Record<string, PeerInformation>;
+  setInformations: (information: Record<string, PeerInformation>) => void;
   peerState: Record<string, PeerState>;
   joiningBackRoom: () => Promise<void>;
   handleChooseQuestion: (questionId: string) => void;
@@ -823,8 +824,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         // In practice, we delay the user before joining room, so it should be fine? :)
         // console.log("Dead peers", timeOutPeers);
         if (timeOutPeers.length > 0) {
-          console.log("Deleting peers", timeOutPeers);
-          deletePeersRef.current(timeOutPeers);
+          // console.log("Deleting peers", timeOutPeers);
+          // deletePeersRef.current(timeOutPeers);
         }
         return newPeers;
       });
@@ -894,6 +895,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
         roomId,
         setRoomId,
         informations,
+        setInformations,
         peerState,
         joiningBackRoom,
         handleChooseQuestion,
