@@ -14,7 +14,7 @@
   "permissions": ["scripting", "tabs"],
   "content_scripts": [
     {
-      "js": ["assets/index.js"],
+      "js": ["assets/content_script.js"],
       "css": ["assets/index.css"],
       "matches": ["https://leetcode.com/problems/*"],
       "run_at": "document_end"
