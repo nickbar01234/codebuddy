@@ -39,7 +39,7 @@ import {
   getQuestionIdFromUrl,
   waitForElement,
 } from "@cb/utils";
-import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
+import { getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
 import { poll, wait } from "@cb/utils/poll";
 import {
@@ -68,10 +68,6 @@ const servers = {
 };
 
 const CODE_MIRROR_CONTENT = ".cm-content";
-
-export const HEARTBEAT_INTERVAL = 15000; // ms
-const CHECK_ALIVE_INTERVAL = 15000; // ms
-const TIMEOUT = 100; // seconds;
 
 interface CreateRoom {
   roomId?: string;
@@ -168,10 +164,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     )
   ).current;
 
-  const sendHeartBeat = React.useRef(() =>
-    sendMessageToAll(withPayload({ action: "heartbeat" }))
-  ).current;
-
   const getCodeMessagePayload = React.useRef(
     async (changes: Partial<LeetCodeContentChange>) =>
       withPayload({
@@ -257,10 +249,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
           case "tests": {
             receiveTests(payload, peer);
-            break;
-          }
-
-          case "heartbeat": {
             break;
           }
 
@@ -800,53 +788,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   React.useEffect(() => {
     handleFailedSubmissionRef.current = handleFailedSubmission;
   }, [handleFailedSubmission]);
-
-  useOnMount(() => {
-    const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
-
-    const checkAliveInterval = setInterval(() => {
-      const currentPeers = getConnection();
-
-      const timeOutPeers: string[] = [];
-      setPeerState((prev) => {
-        const newPeers = Object.fromEntries(
-          Object.entries(prev).map(([peer, peerHeartBeat]) => {
-            const { latency } = peerHeartBeat;
-            const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
-            const newSample = getUnixTs() - curlastSeen;
-            if (newSample > TIMEOUT) {
-              timeOutPeers.push(peer);
-            }
-            const newLatency = calculateNewRTT(latency, newSample);
-            return [
-              peer,
-              {
-                ...peerHeartBeat,
-                latency: newLatency,
-              },
-            ];
-          })
-        );
-        // Note that this race is thereotically possible
-        // Time 1: User A detected B is dead and attempt to delete peer
-        // User A thread to delete peer is delayed
-        // Time 2: User A rejoins
-        // Time 3: deletePeers is executed
-        // User A gets kicked out
-        // In practice, we delay the user before joining room, so it should be fine? :)
-        // console.log("Dead peers", timeOutPeers);
-        if (timeOutPeers.length > 0) {
-          // console.log("Deleting peers", timeOutPeers);
-          // deletePeersRef.current(timeOutPeers);
-        }
-        return newPeers;
-      });
-    }, CHECK_ALIVE_INTERVAL);
-    return () => {
-      clearInterval(checkAliveInterval);
-      clearInterval(sendInterval);
-    };
-  });
 
   useOnMount(() => {
     // TODO(nickbar01234) - This is probably not rigorous enough

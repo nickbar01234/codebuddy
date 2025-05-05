@@ -16,10 +16,6 @@ interface PeerTestMessage extends PeerGenericMessage {
   tests: string[];
 }
 
-interface PeerHeartBeatMessage extends PeerGenericMessage {
-  action: "heartbeat";
-}
-
 export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
@@ -31,11 +27,7 @@ interface PeerEventMessage extends PeerGenericMessage {
   eventMessage: string;
 }
 
-export type PeerMessage =
-  | PeerCodeMessage
-  | PeerTestMessage
-  | PeerHeartBeatMessage
-  | PeerEventMessage;
+export type PeerMessage = PeerCodeMessage | PeerTestMessage | PeerEventMessage;
 
 export interface PeerInformation {
   code?: MessagePayload<PeerCodeMessage>;
