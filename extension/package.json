@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build:popup": "TYPE=popup vite build",
     "build:service_worker": "TYPE=service_worker vite build",
     "build:content_script": "TYPE=content_script vite build",
     "build": "pnpm run \"/^build:.*/\"",

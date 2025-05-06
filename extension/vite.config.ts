@@ -7,16 +7,20 @@ import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig(() => {
+  const buildFor = process.env.TYPE;
   // https://github.com/vitejs/vite/issues/12203
   const input =
-    process.env.TYPE === "content_script"
+    buildFor === "content_script"
       ? "./src/main/content_script.tsx"
-      : process.env.TYPE === "service_worker"
+      : buildFor === "service_worker"
         ? "./src/main/service_worker/background.ts"
-        : null;
+        : buildFor === "popup"
+          ? "./src/main/popup.tsx"
+          : null;
+
   const devScriptHint = `./dist/${process.env.TYPE}`;
 
-  if (input == null) {
+  if (input == null || buildFor == null) {
     throw new Error("Invalid entry point");
   }
 
