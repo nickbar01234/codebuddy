@@ -45,14 +45,6 @@ const EditorPanel = () => {
     height,
   } = useWindowDimensions();
   const { roomId } = useRTC();
-  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
-  const toggleUserDropdown = React.useCallback(
-    (e: React.MouseEvent<Element, MouseEvent>) => {
-      e.stopPropagation();
-      setUserDropdownOpen((prev) => !prev);
-    },
-    []
-  );
   const { getLanguageExtension } = useLanguageExtension();
   const { data: roomInfo } = useFirebaseListener({
     reference: roomId != null ? getRoomRef(roomId) : undefined,
