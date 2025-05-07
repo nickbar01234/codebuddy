@@ -10,7 +10,7 @@ import {
   useRTC,
 } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
-import { getQuestionIdFromUrl } from "@cb/utils";
+import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
 import { Timestamp } from "firebase/firestore";
@@ -22,10 +22,6 @@ export const RoomInfoTab = () => {
     user: { username },
   } = useAppState();
   const { roomId, peerState, handleNavigateToNextQuestion } = useRTC();
-  const sessionId = React.useMemo(
-    () => getQuestionIdFromUrl(window.location.href),
-    []
-  );
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
@@ -35,7 +31,8 @@ export const RoomInfoTab = () => {
     init: { usernames: [], isPublic: true, roomName: "" },
   });
   const { data: sessionDoc } = useFirebaseListener({
-    reference: roomId != null ? getSessionRef(roomId, sessionId) : undefined,
+    reference:
+      roomId != null ? getSessionRef(roomId, getSessionId()) : undefined,
     callback: async (sessionData) => {
       const data = sessionData;
       // todo(nickbar01234): Clear and report room if deleted?
@@ -111,7 +108,7 @@ export const RoomInfoTab = () => {
           <h2 className="text-xl font-bold mb-3">
             {sessionDoc?.nextQuestion != ""
               ? sessionDoc?.nextQuestion
-              : getQuestionIdFromUrl(window.location.href)}
+              : getSessionId()}
             <span className="text-orange-400 ml-2">[Medium]</span>
           </h2>
           <div className="flex gap-2 mb-4">

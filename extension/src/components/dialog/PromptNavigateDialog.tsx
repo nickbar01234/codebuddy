@@ -2,8 +2,7 @@ import { useRTC } from "@cb/hooks";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
-import { getQuestionIdFromUrl } from "@cb/utils";
-import React from "react";
+import { getSessionId } from "@cb/utils";
 import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
 interface PromptNavigateDialogProps {
@@ -15,16 +14,12 @@ export const PromptNavigateDialog = ({
 }: PromptNavigateDialogProps) => {
   const { handleNavigateToNextQuestion } = useRTC();
   const navigatePrompt = getLocalStorage("navigatePrompt") ?? {};
-  const sessionId = React.useMemo(
-    () => getQuestionIdFromUrl(window.location.href),
-    []
-  );
-  const displayPrompt = finished && !(navigatePrompt[sessionId] ?? false);
+  const displayPrompt = finished && !(navigatePrompt[getSessionId()] ?? false);
 
   const onDecision = () =>
     setLocalStorage("navigatePrompt", {
       ...navigatePrompt,
-      [sessionId]: true,
+      [getSessionId()]: true,
     });
 
   const onNavigate = () => {
