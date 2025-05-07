@@ -1,4 +1,4 @@
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { UserDropDownMenu } from "@cb/components/navigator/menu/UserDropDownMenu";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
@@ -166,11 +166,7 @@ const EditorPanel = () => {
               className="h-full w-full bg-inherit text-inherit"
             >
               <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
-                <UserDropdown
-                  key="user-dropdown"
-                  isOpen={isUserDropdownOpen}
-                  toggle={toggleUserDropdown}
-                />
+                <UserDropDownMenu />
 
                 <Separator
                   orientation="vertical"
