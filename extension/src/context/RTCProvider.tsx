@@ -73,6 +73,8 @@ export const HEARTBEAT_INTERVAL = 15000; // ms
 const CHECK_ALIVE_INTERVAL = 15000; // ms
 const TIMEOUT = 100; // seconds;
 
+const UNSUBSCRIBE_FIREBASE_AFTER = 60_000;
+
 interface CreateRoom {
   roomId?: string;
   roomName?: string;
@@ -338,7 +340,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       channel.onopen = onOpen.current(peer);
       channel.onclose = onClose(peer);
 
-      pc.onicecandidate = async (event) => {
+      pc.onicecandidate = (event) => {
         if (event.candidate) {
           setSessionPeerConnection(meRef, {
             offerCandidates: arrayUnion(event.candidate.toJSON()),
@@ -358,25 +360,50 @@ export const RTCProvider = (props: RTCProviderProps) => {
         offer: offer,
       });
 
-      const unsubscribe = onSnapshot(meRef, (doc) => {
-        const maybeData = doc.data();
-        if (maybeData == undefined) return;
+      const unsubscribe = onSnapshot(
+        meRef,
+        async (doc) => {
+          const maybeData = doc.data();
+          if (maybeData == undefined) return;
 
-        if (
-          maybeData?.answer != undefined &&
-          pc.currentRemoteDescription == null
-        ) {
-          pc.setRemoteDescription(new RTCSessionDescription(maybeData.answer));
+          if (
+            maybeData?.answer != undefined &&
+            pc.currentRemoteDescription == null
+          ) {
+            await pc.setRemoteDescription(
+              new RTCSessionDescription(maybeData.answer)
+            );
+          }
+
+          maybeData.answerCandidates.forEach(
+            (candidate: RTCIceCandidateInit) => {
+              pc.addIceCandidate(new RTCIceCandidate(candidate));
+            }
+          );
+        },
+        (error) => {
+          console.error("Received snapshot error", error.code);
+          evictSnapshot(peer);
         }
-
-        maybeData.answerCandidates.forEach((candidate: RTCIceCandidateInit) => {
-          pc.addIceCandidate(new RTCIceCandidate(candidate));
-        });
-      });
+      );
 
       registerSnapshot(peer, unsubscribe, (prev) => prev());
+
+      // todo(nickbar01234): Not rigorous, but does the job since it's reasonable that RTC connection shouldn't take
+      // that long
+      setTimeout(() => {
+        console.log("Unsubscribe firebase database after timeout");
+        evictSnapshot(peer);
+      }, UNSUBSCRIBE_FIREBASE_AFTER);
     },
-    [username, onmessage, registerSnapshot, registerConnection, onClose]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      onClose,
+      evictSnapshot,
+    ]
   );
 
   const joinRoomInternal = React.useCallback(
@@ -448,35 +475,49 @@ export const RTCProvider = (props: RTCProviderProps) => {
                 resource.channel.onmessage = onmessage(peer);
                 resource.channel.onopen = onOpen.current(peer);
               };
-              pc.onicecandidate = async (event) => {
+              pc.onicecandidate = (event) => {
                 if (event.candidate) {
-                  await setSessionPeerConnection(themRef, {
+                  setSessionPeerConnection(themRef, {
                     answerCandidates: arrayUnion(event.candidate.toJSON()),
                   });
                 }
               };
             }
 
-            if (data.offer != undefined && pc.remoteDescription == null) {
-              await pc.setRemoteDescription(
-                new RTCSessionDescription(data.offer)
-              );
+            if (data.offer) {
+              if (pc.remoteDescription == null)
+                await pc.setRemoteDescription(
+                  new RTCSessionDescription(data.offer)
+                );
 
-              const answer = await pc.createAnswer();
-              await pc.setLocalDescription(answer);
-              await setSessionPeerConnection(themRef, {
-                answer: answer,
-              });
+              if (pc.localDescription == null) {
+                const answer = await pc.createAnswer();
+                await pc.setLocalDescription(answer);
+                await setSessionPeerConnection(themRef, {
+                  answer: answer,
+                });
+              }
             }
 
             data.offerCandidates.forEach((candidate: RTCIceCandidateInit) => {
               pc.addIceCandidate(new RTCIceCandidate(candidate));
             });
           });
+        },
+        (error) => {
+          console.error("Received snapshot error", error.code);
+          evictSnapshot(username);
         }
       );
 
       registerSnapshot(username, unsubscribe, (prev) => prev());
+
+      // todo(nickbar01234): Not rigorous, but does the job since it's reasonable that RTC connection shouldn't take
+      // that long
+      setTimeout(() => {
+        console.log("Unsubscribe firebase database after timeout");
+        evictSnapshot(username);
+      }, UNSUBSCRIBE_FIREBASE_AFTER);
 
       if (getLocalStorage("tabs")?.roomId !== roomId.toString()) {
         toast.success(
@@ -485,7 +526,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
       }
       return true;
     },
-    [username, onmessage, registerSnapshot, registerConnection, getConnection]
+    [
+      username,
+      onmessage,
+      registerSnapshot,
+      registerConnection,
+      getConnection,
+      evictSnapshot,
+    ]
   );
 
   const joinRoom = React.useCallback(

@@ -26,13 +26,20 @@ export const useFirebaseListener = <T>({
 
   React.useEffect(() => {
     if (reference != undefined) {
-      const unsubscribe = onSnapshot(reference, (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data();
-          setData(data);
-          if (callback != undefined) callback(data);
+      const unsubscribe = onSnapshot(
+        reference,
+        (snapshot) => {
+          if (snapshot.exists()) {
+            const data = snapshot.data();
+            setData(data);
+            if (callback != undefined) callback(data);
+          }
+        },
+        (error) => {
+          console.error("Error on Firebase listener", error.code);
+          evict(reference.id);
         }
-      });
+      );
       register(reference.id, unsubscribe, (unsubscribe) => unsubscribe());
     }
     return () => {
