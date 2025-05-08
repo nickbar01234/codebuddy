@@ -366,7 +366,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           const maybeData = doc.data();
           if (maybeData == undefined) return;
 
-          console.log("Snapshot received offer");
           if (
             maybeData?.answer != undefined &&
             pc.currentRemoteDescription == null
@@ -446,7 +445,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
               return;
             }
 
-            console.log("Snapshot received answer");
             const data = change.doc.data();
             const peer = data.username;
 
