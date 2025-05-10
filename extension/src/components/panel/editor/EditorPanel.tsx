@@ -22,6 +22,7 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { cn } from "@cb/utils/cn";
+import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
@@ -52,7 +53,7 @@ const EditorPanel = () => {
     init: { usernames: [], isPublic: true, roomName: "" },
   });
 
-  const canViewCode = activePeer?.viewable ?? false;
+  const canViewCode = codeViewable(activePeer);
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom =
     roomInfo.usernames.filter((username) => username !== user.username)
@@ -169,7 +170,12 @@ const EditorPanel = () => {
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
                       value={tab.value}
-                      className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                      className={cn(
+                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent",
+                        {
+                          "pointer-events-none": !canViewCode,
+                        }
+                      )}
                     >
                       <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}

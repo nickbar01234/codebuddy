@@ -5,6 +5,7 @@ import { usePeerSelection, useRTC } from "@cb/hooks";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
 import { Peer } from "@cb/types";
 import { cn } from "@cb/utils/cn";
+import { codeViewable } from "@cb/utils/model";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
 
@@ -37,6 +38,7 @@ const UserDropDownMenuTrigger = ({
                 "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary":
                   canDropdown,
                 "cursor-default": !canDropdown,
+                "pointer-events-none": !codeViewable(peer),
               }
             )}
           >
