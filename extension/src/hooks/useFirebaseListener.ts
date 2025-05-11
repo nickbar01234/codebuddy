@@ -4,7 +4,6 @@ import useResource from "./useResource";
 
 export interface UseFirebaseListenerProps<T> {
   reference?: DocumentReference<T>;
-  callback?: (data: T) => unknown;
   init: T;
 }
 
@@ -16,23 +15,22 @@ export interface UseFirebaseListenerProps<T> {
  */
 export const useFirebaseListener = <T>({
   reference,
-  callback,
   init,
 }: UseFirebaseListenerProps<T>) => {
   const [data, setData] = React.useState<T>(init);
-  const { register, evict } = useResource<Unsubscribe>({
+  const { register, evict, get } = useResource<Unsubscribe>({
     name: `${reference?.id ?? ""}DocumentReference`,
   });
 
   React.useEffect(() => {
-    if (reference != undefined) {
+    if (reference != undefined && get()[reference.id] == undefined) {
+      console.log("Subscribing", reference.id);
       const unsubscribe = onSnapshot(
         reference,
         (snapshot) => {
           if (snapshot.exists()) {
             const data = snapshot.data();
             setData(data);
-            if (callback != undefined) callback(data);
           }
         },
         (error) => {
@@ -45,7 +43,7 @@ export const useFirebaseListener = <T>({
     return () => {
       if (reference?.id != undefined) evict(reference.id);
     };
-  }, [reference, callback, register, evict]);
+  }, [reference, get, register, evict]);
 
   return {
     data,

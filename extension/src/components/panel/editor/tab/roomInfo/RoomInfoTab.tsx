@@ -26,31 +26,20 @@ export const RoomInfoTab = () => {
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
   const [elapsed, setElapsed] = React.useState(0);
+  const { roomReference, sessionReference } = React.useMemo(
+    () => ({
+      roomReference: roomId != null ? getRoomRef(roomId) : undefined,
+      sessionReference:
+        roomId != null ? getSessionRef(roomId, getSessionId()) : undefined,
+    }),
+    [roomId]
+  );
   const { data: roomDoc } = useFirebaseListener({
-    reference: getRoomRef(roomId ?? undefined),
+    reference: roomReference,
     init: { usernames: [], isPublic: true, roomName: "" },
   });
   const { data: sessionDoc } = useFirebaseListener({
-    reference:
-      roomId != null ? getSessionRef(roomId, getSessionId()) : undefined,
-    callback: async (sessionData) => {
-      const data = sessionData;
-      // todo(nickbar01234): Clear and report room if deleted?
-      if (data == undefined) return;
-      const usernames = data.usernames;
-      const nextQuestionChosen = sessionData.nextQuestion !== "";
-      const finishedUsers = sessionData.finishedUsers;
-      setChooseNextQuestion(
-        !nextQuestionChosen && finishedUsers.includes(username)
-      );
-      setShowNavigatePrompt(
-        nextQuestionChosen &&
-          usernames.every((user) => finishedUsers.includes(user))
-      );
-      setElapsed(
-        Date.now() - (data.createdAt?.toDate()?.getTime() ?? Date.now())
-      );
-    },
+    reference: sessionReference,
     init: {
       usernames: [],
       finishedUsers: [],
@@ -66,6 +55,23 @@ export const RoomInfoTab = () => {
       ).length,
     [roomDoc, sessionDoc]
   );
+
+  React.useEffect(() => {
+    const usernames = sessionDoc.usernames;
+    const nextQuestionChosen = sessionDoc.nextQuestion !== "";
+    const finishedUsers = sessionDoc.finishedUsers;
+    setChooseNextQuestion(
+      !nextQuestionChosen && finishedUsers.includes(username)
+    );
+    setShowNavigatePrompt(
+      nextQuestionChosen &&
+        usernames.every((user) => finishedUsers.includes(user))
+    );
+    setElapsed(
+      Date.now() - (sessionDoc.createdAt?.toDate()?.getTime() ?? Date.now())
+    );
+  }, [sessionDoc, username]);
+
   //we need this to prevent other user from choosing the question if there is already someone choose it
   React.useEffect(() => {
     if (!chooseNextQuestion) {
