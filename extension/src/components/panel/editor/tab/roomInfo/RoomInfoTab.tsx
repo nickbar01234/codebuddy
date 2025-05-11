@@ -3,12 +3,7 @@ import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoomRef, getSessionRef } from "@cb/db";
-import {
-  useAppState,
-  useFirebaseListener,
-  useOnMount,
-  useRTC,
-} from "@cb/hooks/index";
+import { useAppState, useFirebaseListener, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
@@ -67,9 +62,6 @@ export const RoomInfoTab = () => {
       nextQuestionChosen &&
         usernames.every((user) => finishedUsers.includes(user))
     );
-    setElapsed(
-      Date.now() - (sessionDoc.createdAt?.toDate()?.getTime() ?? Date.now())
-    );
   }, [sessionDoc, username]);
 
   //we need this to prevent other user from choosing the question if there is already someone choose it
@@ -79,13 +71,13 @@ export const RoomInfoTab = () => {
     }
   }, [chooseNextQuestion]);
 
-  useOnMount(() => {
+  React.useEffect(() => {
+    // todo(nickbar01234): Should be reading the entire room doc?
     const interval = setInterval(() => {
-      setElapsed((prevElapsed) => Date.now() - prevElapsed);
+      setElapsed(() => Date.now() - sessionDoc.createdAt.toDate().getTime());
     }, 1000);
-
     return () => clearInterval(interval);
-  });
+  }, [sessionDoc]);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
