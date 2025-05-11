@@ -6,10 +6,7 @@ import {
   Unsubscribe,
 } from "firebase/firestore";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  useFirebaseListener,
-  UseFirebaseListenerProps,
-} from "./useFirebaseListener";
+import { useFirebaseListener } from "./useFirebaseListener";
 
 const mocks = vi.hoisted(() => ({
   onSnapshot: vi.fn(),
@@ -22,16 +19,14 @@ vi.mock("firebase/firestore", () => ({
 describe("useFirebaseListener", () => {
   const REFERENCE = { id: "id" } as DocumentReference;
   const INITIALIZED = { users: [] };
-  let callback: UseFirebaseListenerProps<unknown>["callback"];
 
   beforeEach(() => {
     vi.resetAllMocks();
-    callback = vi.fn();
   });
 
   it("data is initialized", () => {
     const { result } = renderHook(() =>
-      useFirebaseListener({ reference: REFERENCE, callback, init: INITIALIZED })
+      useFirebaseListener({ reference: REFERENCE, init: INITIALIZED })
     );
     expect(result.current.data).toBe(INITIALIZED);
   });
@@ -48,13 +43,12 @@ describe("useFirebaseListener", () => {
       }
     );
     const { result } = renderHook(() =>
-      useFirebaseListener({ reference: REFERENCE, callback, init: INITIALIZED })
+      useFirebaseListener({ reference: REFERENCE, init: INITIALIZED })
     );
     expect(result.current.data).toBe(INITIALIZED);
-    expect(callback).toHaveBeenCalledTimes(0);
   });
 
-  it("data exists returns and execute callback", () => {
+  it("data exists returns", () => {
     const data = { key: "value" };
     // Mocking overloaded signature is alot of sadness
     mocks.onSnapshot.mockImplementationOnce(
@@ -72,10 +66,9 @@ describe("useFirebaseListener", () => {
       }
     );
     const { result } = renderHook(() =>
-      useFirebaseListener({ reference: REFERENCE, callback, init: INITIALIZED })
+      useFirebaseListener({ reference: REFERENCE, init: INITIALIZED })
     );
     expect(result.current.data).toBe(data);
-    expect(callback).toHaveBeenCalledExactlyOnceWith(data);
   });
 
   it("undefined reference is no-op", () => {

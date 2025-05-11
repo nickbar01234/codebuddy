@@ -47,8 +47,12 @@ const EditorPanel = () => {
   } = useWindowDimensions();
   const { roomId } = useRTC();
   const { getLanguageExtension } = useLanguageExtension();
+  const roomReference = React.useMemo(
+    () => (roomId != null ? getRoomRef(roomId) : undefined),
+    [roomId]
+  );
   const { data: roomInfo } = useFirebaseListener({
-    reference: roomId != null ? getRoomRef(roomId) : undefined,
+    reference: roomReference,
     // todo(nickbar01234): Port to redux
     init: { usernames: [], isPublic: true, roomName: "" },
   });
