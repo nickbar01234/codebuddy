@@ -427,12 +427,14 @@ export const RTCProvider = (props: RTCProviderProps) => {
       await setRoom(getRoomRef(roomId), {
         usernames: arrayUnion(username),
       });
-      setRoomId(roomId);
+      // todo(nickbar01234): Ask user to redirect
       const sessionDoc = await getSession(roomId, getSessionId());
       if (!sessionDoc.exists()) {
         toast.error("Session does not exist");
         return false;
       }
+
+      setRoomId(roomId);
       await setSession(getSessionRef(roomId, getSessionId()), {
         usernames: arrayUnion(username),
       });
@@ -775,7 +777,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
-      return () => evictSnapshot(roomId);
+      return () => {
+        evictSnapshot(roomId);
+      };
     }
   }, [
     roomId,
