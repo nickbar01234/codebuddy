@@ -28,7 +28,9 @@ service cloud.firestore {
         && (
           (!request.resource.data.keys().hasAny(["nextQuestion"])
             || (
-              (resource.data.nextQuestion == "" || resource.data.nextQuestion == null)
+              (!resource.data.keys().hasAny(["nextQuestion"])
+               || resource.data.nextQuestion == "" 
+               || resource.data.nextQuestion == null)
               && 
               (request.resource.data.nextQuestion != "" && request.resource.data.nextQuestion != null)
               )
