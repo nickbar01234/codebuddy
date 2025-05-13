@@ -1,7 +1,6 @@
 import { Preference } from "@cb/types";
 
-// todo(nickbar01234): Small hack since background.ts file can't recognize client-side env
-const env = (import.meta as any).env;
+const env = import.meta.env;
 
 export const CodeBuddyPreference: Preference = {
   appPreference: {

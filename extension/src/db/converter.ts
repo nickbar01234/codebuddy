@@ -28,11 +28,13 @@ export interface MessageEvent extends BaseEvent {
   username: string;
   message: string;
 }
-export type LogEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
+
+export type RoomEvent = SubmissionEvent | ConnectionEvent | MessageEvent;
 
 export interface Room {
   usernames: string[];
-  activityLog: LogEvent[];
+  isPublic: boolean;
+  roomName: string;
 }
 
 export interface PeerConnection {
@@ -42,12 +44,45 @@ export interface PeerConnection {
   answer?: RTCSessionDescriptionInit;
   answerCandidates: RTCIceCandidate[];
 }
+
 export interface Session {
   finishedUsers: string[];
   usernames: string[];
   nextQuestion: string;
   createdAt: Timestamp;
 }
+
+const defaultEventValues: {
+  [K in RoomEvent["type"]]: Omit<
+    Partial<Extract<RoomEvent, { type: K }>>,
+    "type" | "timestamp"
+  >;
+} = {
+  submission: { username: "", output: "", status: "error" },
+  connection: { username: "", status: "join" },
+  message: { username: "", message: "" },
+};
+
+export const roomEventConverter: FirestoreDataConverter<RoomEvent, RoomEvent> =
+  {
+    toFirestore: (data: RoomEvent) => data,
+    fromFirestore: (
+      snapshot: QueryDocumentSnapshot,
+      options: SnapshotOptions
+    ): RoomEvent => {
+      const data = snapshot.data(options) ?? {};
+      if (!Object.keys(defaultEventValues).includes(data.type)) {
+        throw new Error(`Unknown or missing event type: ${data.type}`);
+      }
+
+      return {
+        type: data.type,
+        timestamp: data.timestamp ?? 0,
+        ...defaultEventValues[data.type as RoomEvent["type"]],
+        ...data,
+      } as RoomEvent;
+    },
+  };
 
 export const peerConnectionConverter: FirestoreDataConverter<
   PeerConnection,
@@ -73,11 +108,13 @@ export const roomConverter: FirestoreDataConverter<Room, Room> = {
     const data = snapshot.data(options) ?? {};
     return {
       ...data,
+      isPublic: data.isPublic ?? true,
+      roomName: data.roomName ?? "",
       usernames: data.usernames ?? [],
-      activityLog: data.activityLog ?? [],
     };
   },
 };
+
 export const sessionConverter: FirestoreDataConverter<Session, Session> = {
   toFirestore: (data: Session) => {
     return data;

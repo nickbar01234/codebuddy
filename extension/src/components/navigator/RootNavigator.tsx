@@ -1,12 +1,14 @@
-import { Status } from "@cb/types";
-import SignInPanel from "@cb/components/panel/SignInPanel";
-import useDevReload from "@cb/hooks/useDevReload";
-import { useSession } from "@cb/hooks/index";
-import { RTCProvider } from "@cb/context/RTCProvider";
-import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
-import { AppNavigator } from "./AppNavigator";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import SignInPanel from "@cb/components/panel/SignInPanel";
 import { AppStateProvider } from "@cb/context/AppStateProvider";
+import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
+import { RTCProvider } from "@cb/context/RTCProvider";
+import { useSession } from "@cb/hooks/index";
+import useDevReload from "@cb/hooks/useDevReload";
+import { Status } from "@cb/types";
+import { AppNavigator } from "./AppNavigator";
+import { ContainerNavigator } from "./ContainerNavigator";
+import { AppControlMenu, RoomControlMenu } from "./menu";
 
 const RootNavigator = () => {
   const { auth } = useSession();
@@ -18,17 +20,27 @@ const RootNavigator = () => {
         <AppStateProvider user={auth.user}>
           <RTCProvider>
             <PeerSelectionProvider>
-              <AppNavigator />
+              <ContainerNavigator menu={<RoomControlMenu />}>
+                <AppNavigator />
+              </ContainerNavigator>
             </PeerSelectionProvider>
           </RTCProvider>
         </AppStateProvider>
       );
 
     case Status.UNAUTHENTICATED:
-      return <SignInPanel />;
+      return (
+        <ContainerNavigator menu={<AppControlMenu />}>
+          <SignInPanel />
+        </ContainerNavigator>
+      );
 
     case Status.LOADING:
-      return <LoadingPanel numberOfUsers={0} />;
+      return (
+        <ContainerNavigator menu={<AppControlMenu />}>
+          <LoadingPanel numberOfUsers={0} />
+        </ContainerNavigator>
+      );
   }
 };
 

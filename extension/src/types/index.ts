@@ -39,6 +39,7 @@ export interface Preference {
   codePreference: CodePreference;
 }
 
+// Refactor post redux
 export interface LocalStorage {
   tabs: {
     roomId: string;
@@ -49,10 +50,13 @@ export interface LocalStorage {
     roomId?: string;
   };
   lastActivePeer: string;
+  navigate: string;
   signIn: {
     email: string;
     url: string;
     tabId: number;
   };
   preference: Preference;
+  closingTabs: boolean;
+  navigatePrompt: Record<string, boolean>; // Whether we have prompted user to navigate
 }

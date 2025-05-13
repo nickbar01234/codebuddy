@@ -7,7 +7,7 @@ import {
   setLocalStorage,
 } from "@cb/services";
 import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
-import { getQuestionIdFromUrl } from "@cb/utils";
+import { getSessionId } from "@cb/utils";
 import { poll } from "@cb/utils/poll";
 import React from "react";
 
@@ -42,9 +42,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
   const { variables } = useInferTests();
-  const sessionId = React.useMemo(() => {
-    return getQuestionIdFromUrl(window.location.href);
-  }, []);
 
   const activeUserInformation = React.useMemo(
     () => (activePeer == undefined ? undefined : informations[activePeer?.id]),
@@ -175,10 +172,11 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
 
   const getLocalStorageForIndividualPeers = React.useCallback(
     (peerId: string) => {
-      const sessions = getLocalStorage("tabs")?.sessions[sessionId]?.[peerId];
+      const sessions =
+        getLocalStorage("tabs")?.sessions[getSessionId()]?.[peerId];
       return sessions ?? undefined;
     },
-    [sessionId]
+    []
   );
 
   const setLocalStorageForIndividualPeers = React.useCallback(
@@ -190,17 +188,17 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         roomId: roomId,
         sessions: {},
       };
-      const currentRoom = currentInfo.sessions[sessionId ?? ""];
+      const currentRoom = currentInfo.sessions[getSessionId()];
       if (!currentRoom) {
-        currentInfo.sessions[sessionId ?? ""] = {};
+        currentInfo.sessions[getSessionId()] = {};
       }
-      const currentPeers = currentInfo.sessions[sessionId];
+      const currentPeers = currentInfo.sessions[getSessionId()];
       currentPeers[peer.id] = {
         ...peer,
       };
       setLocalStorage("tabs", currentInfo);
     },
-    [roomId, sessionId]
+    [roomId]
   );
 
   React.useEffect(() => {

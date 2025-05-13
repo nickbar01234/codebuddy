@@ -1,14 +1,12 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -21,22 +19,10 @@
 
     "baseUrl": "./src",
     "paths": {
-      "@cb/hooks": ["./hooks/index.ts"],
-      "@cb/hooks/*": ["./hooks/*"],
-      "@cb/components/*": ["./components/*"],
-      "@cb/utils": ["./utils/index.ts"],
-      "@cb/utils/*": ["./utils/*"],
-      "@cb/types": ["./types/index.ts"],
-      "@cb/services": ["./services/index.ts"],
-      "@cb/context/*": ["./context/*"],
-      "@cb/db": ["./db/index.ts"],
-      "@cb/db/*": ["./db/*"],
-      "@cb/lib/*": ["./lib/*"],
-      "@cb/constants": ["./constants/index.ts"],
-      "@cb/constants/*": ["./constants/*"]
-    }
+      "@cb/*": ["./*"]
+    },
+    "types": ["vite/client", "chrome"]
   },
-  "include": ["./src", "./src/services/index.ts"],
-  "exclude": ["./src/services/**/*.ts", "./**/*.spec.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["./src", "vite.config.ts"],
+  "exclude": ["./**/*.spec.ts"]
 }

@@ -6,7 +6,10 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "tabs",
   "lastActivePeer",
   "signIn",
+  "navigate",
   "preference",
+  "closingTabs",
+  "navigatePrompt",
 ];
 
 export const sendServiceRequest = <T extends ServiceRequest>(

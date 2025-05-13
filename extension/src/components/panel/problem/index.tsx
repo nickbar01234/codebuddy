@@ -1,97 +1,109 @@
-import { useOnMount } from "@cb/hooks";
-import { disablePointerEvents, hideToRoot, waitForElement } from "@cb/utils";
-import React from "react";
-import { createRoot } from "react-dom/client";
-import { SelectQuestionButton } from "./SelectProblemButton";
+import {
+  SkelentonWrapperProps,
+  SkeletonWrapper,
+} from "@cb/components/ui/SkeletonWrapper";
+import useResource from "@cb/hooks/useResource";
+import {
+  appendClassIdempotent,
+  getQuestionIdFromUrl,
+  hideToRoot,
+  waitForElement,
+} from "@cb/utils";
+import React, { useEffect } from "react";
 
 // We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
 const TIMEOUT = 10_000;
 
+const INJECTED_ATTRIBUTE = "data-injected";
+
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
+  filterQuestionIds: string[];
+  container?: Omit<SkelentonWrapperProps, "loading">;
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect }: QuestionSelectorPanelProps) => {
-    useOnMount(() => {
+  ({
+    handleQuestionSelect,
+    filterQuestionIds,
+    container = {},
+  }: QuestionSelectorPanelProps) => {
+    const [loading, setLoading] = React.useState(true);
+    const { register: registerObserver } = useResource<MutationObserver>({
+      name: "observer",
+    });
+
+    useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        disablePointerEvents(iframeDoc);
+        const rowContainer = (
+          await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)
+        ).parentNode as Element;
+        hideToRoot(rowContainer.parentElement?.parentElement);
 
-        // A collection of questions - for some reason, leetcode has empty tables
-        const table = await waitForElement(
-          "div[role='table']:nth-child(1)",
-          TIMEOUT,
-          iframeDoc
-        );
-        hideToRoot(table);
-        const rows = await waitForElement(
-          "div[role='rowgroup']",
-          TIMEOUT,
-          table as unknown as Document
-        );
-        // The order currently: status, title, solution, acceptance, difficulty, frequency
-        rows?.querySelectorAll("div[role='row']").forEach(async (question) => {
-          try {
-            // Technically, the selector can either match on status (if daily question) or title -- in either cases,
-            // we have the link to the actual problem
-            const link = (await waitForElement(
-              "div[role='cell'] a",
-              TIMEOUT,
-              question as unknown as Document
-            )) as HTMLAnchorElement;
-            const injected = iframeDoc.createElement("span");
-            question.append(injected);
-            createRoot(injected).render(
-              <SelectQuestionButton
-                onClick={() => {
-                  // Handle the question select
-                  handleQuestionSelect(link.href);
-                  // Prevent further action
-                  return;
-                }}
-              />
-            );
-          } catch {
-            // If no link exist, there's no point in displaying the question
-            rows.removeChild(question);
+        const addButton = async () => {
+          const rowList = rowContainer.querySelectorAll("a");
+          appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
+          for (const anchorContainer of rowList) {
+            try {
+              const link = anchorContainer.href;
+              const questionId = getQuestionIdFromUrl(link);
+              if (filterQuestionIds.includes(questionId)) {
+                anchorContainer.style.display = "none";
+              }
+
+              if (!anchorContainer.hasAttribute(INJECTED_ATTRIBUTE)) {
+                anchorContainer.removeAttribute("onclick");
+                anchorContainer.addEventListener("click", (e) => {
+                  handleQuestionSelect(link);
+                  e.preventDefault();
+                });
+                anchorContainer.setAttribute(INJECTED_ATTRIBUTE, "");
+              }
+            } catch (e) {
+              console.error("Unable to locate question link", e);
+            }
           }
-        });
+        };
 
-        waitForElement(
-          "div[role='columnheader']:first-child",
-          TIMEOUT,
-          iframeDoc
-        ).then((element) => {
-          // todo(nickbar01234): Append an empty cell to make padding somewhat consistent... we should fix this styling
-          const cloned = element.cloneNode(true);
-          (cloned as HTMLElement).style.visibility = "hidden";
-          element.parentNode?.appendChild(cloned);
-        });
+        const observer = new MutationObserver(addButton);
+        registerObserver("leetcode-table", observer, (obs) => obs.disconnect());
+        observer.observe(rowContainer, { childList: true });
+        addButton();
       };
 
       waitForElement("#leetcode_question", TIMEOUT).then((element) => {
         const iframe = element as HTMLIFrameElement;
-
         iframe.onload = async () => {
           const iframeDoc =
             iframe.contentDocument ?? iframe.contentWindow?.document;
           if (iframeDoc != undefined) {
-            handleIframeStyle(iframeDoc).catch((e) => {
-              console.error("Unable to mount Leetcode iframe", e);
-            });
+            handleIframeStyle(iframeDoc)
+              .then(() => {
+                setLoading(false);
+                console.log("Leetcode iframe mounted successfully");
+              })
+              .catch((e) => {
+                console.error("Unable to mount Leetcode iframe", e);
+              });
           }
         };
       });
-    });
+    }, [handleQuestionSelect, filterQuestionIds, registerObserver]);
 
     return (
-      <iframe
-        src="https://leetcode.com/problemset/"
-        title="LeetCode Question"
-        id="leetcode_question"
-        className="z-100 h-full w-full"
-        sandbox="allow-scripts allow-same-origin"
-      />
+      <SkeletonWrapper
+        loading={loading}
+        className="w-full h-full"
+        {...container}
+      >
+        <iframe
+          src="https://leetcode.com/problemset/"
+          title="LeetCode Question"
+          id="leetcode_question"
+          className="h-full w-full border-2 border-[#78788033]"
+          sandbox="allow-scripts allow-same-origin"
+        />
+      </SkeletonWrapper>
     );
   }
 );

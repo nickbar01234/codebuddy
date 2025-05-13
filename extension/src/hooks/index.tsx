@@ -16,4 +16,5 @@ export const useSession = () => React.useContext(sessionContext);
 
 export const useWindowDimensions = () => React.useContext(windowContext);
 
+export { useFirebaseListener } from "./useFirebaseListener";
 export { useOnMount };

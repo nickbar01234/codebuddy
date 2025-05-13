@@ -15,12 +15,19 @@ service cloud.firestore {
 
     // Allow only authenticated access to database
     match /rooms/{roomId} {
+      function isPermittedToModify() {
+        return request.auth != null && request.auth.token.email in get(/databases/$(database)/documents/rooms/$(roomId)).data.usernames;
+      }
+
       allow read, create: if request.auth != null;
-      allow update: if request.auth != null 
-      && request.resource.data.diff(resource.data).changedKeys().hasOnly(['usernames']);
+      allow update: if request.auth != null && request.resource.data.diff(resource.data).changedKeys().hasOnly(['usernames']);
+
       match /sessions/{document=**} {
-         allow read, write: if request.auth != null
-          && request.auth.token.email in get(/databases/$(database)/documents/rooms/$(roomId)).data.usernames;
+         allow read, write: if isPermittedToModify()
+      }
+
+      match /events/{document=**} {
+         allow read, write: if isPermittedToModify()
       }
     }
   }
