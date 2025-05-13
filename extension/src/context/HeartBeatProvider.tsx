@@ -7,7 +7,7 @@ import React from "react";
 
 export const HEARTBEAT_INTERVAL = 15000;
 const CHECK_ALIVE_INTERVAL = 15000; // ms
-const TIMEOUT = 100; // seconds;
+export const TIMEOUT = 100; // seconds;
 
 interface HeartBeatProviderProps {
   children: React.ReactNode;
