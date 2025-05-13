@@ -15,7 +15,7 @@ export const DefaultPanel = ({ children }: DefaultPanelProps) => {
           }}
         />
         <h1 className="text-2xl">
-          Code<span className="text-pinkish-red">Buddy</span>
+          Code<span className="text-codebuddy-pink">Buddy</span>
         </h1>
       </div>
       {children}

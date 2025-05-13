@@ -26,9 +26,10 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       textColor: {
-        DEFAULT: "var(--color-text-default)",
-        secondary: "var(--color-text-secondary)",
-        tertiary: "var(--color-text-tertiary)",
+        DEFAULT: "var(--text-primary)", // #1A1A1AFF & #F5F5F5FF
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)", // #0000008C & #FFFFFF99
+        tertiary: "var(--text-tertiary)", // #00000057 & #FFFFFF66
         other: "var(--color-text-other)",
       },
       colors: {
@@ -76,15 +77,19 @@ export default {
           hard: "var(--difficulty-hard)",
           medium: "var(--difficulty-medium)",
           easy: "var(--difficulty-easy)",
-          bg: "var(--color-leetcode-bg)",
-          nav: "var(--color-leetcode-nav)",
+          bg: "var(--color-tabset-background)", // #FFFFFFFF & #282828FF
+          nav: "var(--color-tabset-tabbar-background)", // #00000005 & #303030FF
         },
         codebuddy: {
           pink: "var(--color-pink)",
-          green: "var(--color-green)",
           red: "var(--color-red)",
+          green: "var(--color-green)",
           blue: "var(--color-blue)",
-          orange: "var(--color-orange)",
+          orange: "var(--brand-orange)", // #FFA116FF & #FFA116FF
+        },
+        message: {
+          success: "var(--message-success)", // #01B328FF & #28C244FF
+          danger: "var(--message-danger)", // #F63636FF & #F8615CFF
         },
       },
     },
