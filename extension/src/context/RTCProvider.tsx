@@ -667,21 +667,29 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const handleChooseQuestion = React.useCallback(
     async (questionURL: string) => {
-      if (!roomId) return;
-      const chosenQuestionId = getQuestionIdFromUrl(questionURL);
-      console.log("Choose question URL", questionURL);
-      toast.info("You have selected question " + chosenQuestionId);
-      if (roomId == null) return;
-      // todo(nickbar01234): Firebase security rule that should reject this write
-      await setSession(getSessionRef(roomId, getSessionId()), {
-        nextQuestion: chosenQuestionId,
-      });
-      const newSessionRef = getSessionRef(roomId, chosenQuestionId);
-      await setSession(newSessionRef, {
-        finishedUsers: [],
-        usernames: [],
-        createdAt: serverTimestamp(),
-      });
+      try {
+        if (!roomId) return;
+        const chosenQuestionId = getQuestionIdFromUrl(questionURL);
+        console.log("Choose question URL", questionURL);
+        toast.info("You have selected question " + chosenQuestionId);
+        if (roomId == null) return;
+        // todo(nickbar01234): Firebase security rule that should reject this write
+
+        await setSession(getSessionRef(roomId, getSessionId()), {
+          nextQuestion: chosenQuestionId,
+        });
+        const newSessionRef = getSessionRef(roomId, chosenQuestionId);
+        await setSession(newSessionRef, {
+          finishedUsers: [],
+          usernames: [],
+          createdAt: serverTimestamp(),
+        });
+      } catch (error) {
+        toast.error(
+          "Someone else already chose that question, or the request failed."
+        );
+        console.error("handleChooseQuestion failed:", error);
+      }
     },
     [roomId]
   );

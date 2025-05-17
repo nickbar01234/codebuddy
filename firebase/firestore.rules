@@ -18,22 +18,23 @@ service cloud.firestore {
       function isPermittedToModify() {
         return request.auth != null && request.auth.token.email in get(/databases/$(database)/documents/rooms/$(roomId)).data.usernames;
       }
+      function isBlank(val) {
+        return val == null || val == "";
+      }
+      function isPopulated(val) {       
+        return val is string && val != "";
+      }
 
       allow read, create: if request.auth != null;
       allow update: if request.auth != null && request.resource.data.diff(resource.data).changedKeys().hasOnly(['usernames']);
 
       match /sessions/{document=**} {
-        allow read, create, delete: if isPermittedToModify();
-        allow update: if isPermittedToModify()
-        && (
-          (!request.resource.data.keys().hasAny(["nextQuestion"])
-            || (
-              (!resource.data.keys().hasAny(["nextQuestion"])
-               || resource.data.nextQuestion == "" 
-               || resource.data.nextQuestion == null)
-              && 
-              (request.resource.data.nextQuestion != "" && request.resource.data.nextQuestion != null)
-              )
+        allow read, create: if isPermittedToModify();
+        allow update: if isPermittedToModify() && (
+          !('nextQuestion' in request.resource.data)
+          || (
+            (!('nextQuestion' in resource.data) || isBlank(resource.data.nextQuestion))
+            && (isPopulated(request.resource.data.nextQuestion))
           )
         );
       }
