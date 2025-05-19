@@ -301,9 +301,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     });
     await setSession(sessionRef, {
       finishedUsers: [],
-
       usernames: arrayUnion(username),
-
       createdAt: serverTimestamp(),
     });
     console.log("Created room", newRoomId);
@@ -683,9 +681,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           createdAt: serverTimestamp(),
         });
       } catch (error) {
-        toast.error(
-          "Someone else already chose that question, or the request failed."
-        );
+        toast.info("Someone has already chosen a question.");
         console.error("handleChooseQuestion failed:", error);
       }
     },
