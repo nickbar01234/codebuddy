@@ -23,6 +23,7 @@ interface PeerHeartBeatMessage extends PeerGenericMessage {
 export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
+  SELECT_QUESTION,
 }
 
 interface PeerEventMessage extends PeerGenericMessage {
