@@ -1,6 +1,6 @@
-import { Room } from "./PublicRoomTable.tsx";
+import { RoomWithSession } from "./PublicRoomTable.tsx";
 
-export const sampleRooms: Room[] = [
+export const sampleRooms: RoomWithSession[] = [
   {
     id: "1",
     name: "CodeMasters",

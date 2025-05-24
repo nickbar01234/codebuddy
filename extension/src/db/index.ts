@@ -17,6 +17,7 @@ import {
   orderBy,
   query,
   setDoc,
+  where,
   WithFieldValue,
 } from "firebase/firestore";
 
@@ -30,6 +31,11 @@ export const getRoomRef = (roomId?: string) =>
 
 export const getRoom = (roomId: string) => getDoc(getRoomRef(roomId));
 
+export const getPublicRoomsCollection = () =>
+  query(
+    collection(firestore, "rooms").withConverter(roomConverter),
+    where("isPublic", "==", true)
+  );
 export const setRoom = (
   ref: DocumentReference<Room, Room>,
   data: Partial<WithFieldValue<Room>>
