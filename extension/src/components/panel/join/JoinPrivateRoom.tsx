@@ -33,10 +33,10 @@ export const JoinPrivateRoom = () => {
   return (
     <div className="gap-4 flex flex-col items-center">
       <h2 className="text-xl font-medium text-center">Join a private room</h2>
-      <div className="flex w-[70%] rounded-md border overflow-hidden">
+      <div className="flex w-[70%] rounded-md border border-[#78788033] dark:border-[#4A4A4E] overflow-hidden">
         <Input
           id="roomId"
-          className="rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-[#2A2A2A]"
+          className="text-secondary rounded-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 dark:bg-[#2A2A2A]"
           placeholder="Enter room ID"
           onChange={onChangeRoomIdInput}
           onKeyDown={(e) => {
@@ -48,7 +48,7 @@ export const JoinPrivateRoom = () => {
         <Button
           variant={"secondary"}
           onClick={onJoinRoom}
-          className="rounded-none dark:text-white transition hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]"
+          className="bg-[#78788033] rounded-none dark:text-white transition hover:bg-[--color-button-hover-background] dark:bg-[#71717A] dark:hover:bg-[--color-button-hover-background]"
         >
           Join
         </Button>

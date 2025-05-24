@@ -22,10 +22,10 @@ const PublicRoomRow: React.FC<Props> = ({
     <TableRow
       onClick={onSelect}
       className={cn(
-        "cursor-pointer",
+        "cursor-pointer border-none",
         selected
-          ? "bg-black text-white hover:bg-black dark:text-black dark:bg-white dark:hover:bg-white"
-          : "hover:bg-gray-200 odd:bg-white even:bg-gray-100 dark:odd:bg-gray-900/50 dark:even:bg-gray-950"
+          ? "text-white dark:text-black bg-[#2C2C2C] dark:bg-[#F5F5F5] hover:bg-[#2C2C2C] dark:hover:bg-[#F5F5F5]"
+          : "text-primary hover:bg-[#78788033] odd:bg-white even:bg-gray-100 dark:odd:bg-gray-900/50 dark:even:bg-gray-950"
       )}
     >
       <TableCell className="p-2 truncate">{name}</TableCell>
@@ -34,12 +34,13 @@ const PublicRoomRow: React.FC<Props> = ({
       </TableCell>
       <TableCell className="p-2 truncate">
         <span
-          className={cn(
-            "text-xs font-medium",
-            difficulty === "Easy" && "text-green-600",
-            difficulty === "Medium" && "text-yellow-600",
-            difficulty === "Hard" && "text-red-600"
-          )}
+          className={
+            difficulty === "Easy"
+              ? "text-[#1CBABA]"
+              : difficulty === "Medium"
+                ? "text-[#FFB700]"
+                : "text-[#F63737]"
+          }
         >
           {difficulty}
         </span>

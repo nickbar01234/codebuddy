@@ -23,7 +23,7 @@ const JoinRoomPanel: React.FC = () => {
           Browse public rooms
         </h2>
 
-        <div className="flex flex-col grow overflow-hidden rounded-xl border dark:bg-dark-layer-bg">
+        <div className="flex flex-col grow overflow-hidden rounded-xl border border-[#78788033] dark:border-[#4A4A4E] dark:bg-dark-layer-bg">
           <PublicRoomTable
             selectedRoomId={selectedRoomId}
             onSelectRoom={setSelectedRoomId}
@@ -34,8 +34,8 @@ const JoinRoomPanel: React.FC = () => {
               disabled={!selectedRoomId}
               className={`w-full ${
                 selectedRoomId
-                  ? ""
-                  : "dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
+                  ? "bg-[#DD5471] dark:bg-[#FF6586]"
+                  : "bg-[#78788033] hover:bg-[--color-button-hover-background] dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
               }`}
               onClick={() => {
                 if (selectedRoomId) joinRoom(selectedRoomId);
