@@ -5,6 +5,7 @@ import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRTC } from "@cb/hooks/index";
 import { CopyIcon } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const CreateRoomLoadingPanel = () => {
   const { roomId } = useRTC();
@@ -40,6 +41,7 @@ const CreateRoomLoadingPanel = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   navigator.clipboard.writeText(roomId ?? "");
+                  toast.success(`Session ID ${roomId} copied to clipboard`);
                 }}
               >
                 <CopyIcon className="h-6 w-6 cursor-pointer" />

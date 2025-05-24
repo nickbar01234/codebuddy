@@ -7,8 +7,8 @@ import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
 import React from "react";
 import { _AppControlMenu } from "./AppControlMenu";
+import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
-import { RoomControlDropdownMenuItem } from "./RoomControlDropdownMenuItem";
 
 export const RoomControlMenu = () => {
   const { roomId, leaveRoom } = useRTC();
@@ -33,7 +33,7 @@ export const RoomControlMenu = () => {
     <Menu>
       {appState === AppState.ROOM && (
         <>
-          <RoomControlDropdownMenuItem
+          <DropdownMenuItem
             onSelect={(e) => {
               e.stopPropagation();
               navigator.clipboard.writeText(roomId ?? "");
@@ -42,8 +42,8 @@ export const RoomControlMenu = () => {
             <span className="flex items-center gap-2">
               <CopyIcon /> Copy Room ID
             </span>
-          </RoomControlDropdownMenuItem>
-          <RoomControlDropdownMenuItem onSelect={(e) => e.preventDefault()}>
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
             <LeaveRoomDialog
               triggerProps={{
                 node: (
@@ -54,14 +54,14 @@ export const RoomControlMenu = () => {
                 customTrigger: true,
               }}
             />
-          </RoomControlDropdownMenuItem>
+          </DropdownMenuItem>
         </>
       )}
-      <RoomControlDropdownMenuItem onSelect={signOutThrottled}>
+      <DropdownMenuItem onSelect={signOutThrottled}>
         <span className="flex items-center gap-2">
           <SignOutIcon /> <span>Sign Out</span>
         </span>
-      </RoomControlDropdownMenuItem>
+      </DropdownMenuItem>
       <_AppControlMenu />
     </Menu>
   );

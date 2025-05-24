@@ -13,7 +13,7 @@ export const poll = async <T>({ fn, until, ms = 1000 }: PollArguments<T>) => {
   return result;
 };
 
-const wait = (ms: number) => {
+export const wait = (ms: number) => {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });

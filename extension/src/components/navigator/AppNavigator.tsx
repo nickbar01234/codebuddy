@@ -6,7 +6,7 @@ import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { AppState, appStateContext } from "@cb/context/AppStateProvider";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import { getLocalStorage } from "@cb/services";
-import { getQuestionIdFromUrl } from "@cb/utils";
+import { getSessionId } from "@cb/utils";
 import React from "react";
 
 export const AppNavigator = () => {
@@ -21,11 +21,8 @@ export const AppNavigator = () => {
         {state === AppState.LOADING ? (
           <LoadingPanel
             numberOfUsers={
-              Object.keys(
-                currentTabInfo?.sessions[
-                  getQuestionIdFromUrl(window.location.href)
-                ]?.peers ?? {}
-              ).length
+              Object.keys(currentTabInfo?.sessions[getSessionId()]?.peers ?? {})
+                .length
             }
           />
         ) : state === AppState.REJOINING ? (
