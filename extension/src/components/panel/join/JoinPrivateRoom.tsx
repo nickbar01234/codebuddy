@@ -48,7 +48,7 @@ export const JoinPrivateRoom = () => {
         <Button
           variant={"secondary"}
           onClick={onJoinRoom}
-          className="bg-[#78788033] rounded-none dark:text-white transition hover:bg-[--color-button-hover-background] dark:bg-[#71717A] dark:hover:bg-[--color-button-hover-background]"
+          className="bg-[#78788033] rounded-none dark:text-white transition hover:bg-[#78788033] dark:bg-[#4A4A4E]"
         >
           Join
         </Button>

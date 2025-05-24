@@ -34,7 +34,7 @@ const JoinRoomPanel: React.FC = () => {
               disabled={!selectedRoomId}
               className={`w-full ${
                 selectedRoomId
-                  ? "bg-[#DD5471] dark:bg-[#FF6586]"
+                  ? "bg-[#DD5471] hover:bg-[--color-button-hover-background] dark:bg-[#FF6586]"
                   : "bg-[#78788033] hover:bg-[--color-button-hover-background] dark:text-white dark:bg-dark-layer-bg dark:hover:bg-dark-hover-bg"
               }`}
               onClick={() => {

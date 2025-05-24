@@ -25,7 +25,7 @@ const PublicRoomRow: React.FC<Props> = ({
         "cursor-pointer border-none",
         selected
           ? "text-white dark:text-black bg-[#2C2C2C] dark:bg-[#F5F5F5] hover:bg-[#2C2C2C] dark:hover:bg-[#F5F5F5]"
-          : "text-primary hover:bg-[#78788033] odd:bg-white even:bg-gray-100 dark:odd:bg-gray-900/50 dark:even:bg-gray-950"
+          : "text-primary hover:bg-[#78788033] dark:hover:bg-[--color-button-hover-background] odd:bg-white even:bg-[#00000005] dark:odd:bg-transparent dark:even:bg-[#FFFFFF0F]"
       )}
     >
       <TableCell className="p-2 truncate">{name}</TableCell>
