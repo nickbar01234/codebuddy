@@ -10,9 +10,9 @@ export default defineConfig(() => {
   // https://github.com/vitejs/vite/issues/12203
   const input =
     process.env.TYPE === "content_script"
-      ? "./src/index.tsx"
+      ? "./src/main/content_script.tsx"
       : process.env.TYPE === "service_worker"
-        ? "./src/services/background.ts"
+        ? "./src/main/service_worker/background.ts"
         : null;
   const devScriptHint = `./dist/${process.env.TYPE}`;
 

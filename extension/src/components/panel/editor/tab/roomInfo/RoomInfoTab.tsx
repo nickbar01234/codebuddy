@@ -3,14 +3,9 @@ import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoomRef, getSessionRef } from "@cb/db";
-import {
-  useAppState,
-  useFirebaseListener,
-  useOnMount,
-  useRTC,
-} from "@cb/hooks/index";
+import { useAppState, useFirebaseListener, useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
-import { getQuestionIdFromUrl } from "@cb/utils";
+import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
 import { Timestamp } from "firebase/firestore";
@@ -22,38 +17,24 @@ export const RoomInfoTab = () => {
     user: { username },
   } = useAppState();
   const { roomId, peerState, handleNavigateToNextQuestion } = useRTC();
-  const sessionId = React.useMemo(
-    () => getQuestionIdFromUrl(window.location.href),
-    []
-  );
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
   const [elapsed, setElapsed] = React.useState(0);
+  const { roomReference, sessionReference } = React.useMemo(
+    () => ({
+      roomReference: roomId != null ? getRoomRef(roomId) : undefined,
+      sessionReference:
+        roomId != null ? getSessionRef(roomId, getSessionId()) : undefined,
+    }),
+    [roomId]
+  );
   const { data: roomDoc } = useFirebaseListener({
-    reference: getRoomRef(roomId ?? undefined),
+    reference: roomReference,
     init: { usernames: [], isPublic: true, roomName: "" },
   });
   const { data: sessionDoc } = useFirebaseListener({
-    reference: roomId != null ? getSessionRef(roomId, sessionId) : undefined,
-    callback: async (sessionData) => {
-      const data = sessionData;
-      // todo(nickbar01234): Clear and report room if deleted?
-      if (data == undefined) return;
-      const usernames = data.usernames;
-      const nextQuestionChosen = sessionData.nextQuestion !== "";
-      const finishedUsers = sessionData.finishedUsers;
-      setChooseNextQuestion(
-        !nextQuestionChosen && finishedUsers.includes(username)
-      );
-      setShowNavigatePrompt(
-        nextQuestionChosen &&
-          usernames.every((user) => finishedUsers.includes(user))
-      );
-      setElapsed(
-        Date.now() - (data.createdAt?.toDate()?.getTime() ?? Date.now())
-      );
-    },
+    reference: sessionReference,
     init: {
       usernames: [],
       finishedUsers: [],
@@ -69,6 +50,20 @@ export const RoomInfoTab = () => {
       ).length,
     [roomDoc, sessionDoc]
   );
+
+  React.useEffect(() => {
+    const usernames = sessionDoc.usernames;
+    const nextQuestionChosen = sessionDoc.nextQuestion !== "";
+    const finishedUsers = sessionDoc.finishedUsers;
+    setChooseNextQuestion(
+      !nextQuestionChosen && finishedUsers.includes(username)
+    );
+    setShowNavigatePrompt(
+      nextQuestionChosen &&
+        usernames.every((user) => finishedUsers.includes(user))
+    );
+  }, [sessionDoc, username]);
+
   //we need this to prevent other user from choosing the question if there is already someone choose it
   React.useEffect(() => {
     if (!chooseNextQuestion) {
@@ -76,13 +71,13 @@ export const RoomInfoTab = () => {
     }
   }, [chooseNextQuestion]);
 
-  useOnMount(() => {
+  React.useEffect(() => {
+    // todo(nickbar01234): Should be reading the entire room doc?
     const interval = setInterval(() => {
-      setElapsed((prevElapsed) => Date.now() - prevElapsed);
+      setElapsed(() => Date.now() - sessionDoc.createdAt.toDate().getTime());
     }, 1000);
-
     return () => clearInterval(interval);
-  });
+  }, [sessionDoc]);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
@@ -111,7 +106,7 @@ export const RoomInfoTab = () => {
           <h2 className="text-xl font-bold mb-3">
             {sessionDoc?.nextQuestion != ""
               ? sessionDoc?.nextQuestion
-              : getQuestionIdFromUrl(window.location.href)}
+              : getSessionId()}
             <span className="text-orange-400 ml-2">[Medium]</span>
           </h2>
           <div className="flex gap-2 mb-4">

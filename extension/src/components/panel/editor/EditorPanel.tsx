@@ -1,4 +1,4 @@
-import UserDropdown from "@cb/components/navigator/dropdown/UserDropdown";
+import { UserDropDownMenu } from "@cb/components/navigator/menu/UserDropDownMenu";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
@@ -22,6 +22,7 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { cn } from "@cb/utils/cn";
+import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 import { ResizableBox } from "react-resizable";
@@ -45,22 +46,18 @@ const EditorPanel = () => {
     height,
   } = useWindowDimensions();
   const { roomId } = useRTC();
-  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
-  const toggleUserDropdown = React.useCallback(
-    (e: React.MouseEvent<Element, MouseEvent>) => {
-      e.stopPropagation();
-      setUserDropdownOpen((prev) => !prev);
-    },
-    []
-  );
   const { getLanguageExtension } = useLanguageExtension();
+  const roomReference = React.useMemo(
+    () => (roomId != null ? getRoomRef(roomId) : undefined),
+    [roomId]
+  );
   const { data: roomInfo } = useFirebaseListener({
-    reference: roomId != null ? getRoomRef(roomId) : undefined,
+    reference: roomReference,
     // todo(nickbar01234): Port to redux
     init: { usernames: [], isPublic: true, roomName: "" },
   });
 
-  const canViewCode = activePeer?.viewable ?? false;
+  const canViewCode = codeViewable(activePeer);
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom =
     roomInfo.usernames.filter((username) => username !== user.username)
@@ -166,11 +163,7 @@ const EditorPanel = () => {
               className="h-full w-full bg-inherit text-inherit"
             >
               <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
-                <UserDropdown
-                  key="user-dropdown"
-                  isOpen={isUserDropdownOpen}
-                  toggle={toggleUserDropdown}
-                />
+                <UserDropDownMenu />
 
                 <Separator
                   orientation="vertical"
@@ -181,7 +174,12 @@ const EditorPanel = () => {
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
                       value={tab.value}
-                      className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                      className={cn(
+                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent",
+                        {
+                          "pointer-events-none": !canViewCode,
+                        }
+                      )}
                     >
                       <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
