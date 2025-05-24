@@ -95,22 +95,51 @@ const usePaginate = <T>({
     [buildPaginatedQuery, handleSnapshot, loading]
   );
 
+  // const fetchDocs = useCallback(
+  //   async (cursor?: QueryDocumentSnapshot<T>, isNext: boolean = true) => {
+  //     if (loading) return;
+  //     setLoading(true);
+  //     try {
+  //       const q = buildPaginatedQuery(isNext, cursor);
+  //       const res = await getDocs(q);
+  //       handleSnapshot(res, isNext);
+  //     } catch (err) {
+  //       setError(err as Error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   },
+  //   [buildPaginatedQuery, handleSnapshot, loading]
+  // );
+
   useEffect(() => {
     setDocs([]);
     setCollectionSize(0);
     setError(undefined);
 
+    // fetchDocs(undefined, true);
     fetchDocs();
 
-    const interval = setInterval(() => {
-      getCountFromServer(baseQuery)
-        .then((res) => setCollectionSize(res.data().count))
-        .catch(setError);
-    }, REFRESH_INTERVAL_MS);
+    const fetchCount = async () => {
+      try {
+        console.log("📦 Calling getCountFromServer...");
+        const snap = await getCountFromServer(baseQuery);
+        const count = snap.data().count;
+        setCollectionSize(count);
+        console.log("✅ getCountFromServer returned:", count);
+      } catch (err) {
+        console.error("❌ getCountFromServer failed:", err);
+        setError(err as Error);
+      }
+    };
+
+    fetchCount();
+
+    const interval = setInterval(fetchCount, REFRESH_INTERVAL_MS);
 
     return () => {
       clearInterval(interval);
-      fetchDocs.cancel?.();
+      console.log("🔴 Cleared interval for fetching collection size");
     };
   }, [fetchDocs, baseQuery]);
 
@@ -131,7 +160,7 @@ const usePaginate = <T>({
       loading,
       getNext,
       getPrevious,
-      hasNext: docs.length < collectionSize,
+      hasNext: collectionSize > 0 && docs.length < collectionSize,
       data: {
         docs,
         collectionSize,

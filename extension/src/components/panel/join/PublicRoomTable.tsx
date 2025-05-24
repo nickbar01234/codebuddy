@@ -1,10 +1,12 @@
-import { useOnMount } from "@cb/hooks/index";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import GenericTable from "./GenericTable";
 import PublicRoomRow from "./PublicRoomRow";
-import { sampleRooms } from "./sampleRooms.ts";
+// import { sampleRooms } from "./sampleRooms.ts";
+import { getPublicRoomsCollection } from "@cb/db";
+import { Room } from "@cb/db/converter";
+import usePaginate from "@cb/hooks/usePaginate";
 
-export interface Room {
+export interface RoomWithSession {
   id: string;
   name: string;
   currentProblem: string;
@@ -19,39 +21,47 @@ interface Props {
 }
 
 const PublicRoomTable: React.FC<Props> = ({ selectedRoomId, onSelectRoom }) => {
-  const [publicRooms, setPublicRooms] = useState<Room[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1); // Track the current page
+  const roomsQuery = getPublicRoomsCollection();
+  console.log("Rooms query:", roomsQuery);
 
-  useOnMount(() => {
-    // Simulate loading delay for 1 second
-    const timeout = setTimeout(() => {
-      setPublicRooms(sampleRooms.slice(0, 10));
-    }, 1000);
-
-    return () => clearTimeout(timeout);
+  const { data, loading, getNext, hasNext } = usePaginate<Room>({
+    baseQuery: roomsQuery,
+    hookLimit: 10,
   });
 
-  const loadMore = () => {
-    if (isLoading || !hasMore) return;
+  console.log("Paginate data:", data.docs);
+  console.log("Loading state:", loading);
+  console.log("Has next page:", hasNext);
 
-    setIsLoading(true);
-    setTimeout(() => {
-      const nextPage = currentPage + 1;
-      const nextRows = sampleRooms.slice((nextPage - 1) * 10, nextPage * 10);
+  const [publicRooms, setPublicRooms] = useState<RoomWithSession[]>([]);
 
-      setPublicRooms((prevRooms) => [...prevRooms, ...nextRows]);
+  useEffect(() => {
+    const fetchRoomsWithSessions = async () => {
+      try {
+        console.log("Fetching rooms with sessions...");
+        const roomsWithSession = await Promise.all(
+          data.docs.map(async (doc) => {
+            const room = doc.data();
+            return {
+              id: doc.id,
+              name: room.roomName,
+              currentProblem: "N/A",
+              difficulty: "Easy" as "Easy" | "Medium" | "Hard",
+              users: room.usernames.length,
+              timeElapsed: 0,
+            };
+          })
+        );
+        setPublicRooms(roomsWithSession);
+      } catch (error) {
+        console.error("Error fetching rooms:", error);
+      }
+    };
 
-      // Check if there are more rows to load
-      // if (nextPage * 10 >= sampleRooms.length) {
-      //   setHasMore(false);
-      // }
-
-      setCurrentPage(nextPage);
-      setIsLoading(false);
-    }, 1000);
-  };
+    if (data.docs.length > 0) {
+      fetchRoomsWithSessions();
+    }
+  }, [data]);
 
   return (
     <GenericTable
@@ -71,9 +81,9 @@ const PublicRoomTable: React.FC<Props> = ({ selectedRoomId, onSelectRoom }) => {
           onSelect={() => onSelectRoom(room.id)}
         />
       )}
-      isLoading
-      hasMore
-      loadMore={loadMore}
+      isLoading={loading}
+      hasMore={hasNext}
+      loadMore={getNext}
     />
   );
 };
