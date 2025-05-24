@@ -2,7 +2,7 @@ import { TableCell, TableRow } from "@cb/lib/components/ui/table";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
 import React from "react";
-import { RoomWithSession } from "./PublicRoomTable.tsx";
+import { RoomWithSession } from "./PublicRoomTable";
 
 interface Props extends RoomWithSession {
   selected: boolean;
