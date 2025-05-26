@@ -33,7 +33,7 @@ export const SelectProblemDialog = ({
       content={{
         props: {
           className:
-            "h-[90vh] max-w-[1100px] py-6 px-3 bg-layer-1 bg-white dark:bg-dark-layer-bg flex flex-col gap-4",
+            "h-[90vh] max-w-[1100px] py-6 px-3 bg-primary flex flex-col gap-4",
         },
       }}
       title={{ node: "Select next problem" }}

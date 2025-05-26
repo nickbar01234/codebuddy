@@ -26,14 +26,13 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       textColor: {
-        DEFAULT: "var(--text-primary)", // #1A1A1AFF & #F5F5F5FF
+        DEFAULT: "var(--text-primary)", // (not working yet)
         primary: "var(--text-primary)",
-        secondary: "var(--text-secondary)", // #0000008C & #FFFFFF99
-        tertiary: "var(--text-tertiary)", // #00000057 & #FFFFFF66
-        other: "var(--color-text-other)",
+        secondary: "var(--text-secondary)",
+        tertiary: "var(--text-tertiary)",
       },
       colors: {
-        background: "hsl(var(--background))",
+        background: "var(--background)",
         foreground: "hsl(var(--foreground))",
         card: {
           DEFAULT: "hsl(var(--card))",
@@ -44,11 +43,11 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "hsl(var(--primary))",
+          DEFAULT: "var(--primary)",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
+          DEFAULT: "var(--secondary)",
           foreground: "hsl(var(--secondary-foreground))",
         },
         muted: {
@@ -74,22 +73,22 @@ export default {
           5: "hsl(var(--chart-5))",
         },
         leetcode: {
-          hard: "var(--difficulty-hard)",
-          medium: "var(--difficulty-medium)",
-          easy: "var(--difficulty-easy)",
-          bg: "var(--color-tabset-background)", // #FFFFFFFF & #282828FF
-          nav: "var(--color-tabset-tabbar-background)", // #00000005 & #303030FF
+          hard: "var(--difficulty-hard)", // !! change
+          medium: "var(--difficulty-medium)", // !! change
+          easy: "var(--difficulty-easy)", // !! change
+          bg: "var(--color-lc-bg)",
+          nav: "var(--color-lc-nav)",
         },
         codebuddy: {
           pink: "var(--color-pink)",
           red: "var(--color-red)",
           green: "var(--color-green)",
           blue: "var(--color-blue)",
-          orange: "var(--brand-orange)", // #FFA116FF & #FFA116FF
+          orange: "var(--color-orange)",
         },
         message: {
-          success: "var(--message-success)", // #01B328FF & #28C244FF
-          danger: "var(--message-danger)", // #F63636FF & #F8615CFF
+          success: "var(--message-success)",
+          danger: "var(--message-danger)",
         },
       },
     },
