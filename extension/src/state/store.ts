@@ -1,26 +1,37 @@
+import { devToolsEnhancer } from "@redux-devtools/remote";
 import { configureStore } from "@reduxjs/toolkit";
+import counterReducer from "./session/counterSlice";
 import sessionReducer from "./session/sessionSlice";
 
 export const store = configureStore({
   reducer: {
     session: sessionReducer,
+    counter: counterReducer,
     // Add your reducers here
   },
+  enhancers: (defaultEnhancers) =>
+    defaultEnhancers().concat(
+      devToolsEnhancer({
+        name: "CodeBuddy",
+        realtime: true,
+        hostname: "localhost",
+        port: 8001,
+      })
+    ),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
     }),
-  devTools: true,
+  devTools: false,
 });
-const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__?.connect({
-  name: "LeetCodeExtension",
-});
-console.log("Redux DevTools Extension", devTools);
+console.log(store.getState());
+// const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__?.connect({
+//   name: "LeetCodeExtension",
+// });
+// console.log("Redux DevTools Extension", devTools);
 
-devTools?.init(store.getState()); // show initial state
-store.subscribe(() => devTools?.send("update", store.getState()));
-// Infer the `RootState`,  `AppDispatch`, and `AppStore` types from the store itself
+// devTools?.init(store.getState()); // show initial state
+// store.subscribe(() => devTools?.send("update", store.getState()));
 export type RootState = ReturnType<typeof store.getState>;
-// Inferred type: {posts: PostsState, comments: CommentsState, users: UsersState}
 export type AppDispatch = typeof store.dispatch;
 export type AppStore = typeof store;
