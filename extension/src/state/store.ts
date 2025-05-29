@@ -1,8 +1,11 @@
 import { devToolsEnhancer } from "@redux-devtools/remote";
 import { configureStore } from "@reduxjs/toolkit";
+import counterReducer from "./session/counterSlice";
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    counter: counterReducer,
+  },
   enhancers: (defaultEnhancers) =>
     process.env.NODE_ENV === "development"
       ? defaultEnhancers().concat(

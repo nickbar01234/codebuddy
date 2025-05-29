@@ -10,10 +10,7 @@
     "48": "icons/48.png",
     "128": "icons/128.png"
   },
-  "host_permissions": [
-    "https://leetcode.com/problems/*",
-    "http://localhost:8001/"
-  ],
+  "host_permissions": ["https://leetcode.com/problems/*"],
   "permissions": ["scripting", "tabs"],
   "content_scripts": [
     {
@@ -28,7 +25,7 @@
     "type": "module"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' http://localhost:8001 ws://localhost:8001"
+    "extension_pages": "script-src 'self'; object-src 'self';"
   },
   "web_accessible_resources": [
     {
