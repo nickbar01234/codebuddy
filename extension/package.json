@@ -10,7 +10,6 @@
     "dev:build": "pnpm run build --mode development",
     "dev:prod": "pnpm run build && concurrently --kill-others \"pnpm run build --watch\"",
     "dev": "concurrently --kill-others \"tsx script/dev.ts\" \"pnpm run dev:build --watch\"",
-    "start-redux-devtools": "redux-devtools --hostname=localhost --port=8001 --open",
     "dev:1": "USERS=1 pnpm run dev",
     "dev:3": "USERS=3 pnpm run dev",
     "dev:4": "USERS=4 pnpm run dev",
