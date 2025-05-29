@@ -44,7 +44,6 @@ export default {
         },
         primary: {
           DEFAULT: "var(--primary-background)",
-          background: "var(--primary-background)",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
