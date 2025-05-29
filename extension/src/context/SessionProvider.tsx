@@ -1,38 +1,63 @@
-import { useAppDispatch } from "@cb/hooks";
-import useResource from "@cb/hooks/useResource";
+import { auth } from "@cb/db";
+import { useOnMount } from "@cb/hooks";
+import useAuthenticate from "@cb/hooks/useAuthenticate";
 import {
-  initialAuthenticateCheck,
-  listenToAuthChanges,
-} from "@cb/state/session/sessionSlice";
-import { Unsubscribe } from "firebase/auth/web-extension";
-import lodash from "lodash";
+  getLocalStorage,
+  removeLocalStorage,
+  sendServiceRequest,
+} from "@cb/services";
+import { AuthenticationStatus, ResponseStatus, Status } from "@cb/types";
+import {
+  isSignInWithEmailLink,
+  signInWithEmailLink,
+} from "firebase/auth/web-extension";
 import React from "react";
+import { toast } from "sonner";
 
-const AUTHENTICATION_DELAY = 2000;
 interface SessionProviderProps {
   children?: React.ReactNode;
 }
 
+interface SessionContext {
+  auth: AuthenticationStatus;
+}
+
+const sessionContext = React.createContext({} as SessionContext);
+
+const Provider = sessionContext.Provider;
+
 const SessionProvider = (props: SessionProviderProps) => {
   const { children } = props;
-  const dispatch = useAppDispatch();
-  const { register, evict } = useResource<Unsubscribe>({
-    name: "session",
+  const [authenticationStatus, setAuthenticationStatus] =
+    React.useState<AuthenticationStatus>({ status: Status.LOADING });
+
+  useAuthenticate({
+    authenticate: setAuthenticationStatus,
   });
 
-  React.useEffect(() => {
-    lodash.delay(() => {
-      // wait for the auth emulator to be initialized
-      dispatch(initialAuthenticateCheck());
-      const unsubscribe = dispatch(listenToAuthChanges());
-      register("authentication", unsubscribe, (unsubscribe) => unsubscribe());
-    }, AUTHENTICATION_DELAY);
-    return () => {
-      evict("authentication");
-    };
-  }, [dispatch, register, evict]);
+  useOnMount(() => {
+    const signIn = getLocalStorage("signIn");
+    if (
+      signIn != undefined &&
+      isSignInWithEmailLink(auth, window.location.href)
+    ) {
+      // todo(nickbar01234): Handle signin from different device
+      // todo(nickbar01234): Handle error code
+      signInWithEmailLink(auth, signIn.email, window.location.href)
+        .then(() => sendServiceRequest({ action: "closeSignInTab", signIn }))
+        .then((response) => {
+          if (response.status === ResponseStatus.SUCCESS) {
+            toast.info("Closed sign-in tab");
+          }
+        })
+        .finally(() => {
+          removeLocalStorage("signIn");
+        });
+    }
+  });
 
-  return children;
+  return <Provider value={{ auth: authenticationStatus }}>{children}</Provider>;
 };
 
 export default SessionProvider;
+export { sessionContext };

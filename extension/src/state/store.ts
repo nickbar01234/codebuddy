@@ -1,12 +1,8 @@
 import { devToolsEnhancer } from "@redux-devtools/remote";
 import { configureStore } from "@reduxjs/toolkit";
-import sessionReducer from "./session/sessionSlice";
 
 export const store = configureStore({
-  reducer: {
-    session: sessionReducer,
-    // Add your reducers here
-  },
+  reducer: {},
   enhancers: (defaultEnhancers) =>
     process.env.NODE_ENV === "development"
       ? defaultEnhancers().concat(

@@ -42,7 +42,6 @@
     "react-dom": "catalog:react18",
     "react-redux": "^9.2.0",
     "react-resizable": "^3.0.5",
-    "redux": "^5.0.1",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
