@@ -1,9 +1,5 @@
 import tailwindCssAnimate from "tailwindcss-animate";
 
-// - change primary to bg-primary
-// - write doc
-// - write eslint config not to use --text-primary...
-
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],

@@ -151,18 +151,6 @@
   }
 }
 
-@layer components {
-  table {
-    background-color: var(--color-table-bg);
-  }
-  .icon-primary {
-    color: var(--color-icon-default);
-  }
-  .icon-secondary {
-    color: var(--color-icon-secondary);
-  }
-}
-
 .bar,
 .bar::before,
 .bar::after {
