@@ -8,16 +8,14 @@ export const store = configureStore({
     // Add your reducers here
   },
   enhancers: (defaultEnhancers) =>
-    process.env.NODE_ENV === "development"
-      ? defaultEnhancers().concat(
-          devToolsEnhancer({
-            name: "CodeBuddy",
-            realtime: true,
-            hostname: "localhost",
-            port: 8001,
-          })
-        )
-      : defaultEnhancers(),
+    defaultEnhancers().concat(
+      devToolsEnhancer({
+        name: "CodeBuddy",
+        realtime: true,
+        hostname: "localhost",
+        port: 8001,
+      })
+    ),
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
