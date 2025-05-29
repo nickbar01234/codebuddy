@@ -27,18 +27,9 @@ You will need to setup a Firebase project, following the [public doc](https://fi
 
 ### Extension
 
-### [Optional] Install Redux DevTools
+1. In your Firebase project, navigate to `Project Settings` and click `Add App`.
 
-1. Go to [Redux DevTools Releases](https://github.com/reduxjs/redux-devtools/tags).
-2. Click the latest tag and download `chrome.zip`.
-3. Unzip the file, and you will get a folder.
-4. Rename the folder to `redux`.
-5. Copy and paste the `redux` folder inside `/extension`.
-6. So we should have a directory `/extension/redux_devtools`
-
-7. In your Firebase project, navigate to `Project Settings` and click `Add App`.
-
-8. Select Web App and proceed with the instructions. You should see something like the following snippet at the end.
+2. Select Web App and proceed with the instructions. You should see something like the following snippet at the end.
 
    ```js
    // Import the functions you need from the SDKs you need
@@ -64,10 +55,10 @@ You will need to setup a Firebase project, following the [public doc](https://fi
    const analytics = getAnalytics(app);
    ```
 
-9. `cd extension`
-10. Make a copy of `.env.tpl` and rename to `.env`. Replace the values with the configurations from above.
-11. `pnpm i`
-12. `pnpm run dev` will spin up 2 browsers using Puppeteer with the extension loaded. Every time the source code changes, the browser will reload to get the latest changes. Additionally, you can run `dev:1`, `dev:3`, and `dev:4` to load the corresponding number of browsers.
+3. `cd extension`
+4. Make a copy of `.env.tpl` and rename to `.env`. Replace the values with the configurations from above.
+5. `pnpm i`
+6. `pnpm run dev` will spin up 2 browsers using Puppeteer with the extension loaded. Every time the source code changes, the browser will reload to get the latest changes. Additionally, you can run `dev:1`, `dev:3`, and `dev:4` to load the corresponding number of browsers.
 
 Alternatively, if you prefer to manually unpack and load:
 
