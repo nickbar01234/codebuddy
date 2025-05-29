@@ -75,7 +75,7 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
       )}
       <DialogContent
         {...d(content?.props, {})}
-        className={cn("bg-secondary", content?.props.className)}
+        className={cn("bg-primary", content?.props.className)}
       >
         {title && (
           <DialogHeader>

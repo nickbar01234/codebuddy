@@ -1,5 +1,9 @@
 import tailwindCssAnimate from "tailwindcss-animate";
 
+// - change primary to bg-primary
+// - write doc
+// - write eslint config not to use --text-primary...
+
 /** @type {import('tailwindcss').Config} */
 export default {
   darkMode: ["class"],
@@ -25,15 +29,18 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      textColor: {
-        DEFAULT: "var(--text-primary)", // (not working yet)
-        primary: "var(--text-primary)",
-        secondary: "var(--text-secondary)",
-        tertiary: "var(--text-tertiary)",
-      },
       colors: {
-        background: "var(--background)",
-        foreground: "hsl(var(--foreground))",
+        background: {
+          DEFAULT: "var(--background)",
+          primary: "var(--primary-background)",
+          secondary: "var(--secondary-background)",
+        },
+        foreground: {
+          DEFAULT: "var(--foreground)",
+          primary: "var(--primary-foreground)",
+          secondary: "var(--secondary-foreground)",
+          tertiary: "var(--tertiary-foreground)",
+        },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -43,11 +50,11 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "var(--primary)",
+          DEFAULT: "var(--primary-background)",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
+          DEFAULT: "var(--secondary-background)",
           foreground: "hsl(var(--secondary-foreground))",
         },
         muted: {
@@ -62,6 +69,9 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "var(--success)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -73,9 +83,9 @@ export default {
           5: "hsl(var(--chart-5))",
         },
         leetcode: {
-          hard: "var(--difficulty-hard)", // !! change
-          medium: "var(--difficulty-medium)", // !! change
-          easy: "var(--difficulty-easy)", // !! change
+          hard: "var(--color-lc-hard)",
+          medium: "var(--color-lc-medium)",
+          easy: "var(--color-lc-easy)",
           bg: "var(--color-lc-bg)",
           nav: "var(--color-lc-nav)",
         },
