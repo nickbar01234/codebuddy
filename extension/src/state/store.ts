@@ -1,12 +1,10 @@
 import { devToolsEnhancer } from "@redux-devtools/remote";
 import { configureStore } from "@reduxjs/toolkit";
-import counterReducer from "./session/counterSlice";
 import sessionReducer from "./session/sessionSlice";
 
 export const store = configureStore({
   reducer: {
     session: sessionReducer,
-    counter: counterReducer,
     // Add your reducers here
   },
   enhancers: (defaultEnhancers) =>
