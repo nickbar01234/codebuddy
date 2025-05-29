@@ -22,14 +22,7 @@ export const store = configureStore({
     }),
   devTools: false,
 });
-console.log(store.getState());
-// const devTools = (window as any).__REDUX_DEVTOOLS_EXTENSION__?.connect({
-//   name: "LeetCodeExtension",
-// });
-// console.log("Redux DevTools Extension", devTools);
 
-// devTools?.init(store.getState()); // show initial state
-// store.subscribe(() => devTools?.send("update", store.getState()));
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppStore = typeof store;
