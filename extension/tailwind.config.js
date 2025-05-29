@@ -25,18 +25,15 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      textColors: {
+        DEFAULT: "hsl(var(--foreground))",
+        primary: "hsl(var(--primary-foreground))",
+        secondary: "hsl(var(--secondary-foreground))",
+        tertiary: "hsl(var(--tertiary-foreground))",
+      },
       colors: {
-        background: {
-          DEFAULT: "var(--background)",
-          primary: "var(--primary-background)",
-          secondary: "var(--secondary-background)",
-        },
-        foreground: {
-          DEFAULT: "var(--foreground)",
-          primary: "var(--primary-foreground)",
-          secondary: "var(--secondary-foreground)",
-          tertiary: "var(--tertiary-foreground)",
-        },
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -47,6 +44,7 @@ export default {
         },
         primary: {
           DEFAULT: "var(--primary-background)",
+          background: "var(--primary-background)",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
