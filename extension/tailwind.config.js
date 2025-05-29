@@ -25,7 +25,7 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
-      textColors: {
+      textColor: {
         DEFAULT: "hsl(var(--foreground))",
         primary: "hsl(var(--primary-foreground))",
         secondary: "hsl(var(--secondary-foreground))",
