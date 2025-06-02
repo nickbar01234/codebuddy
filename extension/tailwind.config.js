@@ -26,10 +26,15 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       textColor: {
-        DEFAULT: "hsl(var(--foreground))",
-        primary: "hsl(var(--primary-foreground))",
-        secondary: "hsl(var(--secondary-foreground))",
-        tertiary: "hsl(var(--tertiary-foreground))",
+        DEFAULT: "hsl(var(--text-primary))",
+        primary: "hsl(var(--text-primary))",
+        secondary: "hsl(var(--text-secondary))",
+        tertiary: "hsl(var(--text-tertiary))",
+      },
+      backgroundColor: {
+        DEFAULT: "hsl(var(--background-primary))",
+        primary: "hsl(var(--background-primary))",
+        secondary: "hsl(var(--background-secondary))",
       },
       colors: {
         background: "var(--background)",
@@ -43,11 +48,11 @@ export default {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "var(--primary-background)",
+          DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "var(--secondary-background)",
+          DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
         },
         muted: {
