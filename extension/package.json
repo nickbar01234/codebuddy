@@ -10,6 +10,7 @@
     "dev:build": "pnpm run build --mode development",
     "dev:prod": "pnpm run build && concurrently --kill-others \"pnpm run build --watch\"",
     "dev": "concurrently --kill-others \"tsx script/dev.ts\" \"pnpm run dev:build --watch\"",
+    "dev:tool": "redux-devtools --hostname=localhost --port=8001 --open --name=\"Buddy\"",
     "dev:1": "USERS=1 pnpm run dev",
     "dev:3": "USERS=3 pnpm run dev",
     "dev:4": "USERS=4 pnpm run dev",
@@ -29,7 +30,6 @@
     "@tsparticles/engine": "^3.5.0",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.5.0",
-    "add": "^2.0.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
@@ -42,6 +42,7 @@
     "react-redux": "^9.2.0",
     "react-resizable": "^3.0.5",
     "sonner": "^1.5.0",
+    "sqlite3": "^5.1.7",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
   },
