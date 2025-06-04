@@ -6,7 +6,7 @@ export const MenuIcon = () => {
       width="1em"
       height="1em"
       fill="currentColor"
-      className="hover:text-gray-7 dark:hover:text-dark-gray-7 text-secondary dark:text-secondary w-4 h-4"
+      className="hover:text-gray-7 dark:hover:text-dark-gray-7 text-secondary w-4 h-4"
     >
       <path
         fill-rule="evenodd"

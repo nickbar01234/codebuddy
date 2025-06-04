@@ -26,15 +26,15 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       textColor: {
-        DEFAULT: "hsl(var(--text-primary))",
-        primary: "hsl(var(--text-primary))",
-        secondary: "hsl(var(--text-secondary))",
-        tertiary: "hsl(var(--text-tertiary))",
+        DEFAULT: "var(--text-primary)",
+        primary: "var(--text-primary)",
+        secondary: "var(--text-secondary)",
+        tertiary: "var(--text-tertiary)",
       },
       backgroundColor: {
-        DEFAULT: "hsl(var(--background-primary))",
-        primary: "hsl(var(--background-primary))",
-        secondary: "hsl(var(--background-secondary))",
+        DEFAULT: "var(--background-primary)",
+        primary: "var(--background-primary)",
+        secondary: "var(--background-secondary)",
       },
       colors: {
         background: "var(--background)",
@@ -93,10 +93,6 @@ export default {
           green: "var(--color-green)",
           blue: "var(--color-blue)",
           orange: "var(--color-orange)",
-        },
-        message: {
-          success: "var(--message-success)",
-          danger: "var(--message-danger)",
         },
       },
     },
