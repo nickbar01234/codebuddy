@@ -10,7 +10,9 @@ const Header = ({ className, ...props }: HeaderProps) => {
       <div className="h-5 w-5">
         <ThemeAwaredLogo />
       </div>
-      <h2 className="font-medium">CodeBuddy</h2>
+      <h2 className="font-medium">
+        Code<span className="text-codebuddy-pink">Buddy</span>
+      </h2>
     </div>
   );
 };

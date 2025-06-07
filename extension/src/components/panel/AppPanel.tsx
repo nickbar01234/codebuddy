@@ -27,7 +27,7 @@ export const AppPanel = (props: AppPanelProps) => {
       onResize={(_e, data) => setAppWidth(data.size.width)}
       onResizeStop={onResizeStop}
     >
-      <div className="bg-layer-1 dark:bg-dark-layer-1 ml-2 box-border h-full w-full rounded-lg">
+      <div className="bg-primary ml-2 box-border h-full w-full rounded-lg">
         {appPreference.isCollapsed && <CollapsedPanel />}
         <div
           data-collapsed={appPreference.isCollapsed}
