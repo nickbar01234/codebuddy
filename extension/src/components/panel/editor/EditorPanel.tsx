@@ -162,7 +162,7 @@ const EditorPanel = () => {
               defaultValue="code"
               className="h-full w-full bg-inherit text-inherit"
             >
-              <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
+              <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
                 <UserDropDownMenu />
 
                 <Separator
@@ -208,14 +208,14 @@ const EditorPanel = () => {
           </div>
         </ResizableBox>
         <div
-          className="relative w-full overflow-hidden bg-layer-1 dark:bg-dark-layer-1"
+          className="relative w-full overflow-hidden bg-secondary"
           style={{ height: height - codePreference.height }}
         >
           <Tabs
             defaultValue="activity"
             className="h-full w-full bg-inherit text-inherit"
           >
-            <TabsList className="hide-scrollbar bg-layer-1 dark:bg-dark-layer-1 flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit  text-inherit">
+            <TabsList className="hide-scrollbar bg-secondary flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit  text-inherit">
               {lowerTabConfigs.map((tab, index) => (
                 <React.Fragment key={tab.value}>
                   <TabsTrigger

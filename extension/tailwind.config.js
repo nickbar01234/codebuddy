@@ -26,13 +26,19 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       textColor: {
+        DEFAULT: "var(--text-primary)",
+        primary: "var(--text-primary)",
         secondary: "var(--text-secondary)",
         tertiary: "var(--text-tertiary)",
       },
+      backgroundColor: {
+        DEFAULT: "var(--background-primary)",
+        primary: "var(--background-primary)",
+        secondary: "var(--background-secondary)",
+      },
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -61,6 +67,9 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "var(--success)",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -71,7 +80,20 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
-        "pinkish-red": "#DD5471",
+        leetcode: {
+          hard: "var(--color-lc-hard)",
+          medium: "var(--color-lc-medium)",
+          easy: "var(--color-lc-easy)",
+          bg: "var(--color-lc-bg)",
+          nav: "var(--color-lc-nav)",
+        },
+        codebuddy: {
+          pink: "var(--color-pink)",
+          red: "var(--color-red)",
+          green: "var(--color-green)",
+          blue: "var(--color-blue)",
+          orange: "var(--color-orange)",
+        },
       },
     },
   },
