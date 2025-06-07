@@ -18,7 +18,7 @@ import {
 import { useAppState, useOnMount } from "@cb/hooks";
 import useResource from "@cb/hooks/useResource";
 import {
-  clearLocalStorage,
+  clearLocalStorageForRoom,
   getLocalStorage,
   sendServiceRequest,
   setLocalStorage,
@@ -265,10 +265,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
             const { event, eventMessage } = payload;
             switch (event) {
               case EventType.SUBMIT_SUCCESS:
-                toast.success(`Update: ${eventMessage}`);
+                toast.success(eventMessage);
                 break;
               case EventType.SUBMIT_FAILURE:
-                toast.error(`Update: ${eventMessage}`);
+                toast.error(eventMessage);
+                break;
+              case EventType.SELECT_QUESTION:
+                toast.info(eventMessage);
                 break;
               default:
                 console.error("Unknown event", event);
@@ -553,12 +556,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const leaveRoom = React.useCallback(
     async (roomId: string | null, reload = false) => {
-      if (roomId == null) return;
-      console.log("Leaving room", roomId);
       if (!reload) {
         console.log("Cleaning up local storage");
-        clearLocalStorage();
+        clearLocalStorageForRoom();
       }
+
+      if (roomId == null) return;
+      console.log("Leaving room", roomId);
 
       try {
         const roomDoc = (await getRoom(roomId)).data();
@@ -603,7 +607,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       withPayload({
         action: "event",
         event: EventType.SUBMIT_SUCCESS,
-        eventMessage: `User ${username} passed all test cases for ${roomId}`,
+        eventMessage: `${username} passed all test cases`,
       })
     );
     const sessionDoc = await getSession(roomId, getSessionId());
@@ -621,7 +625,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       withPayload({
         action: "event",
         event: EventType.SUBMIT_FAILURE,
-        eventMessage: `User ${username} failed some test cases for ${roomId}`,
+        eventMessage: `${username} failed some test cases`,
       })
     );
   }, [username, roomId, sendMessageToAll]);
@@ -670,7 +674,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     async (questionURL: string) => {
       if (!roomId) return;
       const chosenQuestionId = getQuestionIdFromUrl(questionURL);
-      console.log("Choose question URL", questionURL);
       toast.info("You have selected question " + chosenQuestionId);
       if (roomId == null) return;
       // todo(nickbar01234): Firebase security rule that should reject this write
@@ -684,8 +687,15 @@ export const RTCProvider = (props: RTCProviderProps) => {
         nextQuestion: "",
         createdAt: serverTimestamp(),
       });
+      sendMessageToAll(
+        withPayload({
+          action: "event",
+          event: EventType.SELECT_QUESTION,
+          eventMessage: `${username} selected ${chosenQuestionId}`,
+        })
+      );
     },
-    [roomId]
+    [roomId, sendMessageToAll, username]
   );
 
   const deletePeersRef = React.useRef(deletePeers);

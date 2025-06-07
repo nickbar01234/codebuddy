@@ -34,5 +34,10 @@ export const setLocalStorage = <K extends keyof LocalStorage>(
   localStorage.setItem(LOCAL_STORAGE_PREFIX + key, JSON.stringify(value));
 };
 
-export const clearLocalStorage = () =>
-  LOCAL_STORAGE.forEach(removeLocalStorage);
+export const clearLocalStorage = (ignore: Array<keyof LocalStorage> = []) =>
+  LOCAL_STORAGE.filter((key) => !ignore.includes(key)).forEach(
+    removeLocalStorage
+  );
+
+export const clearLocalStorageForRoom = () =>
+  clearLocalStorage(["preference", "signIn"]);
