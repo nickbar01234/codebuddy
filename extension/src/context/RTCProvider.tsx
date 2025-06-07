@@ -18,7 +18,7 @@ import {
 import { useAppState, useOnMount } from "@cb/hooks";
 import useResource from "@cb/hooks/useResource";
 import {
-  clearLocalStorage,
+  clearLocalStorageForRoom,
   getLocalStorage,
   sendServiceRequest,
   setLocalStorage,
@@ -556,12 +556,13 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   const leaveRoom = React.useCallback(
     async (roomId: string | null, reload = false) => {
-      if (roomId == null) return;
-      console.log("Leaving room", roomId);
       if (!reload) {
         console.log("Cleaning up local storage");
-        clearLocalStorage();
+        clearLocalStorageForRoom();
       }
+
+      if (roomId == null) return;
+      console.log("Leaving room", roomId);
 
       try {
         const roomDoc = (await getRoom(roomId)).data();

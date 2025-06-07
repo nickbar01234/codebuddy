@@ -16,9 +16,7 @@ export const RejoinPromptDialog = () => {
       removeLocalStorage("closingTabs");
       event.stopPropagation?.();
       setAppState(AppState.HOME);
-      if (roomId) {
-        leaveRoom(roomId);
-      }
+      leaveRoom(roomId);
     }, 1000);
   }, [roomId, leaveRoom, setAppState]);
 

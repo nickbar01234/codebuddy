@@ -15,7 +15,7 @@ export const AppNavigator = () => {
   const currentTabInfo = getLocalStorage("tabs");
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden bg-secondary">
       <div className="absolute inset-0 flex h-full w-full items-center justify-center mx-2">
         {state === AppState.LOADING ? (
           <LoadingPanel
