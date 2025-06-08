@@ -17,9 +17,8 @@ export const store = configureStore({
         realtime: true,
         hostname: "localhost",
         port:
-          user?.peer && user?.peer in REDUX_REMOTE_PORT
-            ? REDUX_REMOTE_PORT[user.peer as keyof typeof REDUX_REMOTE_PORT]
-            : 8000,
+          REDUX_REMOTE_PORT[user?.peer as keyof typeof REDUX_REMOTE_PORT] ??
+          8000,
       })
     ),
   middleware: (getDefaultMiddleware) =>
