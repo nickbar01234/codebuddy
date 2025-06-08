@@ -1,4 +1,4 @@
-import { DEV_PORT } from "@cb/constants/dev-port";
+import { REDUX_REMOTE_PORT } from "@cb/constants/redux-dev-port";
 import { getLocalStorage } from "@cb/services";
 import { devToolsEnhancer } from "@redux-devtools/remote";
 import { configureStore } from "@reduxjs/toolkit";
@@ -17,8 +17,8 @@ export const store = configureStore({
         realtime: true,
         hostname: "localhost",
         port:
-          user?.peer && user?.peer in DEV_PORT
-            ? DEV_PORT[user.peer as keyof typeof DEV_PORT]
+          user?.peer && user?.peer in REDUX_REMOTE_PORT
+            ? REDUX_REMOTE_PORT[user.peer as keyof typeof REDUX_REMOTE_PORT]
             : 8000,
       })
     ),
