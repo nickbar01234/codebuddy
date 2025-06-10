@@ -9,3 +9,4 @@ catalogs:
   redux-toolkit-2:
     "@redux-devtools/remote": ^0.9.5
     "@reduxjs/toolkit": "^2.6.1"
+    "react-redux": "^9.2.0"
