@@ -10,6 +10,11 @@ services:
       - 3001:3001
       - 3002:3002
       - 3003:3003
+      # See entrypoint - used for remote-devtools
+      - 8000:8000
+      - 8001:8001
+      - 8002:8002
+      - 8003:8003
     environment:
       # Used by entrypoint
       - DATA_DIR=/app/mnt/data
@@ -26,6 +31,6 @@ services:
       resources:
         limits:
           memory: 1G
-          cpus: '1'
+          cpus: "1"
 volumes:
   db:

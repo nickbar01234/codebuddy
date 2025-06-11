@@ -12,6 +12,7 @@ RUN apt-get update && \
   apt-get install -y openjdk-${JAVA_VERSION}-jre bash && \
   npm install -g pnpm@${PNPM_VERSION} && \
   npm cache clean --force && \
+  npm install -g @redux-devtools/cli \
   pnpm install -g firebase-tools@${FIREBASE_VERSION} typescript && \
   firebase -V && \
   java --version
