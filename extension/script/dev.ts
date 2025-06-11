@@ -10,6 +10,7 @@ interface PuppeteerBrowser {
 const EXTENSION_PATH = "./dist/";
 
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
+const BASE_URL = "https://leetcode.com";
 
 const NUM_USERS = parseInt(process.env.USERS ?? "") || 2;
 
@@ -19,6 +20,7 @@ const USERNAMES = [
   "dev@outlook.com",
   "mode@yahoo.com",
 ];
+
 const PAGES: PuppeteerBrowser[] = Array.from({ length: NUM_USERS });
 const PEERS = Array.from({ length: NUM_USERS }).map((_, idx) => ({
   peer: USERNAMES[idx],
@@ -39,14 +41,13 @@ const setup = async () => {
         `--disable-extensions-except=${EXTENSION_PATH}`,
         `--load-extension=${EXTENSION_PATH}`,
         "--start-maximized",
-        // todo(nickbar01234): Figure out nginx and ngrok so that cors doesn't break
         "--disable-web-security",
       ],
       devtools: true,
     });
 
     const page = await browser.newPage();
-    // Enable browser dev-mode for extensions.
+
     const devModeToggle = await page
       .goto("chrome://extensions")
       .then(() =>
@@ -61,7 +62,7 @@ const setup = async () => {
     await (devModeToggle as any).click();
     /* eslint-enable */
     devModeToggle.dispose();
-    await page.goto(TARGET_QUESTION);
+    await page.goto(BASE_URL);
     await page.evaluate(
       (peer, roomId) => {
         localStorage.setItem(
@@ -75,6 +76,7 @@ const setup = async () => {
       peer,
       NUM_USERS > 1 ? ROOM_ID : undefined
     );
+    await page.goto(TARGET_QUESTION);
 
     return { browser, page };
   };
