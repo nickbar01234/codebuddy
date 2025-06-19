@@ -1,13 +1,10 @@
+import { useAppDispatch } from "@cb/hooks/redux";
 import { setWindowDimensions } from "@cb/state/slices/windowSlice";
-import { AppDispatch } from "@cb/state/store";
 import { loadPreference } from "@cb/state/thunks/windowThunks";
 import React from "react";
-import { useDispatch } from "react-redux";
 
 export const useWindowListener = () => {
-  const dispatch = useDispatch<AppDispatch>();
-
-  const prev = React.useRef({ w: window.innerWidth, h: window.innerHeight });
+  const dispatch = useAppDispatch();
 
   React.useEffect(() => {
     dispatch(loadPreference());
@@ -18,11 +15,8 @@ export const useWindowListener = () => {
         setWindowDimensions({
           width: w,
           height: h,
-          prevW: prev.current.w,
-          prevH: prev.current.h,
         })
       );
-      prev.current = { w, h };
     };
 
     // throttle with requestAnimationFrame so we don’t dispatch on every pixel

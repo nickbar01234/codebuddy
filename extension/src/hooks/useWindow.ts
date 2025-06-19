@@ -2,16 +2,16 @@ import {
   setAppWidth as _setAppWidth,
   setCodePreferenceHeight as _setCodePreferenceHeight,
 } from "@cb/state/slices/windowSlice";
-import type { AppDispatch, RootState } from "@cb/state/store";
+import type { RootState } from "@cb/state/store";
 import {
   savePreferenceNow,
   toggleWidthAndSave,
 } from "@cb/state/thunks/windowThunks";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "./redux";
 
 export function useWindow() {
-  const dispatch = useDispatch<AppDispatch>();
-  const { width, height, preference } = useSelector(
+  const dispatch = useAppDispatch();
+  const { width, height, preference } = useAppSelector(
     (state: RootState) => state.window
   );
 

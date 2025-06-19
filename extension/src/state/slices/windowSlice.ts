@@ -4,14 +4,16 @@ import { Preference } from "@cb/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface WindowState {
-  width: number;
-  height: number;
+  browser: {
+    width: number;
+    height: number;
+  };
   preference: Preference;
 }
 
 export const MIN_WIDTH = 40;
 
-const getInitialWindowDimensions = () => {
+const getInitialBrowserDimension = () => {
   const { innerWidth: width, innerHeight: height } = window;
   return { width, height };
 };
@@ -22,7 +24,7 @@ const getInitialPreference = (): Preference => {
 };
 
 const initialState: WindowState = {
-  ...getInitialWindowDimensions(),
+  browser: getInitialBrowserDimension(),
   preference: getInitialPreference(),
 };
 
@@ -35,21 +37,19 @@ export const windowSlice = createSlice({
       action: PayloadAction<{
         width: number;
         height: number;
-        prevW: number;
-        prevH: number;
       }>
     ) => {
-      const { width, height, prevW, prevH } = action.payload;
-      const widthRatio = state.preference.appPreference.width / prevW;
-      const heightRatio = state.preference.codePreference.height / prevH;
+      const { width, height } = action.payload;
+      const widthRatio =
+        state.preference.appPreference.width / state.browser.width;
+      const heightRatio =
+        state.preference.codePreference.height / state.browser.height;
 
       state.preference.appPreference.width = width * widthRatio;
       state.preference.appPreference.isCollapsed =
         state.preference.appPreference.width <= MIN_WIDTH;
       state.preference.codePreference.height = height * heightRatio;
-
-      state.width = width;
-      state.height = height;
+      state.browser = action.payload;
     },
     setAppWidth: (state, action: PayloadAction<number>) => {
       state.preference.appPreference.width = action.payload;
