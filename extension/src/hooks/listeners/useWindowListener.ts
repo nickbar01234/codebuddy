@@ -1,15 +1,15 @@
 import { setWindowDimensions } from "@cb/state/slices/windowSlice";
-import type { AppDispatch } from "@cb/state/store";
+import { AppDispatch } from "@cb/state/store";
 import { loadPreference } from "@cb/state/thunks/windowThunks";
-import { useEffect, useRef } from "react";
+import React from "react";
 import { useDispatch } from "react-redux";
 
-export const WindowListener: React.FC = () => {
+export const useWindowListener = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const prev = useRef({ w: window.innerWidth, h: window.innerHeight });
+  const prev = React.useRef({ w: window.innerWidth, h: window.innerHeight });
 
-  useEffect(() => {
+  React.useEffect(() => {
     dispatch(loadPreference());
 
     const handleResize = () => {
@@ -40,6 +40,4 @@ export const WindowListener: React.FC = () => {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, [dispatch]);
-
-  return null;
 };

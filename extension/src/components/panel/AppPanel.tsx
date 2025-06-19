@@ -1,5 +1,6 @@
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 import { VerticalHandle } from "@cb/components/panel/Handle";
+import { useWindowListener } from "@cb/hooks/listeners";
 import { useWindow } from "@cb/hooks/useWindow";
 import { MIN_WIDTH } from "@cb/state/slices/windowSlice";
 import React from "react";
@@ -32,9 +33,7 @@ export const AppPanel = (props: AppPanelProps) => {
     onResizeStop();
   };
 
-  const handleDoubleClick = () => {
-    toggleWidth();
-  };
+  useWindowListener();
 
   return (
     <ResizableBox
@@ -42,7 +41,7 @@ export const AppPanel = (props: AppPanelProps) => {
       axis="x"
       resizeHandles={["w"]}
       className="relative flex h-full"
-      handle={<div onDoubleClick={handleDoubleClick}>{VerticalHandle}</div>}
+      handle={<div onDoubleClick={toggleWidth}>{VerticalHandle}</div>}
       minConstraints={[MIN_WIDTH, 0]}
       onResize={handleResize}
       onResizeStop={handleResizeStop}
