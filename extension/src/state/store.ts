@@ -1,15 +1,12 @@
 import { REDUX_REMOTE_PORT } from "@cb/constants/redux-dev-port";
 import { getLocalStorage } from "@cb/services";
-import windowReducer from "@cb/state/slices/windowSlice";
 import { devToolsEnhancer } from "@redux-devtools/remote";
 import { configureStore } from "@reduxjs/toolkit";
 
 const user = getLocalStorage("test");
 
 export const store = configureStore({
-  reducer: {
-    window: windowReducer,
-  },
+  reducer: {},
   enhancers: (defaultEnhancers) =>
     defaultEnhancers().concat(
       devToolsEnhancer({
