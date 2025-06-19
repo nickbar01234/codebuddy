@@ -11,9 +11,9 @@ import {
   useFirebaseListener,
   usePeerSelection,
   useRTC,
+  useWindowDimensions,
 } from "@cb/hooks";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
-import { useWindow } from "@cb/hooks/useWindow";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
@@ -44,16 +44,8 @@ const EditorPanel = () => {
     onResizeStop,
     preference: { codePreference },
     height,
-  } = useWindow();
+  } = useWindowDimensions();
   const { roomId } = useRTC();
-  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
-  const toggleUserDropdown = React.useCallback(
-    (e: React.MouseEvent<Element, MouseEvent>) => {
-      e.stopPropagation();
-      setUserDropdownOpen((prev) => !prev);
-    },
-    []
-  );
   const { getLanguageExtension } = useLanguageExtension();
   const roomReference = React.useMemo(
     () => (roomId != null ? getRoomRef(roomId) : undefined),

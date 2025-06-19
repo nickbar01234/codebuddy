@@ -1,6 +1,7 @@
 import RootNavigator from "@cb/components/navigator/RootNavigator";
 import { AppPanel } from "@cb/components/panel";
 import SessionProvider from "@cb/context/SessionProvider";
+import { WindowProvider } from "@cb/context/WindowProvider";
 import { store } from "@cb/state/store";
 import "@cb/style/index.css";
 import { generateId, waitForElement } from "@cb/utils";
@@ -21,20 +22,22 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
     createRoot(extensionRoot).render(
       <React.StrictMode>
         <Provider store={store}>
-          <Toaster
-            richColors
-            expand
-            closeButton
-            visibleToasts={3}
-            toastOptions={{
-              duration: 5 * 1000,
-            }}
-          />
-          <AppPanel>
-            <SessionProvider>
-              <RootNavigator />
-            </SessionProvider>
-          </AppPanel>
+          <WindowProvider>
+            <Toaster
+              richColors
+              expand
+              closeButton
+              visibleToasts={3}
+              toastOptions={{
+                duration: 5 * 1000,
+              }}
+            />
+            <AppPanel>
+              <SessionProvider>
+                <RootNavigator />
+              </SessionProvider>
+            </AppPanel>
+          </WindowProvider>
         </Provider>
       </React.StrictMode>
     );

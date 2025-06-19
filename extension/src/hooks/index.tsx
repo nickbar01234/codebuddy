@@ -2,10 +2,10 @@ import { appStateContext } from "@cb/context/AppStateProvider";
 import { PeerSelectionContext } from "@cb/context/PeerSelectionProvider";
 import { RTCContext } from "@cb/context/RTCProvider";
 import { sessionContext } from "@cb/context/SessionProvider";
+import { windowContext } from "@cb/context/WindowProvider";
 import { AppDispatch, RootState } from "@cb/state/store";
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useFirebaseListener } from "./useFirebaseListener";
 import { useOnMount } from "./useOnMount";
 
 export const useAppDispatch = useDispatch.withTypes<AppDispatch>();
@@ -19,5 +19,7 @@ export const usePeerSelection = () => React.useContext(PeerSelectionContext);
 export const useAppState = () => React.useContext(appStateContext);
 
 export const useSession = () => React.useContext(sessionContext);
+export const useWindowDimensions = () => React.useContext(windowContext);
 
-export { useFirebaseListener, useOnMount };
+export { useFirebaseListener } from "./useFirebaseListener";
+export { useOnMount };
