@@ -8,7 +8,6 @@ interface PuppeteerBrowser {
 }
 
 const EXTENSION_PATH = "./dist/";
-const REDUX_DEVTOOLS_PATH = "./redux_devtools/";
 
 const TARGET_QUESTION = "https://leetcode.com/problems/two-sum/";
 const BASE_URL = "https://leetcode.com";
@@ -39,8 +38,8 @@ const setup = async () => {
       headless: false,
       defaultViewport: null,
       args: [
-        `--disable-extensions-except=${EXTENSION_PATH},${REDUX_DEVTOOLS_PATH}`,
-        `--load-extension=${EXTENSION_PATH},${REDUX_DEVTOOLS_PATH}`,
+        `--disable-extensions-except=${EXTENSION_PATH}`,
+        `--load-extension=${EXTENSION_PATH}`,
         "--start-maximized",
         "--disable-web-security",
       ],
