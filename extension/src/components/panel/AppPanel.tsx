@@ -1,9 +1,11 @@
 import { CollapsedPanel } from "@cb/components/panel/CollapsedPanel";
 import { VerticalHandle } from "@cb/components/panel/Handle";
-import { MIN_WIDTH } from "@cb/context/WindowProvider";
-import { useWindowDimensions } from "@cb/hooks";
+import { useWindowListener } from "@cb/hooks/listeners";
+import { useWindow } from "@cb/hooks/useWindow";
+import { MIN_WIDTH } from "@cb/state/slices/windowSlice";
 import React from "react";
-import { ResizableBox } from "react-resizable";
+import { ResizableBox, ResizeCallbackData } from "react-resizable";
+
 interface AppPanelProps {
   children?: React.ReactNode;
 }
@@ -12,9 +14,26 @@ export const AppPanel = (props: AppPanelProps) => {
   const {
     preference: { appPreference },
     setAppWidth,
-    onResizeStop,
     toggleWidth,
-  } = useWindowDimensions();
+    onResizeStop,
+  } = useWindow();
+
+  const handleResize = (
+    _e: React.SyntheticEvent<Element, Event>,
+    data: ResizeCallbackData
+  ) => {
+    setAppWidth(data.size.width);
+  };
+
+  const handleResizeStop = (
+    _e: React.SyntheticEvent<Element, Event>,
+    data: ResizeCallbackData
+  ) => {
+    setAppWidth(data.size.width);
+    onResizeStop();
+  };
+
+  useWindowListener();
 
   return (
     <ResizableBox
@@ -24,8 +43,8 @@ export const AppPanel = (props: AppPanelProps) => {
       className="relative flex h-full"
       handle={<div onDoubleClick={toggleWidth}>{VerticalHandle}</div>}
       minConstraints={[MIN_WIDTH, 0]}
-      onResize={(_e, data) => setAppWidth(data.size.width)}
-      onResizeStop={onResizeStop}
+      onResize={handleResize}
+      onResizeStop={handleResizeStop}
     >
       <div className="bg-primary ml-2 box-border h-full w-full rounded-lg">
         {appPreference.isCollapsed && <CollapsedPanel />}
