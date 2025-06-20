@@ -3,8 +3,8 @@ import { VerticalHandle } from "@cb/components/panel/Handle";
 import { useWindowListener } from "@cb/hooks/listeners";
 import { useWindow } from "@cb/hooks/useWindow";
 import { MIN_WIDTH } from "@cb/state/slices/windowSlice";
+import { Resizable, ResizeCallback } from "re-resizable";
 import React from "react";
-import { ResizableBox, ResizeCallbackData } from "react-resizable";
 
 interface AppPanelProps {
   children?: React.ReactNode;
@@ -14,39 +14,42 @@ export const AppPanel = (props: AppPanelProps) => {
   const {
     preference: { appPreference },
     setAppWidth,
-    toggleWidth,
     onResizeStop,
   } = useWindow();
 
-  const handleResize = (
-    _e: React.SyntheticEvent<Element, Event>,
-    data: ResizeCallbackData
-  ) => {
-    setAppWidth(data.size.width);
-  };
-
-  const handleResizeStop = (
-    _e: React.SyntheticEvent<Element, Event>,
-    data: ResizeCallbackData
-  ) => {
-    setAppWidth(data.size.width);
+  const handleResizeStop: ResizeCallback = (_e, _direction, _ref, delta) => {
+    setAppWidth(appPreference.width + delta.width);
     onResizeStop();
   };
 
   useWindowListener();
 
   return (
-    <ResizableBox
-      width={appPreference.isCollapsed ? MIN_WIDTH : appPreference.width}
-      axis="x"
-      resizeHandles={["w"]}
-      className="relative flex h-full"
-      handle={<div onDoubleClick={toggleWidth}>{VerticalHandle}</div>}
-      minConstraints={[MIN_WIDTH, 0]}
-      onResize={handleResize}
+    <Resizable
+      size={{
+        width: appPreference.isCollapsed ? MIN_WIDTH : appPreference.width,
+        height: "100%",
+      }}
+      // todo(nickbar01234): Need to use onResize instead of onResizeStop? Otherwise, if you start by collapsing, you
+      // end up in a weird partial state
       onResizeStop={handleResizeStop}
+      boundsByDirection
+      minWidth={MIN_WIDTH}
+      enable={{
+        top: false,
+        right: false,
+        bottom: false,
+        left: true,
+        topRight: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topLeft: false,
+      }}
+      // todo(nickbaro1234): toggle width
+      handleComponent={{ left: <VerticalHandle /> }}
+      className="relative h-full"
     >
-      <div className="bg-primary ml-2 box-border h-full w-full rounded-lg">
+      <div className="bg-secondary ml-2 box-border h-full w-full rounded-lg">
         {appPreference.isCollapsed && <CollapsedPanel />}
         <div
           data-collapsed={appPreference.isCollapsed}
@@ -55,6 +58,6 @@ export const AppPanel = (props: AppPanelProps) => {
           {props.children}
         </div>
       </div>
-    </ResizableBox>
+    </Resizable>
   );
 };

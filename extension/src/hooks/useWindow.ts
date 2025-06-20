@@ -1,19 +1,19 @@
 import {
   setAppWidth as _setAppWidth,
   setCodePreferenceHeight as _setCodePreferenceHeight,
+  MIN_WIDTH,
+  setAppWidth,
 } from "@cb/state/slices/windowSlice";
 import type { RootState } from "@cb/state/store";
-import {
-  savePreferenceNow,
-  toggleWidthAndSave,
-} from "@cb/state/thunks/windowThunks";
+import { savePreferenceNow } from "@cb/state/thunks/windowThunks";
 import { useAppDispatch, useAppSelector } from "./redux";
 
 export function useWindow() {
   const dispatch = useAppDispatch();
-  const { width, height, preference } = useAppSelector(
-    (state: RootState) => state.window
-  );
+  const {
+    browser: { width, height },
+    preference,
+  } = useAppSelector((state: RootState) => state.window);
 
   return {
     width,
@@ -29,7 +29,8 @@ export function useWindow() {
     },
 
     toggleWidth: () => {
-      dispatch(toggleWidthAndSave());
+      console.log("Toggling");
+      dispatch(setAppWidth(MIN_WIDTH));
     },
 
     onResizeStop: () => {

@@ -52,8 +52,10 @@ export const windowSlice = createSlice({
       state.browser = action.payload;
     },
     setAppWidth: (state, action: PayloadAction<number>) => {
-      state.preference.appPreference.width = action.payload;
-      state.preference.appPreference.isCollapsed = action.payload <= MIN_WIDTH;
+      state.preference.appPreference.width =
+        action.payload < MIN_WIDTH ? MIN_WIDTH : action.payload;
+      state.preference.appPreference.isCollapsed =
+        state.preference.appPreference.width <= MIN_WIDTH;
     },
     setCodePreferenceHeight: (state, action: PayloadAction<number>) => {
       state.preference.codePreference.height = action.payload;
