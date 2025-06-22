@@ -1,14 +1,12 @@
-import RootNavigator from "@cb/components/navigator/RootNavigator";
-import { AppPanel } from "@cb/components/panel";
-import SessionProvider from "@cb/context/SessionProvider";
-import { store } from "@cb/state/store";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@cb/lib/components/ui/resizable";
 import "@cb/style/index.css";
-import { generateId, waitForElement } from "@cb/utils";
-import React from "react";
+import { waitForElement } from "@cb/utils";
 import { createRoot } from "react-dom/client";
-import { Provider } from "react-redux";
 import "react-resizable/css/styles.css";
-import { Toaster } from "sonner";
 
 const TIME_OUT = 5000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
@@ -16,28 +14,47 @@ const LEETCODE_ROOT_ID = "#qd-content";
 waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
   .then((leetCodeNode) => {
     const extensionRoot = document.createElement("div");
-    extensionRoot.id = generateId("root");
     leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
+    extensionRoot.classList.add("relative", "h-full", "w-full");
+
+    const leetCodeRoot = document.createElement("div");
+    leetCodeRoot.appendChild(leetCodeNode);
+
     createRoot(extensionRoot).render(
-      <React.StrictMode>
-        <Provider store={store}>
-          <Toaster
-            richColors
-            expand
-            closeButton
-            visibleToasts={3}
-            toastOptions={{
-              duration: 5 * 1000,
-            }}
+      <ResizablePanelGroup direction="horizontal">
+        <ResizablePanel>
+          <div
+            className="relative h-full w-full"
+            ref={(ref) => ref?.appendChild(leetCodeNode)}
           />
-          <AppPanel>
-            <SessionProvider>
-              <RootNavigator />
-            </SessionProvider>
-          </AppPanel>
-        </Provider>
-      </React.StrictMode>
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel>hello</ResizablePanel>
+      </ResizablePanelGroup>
     );
+    // const extensionRoot = document.createElement("div");
+    // extensionRoot.id = generateId("root");
+    // leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
+    // createRoot(extensionRoot).render(
+    //   <React.StrictMode>
+    //     <Provider store={store}>
+    //       <Toaster
+    //         richColors
+    //         expand
+    //         closeButton
+    //         visibleToasts={3}
+    //         toastOptions={{
+    //           duration: 5 * 1000,
+    //         }}
+    //       />
+    //       <AppPanel>
+    //         <SessionProvider>
+    //           <RootNavigator />
+    //         </SessionProvider>
+    //       </AppPanel>
+    //     </Provider>
+    //   </React.StrictMode>
+    // );
   })
   .catch(() =>
     console.error(
