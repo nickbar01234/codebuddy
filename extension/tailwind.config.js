@@ -35,6 +35,7 @@ export default {
         DEFAULT: "var(--background-primary)",
         primary: "var(--background-primary)",
         secondary: "var(--background-secondary)",
+        base: "hsl(var(--color-sd-background-gray))",
       },
       colors: {
         background: "var(--background)",

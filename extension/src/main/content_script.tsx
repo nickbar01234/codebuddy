@@ -1,12 +1,14 @@
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@cb/lib/components/ui/resizable";
+import RootNavigator from "@cb/components/navigator/RootNavigator";
+import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
+import SessionProvider from "@cb/context/SessionProvider";
+import { store } from "@cb/state/store";
 import "@cb/style/index.css";
 import { waitForElement } from "@cb/utils";
+import React from "react";
 import { createRoot } from "react-dom/client";
+import { Provider } from "react-redux";
 import "react-resizable/css/styles.css";
+import { Toaster } from "sonner";
 
 const TIME_OUT = 5000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
@@ -21,40 +23,25 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
     leetCodeRoot.appendChild(leetCodeNode);
 
     createRoot(extensionRoot).render(
-      <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel>
-          <div
-            className="relative h-full w-full"
-            ref={(ref) => ref?.appendChild(leetCodeNode)}
+      <React.StrictMode>
+        <Provider store={store}>
+          <Toaster
+            richColors
+            expand
+            closeButton
+            visibleToasts={3}
+            toastOptions={{
+              duration: 5 * 1000,
+            }}
           />
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel>hello</ResizablePanel>
-      </ResizablePanelGroup>
+          <SessionProvider>
+            <ResizableGroupLayoutPanel leetCodeRoot={leetCodeNode}>
+              <RootNavigator />
+            </ResizableGroupLayoutPanel>
+          </SessionProvider>
+        </Provider>
+      </React.StrictMode>
     );
-    // const extensionRoot = document.createElement("div");
-    // extensionRoot.id = generateId("root");
-    // leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
-    // createRoot(extensionRoot).render(
-    //   <React.StrictMode>
-    //     <Provider store={store}>
-    //       <Toaster
-    //         richColors
-    //         expand
-    //         closeButton
-    //         visibleToasts={3}
-    //         toastOptions={{
-    //           duration: 5 * 1000,
-    //         }}
-    //       />
-    //       <AppPanel>
-    //         <SessionProvider>
-    //           <RootNavigator />
-    //         </SessionProvider>
-    //       </AppPanel>
-    //     </Provider>
-    //   </React.StrictMode>
-    // );
   })
   .catch(() =>
     console.error(

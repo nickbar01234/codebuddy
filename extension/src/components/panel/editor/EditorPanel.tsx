@@ -13,7 +13,11 @@ import {
   useRTC,
 } from "@cb/hooks";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
-import { useWindow } from "@cb/hooks/useWindow";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@cb/lib/components/ui/resizable";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
@@ -25,7 +29,6 @@ import { cn } from "@cb/utils/cn";
 import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
-import { ResizableBox } from "react-resizable";
 import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
 
 export interface TabMetadata {
@@ -39,12 +42,6 @@ const EditorPanel = () => {
   const { activePeer, unblur, selectTest, isBuffer, activeUserInformation } =
     usePeerSelection();
   const { state: appState, user } = useAppState();
-  const {
-    setCodePreferenceHeight,
-    onResizeStop,
-    preference: { codePreference },
-    height,
-  } = useWindow();
   const { roomId } = useRTC();
   const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
   const toggleUserDropdown = React.useCallback(
@@ -130,25 +127,15 @@ const EditorPanel = () => {
           <CreateRoomLoadingPanel />
         </SkeletonWrapper>
       )}
-      <div
-        className={cn("relative flex h-full w-full flex-col justify-between", {
-          hidden: emptyRoom,
-        })}
+      <ResizablePanelGroup
+        direction="vertical"
+        className={cn("relative h-full w-full", { hidden: emptyRoom })}
       >
-        <ResizableBox
-          height={codePreference.height}
-          axis="y"
-          resizeHandles={canViewCode ? ["s"] : undefined}
-          className="relative flex h-full w-full flex-col overflow-hidden"
-          minConstraints={[Infinity, height * 0.2]}
-          maxConstraints={[Infinity, height * 0.5]}
-          handle={
-            <div className="bg-layer-bg-gray dark:bg-layer-bg-gray absolute bottom-0 h-2 w-full z-[100]">
-              <div className="flexlayout__splitter flexlayout__splitter_horz relative top-1/2 h-[2px] w-full -translate-y-1/2 cursor-ns-resize after:h-[2px] after:bg-[--color-splitter] hover:after:h-full hover:after:bg-[--color-splitter-drag]" />
-            </div>
-          }
-          onResize={(_e, data) => setCodePreferenceHeight(data.size.height)}
-          onResizeStop={onResizeStop}
+        <ResizablePanel
+          defaultSize={60}
+          minSize={30}
+          maxSize={80}
+          className="relative"
         >
           {/* todo(nickbar01234): Fix styling */}
           {!canViewCode && !isBuffer && (
@@ -172,12 +159,10 @@ const EditorPanel = () => {
             >
               <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
                 <UserDropDownMenu />
-
                 <Separator
                   orientation="vertical"
                   className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
                 />
-
                 {upperTabConfigs.map((tab, index) => (
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
@@ -201,7 +186,6 @@ const EditorPanel = () => {
                   </React.Fragment>
                 ))}
               </TabsList>
-
               {upperTabConfigs.map(({ value, Content }) => (
                 <TabsContent
                   key={value}
@@ -214,16 +198,16 @@ const EditorPanel = () => {
               ))}
             </Tabs>
           </div>
-        </ResizableBox>
-        <div
-          className="relative w-full overflow-hidden bg-secondary"
-          style={{ height: height - codePreference.height }}
-        >
+        </ResizablePanel>
+        <div className="h-[8px] bg-base w-full">
+          <ResizableHandle className="flexlayout__splitter flexlayout__splitter_horz h-2 w-full cursor-ns-resize after:w-[20px] after:bg-[--color-splitter] hover:after:w-full hover:after:bg-[--color-splitter-drag]" />
+        </div>
+        <ResizablePanel>
           <Tabs
             defaultValue="activity"
-            className="h-full w-full bg-inherit text-inherit"
+            className="h-full w-full bg-secondary text-inherit"
           >
-            <TabsList className="hide-scrollbar bg-secondary flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-inherit  text-inherit">
+            <TabsList className="hide-scrollbar bg-inherit flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
               {lowerTabConfigs.map((tab, index) => (
                 <React.Fragment key={tab.value}>
                   <TabsTrigger
@@ -242,7 +226,6 @@ const EditorPanel = () => {
                 </React.Fragment>
               ))}
             </TabsList>
-
             {lowerTabConfigs.map(({ value, Content }) => (
               <TabsContent
                 key={value}
@@ -254,8 +237,8 @@ const EditorPanel = () => {
               </TabsContent>
             ))}
           </Tabs>
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };
