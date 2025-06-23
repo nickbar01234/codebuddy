@@ -4,16 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build:service_worker": "TYPE=service_worker vite build",
-    "build:content_script": "TYPE=content_script vite build",
-    "build": "pnpm run \"/^build:.*/\"",
-    "dev:build": "pnpm run build --mode development",
-    "dev:prod": "pnpm run build && concurrently --kill-others \"pnpm run build --watch\"",
-    "dev": "concurrently --kill-others \"tsx script/dev.ts\" \"pnpm run dev:build --watch\"",
-    "dev:1": "USERS=1 pnpm run dev",
-    "dev:3": "USERS=3 pnpm run dev",
-    "dev:4": "USERS=4 pnpm run dev",
-    "test": "TYPE=content_script pnpm vitest"
+    "dev": "wxt",
+    "build": "wxt build",
+    "zip": "wxt zip",
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.5",
@@ -59,6 +53,7 @@
     "concurrently": "^9.1.2",
     "postcss": "^8.4.38",
     "puppeteer": "^24.1.0",
-    "tailwindcss": "^3.4.3"
+    "tailwindcss": "^3.4.3",
+    "wxt": "^0.20.7"
   }
 }
