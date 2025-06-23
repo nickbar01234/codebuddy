@@ -37,6 +37,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    --gray: 0 0 6%;
 
     /* Layout System Variables */
     --color-button-background: var(--fill-tertiary);
@@ -64,6 +65,7 @@
     --color-drag-rect-background: var(--layer-02);
     --color-drag-rect: var(--text-primary);
     --color-edge-marker: var(--blue-60);
+    --color-sd-background-gray: 0 0% 94.1%;
 
     /* Custom Application Colors */
     --background-primary: rgb(255 255 255); /* From LC: .bg-layer-1 */
@@ -122,6 +124,7 @@
     /* Layout System Dark Mode Overrides */
     --color-button-background: var(--fill-tertiary);
     --color-button-hover-background: rgba(255, 255, 255, 0.2);
+    --color-sd-background-gray: 0 0% 6%;
 
     /* Custom Application Colors */
     --background-primary: rgb(26 26 26); /* From LC: bg-dark-layer-bg */

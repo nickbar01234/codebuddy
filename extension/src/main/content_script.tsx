@@ -1,9 +1,9 @@
 import RootNavigator from "@cb/components/navigator/RootNavigator";
-import { AppPanel } from "@cb/components/panel";
+import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
 import SessionProvider from "@cb/context/SessionProvider";
 import { store } from "@cb/state/store";
 import "@cb/style/index.css";
-import { generateId, waitForElement } from "@cb/utils";
+import { waitForElement } from "@cb/utils";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Provider } from "react-redux";
@@ -16,8 +16,12 @@ const LEETCODE_ROOT_ID = "#qd-content";
 waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
   .then((leetCodeNode) => {
     const extensionRoot = document.createElement("div");
-    extensionRoot.id = generateId("root");
     leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
+    extensionRoot.classList.add("relative", "h-full", "w-full");
+
+    const leetCodeRoot = document.createElement("div");
+    leetCodeRoot.appendChild(leetCodeNode);
+
     createRoot(extensionRoot).render(
       <React.StrictMode>
         <Provider store={store}>
@@ -30,11 +34,11 @@ waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
               duration: 5 * 1000,
             }}
           />
-          <AppPanel>
-            <SessionProvider>
+          <SessionProvider>
+            <ResizableGroupLayoutPanel leetCodeRoot={leetCodeNode}>
               <RootNavigator />
-            </SessionProvider>
-          </AppPanel>
+            </ResizableGroupLayoutPanel>
+          </SessionProvider>
         </Provider>
       </React.StrictMode>
     );
