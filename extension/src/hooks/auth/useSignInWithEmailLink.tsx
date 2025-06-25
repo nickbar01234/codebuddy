@@ -4,7 +4,9 @@ import { constructUrlFromQuestionId, getSessionId } from "@cb/utils";
 import { FirebaseError } from "firebase/app";
 import {
   ActionCodeSettings,
+  createUserWithEmailAndPassword,
   sendSignInLinkToEmail,
+  signInWithEmailAndPassword,
 } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
 import React from "react";
@@ -47,8 +49,18 @@ export const useSignInWithEmailLink = () => {
 
   const onEmailSubmit = React.useMemo(
     () =>
-      throttle(
-        () =>
+      throttle(() => {
+        if (import.meta.env.DEV) {
+          createUserWithEmailAndPassword(auth, email, "TEST_PASSWORD")
+            .catch((error) => {
+              if (error.code !== "auth/email-already-in-use") {
+                console.error(error);
+              }
+            })
+            .finally(() =>
+              signInWithEmailAndPassword(auth, email, "TEST_PASSWORD")
+            );
+        } else {
           sendSignInLinkToEmail(auth, email, actionCodeSettings)
             .then(async () => {
               setLocalStorage("signIn", {
@@ -68,9 +80,9 @@ export const useSignInWithEmailLink = () => {
                 setStatus({ status: "ERROR", message: message });
                 console.error(error);
               }
-            }),
-        THROTTLE_SUBMIT
-      ),
+            });
+        }
+      }, THROTTLE_SUBMIT),
     [actionCodeSettings, email]
   );
 

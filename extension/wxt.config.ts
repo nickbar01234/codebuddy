@@ -1,4 +1,6 @@
+import react from "@vitejs/plugin-react";
 import { join, resolve } from "path";
+import tailwindcss from "tailwindcss";
 import { defineConfig } from "wxt";
 
 const SRC_DIR = "src";
@@ -8,6 +10,7 @@ export default defineConfig({
   outDir: "dist",
   webExt: {
     startUrls: ["https://leetcode.com/problems/two-sum/"],
+    chromiumArgs: ["--disable-web-security"],
   },
   manifestVersion: 3,
   manifest: {
@@ -34,6 +37,12 @@ export default defineConfig({
     ],
   },
   vite: () => ({
+    plugins: [react()],
+    css: {
+      postcss: {
+        plugins: [tailwindcss()],
+      },
+    },
     resolve: {
       alias: [
         {

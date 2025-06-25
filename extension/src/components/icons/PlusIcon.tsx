@@ -10,9 +10,9 @@ export const PlusIcon = ({ ...props }) => {
       {...props}
     >
       <path
-        fill-rule="evenodd"
+        fillRule="evenodd"
         d="M13 11h7a1 1 0 110 2h-7v7a1 1 0 11-2 0v-7H4a1 1 0 110-2h7V4a1 1 0 112 0v7z"
-        clip-rule="evenodd"
+        clipRule="evenodd"
       />
     </svg>
   );

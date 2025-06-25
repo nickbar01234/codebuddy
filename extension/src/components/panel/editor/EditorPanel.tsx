@@ -127,57 +127,98 @@ const EditorPanel = () => {
           <CreateRoomLoadingPanel />
         </SkeletonWrapper>
       )}
-      <ResizablePanelGroup
-        direction="vertical"
-        className={cn("relative h-full w-full", { hidden: emptyRoom })}
-      >
-        <ResizablePanel
-          defaultSize={60}
-          minSize={30}
-          maxSize={80}
-          className="relative"
+      <div className={cn({ hidden: emptyRoom })}>
+        <ResizablePanelGroup
+          direction="vertical"
+          className={cn("relative h-full w-full")}
         >
-          {/* todo(nickbar01234): Fix styling */}
-          {!canViewCode && !isBuffer && (
-            <button
-              className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
-              onClick={unblur}
-              type="button"
-            >
-              View
-            </button>
-          )}
-          <div
-            data-view-code={canViewCode}
-            className={cn("h-full w-full", {
-              blur: !canViewCode,
-            })}
+          <ResizablePanel
+            defaultSize={60}
+            minSize={30}
+            maxSize={80}
+            className="relative"
           >
-            <Tabs
-              defaultValue="code"
-              className="h-full w-full bg-inherit text-inherit"
+            {/* todo(nickbar01234): Fix styling */}
+            {!canViewCode && !isBuffer && (
+              <button
+                className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
+                onClick={unblur}
+                type="button"
+              >
+                View
+              </button>
+            )}
+            <div
+              data-view-code={canViewCode}
+              className={cn("h-full w-full", {
+                blur: !canViewCode,
+              })}
             >
-              <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
-                <UserDropDownMenu />
-                <Separator
-                  orientation="vertical"
-                  className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                />
-                {upperTabConfigs.map((tab, index) => (
+              <Tabs
+                defaultValue="code"
+                className="h-full w-full bg-inherit text-inherit"
+              >
+                <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
+                  <UserDropDownMenu />
+                  <Separator
+                    orientation="vertical"
+                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  />
+                  {upperTabConfigs.map((tab, index) => (
+                    <React.Fragment key={tab.value}>
+                      <TabsTrigger
+                        value={tab.value}
+                        className={cn(
+                          "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent",
+                          {
+                            "pointer-events-none": !canViewCode,
+                          }
+                        )}
+                      >
+                        <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
+                        {tab.label}
+                      </TabsTrigger>
+                      {index !== upperTabConfigs.length - 1 && (
+                        <Separator
+                          orientation="vertical"
+                          className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TabsList>
+                {upperTabConfigs.map(({ value, Content }) => (
+                  <TabsContent
+                    key={value}
+                    value={value}
+                    forceMount
+                    className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
+                  >
+                    {Content}
+                  </TabsContent>
+                ))}
+              </Tabs>
+            </div>
+          </ResizablePanel>
+          <div className="h-[8px] bg-base w-full">
+            <ResizableHandle className="flexlayout__splitter flexlayout__splitter_horz h-2 w-full cursor-ns-resize after:w-[20px] after:bg-[--color-splitter] hover:after:w-full hover:after:bg-[--color-splitter-drag]" />
+          </div>
+          <ResizablePanel>
+            <Tabs
+              defaultValue="activity"
+              className="h-full w-full bg-secondary text-inherit"
+            >
+              <TabsList className="hide-scrollbar bg-inherit flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
+                {lowerTabConfigs.map((tab, index) => (
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
                       value={tab.value}
-                      className={cn(
-                        "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent",
-                        {
-                          "pointer-events-none": !canViewCode,
-                        }
-                      )}
+                      className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                     >
                       <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
                       {tab.label}
                     </TabsTrigger>
-                    {index !== upperTabConfigs.length - 1 && (
+                    {index !== lowerTabConfigs.length - 1 && (
                       <Separator
                         orientation="vertical"
                         className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
@@ -186,7 +227,7 @@ const EditorPanel = () => {
                   </React.Fragment>
                 ))}
               </TabsList>
-              {upperTabConfigs.map(({ value, Content }) => (
+              {lowerTabConfigs.map(({ value, Content }) => (
                 <TabsContent
                   key={value}
                   value={value}
@@ -197,48 +238,9 @@ const EditorPanel = () => {
                 </TabsContent>
               ))}
             </Tabs>
-          </div>
-        </ResizablePanel>
-        <div className="h-[8px] bg-base w-full">
-          <ResizableHandle className="flexlayout__splitter flexlayout__splitter_horz h-2 w-full cursor-ns-resize after:w-[20px] after:bg-[--color-splitter] hover:after:w-full hover:after:bg-[--color-splitter-drag]" />
-        </div>
-        <ResizablePanel>
-          <Tabs
-            defaultValue="activity"
-            className="h-full w-full bg-secondary text-inherit"
-          >
-            <TabsList className="hide-scrollbar bg-inherit flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
-              {lowerTabConfigs.map((tab, index) => (
-                <React.Fragment key={tab.value}>
-                  <TabsTrigger
-                    value={tab.value}
-                    className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                  >
-                    <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
-                    {tab.label}
-                  </TabsTrigger>
-                  {index !== lowerTabConfigs.length - 1 && (
-                    <Separator
-                      orientation="vertical"
-                      className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                    />
-                  )}
-                </React.Fragment>
-              ))}
-            </TabsList>
-            {lowerTabConfigs.map(({ value, Content }) => (
-              <TabsContent
-                key={value}
-                value={value}
-                forceMount
-                className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
-              >
-                {Content}
-              </TabsContent>
-            ))}
-          </Tabs>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </div>
     </div>
   );
 };
