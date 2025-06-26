@@ -7,10 +7,12 @@ import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import autoImports from "./extension/.wxt/eslint-auto-imports.mjs";
 
 export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
+  autoImports,
   {
     ignores: ["**/node_modules/*", "**/dist/*"],
   },
@@ -20,6 +22,8 @@ export default tseslint.config(
       "no-explicit-any": "off",
       "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@typescript-eslint/triple-slash-reference": "warn",
     },
     plugins: {
       "no-relative-import-paths": noRelativeImportPaths,

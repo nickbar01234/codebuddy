@@ -14,7 +14,8 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
 
 export const sendServiceRequest = <T extends ServiceRequest>(
   request: T
-): Promise<ServiceResponse[T["action"]]> => chrome.runtime.sendMessage(request);
+): Promise<ServiceResponse[T["action"]]> =>
+  browser.runtime.sendMessage(request);
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
