@@ -5,12 +5,17 @@ import { defineConfig } from "wxt";
 
 const SRC_DIR = "src";
 
+const USER_PROFILE = process.env.USER_PROFILE;
+
 export default defineConfig({
   srcDir: SRC_DIR,
   outDir: "dist",
   webExt: {
     startUrls: ["https://leetcode.com/problems/two-sum/"],
-    chromiumArgs: ["--disable-web-security"],
+    chromiumArgs: [
+      "--disable-web-security",
+      `--user-data-dir=./.wxt/chrome-data/${USER_PROFILE}`,
+    ],
   },
   manifestVersion: 3,
   manifest: {

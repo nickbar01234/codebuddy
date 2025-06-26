@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "wxt",
+    "dev:1": "USER_PROFILE=code wxt",
+    "dev:2": "USER_PROFILE=buddy wxt",
     "build": "wxt build",
     "zip": "wxt zip",
     "postinstall": "wxt prepare"

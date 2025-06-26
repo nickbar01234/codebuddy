@@ -6,31 +6,6 @@
       "@cb/*": ["./src/*"]
     }
   },
-  // "compilerOptions": {
-  //   "target": "ESNext",
-  //   "lib": ["ES2020", "DOM", "DOM.Iterable"],
-  //   "module": "ESNext",
-  //   "skipLibCheck": true,
-
-  //   /* Bundler mode */
-  //   "moduleResolution": "bundler",
-  //   "allowSyntheticDefaultImports": true,
-  //   "resolveJsonModule": true,
-  //   "isolatedModules": true,
-  //   "noEmit": true,
-  //   "jsx": "react-jsx",
-
-  //   /* Linting */
-  //   "strict": true,
-  //   "noFallthroughCasesInSwitch": true,
-
-  //   "baseUrl": "./src",
-  //   "paths": {
-  //     "@cb/*": ["./*"]
-  //   },
-  //   "types": ["vite/client", "chrome"]
-  // },
-  // "include": ["./src", "./entrypoints", "vite.config.ts"],
   "exclude": ["./**/*.spec.ts", ".output"],
   "extends": ["./.wxt/tsconfig.json"]
 }

@@ -127,7 +127,7 @@ const EditorPanel = () => {
           <CreateRoomLoadingPanel />
         </SkeletonWrapper>
       )}
-      <div className={cn({ hidden: emptyRoom })}>
+      <div className={cn("h-full w-full", { hidden: emptyRoom })}>
         <ResizablePanelGroup
           direction="vertical"
           className={cn("relative h-full w-full")}
