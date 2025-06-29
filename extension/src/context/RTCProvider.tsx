@@ -33,6 +33,7 @@ import {
   ResponseStatus,
   WindowMessage,
 } from "@cb/types";
+import { Connection } from "@cb/types/utils";
 import {
   constructUrlFromQuestionId,
   getQuestionIdFromUrl,
@@ -53,7 +54,6 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import { Connection } from "types/utils";
 import { additionalServers } from "./additionalServers";
 import { AppState } from "./AppStateProvider";
 
