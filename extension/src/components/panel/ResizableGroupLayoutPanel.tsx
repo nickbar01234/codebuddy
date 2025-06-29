@@ -9,7 +9,10 @@ import {
   collapseExtension,
   DEFAULT_PANEL_SIZE,
   expandExtension,
+  resizeExtension,
 } from "@cb/state/slices/layoutSlice";
+import { throttle } from "lodash";
+import React from "react";
 import { CollapsedPanel } from "./CollapsedPanel";
 
 interface ResizableLayoutPanelProps {
@@ -25,6 +28,11 @@ export const ResizableGroupLayoutPanel = ({
     extension: { width, collapsed },
   } = useAppSelector((state) => state.layout);
   const dispatch = useAppDispatch();
+
+  const onResize = React.useMemo(
+    () => throttle((width) => dispatch(resizeExtension(width)), 100),
+    [dispatch]
+  );
 
   return (
     <ResizablePanelGroup direction="horizontal">
@@ -42,6 +50,7 @@ export const ResizableGroupLayoutPanel = ({
         minSize={DEFAULT_PANEL_SIZE}
         onCollapse={() => dispatch(collapseExtension())}
         onExpand={() => dispatch(expandExtension())}
+        onResize={onResize}
       >
         {collapsed && <CollapsedPanel />}
         <div
