@@ -118,7 +118,7 @@ const EditorPanel = () => {
 
   return (
     <div
-      className={cn("relative z-50 flex h-full w-full grow flex-col gap-y-2", {
+      className={cn("relative flex h-full w-full grow flex-col gap-y-2", {
         hidden: appState !== AppState.ROOM,
       })}
     >
@@ -141,7 +141,7 @@ const EditorPanel = () => {
             {/* todo(nickbar01234): Fix styling */}
             {!canViewCode && !isBuffer && (
               <button
-                className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
+                className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
                 onClick={unblur}
                 type="button"
               >
