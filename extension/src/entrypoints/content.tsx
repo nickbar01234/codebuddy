@@ -17,6 +17,12 @@ export default defineContentScript({
   matches: ["https://leetcode.com/problems/*"],
   runAt: "document_end",
   main() {
+    if ((window as any).CODEBUDDY_INJECTED === true) {
+      return;
+    }
+
+    (window as any).CODEBUDDY_INJECTED = true;
+
     waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
       .then((leetCodeNode) => {
         const extensionRoot = document.createElement("div");
