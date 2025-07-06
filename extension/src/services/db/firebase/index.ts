@@ -9,6 +9,7 @@ import {
   FirestoreDataConverter,
   getDoc,
   onSnapshot,
+  SnapshotOptions,
   updateDoc,
 } from "firebase/firestore";
 import {
@@ -27,6 +28,8 @@ type FirebaseTypes = {
   [Model.CONNECTIONS]: Connection;
 };
 
+const SNAPSHOT_OPTIONS: SnapshotOptions = { serverTimestamps: "estimate" };
+
 const firebaseConverters: {
   [K in keyof FirebaseTypes]: FirestoreDataConverter<FirebaseTypes[K]>;
 } = {
@@ -39,7 +42,7 @@ const withDocumentSnapshot = <T>(
   cb: ObserverDocumentCallback<T>
 ) => {
   return onSnapshot(ref, (snap) => {
-    const data = snap.data({ serverTimestamps: "estimate" });
+    const data = snap.data(SNAPSHOT_OPTIONS);
     if (data != undefined) {
       cb.onChange(data);
     } else {
@@ -54,7 +57,7 @@ const withCollectionSnapshot = <T>(
 ) => {
   return onSnapshot(ref, (snap) => {
     snap.docChanges().forEach((change) => {
-      const data = change.doc.data({ serverTimestamps: "estimate" });
+      const data = change.doc.data(SNAPSHOT_OPTIONS);
       switch (change.type) {
         case "added":
           cb.onAdded(data);
@@ -105,7 +108,7 @@ export const firebaseDatabaseImpl: Database = {
   },
 
   getRoom(id) {
-    return getDoc(getRoomRef(id)).then((room) => room.data());
+    return getDoc(getRoomRef(id)).then((room) => room.data(SNAPSHOT_OPTIONS));
   },
 
   setRoom(id, room) {
