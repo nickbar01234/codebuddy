@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev:1": "USER_PROFILE=code wxt",
-    "dev:2": "USER_PROFILE=buddy wxt",
+    "dev:1": "set USER_PROFILE=code&& wxt",
+    "dev:2": "set USER_PROFILE=buddy&& wxt",
     "build": "wxt build",
     "zip": "wxt zip",
     "postinstall": "wxt prepare"
@@ -37,7 +37,8 @@
     "react-resizable-panels": "^3.0.3",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.6.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "webext-dynamic-content-scripts": "^10.0.4"
   },
   "devDependencies": {
     "@testing-library/react": "^16.2.0",

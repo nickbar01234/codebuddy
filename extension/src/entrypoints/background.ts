@@ -5,6 +5,7 @@ import {
   ServiceResponse,
   WindowMessage,
 } from "@cb/types";
+import "webext-dynamic-content-scripts";
 
 export default defineBackground(() => {
   const servicePayload = <T extends ServiceRequest["action"]>(

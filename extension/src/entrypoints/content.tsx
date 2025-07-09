@@ -14,18 +14,16 @@ const TIME_OUT = 5000; // ms
 const LEETCODE_ROOT_ID = "#qd-content";
 
 export default defineContentScript({
-  matches: ["https://leetcode.com/problems/*"],
-  runAt: "document_end",
-  main() {
-    if ((window as any).CODEBUDDY_INJECTED === true) {
-      return;
-    }
-
-    (window as any).CODEBUDDY_INJECTED = true;
-
+  // matches: ["https://leetcode.com/problems/*"],
+  // runAt: "document_end",
+  registration: "runtime",
+  matches: [],
+  async main() {
     waitForElement(LEETCODE_ROOT_ID, TIME_OUT)
       .then((leetCodeNode) => {
+        console.log("leetcode node", leetCodeNode);
         const extensionRoot = document.createElement("div");
+        extensionRoot.id = "codebuddy_panel";
         leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
         extensionRoot.classList.add("relative", "h-full", "w-full");
 
