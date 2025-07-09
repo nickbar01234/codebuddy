@@ -56,7 +56,7 @@ const Popup = () => {
         target: { tabId: tab.id },
         func: () => {
           // need to figure out correct way
-          const panel = document.getElementById(":r3:");
+          const panel = document.getElementById("resizable-panel-collapsible");
           if (panel) {
             panel.remove();
           }
