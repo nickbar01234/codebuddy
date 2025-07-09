@@ -27,15 +27,19 @@ export const ResizableGroupLayoutPanel = ({
   const dispatch = useAppDispatch();
 
   return (
-    <ResizablePanelGroup direction="horizontal">
-      <ResizablePanel>
+    <ResizablePanelGroup id="resizable-panel-group" direction="horizontal">
+      <ResizablePanel id="resizable-panel-before-div">
         <div
           className="relative h-full w-full"
           ref={(ref) => ref?.appendChild(leetCodeRoot)}
         />
       </ResizablePanel>
-      <ResizableHandle className="flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize" />
+      <ResizableHandle
+        id="resizable-handle"
+        className="flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize"
+      />
       <ResizablePanel
+        id="resizable-panel-collapsible"
         collapsible
         collapsedSize={COLLAPSED_SIZE}
         defaultSize={width}
@@ -45,6 +49,7 @@ export const ResizableGroupLayoutPanel = ({
       >
         {collapsed && <CollapsedPanel />}
         <div
+          id="div-after-collapse-panel"
           data-collapsed={collapsed}
           className="h-full w-full data-[collapsed=true]:hidden"
         >
