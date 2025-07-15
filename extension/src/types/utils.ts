@@ -41,3 +41,7 @@ export interface Connection {
   channel: RTCDataChannel;
   lastSeen: number;
 }
+
+export type Identifable<T> = { id: string } & T;
+
+export type Unsubscribe = () => void;
