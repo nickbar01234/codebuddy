@@ -9,9 +9,7 @@ import {
   collapseExtension,
   DEFAULT_PANEL_SIZE,
   expandExtension,
-  resizeExtension,
 } from "@cb/state/slices/layoutSlice";
-import { throttle } from "lodash";
 import React from "react";
 import { CollapsedPanel } from "./CollapsedPanel";
 
@@ -25,14 +23,10 @@ export const ResizableGroupLayoutPanel = ({
   children,
 }: ResizableLayoutPanelProps) => {
   const {
+    app: { enabled },
     extension: { width, collapsed },
   } = useAppSelector((state) => state.layout);
   const dispatch = useAppDispatch();
-
-  const onResize = React.useMemo(
-    () => throttle((width) => dispatch(resizeExtension(width)), 100),
-    [dispatch]
-  );
 
   return (
     <ResizablePanelGroup direction="horizontal">
@@ -42,7 +36,12 @@ export const ResizableGroupLayoutPanel = ({
           ref={(ref) => ref?.appendChild(leetCodeRoot)}
         />
       </ResizablePanel>
-      <ResizableHandle className="flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize" />
+      <ResizableHandle
+        className={cn(
+          "flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize",
+          { hidden: !enabled }
+        )}
+      />
       <ResizablePanel
         collapsible
         collapsedSize={COLLAPSED_SIZE}
@@ -50,7 +49,7 @@ export const ResizableGroupLayoutPanel = ({
         minSize={DEFAULT_PANEL_SIZE}
         onCollapse={() => dispatch(collapseExtension())}
         onExpand={() => dispatch(expandExtension())}
-        onResize={onResize}
+        className={cn({ hidden: !enabled })}
       >
         {collapsed && <CollapsedPanel />}
         <div

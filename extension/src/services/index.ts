@@ -10,6 +10,7 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "preference",
   "closingTabs",
   "navigatePrompt",
+  "appEnabled",
 ];
 
 export const sendServiceRequest = <T extends ServiceRequest>(

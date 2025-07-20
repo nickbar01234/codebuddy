@@ -1,4 +1,6 @@
+import { LEETCODE_PROBLEMS_URL } from "@cb/constants";
 import {
+  ContentRequest,
   ExtractMessage,
   ResponseStatus,
   ServiceRequest,
@@ -10,6 +12,8 @@ export default defineBackground(() => {
   const servicePayload = <T extends ServiceRequest["action"]>(
     payload: ServiceResponse[T]
   ) => payload;
+
+  const contentPayload = <T extends ContentRequest>(payload: T) => payload;
 
   const getValue = async () => {
     const monaco = (window as any).monaco;
@@ -174,7 +178,19 @@ export default defineBackground(() => {
     return getLanguages() as any[];
   };
 
-  browser.runtime.onMessage.addListener(
+  browser.action.onClicked.addListener(() => {
+    browser.tabs.query({ url: `${LEETCODE_PROBLEMS_URL}/*` }).then((tabs) =>
+      tabs.forEach((tab) => {
+        if (tab.id != undefined) {
+          browser.tabs.sendMessage(
+            tab.id,
+            contentPayload({ action: "toggleUi" })
+          );
+        }
+      })
+    );
+  });
+  browser.runtime.onUserScriptMessage.addListener(
     (request: ServiceRequest, sender, sendResponse) => {
       switch (request.action) {
         case "getValue": {
@@ -276,11 +292,6 @@ export default defineBackground(() => {
               sendResponse(response);
             })
             .catch(console.error);
-          break;
-        }
-
-        case "reloadExtension": {
-          browser.runtime.reload();
           break;
         }
 

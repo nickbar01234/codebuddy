@@ -32,10 +32,6 @@ interface SetOtherEditorRequest extends GenericMessage {
   editorId: string;
 }
 
-interface ReloadExtensionRequest extends GenericMessage {
-  action: "reloadExtension";
-}
-
 interface GetActiveTabIdRequest extends GenericMessage {
   action: "getActiveTabId";
 }
@@ -55,7 +51,6 @@ export type ServiceRequest =
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
   | SetupLeetCodeModel
-  | ReloadExtensionRequest
   | GetActiveTabIdRequest
   | CloseSignInTabRequest
   | GetLanguageExtensionRequest;
@@ -84,5 +79,6 @@ export type ServiceResponse = GenericResponse<
     getActiveTabId: number;
     closeSignInTab: ServiceGenericResponse;
     getLanguageExtension: Array<{ id: string; extensions: string[] }>;
+    updateContentScriptUi: void;
   }
 >;
