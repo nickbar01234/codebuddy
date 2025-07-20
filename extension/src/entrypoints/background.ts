@@ -190,7 +190,8 @@ export default defineBackground(() => {
       })
     );
   });
-  browser.runtime.onUserScriptMessage.addListener(
+
+  browser.runtime.onMessage.addListener(
     (request: ServiceRequest, sender, sendResponse) => {
       switch (request.action) {
         case "getValue": {
