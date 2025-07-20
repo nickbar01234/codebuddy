@@ -30,13 +30,13 @@ export default defineConfig({
       "128": "icons/128.png",
     },
     host_permissions: ["https://leetcode.com/problems/*"],
-    permissions: ["scripting", "tabs", "activeTab"],
+    permissions: ["scripting", "tabs"],
     content_security_policy: {
       extension_pages: "script-src 'self'; object-src 'self';",
     },
     web_accessible_resources: [
       {
-        resources: ["images/*.png", "content-scripts/content.css"],
+        resources: ["images/*.png"],
         matches: ["<all_urls>"],
       },
     ],

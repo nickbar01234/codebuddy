@@ -79,6 +79,5 @@ export type ServiceResponse = GenericResponse<
     getActiveTabId: number;
     closeSignInTab: ServiceGenericResponse;
     getLanguageExtension: Array<{ id: string; extensions: string[] }>;
-    updateContentScriptUi: void;
   }
 >;
