@@ -1,5 +1,5 @@
 import { devToolsEnhancer } from "@redux-devtools/remote";
-import { configureStore } from "@reduxjs/toolkit";
+import { configureStore, ThunkAction, UnknownAction } from "@reduxjs/toolkit";
 import layoutReducer from "./slices/layoutSlice";
 
 // const user = getLocalStorage("test");
@@ -29,3 +29,9 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppStore = typeof store;
+export type AppThunk<ReturnType = void> = ThunkAction<
+  ReturnType,
+  RootState,
+  unknown,
+  UnknownAction
+>;

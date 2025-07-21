@@ -1,3 +1,4 @@
+export * from "./content";
 export * from "./peers";
 export * from "./services";
 export * from "./user-session";
@@ -41,6 +42,7 @@ export interface Preference {
 
 // Refactor post redux
 export interface LocalStorage {
+  appEnabled: boolean;
   tabs: {
     roomId: string;
     sessions: Record<string, Record<string, Peer>>;

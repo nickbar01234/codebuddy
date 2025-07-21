@@ -11,3 +11,5 @@ export const CodeBuddyPreference: Preference = {
     height: 500,
   },
 };
+
+export const LEETCODE_PROBLEMS_URL = "https://leetcode.com/problems";
