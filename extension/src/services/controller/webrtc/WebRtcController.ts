@@ -6,6 +6,7 @@ type IamPolite = (me: User, other: User) => boolean;
 interface PeerConnection {
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
+  makingOffer: boolean;
 }
 
 const WEB_RTC_CONFIG = {
@@ -44,7 +45,7 @@ export class WebRtcController {
 
     const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
     const channel = pc.createDataChannel(user);
-    this.pcs.set(user, { pc, channel });
+    this.pcs.set(user, { pc, channel, makingOffer: false });
 
     pc.onicecandidate = (event) => {
       this.signaler.publish("ice", {
@@ -52,6 +53,31 @@ export class WebRtcController {
         to: user,
         data: event.candidate?.toJSON() ?? null,
       });
+    };
+
+    // create offer (onnegotiationneeded)
+    pc.onnegotiationneeded = async () => {
+      const connection = this.pcs.get(user);
+      if (!connection || connection?.makingOffer) return;
+      try {
+        connection.makingOffer = true;
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        const description = pc.localDescription;
+        if (!description) return;
+
+        this.signaler.publish("description", {
+          from: this.me,
+          to: user,
+          data: description.toJSON(),
+        });
+      } catch (err) {
+        console.log("Fail to create offer", err);
+      } finally {
+        connection.makingOffer = false;
+      }
     };
   }
 
