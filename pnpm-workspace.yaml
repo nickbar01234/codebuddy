@@ -6,7 +6,3 @@ catalogs:
   react18:
     react: ^18.2.0
     react-dom: ^18.2.0
-  redux-toolkit-2:
-    "@redux-devtools/remote": ^0.9.5
-    "@reduxjs/toolkit": "^2.6.1"
-    "react-redux": "^9.2.0"
