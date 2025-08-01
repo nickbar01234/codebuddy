@@ -3,7 +3,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@cb/lib/components/ui/resizable";
-import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE, usePreference } from "@cb/store";
+import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE, useApp } from "@cb/store";
 import { debounce } from "lodash";
 import React from "react";
 import { useShallow } from "zustand/shallow";
@@ -18,8 +18,8 @@ export const ResizableGroupLayoutPanel = ({
   leetCodeRoot,
   children,
 }: ResizableLayoutPanelProps) => {
-  const { enabled, width, collapsed } = usePreference((state) => state.app);
-  const { collapseExtension, expandExtension, setAppWidth } = usePreference(
+  const { enabled, width, collapsed } = useApp((state) => state.app);
+  const { collapseExtension, expandExtension, setAppWidth } = useApp(
     useShallow((state) => ({
       collapseExtension: state.actions.collapseExtension,
       expandExtension: state.actions.expandExtension,

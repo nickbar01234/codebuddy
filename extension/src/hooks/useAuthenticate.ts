@@ -1,62 +1,42 @@
 import { auth } from "@cb/db";
-import { getLocalStorage } from "@cb/services";
-import { AuthenticationStatus, Status } from "@cb/types";
-import { poll } from "@cb/utils/poll";
 import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  getLocalStorage,
+  removeLocalStorage,
+  sendServiceRequest,
+} from "@cb/services";
+import { useApp } from "@cb/store";
+import { ResponseStatus } from "@cb/types";
+import {
+  isSignInWithEmailLink,
+  signInWithEmailLink,
   Unsubscribe,
 } from "firebase/auth/web-extension";
 import _ from "lodash";
 import React from "react";
+import { toast } from "sonner";
+import { useShallow } from "zustand/shallow";
 import { useOnMount } from ".";
 
-interface UseDevAuthenticateProps {
-  authenticate: (session: AuthenticationStatus) => void;
-}
+interface UseDevAuthenticateProps {}
 
 const AUTHENTICATION_DELAY = 2000;
 
-const useAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
+const useAuthenticate = (_props: UseDevAuthenticateProps) => {
   const unsubscribeRef = React.useRef<Unsubscribe>();
-
-  useOnMount(() => {
-    if (import.meta.env.MODE !== "development") {
-      return;
-    }
-
-    const selfAuthenticate = async () => {
-      const user = await poll({
-        fn: async () => getLocalStorage("test"),
-        until: (x) => x != undefined,
-      });
-      if (user != undefined) {
-        const { peer } = user;
-        createUserWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
-          .catch((error) => {
-            if (error.code !== "auth/email-already-in-use") {
-              console.error(error);
-            }
-          })
-          .finally(() =>
-            signInWithEmailAndPassword(auth, peer, "TEST_PASSWORD")
-          );
-      }
-    };
-
-    selfAuthenticate();
-  });
+  const { authenticate, unauthenticate } = useApp(
+    useShallow((state) => ({
+      authenticate: state.actions.authenticate,
+      unauthenticate: state.actions.unauthenticate,
+    }))
+  );
 
   useOnMount(() => {
     _.delay(() => {
       unsubscribeRef.current = auth.onAuthStateChanged((user) => {
         if (user == null) {
-          authenticate({ status: Status.UNAUTHENTICATED });
+          unauthenticate();
         } else {
-          authenticate({
-            status: Status.AUTHENTICATED,
-            user: { username: user.displayName ?? user.email! },
-          });
+          authenticate({ username: user.displayName ?? user.email! });
         }
       });
     }, AUTHENTICATION_DELAY);
@@ -66,6 +46,27 @@ const useAuthenticate = ({ authenticate }: UseDevAuthenticateProps) => {
         unsubscribeRef.current();
       }
     };
+  });
+
+  useOnMount(() => {
+    const signIn = getLocalStorage("signIn");
+    if (
+      signIn != undefined &&
+      isSignInWithEmailLink(auth, window.location.href)
+    ) {
+      // todo(nickbar01234): Handle signin from different device
+      // todo(nickbar01234): Handle error code
+      signInWithEmailLink(auth, signIn.email, window.location.href)
+        .then(() => sendServiceRequest({ action: "closeSignInTab", signIn }))
+        .then((response) => {
+          if (response.status === ResponseStatus.SUCCESS) {
+            toast.info("Closed sign-in tab");
+          }
+        })
+        .finally(() => {
+          removeLocalStorage("signIn");
+        });
+    }
   });
 };
 

@@ -1,6 +1,5 @@
 import RootNavigator from "@cb/components/navigator/RootNavigator";
 import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
-import SessionProvider from "@cb/context/SessionProvider";
 import { useContentScriptMessages } from "@cb/hooks/messages/useContentScriptMessages";
 import React from "react";
 import { Toaster } from "sonner";
@@ -11,6 +10,7 @@ interface ContentProps {
 
 export const ContentScript = ({ leetCodeNode }: ContentProps) => {
   useContentScriptMessages();
+  useAuthenticate({});
 
   return (
     <React.StrictMode>
@@ -23,11 +23,9 @@ export const ContentScript = ({ leetCodeNode }: ContentProps) => {
           duration: 5 * 1000,
         }}
       />
-      <SessionProvider>
-        <ResizableGroupLayoutPanel leetCodeRoot={leetCodeNode}>
-          <RootNavigator />
-        </ResizableGroupLayoutPanel>
-      </SessionProvider>
+      <ResizableGroupLayoutPanel leetCodeRoot={leetCodeNode}>
+        <RootNavigator />
+      </ResizableGroupLayoutPanel>
     </React.StrictMode>
   );
 };

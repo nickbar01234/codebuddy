@@ -3,15 +3,14 @@ import SignInPanel from "@cb/components/panel/SignInPanel";
 import { AppStateProvider } from "@cb/context/AppStateProvider";
 import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
 import { RTCProvider } from "@cb/context/RTCProvider";
-import { useSession } from "@cb/hooks/index";
 import useDevReload from "@cb/hooks/useDevReload";
-import { Status } from "@cb/types";
+import { Status, useApp } from "@cb/store";
 import { AppNavigator } from "./AppNavigator";
 import { ContainerNavigator } from "./ContainerNavigator";
 import { AppControlMenu, RoomControlMenu } from "./menu";
 
 const RootNavigator = () => {
-  const { auth } = useSession();
+  const auth = useApp((state) => state.auth);
   useDevReload();
 
   switch (auth.status) {
