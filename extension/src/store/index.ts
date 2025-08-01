@@ -1,1 +1,1 @@
-export * from "./preferenceStore";
+export * from "./appStore";

@@ -7,32 +7,63 @@ export const DEFAULT_PANEL_SIZE = 25;
 
 export const COLLAPSED_SIZE = 2;
 
-const PREFERENCE_STORAGE = "CODEBUDDY_PREFERENCE";
+const APP_STORAGE = "CODEBUDDY_APP";
 
-interface PreferenceState {
+export enum Status {
+  AUTHENTICATED,
+  UNAUTHENTICATED,
+  LOADING,
+}
+
+export interface AppUser {
+  username: string;
+}
+
+interface Authenticated {
+  status: Status.AUTHENTICATED;
+  user: AppUser;
+}
+
+interface Unauthenticated {
+  status: Status.UNAUTHENTICATED;
+}
+
+interface Loading {
+  status: Status.LOADING;
+}
+
+export type AuthenticationStatus = Authenticated | Unauthenticated | Loading;
+
+interface AppState {
   app: {
     enabled: boolean;
     width: number;
     collapsed: boolean;
   };
+  auth: AuthenticationStatus;
 }
 
-interface PreferenceAction {
+interface AppAction {
   toggleEnabledApp: () => void;
   collapseExtension: () => void;
   expandExtension: () => void;
   setAppWidth: (width: number) => void;
+  authenticate: (user: AppUser) => void;
+  unauthenticate: () => void;
 }
 
-type PreferenceStore = MutableState<PreferenceState, PreferenceAction>;
+type AppStore = MutableState<AppState, AppAction>;
 
-export const usePreference = create<PreferenceStore>()(
+export const useApp = create<AppStore>()(
   persist(
     immer((set) => ({
       app: {
         enabled: true,
         width: DEFAULT_PANEL_SIZE,
         collapsed: false,
+      },
+      auth: {
+        status: Status.LOADING,
       },
       actions: {
         toggleEnabledApp: () =>
@@ -53,13 +84,24 @@ export const usePreference = create<PreferenceStore>()(
           set((state) => {
             state.app.width = width;
           }),
+        authenticate: (user: AppUser) =>
+          set((state) => {
+            state.auth = {
+              status: Status.AUTHENTICATED,
+              user,
+            };
+          }),
+        unauthenticate: () =>
+          set((state) => {
+            state.auth = { status: Status.UNAUTHENTICATED };
+          }),
       },
     })),
     {
-      name: PREFERENCE_STORAGE,
+      name: APP_STORAGE,
       partialize: (state) => {
-        const { actions, ...rest } = state;
-        return rest;
+        const { app } = state;
+        return { ...app };
       },
     }
   )

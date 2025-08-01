@@ -1,7 +1,6 @@
 export * from "./content";
 export * from "./peers";
 export * from "./services";
-export * from "./user-session";
 export type {
   ExtractMessage,
   LeetCodeContentChange,
