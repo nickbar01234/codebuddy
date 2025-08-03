@@ -9,7 +9,7 @@ export const COLLAPSED_SIZE = 2;
 
 const APP_STORAGE = "CODEBUDDY_APP";
 
-export enum Status {
+export enum AppStatus {
   AUTHENTICATED,
   UNAUTHENTICATED,
   LOADING,
@@ -20,16 +20,16 @@ export interface AppUser {
 }
 
 interface Authenticated {
-  status: Status.AUTHENTICATED;
+  status: AppStatus.AUTHENTICATED;
   user: AppUser;
 }
 
 interface Unauthenticated {
-  status: Status.UNAUTHENTICATED;
+  status: AppStatus.UNAUTHENTICATED;
 }
 
 interface Loading {
-  status: Status.LOADING;
+  status: AppStatus.LOADING;
 }
 
 export type AuthenticationStatus = Authenticated | Unauthenticated | Loading;
@@ -63,7 +63,7 @@ export const useApp = create<AppStore>()(
         collapsed: false,
       },
       auth: {
-        status: Status.LOADING,
+        status: AppStatus.LOADING,
       },
       actions: {
         toggleEnabledApp: () =>
@@ -87,13 +87,13 @@ export const useApp = create<AppStore>()(
         authenticate: (user: AppUser) =>
           set((state) => {
             state.auth = {
-              status: Status.AUTHENTICATED,
+              status: AppStatus.AUTHENTICATED,
               user,
             };
           }),
         unauthenticate: () =>
           set((state) => {
-            state.auth = { status: Status.UNAUTHENTICATED };
+            state.auth = { status: AppStatus.UNAUTHENTICATED };
           }),
       },
     })),

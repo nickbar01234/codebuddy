@@ -1,5 +1,4 @@
-import { AppState } from "@cb/context/AppStateProvider";
-import { useAppState, useRTC } from "@cb/hooks/index";
+import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
@@ -11,7 +10,6 @@ import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
 export const JoinRoomDialog = () => {
   const { joinRoom } = useRTC();
-  const { setState: setAppState } = useAppState();
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const onJoinRoom = React.useMemo(() => {
@@ -20,14 +18,11 @@ export const JoinRoomDialog = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        const haveJoined = await joinRoom(inputRoomId);
-        if (haveJoined) {
-          setAppState(AppState.ROOM);
-        }
+        await joinRoom(inputRoomId);
       },
       1000
     );
-  }, [joinRoom, inputRoomId, setAppState]);
+  }, [joinRoom, inputRoomId]);
 
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();

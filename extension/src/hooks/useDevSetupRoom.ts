@@ -3,11 +3,12 @@ import { getLocalStorage, setLocalStorage } from "@cb/services";
 import { getQuestionIdFromUrl } from "@cb/utils";
 import { poll } from "@cb/utils/poll";
 import { arrayRemove, arrayUnion, serverTimestamp } from "firebase/firestore";
-import { useAppState, useOnMount, useRTC } from ".";
+import { useOnMount, useRTC } from ".";
+import { useAuthUser } from "./store";
 
 const useDevSetupRoom = () => {
   const { joinRoom } = useRTC();
-  const { user } = useAppState();
+  const { user } = useAuthUser();
 
   useOnMount(() => {
     if (import.meta.env.MODE !== "development") {

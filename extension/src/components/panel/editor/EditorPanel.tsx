@@ -3,15 +3,10 @@ import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadin
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { AppState } from "@cb/context/AppStateProvider";
 import { getRoomRef } from "@cb/db";
 import { RoomEvent } from "@cb/db/converter";
-import {
-  useAppState,
-  useFirebaseListener,
-  usePeerSelection,
-  useRTC,
-} from "@cb/hooks";
+import { useFirebaseListener, usePeerSelection, useRTC } from "@cb/hooks";
+import { useAuthUser } from "@cb/hooks/store";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import {
   ResizableHandle,
@@ -25,10 +20,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
+import { RoomStatus, roomStore } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
+import { useStore } from "zustand";
 import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
 
 export interface TabMetadata {
@@ -41,16 +38,9 @@ export const EDITOR_NODE_ID = "CodeBuddyEditor";
 const EditorPanel = () => {
   const { activePeer, unblur, selectTest, isBuffer, activeUserInformation } =
     usePeerSelection();
-  const { state: appState, user } = useAppState();
+  const roomStatus = useStore(roomStore, (state) => state.room.status);
+  const { user } = useAuthUser();
   const { roomId } = useRTC();
-  const [isUserDropdownOpen, setUserDropdownOpen] = React.useState(false);
-  const toggleUserDropdown = React.useCallback(
-    (e: React.MouseEvent<Element, MouseEvent>) => {
-      e.stopPropagation();
-      setUserDropdownOpen((prev) => !prev);
-    },
-    []
-  );
   const { getLanguageExtension } = useLanguageExtension();
   const roomReference = React.useMemo(
     () => (roomId != null ? getRoomRef(roomId) : undefined),
@@ -119,7 +109,7 @@ const EditorPanel = () => {
   return (
     <div
       className={cn("relative flex h-full w-full grow flex-col gap-y-2", {
-        hidden: appState !== AppState.ROOM,
+        hidden: roomStatus !== RoomStatus.IN_ROOM,
       })}
     >
       {emptyRoom && (

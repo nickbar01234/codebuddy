@@ -3,7 +3,8 @@ import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoomRef, getSessionRef } from "@cb/db";
-import { useAppState, useFirebaseListener, useRTC } from "@cb/hooks/index";
+import { useFirebaseListener, useRTC } from "@cb/hooks/index";
+import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
@@ -15,7 +16,7 @@ import React from "react";
 export const RoomInfoTab = () => {
   const {
     user: { username },
-  } = useAppState();
+  } = useAuthUser();
   const { roomId, peerState, handleNavigateToNextQuestion } = useRTC();
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
