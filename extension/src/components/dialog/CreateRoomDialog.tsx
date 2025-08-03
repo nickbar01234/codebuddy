@@ -1,5 +1,4 @@
-import { AppState } from "@cb/context/AppStateProvider";
-import { useAppState, useRTC } from "@cb/hooks/index";
+import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
@@ -12,7 +11,6 @@ import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
   const { createRoom } = useRTC();
-  const { setState: setAppState } = useAppState();
   const [isPublic, setIsPublic] = React.useState(true);
   const [roomName, setRoomName] = React.useState("");
 
@@ -23,13 +21,12 @@ export const CreateRoomDialog = () => {
         alert("Public rooms must have a name.");
         return;
       }
-      setAppState(AppState.ROOM);
       createRoom({
         roomName: roomName,
         isPublic: isPublic,
       });
     }, 1000);
-  }, [createRoom, setAppState, roomName, isPublic]);
+  }, [createRoom, roomName, isPublic]);
 
   return (
     <RoomDialog

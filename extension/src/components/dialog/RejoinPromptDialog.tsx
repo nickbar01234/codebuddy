@@ -1,24 +1,26 @@
-import { AppState } from "@cb/context/AppStateProvider";
-import { useAppState, useRTC } from "@cb/hooks/index";
+import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
-import { removeLocalStorage } from "@cb/services";
+import { getLocalStorage, removeLocalStorage } from "@cb/services";
+import { roomStore } from "@cb/store";
 import { throttle } from "lodash";
 import React from "react";
+import { useStore } from "zustand";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const RejoinPromptDialog = () => {
-  const { joiningBackRoom, roomId, leaveRoom } = useRTC();
-  const { setState: setAppState } = useAppState();
+  const { joiningBackRoom, leaveRoom } = useRTC();
+  const loadingRoom = useStore(roomStore, (state) => state.actions.loadingRoom);
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
-      removeLocalStorage("closingTabs");
       event.stopPropagation?.();
-      setAppState(AppState.HOME);
+      removeLocalStorage("closingTabs");
+      // todo(nickbar01234): Refactor
+      const roomId = getLocalStorage("tabs")?.roomId ?? null;
       leaveRoom(roomId);
     }, 1000);
-  }, [roomId, leaveRoom, setAppState]);
+  }, [leaveRoom]);
 
   return (
     <RoomDialog
@@ -39,7 +41,7 @@ export const RejoinPromptDialog = () => {
             className={baseButtonClassName}
             onClick={() => {
               removeLocalStorage("closingTabs");
-              setAppState(AppState.LOADING);
+              loadingRoom();
               joiningBackRoom();
             }}
           >

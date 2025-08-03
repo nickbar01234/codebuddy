@@ -15,7 +15,8 @@ import {
   setSession,
   setSessionPeerConnection,
 } from "@cb/db";
-import { useAppState, useOnMount } from "@cb/hooks";
+import { useOnMount } from "@cb/hooks";
+import { useAuthUser } from "@cb/hooks/store";
 import useResource from "@cb/hooks/useResource";
 import {
   clearLocalStorageForRoom,
@@ -23,6 +24,7 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
+import { RoomStatus, roomStore } from "@cb/store";
 import {
   EventType,
   ExtractMessage,
@@ -54,8 +56,8 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
+import { useStore } from "zustand";
 import { additionalServers } from "./additionalServers";
-import { AppState } from "./AppStateProvider";
 
 const servers = {
   iceServers: [
@@ -103,12 +105,7 @@ export const RTCContext = React.createContext({} as RTCContext);
 export const MAX_CAPACITY = 4;
 
 export const RTCProvider = (props: RTCProviderProps) => {
-  const {
-    user: { username },
-    setState: setAppState,
-  } = useAppState();
   const [roomId, setRoomId] = React.useState<null | string>(null);
-  const { state: appState } = useAppState();
   const [informations, setInformations] = React.useState<
     Record<string, PeerInformation>
   >({});
@@ -129,6 +126,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
     cleanup: cleanupSnapshot,
     evict: evictSnapshot,
   } = useResource<Unsubscribe>({ name: "snapshot" });
+
+  const {
+    user: { username },
+  } = useAuthUser();
+  const roomStatus = useStore(roomStore, (state) => state.room.status);
+  const createRoomInternal = useStore(
+    roomStore,
+    (state) => state.actions.createRoom
+  );
+  const leaveRoomInternal = useStore(
+    roomStore,
+    (state) => state.actions.leaveRoom
+  );
 
   useOnMount(() => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
@@ -312,6 +322,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     });
     console.log("Created room", newRoomId);
     setRoomId(newRoomId);
+    // todo(nickbar01234): Fix type for roomName
+    createRoomInternal({
+      id: newRoomId,
+      name: roomName ?? "",
+      public: isPublic,
+    });
     navigator.clipboard.writeText(newRoomId);
     toast.success(`Session ID ${newRoomId} copied to clipboard`);
   };
@@ -529,6 +545,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
+
+      createRoomInternal({
+        id: roomId,
+        public: roomDoc.data().isPublic,
+        name: roomDoc.data().roomName,
+      });
       return true;
     },
     [
@@ -538,6 +560,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
       registerConnection,
       getConnection,
       evictSnapshot,
+      createRoomInternal,
     ]
   );
 
@@ -547,11 +570,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
         return joinRoomInternal(roomId);
       } catch {
         toast.error("Failed to join room");
-        setAppState(AppState.HOME);
         return Promise.resolve(false);
       }
     },
-    [joinRoomInternal, setAppState]
+    [joinRoomInternal]
   );
 
   const leaveRoom = React.useCallback(
@@ -589,15 +611,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
         }
       } catch (e: unknown) {
         console.error("Failed to leave room", e);
+      } finally {
+        cleanupSnapshot();
+        cleanupConnection();
+        setRoomId(null);
+        setInformations({});
+        setPeerState({});
+        leaveRoomInternal();
       }
-
-      cleanupSnapshot();
-      cleanupConnection();
-      setRoomId(null);
-      setInformations({});
-      setPeerState({});
     },
-    [username, cleanupSnapshot, cleanupConnection]
+    [username, cleanupSnapshot, cleanupConnection, leaveRoomInternal]
   );
 
   const handleSucessfulSubmission = React.useCallback(async () => {
@@ -814,10 +837,10 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
   React.useEffect(() => {
     const refreshInfo = getLocalStorage("tabs");
-    if (appState === AppState.LOADING && refreshInfo?.roomId) {
+    if (roomStatus === RoomStatus.LOADING && refreshInfo?.roomId) {
       afterReloadJoin();
     }
-  }, [afterReloadJoin, appState]);
+  }, [afterReloadJoin, roomStatus]);
 
   React.useEffect(() => {
     deletePeersRef.current = deletePeers;

@@ -1,5 +1,5 @@
 import { RoomEvent } from "@cb/db/converter";
-import { useAppState } from "@cb/hooks/index";
+import { useAuthUser } from "@cb/hooks/store";
 import { cn } from "@cb/utils/cn";
 import { assertUnreachable } from "@cb/utils/error";
 import { timeAgo } from "@cb/utils/heartbeat";
@@ -31,7 +31,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   const peers = [{ id: "Buddy" }, { id: "Dev" }, { id: "5bigBooms" }];
   const {
     user: { username },
-  } = useAppState();
+  } = useAuthUser();
 
   const getColorClass = () => {
     switch (type) {
