@@ -1,4 +1,4 @@
-import { PeerInfo } from "@cb/types";
+import { PeerState } from "@cb/types";
 import { createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { MutableState } from "./type";
@@ -19,7 +19,7 @@ interface InRoomState {
   id: string;
   public: boolean;
   name: string;
-  peers: Record<string, PeerInfo>;
+  peers: Record<string, PeerState>;
 }
 
 interface LoadingState {
@@ -40,7 +40,7 @@ interface RoomAction {
   loadingRoom: () => void;
   rejoiningRoom: () => void;
   homeRoom: () => void;
-  updatePeer: (id: string, peer: Partial<PeerInfo>) => void;
+  updatePeer: (id: string, peer: Partial<PeerState>) => void;
   removePeers: (ids: string[]) => void;
 }
 
