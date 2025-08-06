@@ -1,14 +1,14 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import { useOnMount, useRTC } from "@cb/hooks";
+import { useInRoom } from "@cb/hooks/store";
 import useInferTests from "@cb/hooks/useInferTests";
 import {
   getLocalStorage,
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
-import { Peer, PeerInformation, ResponseStatus, TestCase } from "@cb/types";
+import { Peer, PeerInformation, TestCase } from "@cb/types";
 import { getSessionId } from "@cb/utils";
-import { poll } from "@cb/utils/poll";
 import React from "react";
 
 const TIMER_WAIT_PAST_PEER_TO_SET_ACTIVE = 1000 * 5;
@@ -36,7 +36,8 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { informations, roomId } = useRTC();
+  const { roomId } = useRTC();
+  const { peers: informations } = useInRoom();
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
@@ -274,17 +275,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   React.useEffect(() => {
     setCodeRef.current = setCode;
   }, [setCode]);
-
-  useOnMount(() => {
-    poll({
-      fn: () =>
-        sendServiceRequest({
-          action: "setupCodeBuddyModel",
-          id: EDITOR_NODE_ID,
-        }),
-      until: (response) => response.status === ResponseStatus.SUCCESS,
-    }).catch((e) => console.error("Error when setting up CodeBuddy model", e));
-  });
 
   useOnMount(() => {
     const setPastActive = setTimeout(() => {

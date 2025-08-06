@@ -4,7 +4,7 @@ import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoomRef, getSessionRef } from "@cb/db";
 import { useFirebaseListener, useRTC } from "@cb/hooks/index";
-import { useAuthUser } from "@cb/hooks/store";
+import { useAuthUser, useInRoom } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
@@ -17,7 +17,8 @@ export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAuthUser();
-  const { roomId, peerState, handleNavigateToNextQuestion } = useRTC();
+  const { roomId, handleNavigateToNextQuestion } = useRTC();
+  const { peers } = useInRoom();
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
@@ -89,7 +90,7 @@ export const RoomInfoTab = () => {
         <div className="flex items-center">
           <Users className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
-            {Object.keys(peerState).length + 1}/{MAX_CAPACITY}
+            {Object.keys(peers).length + 1}/{MAX_CAPACITY}
           </span>
         </div>
         <div className="flex items-center">

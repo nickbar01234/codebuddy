@@ -29,10 +29,7 @@ import {
   EventType,
   ExtractMessage,
   LeetCodeContentChange,
-  PeerInformation,
   PeerMessage,
-  PeerState,
-  ResponseStatus,
   WindowMessage,
 } from "@cb/types";
 import { Connection } from "@cb/types/utils";
@@ -42,9 +39,9 @@ import {
   getSessionId,
   waitForElement,
 } from "@cb/utils";
-import { calculateNewRTT, getUnixTs } from "@cb/utils/heartbeat";
+import { getUnixTs } from "@cb/utils/heartbeat";
 import { withPayload } from "@cb/utils/messages";
-import { poll, wait } from "@cb/utils/poll";
+import { wait } from "@cb/utils/poll";
 import {
   arrayRemove,
   arrayUnion,
@@ -89,8 +86,6 @@ export interface RTCContext {
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
   setRoomId: (id: string) => void;
-  informations: Record<string, PeerInformation>;
-  peerState: Record<string, PeerState>;
   joiningBackRoom: () => Promise<void>;
   handleChooseQuestion: (questionId: string) => void;
   handleNavigateToNextQuestion: () => void;
@@ -106,12 +101,6 @@ export const MAX_CAPACITY = 4;
 
 export const RTCProvider = (props: RTCProviderProps) => {
   const [roomId, setRoomId] = React.useState<null | string>(null);
-  const [informations, setInformations] = React.useState<
-    Record<string, PeerInformation>
-  >({});
-  const [peerState, setPeerState] = React.useState<Record<string, PeerState>>(
-    {}
-  );
 
   const {
     register: registerConnection,
@@ -139,6 +128,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
     roomStore,
     (state) => state.actions.leaveRoom
   );
+  const updatePeer = useStore(roomStore, (state) => state.actions.updatePeer);
+  const removePeers = useStore(roomStore, (state) => state.actions.removePeers);
 
   useOnMount(() => {
     waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
@@ -200,31 +191,19 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const receiveCode = React.useCallback(
     (payload: ExtractMessage<PeerMessage, "code">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { action: _, ...rest } = payload;
-      setInformations((prev) => ({
-        ...prev,
-        [peer]: {
-          ...prev[peer],
-          code: rest,
-        },
-      }));
+      const { action: _, ...code } = payload;
+      updatePeer(peer, { code });
     },
-    []
+    [updatePeer]
   );
 
   const receiveTests = React.useCallback(
     (payload: ExtractMessage<PeerMessage, "tests">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { action: _, ...rest } = payload;
-      setInformations((prev) => ({
-        ...prev,
-        [peer]: {
-          ...prev[peer],
-          tests: rest,
-        },
-      }));
+      const { action: _, ...tests } = payload;
+      updatePeer(peer, { tests });
     },
-    []
+    [updatePeer]
   );
 
   const onOpen = React.useRef((peer: string) => async () => {
@@ -236,13 +215,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     getCodeMessagePayload({}).then((fn) => fn(peer, getConnection()[peer]));
     getTestsMessagePayload()(peer, getConnection()[peer]);
-    setPeerState((prev) => ({
-      ...prev,
-      [peer]: {
-        latency: 0,
-        finished: false,
-      },
-    }));
+    updatePeer(peer, { latency: 0, finished: false });
   });
 
   const onClose = React.useRef(
@@ -615,8 +588,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         cleanupSnapshot();
         cleanupConnection();
         setRoomId(null);
-        setInformations({});
-        setPeerState({});
         leaveRoomInternal();
       }
     },
@@ -671,18 +642,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
-      setInformations((prev) =>
-        Object.fromEntries(
-          Object.entries(prev).filter(([key]) => !peers.includes(key))
-        )
-      );
-      setPeerState((prev) =>
-        Object.fromEntries(
-          Object.entries(prev).filter(([key]) => !peers.includes(key))
-        )
-      );
+      removePeers(peers);
     },
-    [roomId, username, evictConnection]
+    [roomId, username, evictConnection, removePeers]
   );
 
   const deleteMe = React.useCallback(async () => {
@@ -794,18 +756,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
             createOffer(roomId, peer);
           });
           const finishedUsers = data.finishedUsers;
-          setPeerState((prev) => {
-            const updatedState = { ...prev };
-
-            finishedUsers.forEach((peer) => {
-              if (updatedState[peer]) {
-                updatedState[peer] = {
-                  ...updatedState[peer],
-                  finished: true,
-                };
-              }
-            });
-            return updatedState;
+          // todo(nickbar01234): Do we need bulk update?
+          finishedUsers.forEach((peer) => {
+            updatePeer(peer, { finished: true });
           });
         }
       );
@@ -822,6 +775,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     registerSnapshot,
     getConnection,
     evictSnapshot,
+    updatePeer,
   ]);
 
   React.useEffect(() => {
@@ -854,52 +808,53 @@ export const RTCProvider = (props: RTCProviderProps) => {
     handleFailedSubmissionRef.current = handleFailedSubmission;
   }, [handleFailedSubmission]);
 
-  useOnMount(() => {
-    const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
+  // todo(nickbar01234): We should refactor this
+  // useOnMount(() => {
+  //   const sendInterval = setInterval(sendHeartBeat, HEARTBEAT_INTERVAL);
 
-    const checkAliveInterval = setInterval(() => {
-      const currentPeers = getConnection();
+  //   const checkAliveInterval = setInterval(() => {
+  //     const currentPeers = getConnection();
 
-      const timeOutPeers: string[] = [];
-      setPeerState((prev) => {
-        const newPeers = Object.fromEntries(
-          Object.entries(prev).map(([peer, peerHeartBeat]) => {
-            const { latency } = peerHeartBeat;
-            const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
-            const newSample = getUnixTs() - curlastSeen;
-            if (newSample > TIMEOUT) {
-              timeOutPeers.push(peer);
-            }
-            const newLatency = calculateNewRTT(latency, newSample);
-            return [
-              peer,
-              {
-                ...peerHeartBeat,
-                latency: newLatency,
-              },
-            ];
-          })
-        );
-        // Note that this race is thereotically possible
-        // Time 1: User A detected B is dead and attempt to delete peer
-        // User A thread to delete peer is delayed
-        // Time 2: User A rejoins
-        // Time 3: deletePeers is executed
-        // User A gets kicked out
-        // In practice, we delay the user before joining room, so it should be fine? :)
-        // console.log("Dead peers", timeOutPeers);
-        if (timeOutPeers.length > 0) {
-          console.log("Deleting peers", timeOutPeers);
-          deletePeersRef.current(timeOutPeers);
-        }
-        return newPeers;
-      });
-    }, CHECK_ALIVE_INTERVAL);
-    return () => {
-      clearInterval(checkAliveInterval);
-      clearInterval(sendInterval);
-    };
-  });
+  //     const timeOutPeers: string[] = [];
+  //     setPeerState((prev) => {
+  //       const newPeers = Object.fromEntries(
+  //         Object.entries(prev).map(([peer, peerHeartBeat]) => {
+  //           const { latency } = peerHeartBeat;
+  //           const curlastSeen = currentPeers[peer]?.lastSeen ?? 0;
+  //           const newSample = getUnixTs() - curlastSeen;
+  //           if (newSample > TIMEOUT) {
+  //             timeOutPeers.push(peer);
+  //           }
+  //           const newLatency = calculateNewRTT(latency, newSample);
+  //           return [
+  //             peer,
+  //             {
+  //               ...peerHeartBeat,
+  //               latency: newLatency,
+  //             },
+  //           ];
+  //         })
+  //       );
+  //       return newPeers;
+  //     });
+  //     // Note that this race is thereotically possible
+  //     // Time 1: User A detected B is dead and attempt to delete peer
+  //     // User A thread to delete peer is delayed
+  //     // Time 2: User A rejoins
+  //     // Time 3: deletePeers is executed
+  //     // User A gets kicked out
+  //     // In practice, we delay the user before joining room, so it should be fine? :)
+  //     // console.log("Dead peers", timeOutPeers);
+  //     if (timeOutPeers.length > 0) {
+  //       console.log("Deleting peers", timeOutPeers);
+  //       deletePeersRef.current(timeOutPeers);
+  //     }
+  //   }, CHECK_ALIVE_INTERVAL);
+  //   return () => {
+  //     clearInterval(checkAliveInterval);
+  //     clearInterval(sendInterval);
+  //   };
+  // });
 
   useOnMount(() => {
     // TODO(nickbar01234) - This is probably not rigorous enough
@@ -917,13 +872,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   });
 
   useOnMount(() => {
-    poll({
-      fn: () => sendServiceRequest({ action: "setupLeetCodeModel" }),
-      until: (response) => response.status === ResponseStatus.SUCCESS,
-    });
-  });
-
-  useOnMount(() => {
     const onWindowMessage = (message: MessageEvent) => {
       // todo(nickbar01234): Should attach an ID to message so that it's identifiable only by us.
       if (message.data.action != undefined) {
@@ -938,7 +886,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
           // Only for tests
           case "createRoom":
           case "joinRoom":
-          case "reloadExtension":
             break;
           default:
             console.error("Unhandled window message", windowMessage);
@@ -959,8 +906,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         leaveRoom,
         roomId,
         setRoomId,
-        informations,
-        peerState,
         joiningBackRoom,
         handleChooseQuestion,
         handleNavigateToNextQuestion,

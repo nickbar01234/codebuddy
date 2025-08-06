@@ -17,12 +17,7 @@ interface JoinRoomMessage extends RoomMessage, GenericMessage {
   action: "joinRoom";
 }
 
-interface ReloadExtension extends GenericMessage {
-  action: "reloadExtension";
-}
-
 export type WindowMessage =
   | LeetCodeOnChangeMessage
   | CreateRoomMessage
-  | JoinRoomMessage
-  | ReloadExtension;
+  | JoinRoomMessage;

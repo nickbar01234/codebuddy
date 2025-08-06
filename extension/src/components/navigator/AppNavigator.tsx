@@ -2,6 +2,7 @@ import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import { useMonacoSetup } from "@cb/hooks/editor";
 import useDevSetupRoom from "@cb/hooks/useDevSetupRoom";
 import {
   getLocalStorage,
@@ -40,6 +41,8 @@ export const AppNavigator = () => {
       }
     }
   });
+
+  useMonacoSetup();
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-secondary">

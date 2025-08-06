@@ -1,4 +1,4 @@
-import { PeerInformation } from "@cb/types";
+import { PeerState } from "@cb/types";
 import { createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
 import { MutableState } from "./type";
@@ -19,7 +19,7 @@ interface InRoomState {
   id: string;
   public: boolean;
   name: string;
-  peers: Record<string, PeerInformation>;
+  peers: Record<string, PeerState>;
 }
 
 interface LoadingState {
@@ -40,6 +40,8 @@ interface RoomAction {
   loadingRoom: () => void;
   rejoiningRoom: () => void;
   homeRoom: () => void;
+  updatePeer: (id: string, peer: Partial<PeerState>) => void;
+  removePeers: (ids: string[]) => void;
 }
 
 type RoomStore = MutableState<RoomState, RoomAction>;
@@ -83,6 +85,30 @@ export const roomStore = createStore<RoomStore>()(
             status: RoomStatus.HOME,
           };
         }),
+      updatePeer: (id, peer) =>
+        set((state) => {
+          if (state.room.status !== RoomStatus.IN_ROOM) {
+            return;
+          }
+          state.room.peers[id] = {
+            ...(state.room.peers[id] ?? {
+              latency: 0,
+              finished: false,
+              active: false,
+              blur: true,
+            }),
+            ...peer,
+          };
+        }),
+      removePeers: (ids) => {
+        set((state) => {
+          if (state.room.status !== RoomStatus.IN_ROOM) {
+            return;
+          }
+          const peers = state.room.peers;
+          ids.forEach((id) => delete peers[id]);
+        });
+      },
     },
   }))
 );

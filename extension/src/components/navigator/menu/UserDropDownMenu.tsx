@@ -1,7 +1,8 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
-import { usePeerSelection, useRTC } from "@cb/hooks";
+import { usePeerSelection } from "@cb/hooks";
+import { useInRoom } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
 import { Peer } from "@cb/types";
 import { cn } from "@cb/utils/cn";
@@ -72,10 +73,10 @@ const UserDropDownMenuTrigger = ({
 };
 
 export const UserDropDownMenu = () => {
-  const { activePeer, peers, setActivePeerId } = usePeerSelection();
-  const { peerState } = useRTC();
-  const ping = peerState[activePeer?.id ?? ""]?.latency * 1000;
-  const canDropdown = peers.length >= 2;
+  const { activePeer, setActivePeerId } = usePeerSelection();
+  const { peers } = useInRoom();
+  const ping = peers[activePeer?.id ?? ""]?.latency * 1000;
+  const canDropdown = Object.keys(peers).length >= 2;
 
   return (
     <Menu
@@ -91,12 +92,9 @@ export const UserDropDownMenu = () => {
         ),
       }}
     >
-      {peers.map((peer) => (
-        <DropdownMenuItem
-          key={peer.id}
-          onClick={() => setActivePeerId(peer.id)}
-        >
-          {peer.id}
+      {Object.keys(peers).map((peer) => (
+        <DropdownMenuItem key={peer} onClick={() => setActivePeerId(peer)}>
+          {peer}
         </DropdownMenuItem>
       ))}
     </Menu>
