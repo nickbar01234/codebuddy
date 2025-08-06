@@ -47,3 +47,13 @@ export interface PeerState {
   latency: number;
   finished: boolean;
 }
+
+// todo(nickbar01234): Rename
+export interface PeerInfo {
+  code?: MessagePayload<PeerCodeMessage>;
+  tests?: MessagePayload<PeerTestMessage>;
+  latency: number;
+  finished: boolean;
+  active: boolean;
+  blur: boolean;
+}

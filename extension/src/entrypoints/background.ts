@@ -53,9 +53,8 @@ export default defineBackground(() => {
   const setupCodeBuddyModel = async (id: string) => {
     const windowAsAny = window as any;
     if (windowAsAny.monaco == undefined) {
-      // ResponseStatus.FAIL
       return {
-        status: 1,
+        status: ResponseStatus.FAIL,
       };
     } else {
       const monaco = windowAsAny.monaco;
@@ -82,8 +81,7 @@ export default defineBackground(() => {
       }
       console.log("Finished setting up CodeBuddy model");
       return {
-        // ResponseStatus.SUCCESS
-        status: 0,
+        status: ResponseStatus.SUCCESS,
       };
     }
   };
@@ -91,9 +89,8 @@ export default defineBackground(() => {
   const setupLeetCodeModel = async () => {
     const windowAsAny = window as any;
     if (windowAsAny.monaco == undefined) {
-      // ResponseStatus.FAIL
       return {
-        status: 1,
+        status: ResponseStatus.FAIL,
       };
     } else {
       console.log("Setting up LeetCode model");
@@ -104,7 +101,7 @@ export default defineBackground(() => {
         .find((m: any) => m.getLanguageId() !== "plaintext");
       if (!leetCodeEditor) {
         console.error("LeetCode editor model not found");
-        return { status: 1 };
+        return { status: ResponseStatus.FAIL };
       }
       leetCodeEditor.onDidChangeContent((event: any) => {
         // todo(nickbar01234): Don't have a good way to include function from a different file yet
@@ -117,8 +114,7 @@ export default defineBackground(() => {
       });
       console.log("Finished setting up LeetCode model");
       return {
-        // ResponseStatus.SUCCESS
-        status: 0,
+        status: ResponseStatus.SUCCESS,
       };
     }
   };
