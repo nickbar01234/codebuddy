@@ -7,6 +7,8 @@ interface PeerConnection {
   pc: RTCPeerConnection;
   channel: RTCDataChannel;
   makingOffer: boolean;
+  isSettingRemoteAnswerPending: boolean;
+  ignoreOffer: boolean;
 }
 
 const WEB_RTC_CONFIG = {
@@ -45,7 +47,13 @@ export class WebRtcController {
 
     const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
     const channel = pc.createDataChannel(user);
-    this.pcs.set(user, { pc, channel, makingOffer: false });
+    this.pcs.set(user, {
+      pc,
+      channel,
+      makingOffer: false,
+      isSettingRemoteAnswerPending: false,
+      ignoreOffer: false,
+    });
 
     pc.onicecandidate = (event) => {
       this.signaler.publish("ice", {
@@ -89,4 +97,56 @@ export class WebRtcController {
   }
 
   public close() {}
+
+  public async handleDescription({
+    from,
+    data,
+  }: NegotiationEvents["description"]) {
+    const conn = this.pcs.get(from);
+    if (!conn) return;
+
+    // whether im polite or not
+    const polite = this.iamPolite(this.me, from);
+    const pc = conn.pc;
+    // whether im ready to receive offer
+    const readyOffer =
+      !conn.makingOffer &&
+      (pc.signalingState === "stable" || conn.isSettingRemoteAnswerPending);
+
+    // collision when receive offer when not ready
+    const offerCollision = data.type === "offer" && !readyOffer;
+    conn.ignoreOffer = !polite && offerCollision;
+    if (conn.ignoreOffer) return;
+
+    // polite user - rollback local offer
+    try {
+      if (offerCollision && polite) {
+        await pc.setLocalDescription({ type: "rollback" });
+      }
+
+      conn.isSettingRemoteAnswerPending = data.type === "answer";
+      await pc.setRemoteDescription(data);
+      if (data.type === "offer") {
+        await pc.setLocalDescription();
+        this.signaler.publish("description", {
+          from: this.me,
+          to: from,
+          data: pc.localDescription!.toJSON(),
+        });
+      }
+    } catch (err) {
+      console.log("handle description error", err);
+    }
+  }
+  public async handleCandidate({ from, data }: NegotiationEvents["ice"]) {
+    const conn = this.pcs.get(from);
+    if (!conn) return;
+    try {
+      await conn.pc.addIceCandidate(data);
+    } catch (err) {
+      if (!conn.ignoreOffer) {
+        console.error("handle candidate error:", err);
+      }
+    }
+  }
 }
