@@ -87,6 +87,17 @@ export class WebRtcController {
         connection.makingOffer = false;
       }
     };
+
+    this.signaler.subscribe(
+      "ice",
+      this.handleCandidate,
+      ({ to }) => to === user
+    );
+    this.signaler.subscribe(
+      "description",
+      this.handleDescription,
+      ({ to }) => to === user
+    );
   }
 
   public disconnect(user: User) {
@@ -96,9 +107,11 @@ export class WebRtcController {
     this.pcs.delete(user);
   }
 
-  public close() {}
+  public close() {
+    Object.keys(this.pcs).forEach(this.disconnect);
+  }
 
-  public async handleDescription({
+  private async handleDescription({
     from,
     data,
   }: NegotiationEvents["description"]) {
@@ -138,9 +151,11 @@ export class WebRtcController {
       console.log("handle description error", err);
     }
   }
-  public async handleCandidate({ from, data }: NegotiationEvents["ice"]) {
+
+  private async handleCandidate({ from, data }: NegotiationEvents["ice"]) {
     const conn = this.pcs.get(from);
     if (!conn) return;
+
     try {
       await conn.pc.addIceCandidate(data);
     } catch (err) {
