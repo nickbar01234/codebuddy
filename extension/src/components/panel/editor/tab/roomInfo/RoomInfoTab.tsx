@@ -17,8 +17,8 @@ export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAuthUser();
-  const { roomId, handleNavigateToNextQuestion } = useRTC();
-  const { peers } = useInRoom();
+  const { handleNavigateToNextQuestion } = useRTC();
+  const { id: roomId, peers } = useInRoom();
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);

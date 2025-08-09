@@ -26,7 +26,6 @@ import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 import { useStore } from "zustand";
-import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
 
 export interface TabMetadata {
   id: string;
@@ -101,7 +100,9 @@ const EditorPanel = () => {
         value: "roomInfo",
         label: "Room Info",
         Icon: Info,
-        Content: <RoomInfoTab />,
+        Content: null,
+        // todo(nickbar01234): There's an infinite re-rendering in this component
+        // Content: <RoomInfoTab />,
       },
     ];
   }, []);

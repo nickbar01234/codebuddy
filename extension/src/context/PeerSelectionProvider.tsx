@@ -1,5 +1,5 @@
 import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
-import { useOnMount, useRTC } from "@cb/hooks";
+import { useOnMount } from "@cb/hooks";
 import { useInRoom } from "@cb/hooks/store";
 import useInferTests from "@cb/hooks/useInferTests";
 import {
@@ -36,8 +36,7 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { roomId } = useRTC();
-  const { peers: informations } = useInRoom();
+  const { id: roomId, peers: informations } = useInRoom();
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);

@@ -1,6 +1,6 @@
-import { AppStatus, RoomStatus, roomStore, useApp } from "@cb/store";
-import React from "react";
+import { AppStatus, RoomState, RoomStatus, roomStore, useApp } from "@cb/store";
 import { useStore } from "zustand";
+import { useShallow } from "zustand/shallow";
 
 export const useAuthUser = () => {
   const auth = useApp((state) => state.auth);
@@ -12,19 +12,22 @@ export const useAuthUser = () => {
   return { user: auth.user };
 };
 
+// todo(nickbar01234): Small hack around since we ideally want to throw here
+const DEFAULT_ROOM: Extract<RoomState["room"], { status: RoomStatus.IN_ROOM }> =
+  {
+    peers: {},
+  } as any;
+
 export const useInRoom = () => {
-  const room = useStore(roomStore, (state) => state.room);
-  // todo(nickbar01234): Small hack around since we ideally want to throw here
-  const defaultRoom = React.useMemo(
-    () =>
-      ({
-        peers: {},
-      }) as any,
-    []
+  return useStore(
+    roomStore,
+    useShallow((state) => {
+      const room = state.room;
+      if (room.status !== RoomStatus.IN_ROOM) {
+        return DEFAULT_ROOM;
+      }
+      const { status, ...rest } = room;
+      return rest;
+    })
   );
-  if (room.status !== RoomStatus.IN_ROOM) {
-    return defaultRoom;
-  }
-  const { status: _, ...rest } = room;
-  return rest;
 };

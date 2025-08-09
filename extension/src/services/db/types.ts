@@ -33,6 +33,8 @@ export interface Negotiation {
 export interface Room {
   usernames: User[];
   version: Version;
+  public: boolean;
+  name: string;
 }
 
 export type ObserverDocumentCallback<T> = {
@@ -56,11 +58,12 @@ interface DatabaseRoomObserver {
 }
 
 interface DatabaseRoomService {
-  create(room: Omit<Room, "version">): Promise<Id>;
+  create(room: Omit<Room, "version" | "usernames">): Promise<Id>;
   get(id: Id): Promise<Room | undefined>;
   addUser(id: Id, user: User): Promise<void>;
   removeUser(id: Id, user: User): Promise<void>;
   incrementVersion(id: Id): Promise<void>;
+  addNegotiation(id: Id, data: Negotiation): Promise<void>;
   observer: DatabaseRoomObserver;
 }
 

@@ -37,10 +37,8 @@ export class RoomLifeCycleController {
     this.init();
   }
 
-  public static async create(room: Room, me: User) {
-    return db.room
-      .create(room)
-      .then((id) => this.instantiate({ ...room, id }, me));
+  public static async create(room: Omit<Room, "version" | "usernames">) {
+    return db.room.create(room);
   }
 
   public static async join(id: Id, me: User) {
@@ -49,20 +47,28 @@ export class RoomLifeCycleController {
       // todo(nickbar01234): More rigorous exception
       throw new Error("Room does not exist");
     }
-    return this.instantiate({ ...room, id: id }, me);
+    this.instantiate({ ...room, usernames: [], id: id }, me);
+    return room;
   }
 
   public static get() {
     return this.instance;
   }
 
-  public close() {
+  public async leave() {
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
     this.webRtcController.close();
+    await this.database.removeUser(this.room.id, this.me);
+    RoomLifeCycleController.instance = null;
+  }
+
+  public id() {
+    return this.room.id;
   }
 
   private async init() {
     await this.database.incrementVersion(this.room.id);
+    await db.room.addUser(this.room.id, this.me);
     const unsubscribeFromRoom = this.database.observer.room(this.room.id, {
       onChange: (data) => {
         this.handleUserChanges(data);
@@ -77,23 +83,81 @@ export class RoomLifeCycleController {
       this.room.id,
       this.room.version,
       {
-        onAdded: (data) => {},
+        onAdded: ({ from, to, message }) => {
+          if (from === this.me) return;
+          switch (message.action) {
+            case "description": {
+              this.negotiationsPubSub.publish("description", {
+                from,
+                to,
+                data: message.data,
+              });
+              break;
+            }
+            case "ice": {
+              this.negotiationsPubSub.publish("ice", {
+                from,
+                to,
+                data: message.data,
+              });
+              break;
+            }
+          }
+        },
         onModified: (data) => {},
         onDeleted: (data) => {},
       }
     );
-    this.unsubscribers.push(unsubscribeFromRoom, unsubscribeFromNegotiations);
+    const [unsubscribeFromIce, unsubscribeFromDescription] =
+      this.subscribePubSub();
+    this.unsubscribers.push(
+      unsubscribeFromRoom,
+      unsubscribeFromNegotiations,
+      unsubscribeFromIce,
+      unsubscribeFromDescription
+    );
   }
 
   private handleUserChanges(data: Room) {
     const joined = data.usernames.filter(
-      (username) => !this.room.usernames.includes(username)
+      (username) =>
+        !this.room.usernames.includes(username) && username !== this.me
     );
     const left = this.room.usernames.filter(
       (username) => !data.usernames.includes(username)
     );
+    left.forEach((user) => this.webRtcController.disconnect(user));
     joined.forEach((user) => this.webRtcController.connect(user));
-    left.forEach(this.webRtcController.disconnect);
+  }
+
+  private subscribePubSub() {
+    const unsubscribeFromIce = this.negotiationsPubSub.subscribe(
+      "ice",
+      ({ to, data }) => {
+        console.log("Sending at version", this.room.version);
+        this.database.addNegotiation(this.room.id, {
+          from: this.me,
+          to,
+          message: { action: "ice", data },
+          version: this.room.version,
+        });
+      },
+      ({ from }) => from === this.me
+    );
+    const unsubscribeFromDescription = this.negotiationsPubSub.subscribe(
+      "description",
+      ({ to, data }) => {
+        console.log("Sending at version", this.room.version);
+        this.database.addNegotiation(this.room.id, {
+          from: this.me,
+          to,
+          message: { action: "description", data },
+          version: this.room.version,
+        });
+      },
+      ({ from }) => from === this.me
+    );
+    return [unsubscribeFromIce, unsubscribeFromDescription];
   }
 
   private static instantiate(room: Identifable<Room>, me: User) {

@@ -1,16 +1,21 @@
-import { useRTC } from "@cb/hooks/index";
+import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
+import { roomStore } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CodeIcon } from "lucide-react";
 import React from "react";
+import { useStore } from "zustand";
 import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
 export const JoinRoomDialog = () => {
-  const { joinRoom } = useRTC();
   const [inputRoomId, setInputRoomId] = React.useState("");
+  const joinRoom = useStore(roomStore, (state) => state.actions.joinRoom);
+  const {
+    user: { username },
+  } = useAuthUser();
 
   const onJoinRoom = React.useMemo(() => {
     return throttle(
@@ -18,11 +23,11 @@ export const JoinRoomDialog = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        await joinRoom(inputRoomId);
+        await joinRoom(inputRoomId, username);
       },
       1000
     );
-  }, [joinRoom, inputRoomId]);
+  }, [joinRoom, inputRoomId, username]);
 
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();

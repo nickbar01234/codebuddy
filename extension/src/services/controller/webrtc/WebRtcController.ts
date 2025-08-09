@@ -55,6 +55,10 @@ export class WebRtcController {
       ignoreOffer: false,
     });
 
+    channel.onopen = () => {
+      console.log("On open", user);
+    };
+
     pc.onicecandidate = (event) => {
       this.signaler.publish("ice", {
         from: this.me,
@@ -90,12 +94,12 @@ export class WebRtcController {
 
     this.signaler.subscribe(
       "ice",
-      this.handleCandidate,
+      (ice) => this.handleCandidate(ice),
       ({ to }) => to === user
     );
     this.signaler.subscribe(
       "description",
-      this.handleDescription,
+      (description) => this.handleDescription(description),
       ({ to }) => to === user
     );
   }
@@ -115,6 +119,7 @@ export class WebRtcController {
     from,
     data,
   }: NegotiationEvents["description"]) {
+    console.log("Handle Description");
     const conn = this.pcs.get(from);
     if (!conn) return;
 
@@ -153,6 +158,7 @@ export class WebRtcController {
   }
 
   private async handleCandidate({ from, data }: NegotiationEvents["ice"]) {
+    console.log("Handle ice");
     const conn = this.pcs.get(from);
     if (!conn) return;
 

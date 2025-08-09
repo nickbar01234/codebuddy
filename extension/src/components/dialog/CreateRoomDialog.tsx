@@ -1,16 +1,21 @@
-import { useRTC } from "@cb/hooks/index";
+import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
+import { roomStore } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { PlusIcon } from "lucide-react";
 import React from "react";
+import { useStore } from "zustand";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
-  const { createRoom } = useRTC();
+  const createRoom = useStore(roomStore, (state) => state.actions.createRoom);
+  const {
+    user: { username },
+  } = useAuthUser();
   const [isPublic, setIsPublic] = React.useState(true);
   const [roomName, setRoomName] = React.useState("");
 
@@ -21,12 +26,15 @@ export const CreateRoomDialog = () => {
         alert("Public rooms must have a name.");
         return;
       }
-      createRoom({
-        roomName: roomName,
-        isPublic: isPublic,
-      });
+      createRoom(
+        {
+          name: roomName,
+          public: isPublic,
+        },
+        username
+      );
     }, 1000);
-  }, [createRoom, roomName, isPublic]);
+  }, [createRoom, roomName, isPublic, username]);
 
   return (
     <RoomDialog

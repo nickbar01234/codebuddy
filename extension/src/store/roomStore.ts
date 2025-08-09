@@ -1,3 +1,4 @@
+import { RoomLifeCycleController } from "@cb/services/controller/RoomLifeCycleController";
 import { PeerState } from "@cb/types";
 import { createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -30,12 +31,16 @@ interface RejoiningState {
   status: RoomStatus.REJOINING;
 }
 
-interface RoomState {
+export interface RoomState {
   room: HomeState | InRoomState | LoadingState | RejoiningState;
 }
 
 interface RoomAction {
-  createRoom: (args: { id: string; public: boolean; name: string }) => void;
+  createRoom: (
+    room: { public: boolean; name: string },
+    username: string
+  ) => Promise<void>;
+  joinRoom: (id: string, username: string) => Promise<void>;
   leaveRoom: () => void;
   loadingRoom: () => void;
   rejoiningRoom: () => void;
@@ -47,26 +52,35 @@ interface RoomAction {
 type RoomStore = MutableState<RoomState, RoomAction>;
 
 export const roomStore = createStore<RoomStore>()(
-  immer((set) => ({
+  immer((set, get) => ({
     room: {
       // todo(nickbar01234): Make this loading on startup?
       status: RoomStatus.HOME,
     },
     actions: {
-      createRoom: (args) =>
+      createRoom: async (room, username) => {
+        const id = await RoomLifeCycleController.create(room);
+        await get().actions.joinRoom(id, username);
+      },
+      joinRoom: async (id, username) => {
+        const { usernames, version, ...rest } =
+          await RoomLifeCycleController.join(id, username);
         set((state) => {
           state.room = {
-            ...args,
+            ...rest,
+            id,
             status: RoomStatus.IN_ROOM,
             peers: {},
           };
-        }),
-      leaveRoom: () =>
+        });
+      },
+      leaveRoom: () => {
         set((state) => {
           state.room = {
             status: RoomStatus.HOME,
           };
-        }),
+        });
+      },
       loadingRoom: () =>
         set((state) => {
           state.room = {

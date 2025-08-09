@@ -96,7 +96,7 @@ const getNegotiationRefs = (id: string) =>
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
     create(room) {
-      return addDoc(getRoomRefs(), { ...room, version: 0 }).then(
+      return addDoc(getRoomRefs(), { ...room, usernames: [], version: 0 }).then(
         (ref) => ref.id
       );
     },
@@ -125,12 +125,18 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
       return setDoc(getRoomRef(id), { version: increment(1) }, { merge: true });
     },
 
+    async addNegotiation(id, data) {
+      await addDoc(getNegotiationRefs(id), data);
+      return Promise.resolve();
+    },
+
     observer: {
       room(id, cb) {
         return withDocumentSnapshot(getRoomRef(id), cb);
       },
 
       negotiations(id, version, cb) {
+        console.log("Listening for version", version);
         return withCollectionSnapshot(
           query(getNegotiationRefs(id), where("version", ">", version)),
           cb

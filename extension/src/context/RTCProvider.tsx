@@ -74,14 +74,7 @@ const TIMEOUT = 100; // seconds;
 
 const UNSUBSCRIBE_FIREBASE_AFTER = 60_000;
 
-interface CreateRoom {
-  roomId?: string;
-  roomName?: string;
-  isPublic: boolean;
-}
-
 export interface RTCContext {
-  createRoom: (args: CreateRoom) => void;
   joinRoom: (roomId: string) => Promise<boolean>;
   leaveRoom: (roomId: string | null) => Promise<void>;
   roomId: string | null;
@@ -120,10 +113,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     user: { username },
   } = useAuthUser();
   const roomStatus = useStore(roomStore, (state) => state.room.status);
-  const createRoomInternal = useStore(
-    roomStore,
-    (state) => state.actions.createRoom
-  );
   const leaveRoomInternal = useStore(
     roomStore,
     (state) => state.actions.leaveRoom
@@ -275,35 +264,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     [receiveCode, receiveTests, setConnection]
   );
-
-  const createRoom = async ({ roomId, roomName, isPublic }: CreateRoom) => {
-    const newRoomRef = getRoomRef(roomId);
-    const newRoomId = newRoomRef.id;
-    const sessionRef = getSessionRef(newRoomId, getSessionId());
-    await setRoom(newRoomRef, {
-      usernames: arrayUnion(username),
-      roomName,
-      isPublic,
-    });
-    await setSession(sessionRef, {
-      finishedUsers: [],
-
-      usernames: arrayUnion(username),
-      nextQuestion: "",
-
-      createdAt: serverTimestamp(),
-    });
-    console.log("Created room", newRoomId);
-    setRoomId(newRoomId);
-    // todo(nickbar01234): Fix type for roomName
-    createRoomInternal({
-      id: newRoomId,
-      name: roomName ?? "",
-      public: isPublic,
-    });
-    navigator.clipboard.writeText(newRoomId);
-    toast.success(`Session ID ${newRoomId} copied to clipboard`);
-  };
 
   const createOffer = React.useCallback(
     async (roomId: string, peer: string) => {
@@ -519,11 +479,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
         );
       }
 
-      createRoomInternal({
-        id: roomId,
-        public: roomDoc.data().isPublic,
-        name: roomDoc.data().roomName,
-      });
       return true;
     },
     [
@@ -533,7 +488,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       registerConnection,
       getConnection,
       evictSnapshot,
-      createRoomInternal,
     ]
   );
 
@@ -901,7 +855,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   return (
     <RTCContext.Provider
       value={{
-        createRoom,
         joinRoom,
         leaveRoom,
         roomId,
