@@ -95,12 +95,12 @@ export class WebRtcController {
     this.signaler.subscribe(
       "ice",
       (ice) => this.handleCandidate(ice),
-      ({ to }) => to === user
+      ({ from, to }) => from === user && to === this.me
     );
     this.signaler.subscribe(
       "description",
       (description) => this.handleDescription(description),
-      ({ to }) => to === user
+      ({ from, to }) => from === user && to === this.me
     );
   }
 
