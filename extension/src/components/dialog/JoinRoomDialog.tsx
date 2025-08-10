@@ -1,4 +1,3 @@
-import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
@@ -13,9 +12,6 @@ import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 export const JoinRoomDialog = () => {
   const [inputRoomId, setInputRoomId] = React.useState("");
   const joinRoom = useStore(roomStore, (state) => state.actions.joinRoom);
-  const {
-    user: { username },
-  } = useAuthUser();
 
   const onJoinRoom = React.useMemo(() => {
     return throttle(
@@ -23,11 +19,11 @@ export const JoinRoomDialog = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        await joinRoom(inputRoomId, username);
+        await joinRoom(inputRoomId);
       },
       1000
     );
-  }, [joinRoom, inputRoomId, username]);
+  }, [joinRoom, inputRoomId]);
 
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();

@@ -1,15 +1,10 @@
-import { User } from "@cb/services/db/types";
-import { NegotiationEvents, PubSub } from "@cb/services/pubsub/types";
-
-type IamPolite = (me: User, other: User) => boolean;
-
-interface PeerConnection {
-  pc: RTCPeerConnection;
-  channel: RTCDataChannel;
-  makingOffer: boolean;
-  isSettingRemoteAnswerPending: boolean;
-  ignoreOffer: boolean;
-}
+import {
+  EventEmitter,
+  Events,
+  IamPolite,
+  PeerConnection,
+  User,
+} from "@cb/types";
 
 const WEB_RTC_CONFIG = {
   iceServers: [
@@ -23,24 +18,44 @@ const WEB_RTC_CONFIG = {
 export class WebRtcController {
   private me: User;
 
-  private signaler: PubSub<NegotiationEvents>;
+  private emitter: EventEmitter;
 
   private iamPolite: IamPolite;
 
   private pcs: Map<User, PeerConnection>;
 
-  constructor(
-    me: User,
-    signaler: PubSub<NegotiationEvents>,
-    iamPolite: IamPolite
-  ) {
+  public constructor(me: User, emitter: EventEmitter, iamPolite: IamPolite) {
     this.me = me;
-    this.signaler = signaler;
+    this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.init();
   }
 
-  public connect(user: User) {
+  public leave() {
+    const users = this.pcs.keys();
+    for (const user of users) {
+      this.disconnect(user);
+    }
+  }
+
+  private init() {
+    this.emitter.on("room.user.changes", ({ left, joined }) => {
+      left.forEach(this.disconnect.bind(this));
+      joined.forEach(this.connect.bind(this));
+    });
+  }
+
+  private disconnect(user: User) {
+    const connection = this.pcs.get(user);
+    if (connection != undefined) {
+      this.pcs.delete(user);
+      connection.channel.close();
+      connection.pc.close();
+    }
+  }
+
+  private connect(user: User) {
     if (this.pcs.has(user)) {
       return;
     }
@@ -55,17 +70,12 @@ export class WebRtcController {
       ignoreOffer: false,
     });
 
-    channel.onopen = () => {
-      console.log("On open", user);
-    };
-
-    pc.onicecandidate = (event) => {
-      this.signaler.publish("ice", {
+    pc.onicecandidate = (event) =>
+      this.emitter.emit("rtc.ice", {
         from: this.me,
         to: user,
         data: event.candidate?.toJSON() ?? null,
       });
-    };
 
     // create offer (onnegotiationneeded)
     pc.onnegotiationneeded = async () => {
@@ -80,7 +90,7 @@ export class WebRtcController {
         const description = pc.localDescription;
         if (!description) return;
 
-        this.signaler.publish("description", {
+        this.emitter.emit("rtc.description", {
           from: this.me,
           to: user,
           data: description.toJSON(),
@@ -92,49 +102,40 @@ export class WebRtcController {
       }
     };
 
-    this.signaler.subscribe(
-      "ice",
-      (ice) => this.handleCandidate(ice),
-      ({ from, to }) => from === user && to === this.me
-    );
-    this.signaler.subscribe(
-      "description",
-      (description) => this.handleDescription(description),
-      ({ from, to }) => from === user && to === this.me
-    );
+    const handleIceEvents = this.handleIceEvents.bind(this);
+    const handleDescriptionEvents = this.handleDescriptionEvents.bind(this);
+
+    this.emitter.on("rtc.ice", handleIceEvents);
+    this.emitter.on("rtc.description", handleDescriptionEvents);
+
+    channel.onopen = () => {
+      console.log("On open", user);
+      this.emitter.off("rtc.ice", handleIceEvents);
+      this.emitter.off("rtc.description", handleDescriptionEvents);
+    };
   }
 
-  public disconnect(user: User) {
-    const connection = this.pcs.get(user);
-    connection?.channel.close();
-    connection?.pc.close();
-    this.pcs.delete(user);
-  }
-
-  public close() {
-    Object.keys(this.pcs).forEach(this.disconnect);
-  }
-
-  private async handleDescription({
+  private async handleDescriptionEvents({
     from,
     data,
-  }: NegotiationEvents["description"]) {
-    console.log("Handle Description");
-    const conn = this.pcs.get(from);
-    if (!conn) return;
+  }: Events["rtc.description"]) {
+    const connection = this.pcs.get(from);
+
+    if (connection == undefined) return;
 
     // whether im polite or not
     const polite = this.iamPolite(this.me, from);
-    const pc = conn.pc;
+    const pc = connection.pc;
     // whether im ready to receive offer
     const readyOffer =
-      !conn.makingOffer &&
-      (pc.signalingState === "stable" || conn.isSettingRemoteAnswerPending);
+      !connection.makingOffer &&
+      (pc.signalingState === "stable" ||
+        connection.isSettingRemoteAnswerPending);
 
     // collision when receive offer when not ready
     const offerCollision = data.type === "offer" && !readyOffer;
-    conn.ignoreOffer = !polite && offerCollision;
-    if (conn.ignoreOffer) return;
+    connection.ignoreOffer = !polite && offerCollision;
+    if (connection.ignoreOffer) return;
 
     // polite user - rollback local offer
     try {
@@ -142,11 +143,11 @@ export class WebRtcController {
         await pc.setLocalDescription({ type: "rollback" });
       }
 
-      conn.isSettingRemoteAnswerPending = data.type === "answer";
+      connection.isSettingRemoteAnswerPending = data.type === "answer";
       await pc.setRemoteDescription(data);
       if (data.type === "offer") {
         await pc.setLocalDescription();
-        this.signaler.publish("description", {
+        this.emitter.emit("rtc.description", {
           from: this.me,
           to: from,
           data: pc.localDescription!.toJSON(),
@@ -157,15 +158,15 @@ export class WebRtcController {
     }
   }
 
-  private async handleCandidate({ from, data }: NegotiationEvents["ice"]) {
-    console.log("Handle ice");
-    const conn = this.pcs.get(from);
-    if (!conn) return;
+  private async handleIceEvents({ from, data }: Events["rtc.ice"]) {
+    const connection = this.pcs.get(from);
+
+    if (connection == undefined) return;
 
     try {
-      await conn.pc.addIceCandidate(data);
+      await connection.pc.addIceCandidate(data);
     } catch (err) {
-      if (!conn.ignoreOffer) {
+      if (!connection.ignoreOffer) {
         console.error("handle candidate error:", err);
       }
     }

@@ -1,4 +1,15 @@
-import { LocalStorage, ServiceRequest, ServiceResponse } from "@cb/types";
+import { AppStatus, AppStore, useApp } from "@cb/store";
+import {
+  DatabaseService,
+  EventEmitter,
+  LocalStorage,
+  ServiceRequest,
+  ServiceResponse,
+} from "@cb/types";
+import mitt from "mitt";
+import { RoomController } from "./controllers/RoomController";
+import { WebRtcController } from "./controllers/WebRtcControllers";
+import db from "./db";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
@@ -43,3 +54,51 @@ export const clearLocalStorage = (ignore: Array<keyof LocalStorage> = []) =>
 
 export const clearLocalStorageForRoom = () =>
   clearLocalStorage(["preference", "signIn"]);
+
+interface Controllers {
+  webrtc: WebRtcController;
+  room: RoomController;
+  emitter: EventEmitter;
+  teardown: () => void;
+}
+
+const createControllers = (db: DatabaseService, appStore: AppStore) => {
+  let initialized = false;
+  let controllers: Controllers | undefined = undefined;
+  return () => {
+    if (initialized) {
+      return controllers!;
+    }
+    const auth = appStore.getState().auth;
+
+    if (auth.status !== AppStatus.AUTHENTICATED) {
+      throw new Error(
+        "Creating controllers when status is not authenticated. This is most likely a bug"
+      );
+    }
+
+    const emitter: EventEmitter = mitt();
+    const webrtc = new WebRtcController(
+      auth.user.username,
+      emitter,
+      (x, y) => x < y
+    );
+    const room = new RoomController(db.room, emitter, auth.user.username);
+    initialized = true;
+    controllers = {
+      emitter,
+      webrtc,
+      room,
+      // todo(nickbar01234): Teardown?
+      teardown: () => {
+        initialized = false;
+        room.leave();
+        webrtc.leave();
+        emitter.all.clear();
+      },
+    };
+    return controllers;
+  };
+};
+
+export const getControllersFactory = createControllers(db, useApp);

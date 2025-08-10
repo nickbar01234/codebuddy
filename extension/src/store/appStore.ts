@@ -52,9 +52,9 @@ interface AppAction {
   unauthenticate: () => void;
 }
 
-type AppStore = MutableState<AppState, AppAction>;
+type _AppStore = MutableState<AppState, AppAction>;
 
-export const useApp = create<AppStore>()(
+export const useApp = create<_AppStore>()(
   persist(
     immer((set) => ({
       app: {
@@ -84,13 +84,14 @@ export const useApp = create<AppStore>()(
           set((state) => {
             state.app.width = width;
           }),
-        authenticate: (user: AppUser) =>
+        authenticate: (user: AppUser) => {
           set((state) => {
             state.auth = {
               status: AppStatus.AUTHENTICATED,
               user,
             };
-          }),
+          });
+        },
         unauthenticate: () =>
           set((state) => {
             state.auth = { status: AppStatus.UNAUTHENTICATED };
@@ -106,3 +107,5 @@ export const useApp = create<AppStore>()(
     }
   )
 );
+
+export type AppStore = typeof useApp;

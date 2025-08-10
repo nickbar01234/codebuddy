@@ -1,4 +1,3 @@
-import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
@@ -13,28 +12,19 @@ import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
   const createRoom = useStore(roomStore, (state) => state.actions.createRoom);
-  const {
-    user: { username },
-  } = useAuthUser();
   const [isPublic, setIsPublic] = React.useState(true);
-  const [roomName, setRoomName] = React.useState("");
+  const [name, setName] = React.useState("");
 
   const createRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<Element>) => {
       event.stopPropagation?.();
-      if (isPublic && roomName.trim() === "") {
+      if (isPublic && name.trim() === "") {
         alert("Public rooms must have a name.");
         return;
       }
-      createRoom(
-        {
-          name: roomName,
-          public: isPublic,
-        },
-        username
-      );
+      createRoom({ name, isPublic });
     }, 1000);
-  }, [createRoom, roomName, isPublic, username]);
+  }, [createRoom, name, isPublic]);
 
   return (
     <RoomDialog
@@ -67,8 +57,8 @@ export const CreateRoomDialog = () => {
           id="roomName"
           type="text"
           placeholder="Enter Room Name"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full border border-[#787880] px-3 py-2 placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] focus:border-transparent"
         />
         <RadioGroup

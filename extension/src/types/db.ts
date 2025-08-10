@@ -1,4 +1,4 @@
-import { GenericMessage, Unsubscribe } from "@cb/types/utils";
+import { GenericMessage, Identifable, Unsubscribe } from "@cb/types/utils";
 
 export type User = string;
 
@@ -33,7 +33,7 @@ export interface Negotiation {
 export interface Room {
   usernames: User[];
   version: Version;
-  public: boolean;
+  isPublic: boolean;
   name: string;
 }
 
@@ -58,7 +58,7 @@ interface DatabaseRoomObserver {
 }
 
 interface DatabaseRoomService {
-  create(room: Omit<Room, "version" | "usernames">): Promise<Id>;
+  create(room: Pick<Room, "name" | "isPublic">): Promise<Identifable<Room>>;
   get(id: Id): Promise<Room | undefined>;
   addUser(id: Id, user: User): Promise<void>;
   removeUser(id: Id, user: User): Promise<void>;

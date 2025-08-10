@@ -1,4 +1,4 @@
-import { RoomLifeCycleController } from "@cb/services/controller/RoomLifeCycleController";
+import { getControllersFactory } from "@cb/services";
 import { PeerState } from "@cb/types";
 import { createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -18,7 +18,7 @@ interface HomeState {
 interface InRoomState {
   status: RoomStatus.IN_ROOM;
   id: string;
-  public: boolean;
+  isPublic: boolean;
   name: string;
   peers: Record<string, PeerState>;
 }
@@ -36,11 +36,8 @@ export interface RoomState {
 }
 
 interface RoomAction {
-  createRoom: (
-    room: { public: boolean; name: string },
-    username: string
-  ) => Promise<void>;
-  joinRoom: (id: string, username: string) => Promise<void>;
+  createRoom: (room: { isPublic: boolean; name: string }) => Promise<void>;
+  joinRoom: (id: string) => Promise<void>;
   leaveRoom: () => void;
   loadingRoom: () => void;
   rejoiningRoom: () => void;
@@ -58,19 +55,31 @@ export const roomStore = createStore<RoomStore>()(
       status: RoomStatus.HOME,
     },
     actions: {
-      createRoom: async (room, username) => {
-        const id = await RoomLifeCycleController.create(room);
-        await get().actions.joinRoom(id, username);
-      },
-      joinRoom: async (id, username) => {
-        const { usernames, version, ...rest } =
-          await RoomLifeCycleController.join(id, username);
+      createRoom: async (room) => {
+        const { room: controller } = getControllersFactory();
+        const { id, isPublic, name } = (
+          await controller.create(room)
+        ).getRoom();
         set((state) => {
           state.room = {
-            ...rest,
             id,
-            status: RoomStatus.IN_ROOM,
+            isPublic,
+            name,
             peers: {},
+            status: RoomStatus.IN_ROOM,
+          };
+        });
+      },
+      joinRoom: async (id) => {
+        const { room: controller } = getControllersFactory();
+        const { isPublic, name } = (await controller.join(id)).getRoom();
+        set((state) => {
+          state.room = {
+            id,
+            isPublic,
+            name,
+            peers: {},
+            status: RoomStatus.IN_ROOM,
           };
         });
       },
@@ -80,6 +89,7 @@ export const roomStore = createStore<RoomStore>()(
             status: RoomStatus.HOME,
           };
         });
+        getControllersFactory().teardown();
       },
       loadingRoom: () =>
         set((state) => {

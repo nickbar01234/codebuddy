@@ -6,7 +6,7 @@ import {
   ObserverCollectionCallback,
   ObserverDocumentCallback,
   Room,
-} from "@cb/services/db/types";
+} from "@cb/types";
 import {
   addDoc,
   arrayRemove,
@@ -95,10 +95,13 @@ const getNegotiationRefs = (id: string) =>
 
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
-    create(room) {
-      return addDoc(getRoomRefs(), { ...room, usernames: [], version: 0 }).then(
-        (ref) => ref.id
-      );
+    async create(room) {
+      const doc = { ...room, usernames: [], version: 0 };
+      const ref = await addDoc(getRoomRefs(), doc);
+      return {
+        id: ref.id,
+        ...doc,
+      };
     },
 
     get(id) {
