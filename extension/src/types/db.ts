@@ -62,7 +62,6 @@ interface DatabaseRoomService {
   get(id: Id): Promise<Room | undefined>;
   addUser(id: Id, user: User): Promise<void>;
   removeUser(id: Id, user: User): Promise<void>;
-  incrementVersion(id: Id): Promise<void>;
   addNegotiation(id: Id, data: Negotiation): Promise<void>;
   observer: DatabaseRoomObserver;
 }

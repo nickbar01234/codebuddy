@@ -8,7 +8,7 @@ import {
 } from "@cb/types";
 import mitt from "mitt";
 import { RoomController } from "./controllers/RoomController";
-import { WebRtcController } from "./controllers/WebRtcControllers";
+import { WebRtcController } from "./controllers/WebRtcController";
 import db from "./db";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";

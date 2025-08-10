@@ -111,7 +111,7 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     addUser(id, user) {
       return setDoc(
         getRoomRef(id),
-        { usernames: arrayUnion(user) },
+        { usernames: arrayUnion(user), version: increment(1) },
         { merge: true }
       );
     },
@@ -119,13 +119,9 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     removeUser(id, user) {
       return setDoc(
         getRoomRef(id),
-        { usernames: arrayRemove(user) },
+        { usernames: arrayRemove(user), version: increment(1) },
         { merge: true }
       );
-    },
-
-    incrementVersion(id) {
-      return setDoc(getRoomRef(id), { version: increment(1) }, { merge: true });
     },
 
     async addNegotiation(id, data) {

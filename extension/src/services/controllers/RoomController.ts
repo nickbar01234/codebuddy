@@ -46,8 +46,6 @@ class RoomLifeCycle {
   }
 
   private async init() {
-    console.log("Initialized", this.room);
-    await this.database.incrementVersion(this.room.id);
     await this.database.addUser(this.room.id, this.me);
     this.unsubscribers.push(this.subscribeToRoom());
     this.unsubscribers.push(this.subscribeToNegotiations());

@@ -61,7 +61,8 @@ export class WebRtcController {
     }
 
     const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
-    const channel = pc.createDataChannel(user);
+    // See https://stackoverflow.com/a/43788873
+    const channel = pc.createDataChannel(user, { negotiated: true, id: 0 });
     this.pcs.set(user, {
       pc,
       channel,
@@ -77,16 +78,12 @@ export class WebRtcController {
         data: event.candidate?.toJSON() ?? null,
       });
 
-    // create offer (onnegotiationneeded)
     pc.onnegotiationneeded = async () => {
       const connection = this.pcs.get(user);
       if (!connection || connection?.makingOffer) return;
       try {
         connection.makingOffer = true;
-
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-
+        await pc.setLocalDescription();
         const description = pc.localDescription;
         if (!description) return;
 
@@ -109,7 +106,6 @@ export class WebRtcController {
     this.emitter.on("rtc.description", handleDescriptionEvents);
 
     channel.onopen = () => {
-      console.log("On open", user);
       this.emitter.off("rtc.ice", handleIceEvents);
       this.emitter.off("rtc.description", handleDescriptionEvents);
     };
@@ -154,7 +150,7 @@ export class WebRtcController {
         });
       }
     } catch (err) {
-      console.log("handle description error", err);
+      console.log("Error when handling description", from, err);
     }
   }
 
@@ -167,7 +163,7 @@ export class WebRtcController {
       await connection.pc.addIceCandidate(data);
     } catch (err) {
       if (!connection.ignoreOffer) {
-        console.error("handle candidate error:", err);
+        console.error("Error when handling ICE candidate", from, err);
       }
     }
   }
