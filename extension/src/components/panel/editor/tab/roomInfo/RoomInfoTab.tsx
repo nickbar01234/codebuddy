@@ -3,7 +3,7 @@ import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoomRef, getSessionRef } from "@cb/db";
-import { useFirebaseListener, useRTC } from "@cb/hooks/index";
+import { useFirebaseListener } from "@cb/hooks/index";
 import { useAuthUser, useInRoom } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { getSessionId } from "@cb/utils";
@@ -13,11 +13,11 @@ import { Timestamp } from "firebase/firestore";
 import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 
+// todo(nickbar01234): This implementation doesn't actually do anything
 export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAuthUser();
-  const { handleNavigateToNextQuestion } = useRTC();
   const { id: roomId, peers } = useInRoom();
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
@@ -153,12 +153,7 @@ export const RoomInfoTab = () => {
             Do you want to go on to next question?
           </h1>
           <div className="flex justify-center gap-4">
-            <Button
-              onClick={handleNavigateToNextQuestion}
-              className={baseButtonClassName}
-            >
-              Yes
-            </Button>
+            <Button className={baseButtonClassName}>Yes</Button>
           </div>
         </div>
       )}

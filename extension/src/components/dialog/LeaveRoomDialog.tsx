@@ -1,25 +1,22 @@
-import { useRTC } from "@cb/hooks/index";
-import { useInRoom } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
+import { roomStore } from "@cb/store";
 import { throttle } from "lodash";
 import React from "react";
+import { useStore } from "zustand";
 import { RoomDialog, RoomDialogProps, baseButtonClassName } from "./RoomDialog";
 
 type LeaveRoomDialogProps = Partial<RoomDialogProps["trigger"]>;
 
 export function LeaveRoomDialog(props: LeaveRoomDialogProps) {
-  const { leaveRoom } = useRTC();
-  const { id: roomId } = useInRoom();
+  const leaveRoom = useStore(roomStore, (state) => state.actions.leaveRoom);
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation?.();
-      if (roomId) {
-        leaveRoom(roomId);
-      }
+      leaveRoom();
     }, 1000);
-  }, [roomId, leaveRoom]);
+  }, [leaveRoom]);
 
   return (
     <RoomDialog

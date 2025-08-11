@@ -38,7 +38,7 @@ export interface RoomState {
 interface RoomAction {
   createRoom: (room: { isPublic: boolean; name: string }) => Promise<void>;
   joinRoom: (id: string) => Promise<void>;
-  leaveRoom: () => void;
+  leaveRoom: () => Promise<void>;
   loadingRoom: () => void;
   rejoiningRoom: () => void;
   homeRoom: () => void;
@@ -83,7 +83,7 @@ export const roomStore = createStore<_RoomStore>()(
           };
         });
       },
-      leaveRoom: () => {
+      leaveRoom: async () => {
         set((state) => {
           state.room = {
             status: RoomStatus.HOME,

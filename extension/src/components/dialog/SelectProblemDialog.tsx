@@ -1,5 +1,5 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
-import { useRTC } from "@cb/hooks";
+import { useInRoom } from "@cb/hooks/store";
 import { useSelectedQuestions } from "@cb/hooks/useSelectedQuestions";
 import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
@@ -14,7 +14,8 @@ export const SelectProblemDialog = ({
   open,
   setOpen,
 }: SelectProblemDialog) => {
-  const { handleChooseQuestion, roomId } = useRTC();
+  const roomId = useInRoom().id;
+  // todo(nickbar01234): Handle choose question
   const filterQuestionIds = useSelectedQuestions({ roomId });
   return (
     <RoomDialog
@@ -40,7 +41,7 @@ export const SelectProblemDialog = ({
     >
       <QuestionSelectorPanel
         handleQuestionSelect={(question) => {
-          handleChooseQuestion(question);
+          // handleChooseQuestion(question);
           setOpen(false);
         }}
         filterQuestionIds={filterQuestionIds}

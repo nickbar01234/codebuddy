@@ -42,8 +42,8 @@ class RoomLifeCycle {
   }
 
   public async leave() {
-    await this.database.removeUser(this.room.id, this.me);
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
+    await this.database.removeUser(this.room.id, this.me);
     this.emitter.emit("room.left");
   }
 

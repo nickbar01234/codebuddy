@@ -1,7 +1,7 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { CopyIcon, LeaveIcon, SignOutIcon } from "@cb/components/icons";
 import { auth } from "@cb/db";
-import { useRTC } from "@cb/hooks/index";
+import { useInRoom } from "@cb/hooks/store";
 import { RoomStatus, roomStore } from "@cb/store";
 import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
@@ -12,14 +12,15 @@ import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
 
 export const RoomControlMenu = () => {
-  const { roomId, leaveRoom } = useRTC();
+  const leaveRoom = useStore(roomStore, (state) => state.actions.leaveRoom);
+  const { id } = useInRoom();
   const roomStatus = useStore(roomStore, (state) => state.room.status);
 
   const signOutThrottled = React.useMemo(() => {
     return throttle(() => {
-      leaveRoom(roomId).then(() => signOut(auth));
+      leaveRoom().then(() => signOut(auth));
     }, 1000);
-  }, [leaveRoom, roomId]);
+  }, [leaveRoom]);
 
   return (
     <Menu>
@@ -28,7 +29,7 @@ export const RoomControlMenu = () => {
           <DropdownMenuItem
             onSelect={(e) => {
               e.stopPropagation();
-              navigator.clipboard.writeText(roomId ?? "");
+              navigator.clipboard.writeText(id);
             }}
           >
             <span className="flex items-center gap-2">

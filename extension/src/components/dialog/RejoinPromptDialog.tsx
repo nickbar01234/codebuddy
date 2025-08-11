@@ -1,7 +1,6 @@
-import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
-import { getLocalStorage, removeLocalStorage } from "@cb/services";
+import { removeLocalStorage } from "@cb/services";
 import { roomStore } from "@cb/store";
 import { throttle } from "lodash";
 import React from "react";
@@ -9,16 +8,15 @@ import { useStore } from "zustand";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const RejoinPromptDialog = () => {
-  const { joiningBackRoom, leaveRoom } = useRTC();
+  // const { joiningBackRoom, leaveRoom } = useRTC();
   const loadingRoom = useStore(roomStore, (state) => state.actions.loadingRoom);
+  const leaveRoom = useStore(roomStore, (state) => state.actions.leaveRoom);
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation?.();
       removeLocalStorage("closingTabs");
-      // todo(nickbar01234): Refactor
-      const roomId = getLocalStorage("tabs")?.roomId ?? null;
-      leaveRoom(roomId);
+      leaveRoom();
     }, 1000);
   }, [leaveRoom]);
 
@@ -42,7 +40,6 @@ export const RejoinPromptDialog = () => {
             onClick={() => {
               removeLocalStorage("closingTabs");
               loadingRoom();
-              joiningBackRoom();
             }}
           >
             <span className="text-sm font-medium">Yes</span>
