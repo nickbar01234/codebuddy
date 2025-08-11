@@ -9,7 +9,7 @@ export default defineContentScript({
   matches: ["https://leetcode.com/problems/*"],
   runAt: "document_end",
   main(ctx) {
-    // Initialize controller on startup
+    // Initialize controllers on startup
     getOrCreateControllers();
     const ui = createUi(ctx);
     ui.mount();
