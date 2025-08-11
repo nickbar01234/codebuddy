@@ -1,4 +1,4 @@
-import { AppStatus, AppStore, useApp } from "@cb/store";
+import { AppStore, roomStore, RoomStore, useApp } from "@cb/store";
 import {
   DatabaseService,
   EventEmitter,
@@ -7,6 +7,7 @@ import {
   ServiceResponse,
 } from "@cb/types";
 import mitt from "mitt";
+import { MessageController } from "./controllers/MessageController";
 import { RoomController } from "./controllers/RoomController";
 import { WebRtcController } from "./controllers/WebRtcController";
 import db from "./db";
@@ -56,49 +57,40 @@ export const clearLocalStorageForRoom = () =>
   clearLocalStorage(["preference", "signIn"]);
 
 interface Controllers {
+  emitter: EventEmitter;
   webrtc: WebRtcController;
   room: RoomController;
-  emitter: EventEmitter;
-  teardown: () => void;
+  message: MessageController;
 }
 
-const createControllers = (db: DatabaseService, appStore: AppStore) => {
+const createControllersFactory = (
+  db: DatabaseService,
+  appStore: AppStore,
+  roomStore: RoomStore
+) => {
   let initialized = false;
   let controllers: Controllers | undefined = undefined;
   return () => {
     if (initialized) {
       return controllers!;
     }
-    const auth = appStore.getState().auth;
-
-    if (auth.status !== AppStatus.AUTHENTICATED) {
-      throw new Error(
-        "Creating controllers when status is not authenticated. This is most likely a bug"
-      );
-    }
-
     const emitter: EventEmitter = mitt();
-    const webrtc = new WebRtcController(
-      auth.user.username,
-      emitter,
-      (x, y) => x < y
-    );
-    const room = new RoomController(db.room, emitter, auth.user.username);
+    const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y);
+    const room = new RoomController(db.room, emitter, appStore);
+    const message = new MessageController(emitter, roomStore);
     initialized = true;
     controllers = {
       emitter,
       webrtc,
       room,
-      // todo(nickbar01234): Teardown?
-      teardown: () => {
-        initialized = false;
-        room.leave();
-        webrtc.leave();
-        emitter.all.clear();
-      },
+      message,
     };
     return controllers;
   };
 };
 
-export const getControllersFactory = createControllers(db, useApp);
+export const getOrCreateControllers = createControllersFactory(
+  db,
+  useApp,
+  roomStore
+);

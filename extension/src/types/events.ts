@@ -16,7 +16,9 @@ interface RoomChanges {
 export type Events = {
   "rtc.ice": AddressableEvent<RTCIceCandidateInit | null>;
   "rtc.description": AddressableEvent<RTCSessionDescriptionInit>;
+
   "room.user.changes": RoomChanges;
+  "room.left": void;
 };
 
 export type EventEmitter = Emitter<Events>;

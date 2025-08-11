@@ -1,3 +1,4 @@
+import { AppStore } from "@cb/store";
 import {
   DatabaseService,
   EventEmitter,
@@ -43,6 +44,7 @@ class RoomLifeCycle {
   public async leave() {
     await this.database.removeUser(this.room.id, this.me);
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
+    this.emitter.emit("room.left");
   }
 
   private async init() {
@@ -155,24 +157,25 @@ export class RoomController {
 
   private room: RoomLifeCycle | null = null;
 
-  private me: User;
+  private appStore: AppStore;
 
   public constructor(
     database: DatabaseService["room"],
     emitter: EventEmitter,
-    me: User
+    appStore: AppStore
   ) {
     this.database = database;
     this.emitter = emitter;
-    this.me = me;
+    this.appStore = appStore;
   }
 
   public async create(room: Pick<Room, "name" | "isPublic">) {
     if (this.room != null) {
       return this.room;
     }
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
     const doc = await this.database.create(room);
-    this.room = new RoomLifeCycle(this.database, this.emitter, doc, this.me);
+    this.room = new RoomLifeCycle(this.database, this.emitter, doc, me);
     return this.room;
   }
 
@@ -180,16 +183,12 @@ export class RoomController {
     if (this.room != null) {
       return this.room;
     }
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
     const room = await this.database.get(id);
     if (room == undefined) {
       throw new Error(`Room with ${id} not found`);
     }
-    return new RoomLifeCycle(
-      this.database,
-      this.emitter,
-      { id, ...room },
-      this.me
-    );
+    return new RoomLifeCycle(this.database, this.emitter, { id, ...room }, me);
   }
 
   public async leave() {

@@ -1,4 +1,4 @@
-import { getControllersFactory } from "@cb/services";
+import { getOrCreateControllers } from "@cb/services";
 import { PeerState } from "@cb/types";
 import { createStore } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -46,9 +46,9 @@ interface RoomAction {
   removePeers: (ids: string[]) => void;
 }
 
-type RoomStore = MutableState<RoomState, RoomAction>;
+type _RoomStore = MutableState<RoomState, RoomAction>;
 
-export const roomStore = createStore<RoomStore>()(
+export const roomStore = createStore<_RoomStore>()(
   immer((set, get) => ({
     room: {
       // todo(nickbar01234): Make this loading on startup?
@@ -56,7 +56,7 @@ export const roomStore = createStore<RoomStore>()(
     },
     actions: {
       createRoom: async (room) => {
-        const { room: controller } = getControllersFactory();
+        const { room: controller } = getOrCreateControllers();
         const { id, isPublic, name } = (
           await controller.create(room)
         ).getRoom();
@@ -71,7 +71,7 @@ export const roomStore = createStore<RoomStore>()(
         });
       },
       joinRoom: async (id) => {
-        const { room: controller } = getControllersFactory();
+        const { room: controller } = getOrCreateControllers();
         const { isPublic, name } = (await controller.join(id)).getRoom();
         set((state) => {
           state.room = {
@@ -89,7 +89,7 @@ export const roomStore = createStore<RoomStore>()(
             status: RoomStatus.HOME,
           };
         });
-        getControllersFactory().teardown();
+        getOrCreateControllers().room.leave();
       },
       loadingRoom: () =>
         set((state) => {
@@ -136,3 +136,5 @@ export const roomStore = createStore<RoomStore>()(
     },
   }))
 );
+
+export type RoomStore = typeof roomStore;

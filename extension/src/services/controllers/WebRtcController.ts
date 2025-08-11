@@ -1,3 +1,4 @@
+import { AppStore } from "@cb/store";
 import {
   EventEmitter,
   Events,
@@ -16,7 +17,7 @@ const WEB_RTC_CONFIG = {
 };
 
 export class WebRtcController {
-  private me: User;
+  private appStore: AppStore;
 
   private emitter: EventEmitter;
 
@@ -24,19 +25,16 @@ export class WebRtcController {
 
   private pcs: Map<User, PeerConnection>;
 
-  public constructor(me: User, emitter: EventEmitter, iamPolite: IamPolite) {
-    this.me = me;
+  public constructor(
+    appStore: AppStore,
+    emitter: EventEmitter,
+    iamPolite: IamPolite
+  ) {
+    this.appStore = appStore;
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
     this.init();
-  }
-
-  public leave() {
-    const users = this.pcs.keys();
-    for (const user of users) {
-      this.disconnect(user);
-    }
   }
 
   private init() {
@@ -44,6 +42,14 @@ export class WebRtcController {
       left.forEach(this.disconnect.bind(this));
       joined.forEach(this.connect.bind(this));
     });
+    this.emitter.on("room.left", this.leave.bind(this));
+  }
+
+  private leave() {
+    const users = this.pcs.keys();
+    for (const user of users) {
+      this.disconnect(user);
+    }
   }
 
   private disconnect(user: User) {
@@ -60,6 +66,7 @@ export class WebRtcController {
       return;
     }
 
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
     const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
     // See https://stackoverflow.com/a/43788873
     const channel = pc.createDataChannel(user, { negotiated: true, id: 0 });
@@ -73,7 +80,7 @@ export class WebRtcController {
 
     pc.onicecandidate = (event) =>
       this.emitter.emit("rtc.ice", {
-        from: this.me,
+        from: me,
         to: user,
         data: event.candidate?.toJSON() ?? null,
       });
@@ -88,7 +95,7 @@ export class WebRtcController {
         if (!description) return;
 
         this.emitter.emit("rtc.description", {
-          from: this.me,
+          from: me,
           to: user,
           data: description.toJSON(),
         });
@@ -109,6 +116,11 @@ export class WebRtcController {
       this.emitter.off("rtc.ice", handleIceEvents);
       this.emitter.off("rtc.description", handleDescriptionEvents);
     };
+
+    channel.onclose = () => {
+      this.emitter.off("rtc.ice", handleIceEvents);
+      this.emitter.off("rtc.description", handleDescriptionEvents);
+    };
   }
 
   private async handleDescriptionEvents({
@@ -119,8 +131,9 @@ export class WebRtcController {
 
     if (connection == undefined) return;
 
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
     // whether im polite or not
-    const polite = this.iamPolite(this.me, from);
+    const polite = this.iamPolite(me, from);
     const pc = connection.pc;
     // whether im ready to receive offer
     const readyOffer =
@@ -144,7 +157,7 @@ export class WebRtcController {
       if (data.type === "offer") {
         await pc.setLocalDescription();
         this.emitter.emit("rtc.description", {
-          from: this.me,
+          from: me,
           to: from,
           data: pc.localDescription!.toJSON(),
         });

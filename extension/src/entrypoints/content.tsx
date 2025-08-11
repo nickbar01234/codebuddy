@@ -1,6 +1,7 @@
 import { ContentScriptContext } from "#imports";
 import { ContentScript } from "@cb/components/root/ContentScript";
 import { DOM } from "@cb/constants";
+import { getOrCreateControllers } from "@cb/services";
 import "@cb/style/index.css";
 import { createRoot } from "react-dom/client";
 
@@ -8,6 +9,8 @@ export default defineContentScript({
   matches: ["https://leetcode.com/problems/*"],
   runAt: "document_end",
   main(ctx) {
+    // Initialize controller on startup
+    getOrCreateControllers();
     const ui = createUi(ctx);
     ui.mount();
   },
