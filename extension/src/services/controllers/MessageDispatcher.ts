@@ -4,6 +4,7 @@ import { RoomStore } from "@cb/store";
 import { EventEmitter, Events, ResponseStatus, WindowMessage } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
+import { toast } from "sonner";
 
 export class MessageDispatcher {
   private emitter: EventEmitter;
@@ -38,6 +39,7 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToTestEditor());
     this.unsubscribers.push(this.subscribeToRtcOpen());
     this.unsubscribers.push(this.subscribeToRtcMessage());
+    this.unsubscribers.push(this.subscribeToRoomChanges());
   }
 
   private subscribeToCodeEditor() {
@@ -116,5 +118,15 @@ export class MessageDispatcher {
     };
     this.emitter.on("rtc.receive.message", onMessage);
     return () => this.emitter.off("rtc.receive.message", onMessage);
+  }
+
+  private subscribeToRoomChanges() {
+    const onRoomChange = (room: Events["room.changes"]) => {
+      room.joined.forEach((peer) => toast.info(`${peer} joined room`));
+      room.left.forEach((peer) => toast.info(`${peer} left room`));
+      this.roomStore.getState().actions.removePeers(room.left);
+    };
+    this.emitter.on("room.changes", onRoomChange);
+    return () => this.emitter.off("room.changes", onRoomChange);
   }
 }

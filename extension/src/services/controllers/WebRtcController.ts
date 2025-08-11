@@ -39,7 +39,7 @@ export class WebRtcController {
   }
 
   private init() {
-    this.emitter.on("room.user.changes", ({ left, joined }) => {
+    this.emitter.on("room.changes", ({ left, joined }) => {
       left.forEach(this.disconnect.bind(this));
       joined.forEach(this.connect.bind(this));
     });

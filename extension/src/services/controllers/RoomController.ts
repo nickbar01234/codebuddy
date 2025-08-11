@@ -48,6 +48,9 @@ class RoomLifeCycle {
   }
 
   private async init() {
+    // todo(nickbar01234): Can we collapse? Quite silly to remove to add. But this is to ensure that
+    // other users are notified when I join.
+    await this.database.removeUser(this.room.id, this.me);
     await this.database.addUser(this.room.id, this.me);
     this.unsubscribers.push(this.subscribeToRoom());
     this.unsubscribers.push(this.subscribeToNegotiations());
@@ -61,9 +64,9 @@ class RoomLifeCycle {
           (user) => !this.room.usernames.includes(user) && user !== this.me
         );
         const left = this.room.usernames.filter(
-          (username) => !room.usernames.includes(username)
+          (user) => !room.usernames.includes(user) && user !== this.me
         );
-        this.emitter.emit("room.user.changes", { room, joined, left });
+        this.emitter.emit("room.changes", { room, joined, left });
         this.room = {
           ...this.room,
           ...room,
@@ -188,7 +191,13 @@ export class RoomController {
     if (room == undefined) {
       throw new Error(`Room with ${id} not found`);
     }
-    return new RoomLifeCycle(this.database, this.emitter, { id, ...room }, me);
+    this.room = new RoomLifeCycle(
+      this.database,
+      this.emitter,
+      { id, ...room },
+      me
+    );
+    return this.room;
   }
 
   public async leave() {

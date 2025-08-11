@@ -35,7 +35,7 @@ export type Events = {
   "rtc.send.message": SendMessageEvent;
   "rtc.receive.message": ReceiveMessageEvent;
 
-  "room.user.changes": RoomEvent;
+  "room.changes": RoomEvent;
   "room.left": void;
 };
 
