@@ -31,7 +31,6 @@ import {
   ExtractMessage,
   LeetCodeContentChange,
   PeerMessage,
-  WindowMessage,
 } from "@cb/types";
 import { Connection } from "@cb/types/utils";
 import {
@@ -68,6 +67,7 @@ const servers = {
 };
 
 export const HEARTBEAT_INTERVAL = 15000; // ms
+
 const CHECK_ALIVE_INTERVAL = 15000; // ms
 const TIMEOUT = 100; // seconds;
 
@@ -206,10 +206,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     updatePeer(peer, { latency: 0, finished: false });
   });
 
-  const onClose = React.useRef(
-    (peer: string) => () => evictConnection(peer)
-  ).current;
-
   const onmessage = React.useCallback(
     (peer: string) =>
       function (event: MessageEvent) {
@@ -262,99 +258,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       },
 
     [receiveCode, receiveTests, setConnection]
-  );
-
-  const createOffer = React.useCallback(
-    async (roomId: string, peer: string) => {
-      console.log("Create Offer to", peer);
-      const meRef = getSessionPeerConnectionRef(
-        roomId,
-        getSessionId(),
-        peer,
-        username
-      );
-      const pc = new RTCPeerConnection(servers);
-
-      const channel = pc.createDataChannel("channel");
-      registerConnection(
-        peer,
-        {
-          username: peer,
-          pc: pc,
-          channel: channel,
-          lastSeen: getUnixTs(),
-        },
-        (connection) => connection.pc.close()
-      );
-
-      channel.onmessage = onmessage(peer);
-      channel.onopen = onOpen.current(peer);
-      channel.onclose = onClose(peer);
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          setSessionPeerConnection(meRef, {
-            offerCandidates: arrayUnion(event.candidate.toJSON()),
-          });
-        }
-      };
-
-      const offerDescription = await pc.createOffer();
-      await pc.setLocalDescription(offerDescription);
-
-      const offer = {
-        sdp: offerDescription.sdp,
-        type: offerDescription.type,
-      };
-      await setSessionPeerConnection(meRef, {
-        username: username,
-        offer: offer,
-      });
-
-      const unsubscribe = onSnapshot(
-        meRef,
-        async (doc) => {
-          const maybeData = doc.data();
-          if (maybeData == undefined) return;
-
-          if (
-            maybeData?.answer != undefined &&
-            pc.currentRemoteDescription == null
-          ) {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(maybeData.answer)
-            );
-          }
-
-          maybeData.answerCandidates.forEach(
-            (candidate: RTCIceCandidateInit) => {
-              pc.addIceCandidate(new RTCIceCandidate(candidate));
-            }
-          );
-        },
-        (error) => {
-          console.error("Received snapshot error", error.code);
-          evictSnapshot(peer);
-        }
-      );
-
-      registerSnapshot(peer, unsubscribe, (prev) => prev());
-
-      // todo(nickbar01234): Not rigorous, but does the job since it's reasonable that RTC connection shouldn't take
-      // that long
-      setTimeout(() => {
-        console.log("Unsubscribe firebase database after timeout");
-        evictSnapshot(peer);
-      }, UNSUBSCRIBE_FIREBASE_AFTER);
-    },
-    [
-      username,
-      onmessage,
-      registerSnapshot,
-      registerConnection,
-      onClose,
-      evictSnapshot,
-    ]
   );
 
   const joinRoomInternal = React.useCallback(
@@ -687,51 +590,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   }, [roomId]);
 
   React.useEffect(() => {
-    if (roomId != null && getSnapshot()[roomId] == undefined) {
-      const unsubscribe = onSnapshot(
-        getSessionRef(roomId, getSessionId()),
-        async (snapshot) => {
-          const data = snapshot.data();
-          // todo(nickbar01234): Clear and report room if deleted?
-          if (data == undefined) return;
-
-          const usernames = data.usernames;
-          if (!usernames.includes(username)) return;
-          const removedPeers = Object.keys(getConnection()).filter(
-            (username) => !usernames.includes(username)
-          );
-          const addedPeers = usernames
-            .slice(data.usernames.indexOf(username) + 1)
-            .filter((username) => !getConnection()[username]);
-
-          deletePeersRef.current(removedPeers);
-          addedPeers.forEach((peer) => {
-            createOffer(roomId, peer);
-          });
-          const finishedUsers = data.finishedUsers;
-          // todo(nickbar01234): Do we need bulk update?
-          finishedUsers.forEach((peer) => {
-            updatePeer(peer, { finished: true });
-          });
-        }
-      );
-      registerSnapshot(roomId, unsubscribe, (prev) => prev());
-      return () => {
-        evictSnapshot(roomId);
-      };
-    }
-  }, [
-    roomId,
-    username,
-    createOffer,
-    getSnapshot,
-    registerSnapshot,
-    getConnection,
-    evictSnapshot,
-    updatePeer,
-  ]);
-
-  React.useEffect(() => {
     deleteMeRef.current = deleteMe;
   }, [deleteMe]);
 
@@ -808,48 +666,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   //     clearInterval(sendInterval);
   //   };
   // });
-
-  useOnMount(() => {
-    // TODO(nickbar01234) - This is probably not rigorous enough
-    const observer = new MutationObserver(() =>
-      sendMessageToAll(getTestsMessagePayload())
-    );
-    waitForElement(DOM.LEETCODE_TEST_ID, 1000).then((testEditor) => {
-      observer.observe(testEditor, {
-        attributes: true, // Trigger code when user inputs via prettified test case console
-        childList: true,
-        subtree: true,
-      });
-    });
-    return () => observer.disconnect();
-  });
-
-  useOnMount(() => {
-    const onWindowMessage = (message: MessageEvent) => {
-      // todo(nickbar01234): Should attach an ID to message so that it's identifiable only by us.
-      if (message.data.action != undefined) {
-        const windowMessage = message.data as WindowMessage;
-        console.log("Received from window", windowMessage.action);
-        switch (windowMessage.action) {
-          case "leetCodeOnChange": {
-            getCodeMessagePayload(windowMessage.changes).then(sendMessageToAll);
-            break;
-          }
-
-          // Only for tests
-          case "createRoom":
-          case "joinRoom":
-            break;
-          default:
-            console.error("Unhandled window message", windowMessage);
-            break;
-        }
-      }
-    };
-
-    window.addEventListener("message", onWindowMessage);
-    return () => window.removeEventListener("message", onWindowMessage);
-  });
 
   return (
     <RTCContext.Provider

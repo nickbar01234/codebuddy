@@ -5,8 +5,8 @@ import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/Activit
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { getRoomRef } from "@cb/db";
 import { RoomEvent } from "@cb/db/converter";
-import { useFirebaseListener, usePeerSelection, useRTC } from "@cb/hooks";
-import { useAuthUser } from "@cb/hooks/store";
+import { useFirebaseListener, usePeerSelection } from "@cb/hooks";
+import { useAuthUser, useInRoom } from "@cb/hooks/store";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import {
   ResizableHandle,
@@ -37,7 +37,7 @@ const EditorPanel = () => {
     usePeerSelection();
   const roomStatus = useStore(roomStore, (state) => state.room.status);
   const { user } = useAuthUser();
-  const { roomId } = useRTC();
+  const roomId = useInRoom().id;
   const { getLanguageExtension } = useLanguageExtension();
   const roomReference = React.useMemo(
     () => (roomId != null ? getRoomRef(roomId) : undefined),

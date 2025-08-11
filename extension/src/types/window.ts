@@ -5,19 +5,4 @@ interface LeetCodeOnChangeMessage extends GenericMessage {
   changes: LeetCodeContentChange;
 }
 
-interface RoomMessage {
-  roomId: string;
-}
-
-interface CreateRoomMessage extends RoomMessage, GenericMessage {
-  action: "createRoom";
-}
-
-interface JoinRoomMessage extends RoomMessage, GenericMessage {
-  action: "joinRoom";
-}
-
-export type WindowMessage =
-  | LeetCodeOnChangeMessage
-  | CreateRoomMessage
-  | JoinRoomMessage;
+export type WindowMessage = LeetCodeOnChangeMessage;

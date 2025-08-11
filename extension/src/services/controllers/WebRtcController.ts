@@ -4,6 +4,7 @@ import {
   Events,
   IamPolite,
   PeerConnection,
+  PeerMessage,
   User,
 } from "@cb/types";
 
@@ -43,6 +44,7 @@ export class WebRtcController {
       joined.forEach(this.connect.bind(this));
     });
     this.emitter.on("room.left", this.leave.bind(this));
+    this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
   }
 
   private leave() {
@@ -100,7 +102,7 @@ export class WebRtcController {
           data: description.toJSON(),
         });
       } catch (err) {
-        console.log("Fail to create offer", err);
+        console.error("Fail to create offer", err);
       } finally {
         connection.makingOffer = false;
       }
@@ -113,13 +115,25 @@ export class WebRtcController {
     this.emitter.on("rtc.description", handleDescriptionEvents);
 
     channel.onopen = () => {
+      console.log("Channel open", user);
+      this.emitter.off("rtc.ice", handleIceEvents);
+      this.emitter.off("rtc.description", handleDescriptionEvents);
+      this.emitter.emit("rtc.open", { user });
+    };
+
+    channel.onclose = () => {
+      console.log("Channel closed", user);
       this.emitter.off("rtc.ice", handleIceEvents);
       this.emitter.off("rtc.description", handleDescriptionEvents);
     };
 
-    channel.onclose = () => {
-      this.emitter.off("rtc.ice", handleIceEvents);
-      this.emitter.off("rtc.description", handleDescriptionEvents);
+    channel.onmessage = (event: MessageEvent) => {
+      try {
+        const message: PeerMessage = JSON.parse(event.data ?? {});
+        this.emitter.emit("rtc.receive.message", { from: user, message });
+      } catch (error) {
+        console.error("Unable to parse rtc message", error);
+      }
     };
   }
 
@@ -163,7 +177,7 @@ export class WebRtcController {
         });
       }
     } catch (err) {
-      console.log("Error when handling description", from, err);
+      console.error("Error when handling description", from, err);
     }
   }
 
@@ -179,5 +193,17 @@ export class WebRtcController {
         console.error("Error when handling ICE candidate", from, err);
       }
     }
+  }
+
+  private sendMessage({ to, message }: Events["rtc.send.message"]) {
+    this.pcs.forEach((connection, peer) => {
+      const send =
+        (to == undefined || peer === to) &&
+        connection.channel.readyState === "open";
+      if (!send) {
+        return;
+      }
+      connection.channel.send(JSON.stringify(message));
+    });
   }
 }

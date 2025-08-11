@@ -1,5 +1,11 @@
-import { PeerMessage } from "types/peers";
-import { Connection, DistributiveOmit } from "types/utils";
+import { DOM } from "@cb/constants";
+import { sendServiceRequest } from "@cb/services";
+import { PeerMessage } from "@cb/types/peers";
+import {
+  Connection,
+  DistributiveOmit,
+  LeetCodeContentChange,
+} from "@cb/types/utils";
 import { getUnixTs } from "./heartbeat";
 
 export const withPayload = (
@@ -14,5 +20,26 @@ export const withPayload = (
       const message: PeerMessage = { ...payload, timestamp: getUnixTs() };
       connection.channel.send(JSON.stringify(message));
     }
+  };
+};
+
+export const getTestsPayload = (): PeerMessage => {
+  return {
+    action: "tests",
+    timestamp: getUnixTs(),
+    tests: (
+      document.querySelector(DOM.LEETCODE_TEST_ID) as HTMLDivElement
+    ).innerText.split("\n"),
+  };
+};
+
+export const getCodePayload = async (
+  changes: Partial<LeetCodeContentChange>
+): Promise<PeerMessage> => {
+  return {
+    action: "code",
+    timestamp: getUnixTs(),
+    code: await sendServiceRequest({ action: "getValue" }),
+    changes: JSON.stringify(changes),
   };
 };
