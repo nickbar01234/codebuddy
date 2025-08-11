@@ -32,8 +32,6 @@ export interface TabMetadata {
   displayHeader: string;
 }
 
-export const EDITOR_NODE_ID = "CodeBuddyEditor";
-
 const EditorPanel = () => {
   const { activePeer, unblur, selectTest, isBuffer, activeUserInformation } =
     usePeerSelection();

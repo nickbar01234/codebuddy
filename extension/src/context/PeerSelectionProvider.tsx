@@ -1,4 +1,4 @@
-import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
+import { DOM } from "@cb/constants";
 import { useOnMount } from "@cb/hooks";
 import { useInRoom } from "@cb/hooks/store";
 import useInferTests from "@cb/hooks/useInferTests";
@@ -142,7 +142,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           language: language,
           changes: changes !== "" ? JSON.parse(changes) : {},
           changeUser: changeUser,
-          editorId: EDITOR_NODE_ID,
+          editorId: DOM.CODEBUDDY_EDITOR_ID,
         });
       }
     },

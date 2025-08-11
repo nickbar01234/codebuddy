@@ -1,3 +1,4 @@
+import { DOM } from "@cb/constants";
 import {
   LEETCODE_SUBMISSION_RESULT,
   LEETCODE_SUBMIT_BUTTON,
@@ -65,8 +66,6 @@ const servers = {
   ],
   iceCandidatePoolSize: 10,
 };
-
-const CODE_MIRROR_CONTENT = ".cm-content";
 
 export const HEARTBEAT_INTERVAL = 15000; // ms
 const CHECK_ALIVE_INTERVAL = 15000; // ms
@@ -172,7 +171,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     withPayload({
       action: "tests",
       tests: (
-        document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement
+        document.querySelector(DOM.LEETCODE_TEST_ID) as HTMLDivElement
       ).innerText.split("\n"),
     })
   ).current;
@@ -815,7 +814,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const observer = new MutationObserver(() =>
       sendMessageToAll(getTestsMessagePayload())
     );
-    waitForElement(CODE_MIRROR_CONTENT, 1000).then((testEditor) => {
+    waitForElement(DOM.LEETCODE_TEST_ID, 1000).then((testEditor) => {
       observer.observe(testEditor, {
         attributes: true, // Trigger code when user inputs via prettified test case console
         childList: true,

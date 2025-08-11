@@ -1,5 +1,5 @@
-import { EDITOR_NODE_ID } from "@cb/components/panel/editor/EditorPanel";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { DOM } from "@cb/constants";
 import { usePeerSelection } from "@cb/hooks";
 import { cn } from "@cb/utils/cn";
 import { Copy } from "lucide-react";
@@ -28,7 +28,7 @@ export const CodeTab: React.FC = () => {
           </button>
         </div>
         <div
-          id={EDITOR_NODE_ID}
+          id={DOM.CODEBUDDY_EDITOR_ID}
           className={cn("h-full w-full overflow-hidden")}
         />
       </div>
