@@ -1,13 +1,13 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { DOM } from "@cb/constants";
-import { usePeerSelection } from "@cb/hooks";
 import { cn } from "@cb/utils/cn";
 import { Copy } from "lucide-react";
 import React from "react";
 
 export const CodeTab: React.FC = () => {
-  const { isBuffer } = usePeerSelection();
-  const { pasteCode } = usePeerSelection();
+  // todo(nikbar01234): Fix logic
+  const isBuffer = false;
+  const pasteCode = () => {};
 
   return (
     <SkeletonWrapper loading={isBuffer} className="relative">

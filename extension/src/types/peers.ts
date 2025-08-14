@@ -1,3 +1,4 @@
+import { TestCase } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, MessagePayload } from "./utils";
 
@@ -51,4 +52,13 @@ export interface PeerState {
   finished: boolean;
   active: boolean;
   blur: boolean;
+}
+
+export interface _PeerState {
+  code?: MessagePayload<PeerCodeMessage>;
+  tests?: TestCase[];
+  latency: number;
+  finished: boolean;
+  active: boolean;
+  viewable: boolean;
 }

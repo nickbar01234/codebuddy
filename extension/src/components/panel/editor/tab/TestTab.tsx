@@ -1,10 +1,10 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { usePeerSelection } from "@cb/hooks/index";
-import { Peer, TestCase } from "@cb/types";
+import { _PeerState, TestCase } from "@cb/types";
+import { Identifable } from "@cb/types/utils";
 import React from "react";
 
 interface TestTabProps {
-  activePeer: Peer | undefined;
+  activePeer: Identifable<_PeerState> | undefined;
   activeTest: TestCase | undefined;
   selectTest: (index: number) => void;
 }
@@ -14,14 +14,15 @@ export const TestTab: React.FC<TestTabProps> = ({
   activeTest,
   selectTest,
 }) => {
-  const { isBuffer } = usePeerSelection();
+  // todo(nickbar01234): Fix logic
+  const isBuffer = false;
 
   return (
     <SkeletonWrapper loading={isBuffer} className="relative">
       <div className="p-5 flex flex-col space-y-4 h-full w-full">
         <div className="flex w-full flex-row items-start justify-between gap-4">
           <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
-            {activePeer?.tests.map((test, idx) => (
+            {activePeer?.tests?.map((test, idx) => (
               <div key={idx} onClick={() => selectTest(idx)}>
                 {test.selected ? (
                   <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">

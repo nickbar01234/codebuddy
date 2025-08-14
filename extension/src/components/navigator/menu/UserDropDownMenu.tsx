@@ -1,12 +1,14 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
-import { usePeerSelection } from "@cb/hooks";
 import { useInRoom } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
-import { Peer } from "@cb/types";
+import { roomStore } from "@cb/store";
+import { _PeerState } from "@cb/types";
+import { Identifable } from "@cb/types/utils";
 import { cn } from "@cb/utils/cn";
 import { codeViewable } from "@cb/utils/model";
+import { useStore } from "zustand";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
 
@@ -14,7 +16,7 @@ const GREENTHRESHOLD = HEARTBEAT_INTERVAL + 10;
 const YELLOWTHRESHOLD = HEARTBEAT_INTERVAL * 1.25 + 10;
 
 interface UserDropDownMenuTriggerProps {
-  peer?: Peer;
+  peer?: Identifable<_PeerState>;
   canDropdown: boolean;
   signalStrength: ReturnType<typeof getStatus>;
 }
@@ -73,9 +75,15 @@ const UserDropDownMenuTrigger = ({
 };
 
 export const UserDropDownMenu = () => {
-  const { activePeer, setActivePeerId } = usePeerSelection();
+  const selectPeer = useStore(roomStore, (state) => state.actions.selectPeer);
+  const getActivePeer = useStore(
+    roomStore,
+    (state) => state.actions.getActivePeer
+  );
   const { peers } = useInRoom();
-  const ping = peers[activePeer?.id ?? ""]?.latency * 1000;
+  // todo(nickbar01234): Fix ping
+  // const ping = peers[activePeer?.id ?? ""]?.latency * 1000;
+  const ping = 1000;
   const canDropdown = Object.keys(peers).length >= 2;
 
   return (
@@ -85,7 +93,7 @@ export const UserDropDownMenu = () => {
         customTrigger: true,
         node: (
           <UserDropDownMenuTrigger
-            peer={activePeer}
+            peer={getActivePeer()}
             canDropdown={canDropdown}
             signalStrength={getStatus(ping)}
           />
@@ -93,7 +101,7 @@ export const UserDropDownMenu = () => {
       }}
     >
       {Object.keys(peers).map((peer) => (
-        <DropdownMenuItem key={peer} onClick={() => setActivePeerId(peer)}>
+        <DropdownMenuItem key={peer} onClick={() => selectPeer(peer)}>
           {peer}
         </DropdownMenuItem>
       ))}

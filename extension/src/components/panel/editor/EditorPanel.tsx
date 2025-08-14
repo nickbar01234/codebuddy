@@ -1,11 +1,10 @@
 import { UserDropDownMenu } from "@cb/components/navigator/menu/UserDropDownMenu";
-import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { getRoomRef } from "@cb/db";
 import { RoomEvent } from "@cb/db/converter";
-import { useFirebaseListener, usePeerSelection } from "@cb/hooks";
+import { useFirebaseListener } from "@cb/hooks";
 import { useAuthUser, useInRoom } from "@cb/hooks/store";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import {
@@ -22,10 +21,10 @@ import {
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus, roomStore } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 import { useStore } from "zustand";
+import CreateRoomLoadingPanel from "./CreateRoomLoadingPanel";
 
 export interface TabMetadata {
   id: string;
@@ -33,8 +32,12 @@ export interface TabMetadata {
 }
 
 const EditorPanel = () => {
-  const { activePeer, unblur, selectTest, isBuffer, activeUserInformation } =
-    usePeerSelection();
+  const getActivePeer = useStore(
+    roomStore,
+    (state) => state.actions.getActivePeer
+  );
+  const selectTest = useStore(roomStore, (state) => state.actions.selectTest);
+  const activePeer = getActivePeer();
   const roomStatus = useStore(roomStore, (state) => state.room.status);
   const { user } = useAuthUser();
   const roomId = useInRoom().id;
@@ -49,15 +52,17 @@ const EditorPanel = () => {
     init: { usernames: [], isPublic: true, roomName: "" },
   });
 
-  const canViewCode = codeViewable(activePeer);
-  const activeTest = activePeer?.tests.find((test) => test.selected);
+  // todo(nickbar01234): Fix
+  // const canViewCode = codeViewable(activePeer);
+  const canViewCode = true;
+  const activeTest = activePeer?.tests?.find((test) => test.selected);
   const emptyRoom =
     roomInfo.usernames.filter((username) => username !== user.username)
       .length === 0;
 
   const upperTabConfigs = React.useMemo(() => {
     const extension =
-      getLanguageExtension(activeUserInformation?.code?.code.language) ?? "";
+      getLanguageExtension(activePeer?.code?.code.language) ?? "";
     return [
       {
         value: "code",
@@ -78,13 +83,7 @@ const EditorPanel = () => {
         ),
       },
     ];
-  }, [
-    activePeer,
-    activeTest,
-    selectTest,
-    activeUserInformation,
-    getLanguageExtension,
-  ]);
+  }, [activePeer, activeTest, selectTest, getLanguageExtension]);
 
   const lowerTabConfigs = React.useMemo(() => {
     return [
@@ -112,7 +111,7 @@ const EditorPanel = () => {
       })}
     >
       {emptyRoom && (
-        <SkeletonWrapper loading={isBuffer}>
+        <SkeletonWrapper loading={false}>
           <CreateRoomLoadingPanel />
         </SkeletonWrapper>
       )}
@@ -128,10 +127,10 @@ const EditorPanel = () => {
             className="relative"
           >
             {/* todo(nickbar01234): Fix styling */}
-            {!canViewCode && !isBuffer && (
+            {/* todo(nickbar01234): Fix logic */}
+            {!canViewCode && (
               <button
                 className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
-                onClick={unblur}
                 type="button"
               >
                 View
