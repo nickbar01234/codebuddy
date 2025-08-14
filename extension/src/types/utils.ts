@@ -1,3 +1,5 @@
+import { Id } from "./db";
+
 export interface GenericMessage {
   action: string;
 }
@@ -44,4 +46,4 @@ export interface Connection {
 
 export type Unsubscribe = () => void;
 
-export type Identifiable<T> = { id: string } & T;
+export type Identifiable<T> = { id: Id } & T;
