@@ -1,3 +1,5 @@
+import { Id } from "./db";
+
 export interface GenericMessage {
   action: string;
 }
@@ -41,3 +43,7 @@ export interface Connection {
   channel: RTCDataChannel;
   lastSeen: number;
 }
+
+export type Unsubscribe = () => void;
+
+export type Identifiable<T> = { id: Id } & T;

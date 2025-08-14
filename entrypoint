@@ -3,11 +3,6 @@
 # Not setting this because firebase complains since we're not authenticated
 # set -e -o pipefail
 
-redux-devtools --hostname=localhost --port=8000 --name='Code' &
-redux-devtools --hostname=localhost --port=8001 --name='Buddy' &
-redux-devtools --hostname=localhost --port=8002 --name='Dev' &
-redux-devtools --hostname=localhost --port=8003 --name='Mode' &
-
 FUNCTIONS_DIR="$FIREBASE_DIR/functions"
 CONFIG_PATH="$FIREBASE_DIR/firebase.json"
 # https://firebase.google.com/docs/emulator-suite/connect_firestore#choose_a_firebase_project

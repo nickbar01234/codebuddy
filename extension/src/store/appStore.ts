@@ -50,13 +50,14 @@ interface AppAction {
   setAppWidth: (width: number) => void;
   authenticate: (user: AppUser) => void;
   unauthenticate: () => void;
+  getAuthUser: () => AppUser;
 }
 
-type AppStore = MutableState<AppState, AppAction>;
+type _AppStore = MutableState<AppState, AppAction>;
 
-export const useApp = create<AppStore>()(
+export const useApp = create<_AppStore>()(
   persist(
-    immer((set) => ({
+    immer((set, get) => ({
       app: {
         enabled: true,
         width: DEFAULT_PANEL_SIZE,
@@ -95,6 +96,15 @@ export const useApp = create<AppStore>()(
           set((state) => {
             state.auth = { status: AppStatus.UNAUTHENTICATED };
           }),
+        getAuthUser: () => {
+          const auth = get().auth;
+          if (auth.status != AppStatus.AUTHENTICATED) {
+            throw new Error(
+              "Get auth user when status is not authenticated. This is most likely a bug"
+            );
+          }
+          return auth.user;
+        },
       },
     })),
     {
@@ -106,3 +116,5 @@ export const useApp = create<AppStore>()(
     }
   )
 );
+
+export type AppStore = typeof useApp;

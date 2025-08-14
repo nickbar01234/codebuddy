@@ -1,4 +1,6 @@
 export * from "./content";
+export * from "./db";
+export * from "./events";
 export * from "./peers";
 export * from "./services";
 export type {
@@ -6,6 +8,7 @@ export type {
   LeetCodeContentChange,
   MessagePayload,
 } from "./utils";
+export * from "./webrtc";
 export * from "./window";
 
 interface AppPreference {

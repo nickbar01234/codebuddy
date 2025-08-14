@@ -54,7 +54,7 @@ export default defineBackground(() => {
     const windowAsAny = window as any;
     if (windowAsAny.monaco == undefined) {
       return {
-        status: ResponseStatus.FAIL,
+        status: 1,
       };
     } else {
       const monaco = windowAsAny.monaco;
@@ -81,7 +81,7 @@ export default defineBackground(() => {
       }
       console.log("Finished setting up CodeBuddy model");
       return {
-        status: ResponseStatus.SUCCESS,
+        status: 0,
       };
     }
   };
@@ -90,7 +90,7 @@ export default defineBackground(() => {
     const windowAsAny = window as any;
     if (windowAsAny.monaco == undefined) {
       return {
-        status: ResponseStatus.FAIL,
+        status: 1,
       };
     } else {
       console.log("Setting up LeetCode model");
@@ -114,7 +114,7 @@ export default defineBackground(() => {
       });
       console.log("Finished setting up LeetCode model");
       return {
-        status: ResponseStatus.SUCCESS,
+        status: 0,
       };
     }
   };
