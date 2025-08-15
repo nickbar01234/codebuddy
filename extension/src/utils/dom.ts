@@ -1,7 +1,9 @@
+import { DOM } from "@cb/constants";
+
 export const waitForElement = (
   selector: string,
-  timeout: number = 3000,
-  context: Document | ShadowRoot | Element = document
+  context: Document | ShadowRoot | Element = document,
+  timeout: number = DOM.TIMEOUT
 ): Promise<Element> => {
   return new Promise((resolve, reject) => {
     const node = context.querySelector(selector);

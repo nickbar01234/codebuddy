@@ -2,6 +2,7 @@ import {
   SkelentonWrapperProps,
   SkeletonWrapper,
 } from "@cb/components/ui/SkeletonWrapper";
+import { DOM, URLS } from "@cb/constants";
 import useResource from "@cb/hooks/useResource";
 import {
   appendClassIdempotent,
@@ -10,9 +11,6 @@ import {
   waitForElement,
 } from "@cb/utils";
 import React, { useEffect } from "react";
-
-// We can afford to wait for a bit longer, since it's unlikely that user will complete question that quickly.
-const TIMEOUT = 10_000;
 
 const INJECTED_ATTRIBUTE = "data-injected";
 
@@ -35,9 +33,8 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const rowContainer = (
-          await waitForElement("a#\\31 ", TIMEOUT, iframeDoc)
-        ).parentNode as Element;
+        const rowContainer = (await waitForElement("a#\\31 ", iframeDoc))
+          .parentNode as Element;
         hideToRoot(rowContainer.parentElement?.parentElement);
 
         const addButton = async () => {
@@ -71,23 +68,25 @@ export const QuestionSelectorPanel = React.memo(
         addButton();
       };
 
-      waitForElement("#leetcode_question", TIMEOUT).then((element) => {
-        const iframe = element as HTMLIFrameElement;
-        iframe.onload = async () => {
-          const iframeDoc =
-            iframe.contentDocument ?? iframe.contentWindow?.document;
-          if (iframeDoc != undefined) {
-            handleIframeStyle(iframeDoc)
-              .then(() => {
-                setLoading(false);
-                console.log("Leetcode iframe mounted successfully");
-              })
-              .catch((e) => {
-                console.error("Unable to mount Leetcode iframe", e);
-              });
-          }
-        };
-      });
+      waitForElement(`#${DOM.INJECTED_LEETCODE_PROBLEMSET_IFRAME}`).then(
+        (element) => {
+          const iframe = element as HTMLIFrameElement;
+          iframe.onload = async () => {
+            const iframeDoc =
+              iframe.contentDocument ?? iframe.contentWindow?.document;
+            if (iframeDoc != undefined) {
+              handleIframeStyle(iframeDoc)
+                .then(() => {
+                  setLoading(false);
+                  console.log("Leetcode iframe mounted successfully");
+                })
+                .catch((e) => {
+                  console.error("Unable to mount Leetcode iframe", e);
+                });
+            }
+          };
+        }
+      );
     }, [handleQuestionSelect, filterQuestionIds, registerObserver]);
 
     return (
@@ -97,9 +96,9 @@ export const QuestionSelectorPanel = React.memo(
         {...container}
       >
         <iframe
-          src="https://leetcode.com/problemset/"
+          src={URLS.PROBLEMSET}
           title="LeetCode Question"
-          id="leetcode_question"
+          id={DOM.INJECTED_LEETCODE_PROBLEMSET_IFRAME}
           className="h-full w-full border-2 border-[#78788033]"
           sandbox="allow-scripts allow-same-origin"
         />

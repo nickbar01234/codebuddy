@@ -1,12 +1,11 @@
 import { ContentScriptContext } from "#imports";
 import { ContentScript } from "@cb/components/root/ContentScript";
+import { DOM, URLS } from "@cb/constants";
 import "@cb/style/index.css";
 import { createRoot } from "react-dom/client";
 
-const LEETCODE_ROOT_ID = "#qd-content";
-
 export default defineContentScript({
-  matches: ["https://leetcode.com/problems/*"],
+  matches: [URLS.ALL_PROBLEMS],
   runAt: "document_end",
   main(ctx) {
     const ui = createUi(ctx);
@@ -17,7 +16,7 @@ export default defineContentScript({
 const createUi = (ctx: ContentScriptContext) => {
   return createIntegratedUi(ctx, {
     position: "inline",
-    anchor: LEETCODE_ROOT_ID,
+    anchor: DOM.LEETCODE_ROOT_ID,
     append: (leetCodeNode, extensionRoot) => {
       leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
       extensionRoot.classList.add("relative", "h-full", "w-full");

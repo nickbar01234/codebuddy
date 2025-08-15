@@ -1,4 +1,4 @@
-import { LEETCODE_PROBLEMS_URL } from "@cb/constants";
+import { URLS } from "@cb/constants";
 import {
   ContentRequest,
   ExtractMessage,
@@ -175,7 +175,7 @@ export default defineBackground(() => {
   };
 
   browser.action.onClicked.addListener(() => {
-    browser.tabs.query({ url: `${LEETCODE_PROBLEMS_URL}/*` }).then((tabs) =>
+    browser.tabs.query({ url: URLS.ALL_PROBLEMS }).then((tabs) =>
       tabs.forEach((tab) => {
         if (tab.id != undefined) {
           browser.tabs.sendMessage(
