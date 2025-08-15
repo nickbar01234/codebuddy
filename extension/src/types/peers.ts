@@ -1,3 +1,4 @@
+import { TestCase } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, MessagePayload } from "./utils";
 
@@ -46,9 +47,14 @@ export interface PeerInformation {
 // todo(nickbar01234): Rename
 export interface PeerState {
   code?: MessagePayload<PeerCodeMessage>;
-  tests?: MessagePayload<PeerTestMessage>;
+  tests: MessagePayload<PeerTestMessage>;
   latency: number;
   finished: boolean;
   active: boolean;
   blur: boolean;
+  selected: boolean;
+}
+
+export interface InternalPeerState extends Omit<PeerState, "tests"> {
+  tests: TestCase[];
 }

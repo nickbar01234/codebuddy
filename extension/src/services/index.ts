@@ -1,4 +1,15 @@
-import { LocalStorage, ServiceRequest, ServiceResponse } from "@cb/types";
+import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
+import {
+  DatabaseService,
+  EventEmitter,
+  LocalStorage,
+  ServiceRequest,
+  ServiceResponse,
+} from "@cb/types";
+import mitt from "mitt";
+import { RoomController } from "./controllers/RoomController";
+import { WebRtcController } from "./controllers/WebRtcController";
+import db from "./db";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
@@ -43,3 +54,42 @@ export const clearLocalStorage = (ignore: Array<keyof LocalStorage> = []) =>
 
 export const clearLocalStorageForRoom = () =>
   clearLocalStorage(["preference", "signIn"]);
+
+interface Controllers {
+  emitter: EventEmitter;
+  webrtc: WebRtcController;
+  room: RoomController;
+  // message: MessageDispatcher;
+}
+
+const createControllersFactory = (
+  db: DatabaseService,
+  appStore: AppStore,
+  roomStore: RoomStore
+) => {
+  let initialized = false;
+  let controllers: Controllers | undefined = undefined;
+  return () => {
+    if (initialized) {
+      return controllers!;
+    }
+    const emitter: EventEmitter = mitt();
+    const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y);
+    const room = new RoomController(db.room, emitter, appStore);
+    // const message = new MessageDispatcher(emitter, roomStore);
+    initialized = true;
+    controllers = {
+      emitter,
+      webrtc,
+      room,
+      // message,
+    };
+    return controllers;
+  };
+};
+
+export const getOrCreateControllers = createControllersFactory(
+  db,
+  useApp,
+  useRoom
+);
