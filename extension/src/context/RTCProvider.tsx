@@ -1,7 +1,4 @@
-import {
-  LEETCODE_SUBMISSION_RESULT,
-  LEETCODE_SUBMIT_BUTTON,
-} from "@cb/constants/page-elements";
+import { DOM } from "@cb/constants";
 import {
   firestore,
   getAllSessionId,
@@ -66,8 +63,6 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
-const CODE_MIRROR_CONTENT = ".cm-content";
-
 export const HEARTBEAT_INTERVAL = 15000; // ms
 const CHECK_ALIVE_INTERVAL = 15000; // ms
 const TIMEOUT = 100; // seconds;
@@ -131,35 +126,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const updatePeer = useStore(roomStore, (state) => state.actions.updatePeer);
   const removePeers = useStore(roomStore, (state) => state.actions.removePeers);
 
-  useOnMount(() => {
-    waitForElement(LEETCODE_SUBMIT_BUTTON, 2000)
-      .then((button) => button as HTMLButtonElement)
-      .then((button) => {
-        const originalOnClick = button.onclick;
-        if (import.meta.env.MODE === "development") {
-          const mockBtn = button.cloneNode(true) as HTMLButtonElement;
-          button.replaceWith(mockBtn);
-          mockBtn.onclick = function (event) {
-            event.preventDefault();
-            handleSucessfulSubmissionRef.current();
-            return;
-          };
-        } else {
-          button.onclick = function (event) {
-            if (originalOnClick) {
-              originalOnClick.call(this, event);
-            }
-            waitForElement(LEETCODE_SUBMISSION_RESULT, 10000)
-              .then(() => handleSucessfulSubmissionRef.current())
-              .catch(() => handleFailedSubmissionRef.current());
-          };
-        }
-      })
-      .catch((error) => {
-        console.log("Error mounting callback on submit code button:", error);
-      });
-  });
-
   const sendMessageToAll = React.useRef((fn: ReturnType<typeof withPayload>) =>
     Object.entries(getConnection()).forEach(([peer, connection]) =>
       fn(peer, connection)
@@ -183,7 +149,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     withPayload({
       action: "tests",
       tests: (
-        document.querySelector(CODE_MIRROR_CONTENT) as HTMLDivElement
+        document.querySelector(DOM.LEETCODE_TEST_ID) as HTMLDivElement
       ).innerText.split("\n"),
     })
   ).current;
@@ -861,7 +827,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     const observer = new MutationObserver(() =>
       sendMessageToAll(getTestsMessagePayload())
     );
-    waitForElement(CODE_MIRROR_CONTENT, 1000).then((testEditor) => {
+    waitForElement(DOM.LEETCODE_TEST_ID).then((testEditor) => {
       observer.observe(testEditor, {
         attributes: true, // Trigger code when user inputs via prettified test case console
         childList: true,

@@ -1,3 +1,4 @@
+import { DOM } from "@cb/constants";
 import { waitForElement } from "@cb/utils";
 import React from "react";
 import { useOnMount } from ".";
@@ -6,7 +7,7 @@ const useInferTests = () => {
   const [variables, setVariables] = React.useState<string[]>([]);
 
   useOnMount(() => {
-    waitForElement(".elfjS", 1000)
+    waitForElement(DOM.PROBLEM_ID)
       .then((node) => node as HTMLElement)
       .then((node) => {
         const input = node.innerText.match(/.*Input:(.*)\n/);

@@ -1,4 +1,4 @@
-import { LEETCODE_PROBLEMS_URL } from "@cb/constants";
+import { URLS } from "@cb/constants";
 
 export const getQuestionIdFromUrl = (url: string) => {
   const pattern = /(?<=problems\/)[^/]+/;
@@ -14,5 +14,5 @@ export const getQuestionIdFromUrl = (url: string) => {
 export const getSessionId = () => getQuestionIdFromUrl(window.location.href);
 
 export const constructUrlFromQuestionId = (questionId: string) => {
-  return `${LEETCODE_PROBLEMS_URL}/${questionId}`;
+  return `${URLS.PROBLEMS}/${questionId}`;
 };
