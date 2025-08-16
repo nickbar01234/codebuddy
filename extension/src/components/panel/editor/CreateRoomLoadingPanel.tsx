@@ -43,13 +43,15 @@ const CreateRoomLoadingPanel = () => {
               <button
                 type="button"
                 aria-label="Copy room ID"
+                disabled={roomId == null}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigator.clipboard.writeText(roomId ?? "");
                   toast.success(`Session ID ${roomId} copied to clipboard`);
                 }}
+                style={{ cursor: roomId == null ? "not-allowed" : "pointer" }}
               >
-                <CopyIcon className="h-6 w-6 cursor-pointer" />
+                <CopyIcon className="h-6 w-6" />
               </button>
             </div>
           </div>
