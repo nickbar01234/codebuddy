@@ -1,4 +1,3 @@
-import { useRTC } from "@cb/hooks";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { getLocalStorage, setLocalStorage } from "@cb/services";
@@ -12,7 +11,7 @@ interface PromptNavigateDialogProps {
 export const PromptNavigateDialog = ({
   finished,
 }: PromptNavigateDialogProps) => {
-  const { handleNavigateToNextQuestion } = useRTC();
+  // const { handleNavigateToNextQuestion } = useRTC();
   const navigatePrompt = getLocalStorage("navigatePrompt") ?? {};
   const displayPrompt = finished && !(navigatePrompt[getSessionId()] ?? false);
 
@@ -24,7 +23,7 @@ export const PromptNavigateDialog = ({
 
   const onNavigate = () => {
     onDecision();
-    handleNavigateToNextQuestion();
+    // handleNavigateToNextQuestion();
   };
 
   return (

@@ -1,7 +1,7 @@
-import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
+import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CodeIcon } from "lucide-react";
@@ -9,7 +9,7 @@ import React from "react";
 import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
 export const JoinRoomDialog = () => {
-  const { joinRoom } = useRTC();
+  const join = useRoom((state) => state.actions.room.join);
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const onJoinRoom = React.useMemo(() => {
@@ -18,11 +18,11 @@ export const JoinRoomDialog = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        await joinRoom(inputRoomId);
+        await join(inputRoomId);
       },
       1000
     );
-  }, [joinRoom, inputRoomId]);
+  }, [join, inputRoomId]);
 
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();

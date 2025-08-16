@@ -1,12 +1,12 @@
 import { DOM } from "@cb/constants";
-import { useOnMount, useRTC } from "@cb/hooks";
-import { useInRoom } from "@cb/hooks/store";
+import { useOnMount } from "@cb/hooks";
 import useInferTests from "@cb/hooks/useInferTests";
 import {
   getLocalStorage,
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
+import { useRoom } from "@cb/store";
 import { Peer, PeerInformation, TestCase } from "@cb/types";
 import { getSessionId } from "@cb/utils";
 import React from "react";
@@ -19,7 +19,6 @@ interface PeerSelectionContext {
   setActivePeerId: (peer: string) => void;
   unblur: () => void;
   selectTest: (idx: number) => void;
-  activeUserInformation: PeerInformation | undefined;
   pasteCode: () => void;
   setCode: (changeUser: boolean) => void;
   isBuffer: boolean;
@@ -36,8 +35,8 @@ interface PeerSelectionProviderProps {
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
-  const { roomId } = useRTC();
-  const { peers: informations } = useInRoom();
+  const roomId = useRoom((state) => state.room?.id) ?? null;
+  const informations = useRoom((state) => state.peers);
   const [peers, setPeers] = React.useState<Peer[]>([]);
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
@@ -227,7 +226,8 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
           viewable: (prevPeer && prevPeer.viewable) || false,
           tests: [],
         };
-        const tests = groupTestCases(informations[peerInfo]);
+        // const tests = groupTestCases(informations[peerInfo]);
+        const tests: TestCase[] = [];
         if (tests.length > 0) {
           // Check if peerTab has selected?
           // Otherwise, fallback to prevPeer
@@ -292,7 +292,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         setActivePeerId,
         unblur,
         selectTest,
-        activeUserInformation,
         pasteCode,
         setCode,
         isBuffer,

@@ -50,3 +50,7 @@ export interface Connection {
 export type Unsubscribe = () => void;
 
 export type Identifiable<T> = { id: Id } & T;
+
+export interface Selectable {
+  selected: boolean;
+}

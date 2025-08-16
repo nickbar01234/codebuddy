@@ -1,6 +1,6 @@
 import { TestCase } from ".";
 import type { ServiceResponse } from "./services";
-import { GenericMessage, MessagePayload } from "./utils";
+import { GenericMessage, MessagePayload, Selectable } from "./utils";
 
 interface PeerGenericMessage extends GenericMessage {
   timestamp: number;
@@ -45,14 +45,12 @@ export interface PeerInformation {
 }
 
 // todo(nickbar01234): Rename
-export interface PeerState {
+export interface PeerState extends Selectable {
   code?: MessagePayload<PeerCodeMessage>;
   tests: MessagePayload<PeerTestMessage>;
   latency: number;
   finished: boolean;
-  active: boolean;
-  blur: boolean;
-  selected: boolean;
+  viewable: boolean;
 }
 
 export interface InternalPeerState extends Omit<PeerState, "tests"> {

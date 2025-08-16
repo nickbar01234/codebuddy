@@ -17,7 +17,4 @@ interface JoinRoomMessage extends RoomMessage, GenericMessage {
   action: "joinRoom";
 }
 
-export type WindowMessage =
-  | LeetCodeOnChangeMessage
-  | CreateRoomMessage
-  | JoinRoomMessage;
+export type WindowMessage = LeetCodeOnChangeMessage;

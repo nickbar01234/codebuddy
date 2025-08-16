@@ -7,12 +7,12 @@ export const groupTestCases = (
   variables: string[],
   tests: string[]
 ): TestCase[] => {
-  if (variables.length % tests.length !== 0) {
+  if (tests.length % variables.length !== 0) {
     return [];
   }
   const chunks = tests.length / variables.length;
   const groups = Array.from({ length: chunks }, (_, idx) =>
-    tests.slice(idx * chunks, (idx + 1) * chunks)
+    tests.slice(idx * variables.length, (idx + 1) * variables.length)
   );
   return groups.map((group) => ({
     selected: false,
