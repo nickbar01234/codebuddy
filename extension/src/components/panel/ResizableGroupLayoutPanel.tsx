@@ -1,12 +1,11 @@
+import { useAppActions, useAppPreference } from "@cb/hooks/store";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@cb/lib/components/ui/resizable";
-import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE, useApp } from "@cb/store";
-import { debounce } from "lodash";
+import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE } from "@cb/store";
 import React from "react";
-import { useShallow } from "zustand/shallow";
 import { CollapsedPanel } from "./CollapsedPanel";
 
 interface ResizableLayoutPanelProps {
@@ -18,18 +17,8 @@ export const ResizableGroupLayoutPanel = ({
   leetCodeRoot,
   children,
 }: ResizableLayoutPanelProps) => {
-  const { enabled, width, collapsed } = useApp((state) => state.app);
-  const { collapseExtension, expandExtension, setAppWidth } = useApp(
-    useShallow((state) => ({
-      collapseExtension: state.actions.collapseExtension,
-      expandExtension: state.actions.expandExtension,
-      setAppWidth: state.actions.setAppWidth,
-    }))
-  );
-  const debouncedSetAppWidth = React.useMemo(
-    () => debounce(setAppWidth, 1000),
-    [setAppWidth]
-  );
+  const { enabled, width, collapsed } = useAppPreference();
+  const { collapseExtension, expandExtension, setAppWidth } = useAppActions();
 
   return (
     <ResizablePanelGroup direction="horizontal">
@@ -52,7 +41,7 @@ export const ResizableGroupLayoutPanel = ({
         minSize={DEFAULT_PANEL_SIZE}
         onCollapse={collapseExtension}
         onExpand={expandExtension}
-        onResize={debouncedSetAppWidth}
+        onResize={setAppWidth}
         className={cn({ hidden: !enabled })}
       >
         {collapsed && <CollapsedPanel />}

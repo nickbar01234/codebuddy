@@ -1,10 +1,11 @@
 import { auth } from "@cb/db";
+import { useOnMount } from "@cb/hooks";
+import { useAuthActions } from "@cb/hooks/store";
 import {
   getLocalStorage,
   removeLocalStorage,
   sendServiceRequest,
 } from "@cb/services";
-import { useApp } from "@cb/store";
 import { ResponseStatus } from "@cb/types";
 import {
   isSignInWithEmailLink,
@@ -14,21 +15,14 @@ import {
 import _ from "lodash";
 import React from "react";
 import { toast } from "sonner";
-import { useShallow } from "zustand/shallow";
-import { useOnMount } from ".";
 
 interface UseDevAuthenticateProps {}
 
 const AUTHENTICATION_DELAY = 2000;
 
-const useAuthenticate = (_props: UseDevAuthenticateProps) => {
+export const useAuthenticate = (_props: UseDevAuthenticateProps) => {
   const unsubscribeRef = React.useRef<Unsubscribe>();
-  const { authenticate, unauthenticate } = useApp(
-    useShallow((state) => ({
-      authenticate: state.actions.authenticate,
-      unauthenticate: state.actions.unauthenticate,
-    }))
-  );
+  const { authenticate, unauthenticate } = useAuthActions();
 
   useOnMount(() => {
     _.delay(() => {
@@ -69,5 +63,3 @@ const useAuthenticate = (_props: UseDevAuthenticateProps) => {
     }
   });
 };
-
-export default useAuthenticate;
