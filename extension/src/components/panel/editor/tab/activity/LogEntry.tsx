@@ -4,6 +4,7 @@ import { cn } from "@cb/utils/cn";
 import { assertUnreachable } from "@cb/utils/error";
 import { timeAgo } from "@cb/utils/heartbeat";
 import { History, MessageCircleIcon, Users } from "lucide-react";
+
 interface LogEntryProps {
   entry: RoomEvent;
 }
