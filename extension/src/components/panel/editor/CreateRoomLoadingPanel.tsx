@@ -4,10 +4,10 @@ import { Ripple } from "@cb/components/panel/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRoom } from "@cb/store";
 import { CopyIcon } from "lucide-react";
-import { toast } from "sonner";
 
 const CreateRoomLoadingPanel = () => {
   const roomId = useRoom((state) => state.room?.id);
+  const copyRoomId = useCopyRoomId();
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4">
@@ -43,11 +43,7 @@ const CreateRoomLoadingPanel = () => {
               <button
                 type="button"
                 aria-label="Copy room ID"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(roomId ?? "");
-                  toast.success(`Session ID ${roomId} copied to clipboard`);
-                }}
+                onClick={copyRoomId}
               >
                 <CopyIcon className="h-6 w-6 cursor-pointer" />
               </button>

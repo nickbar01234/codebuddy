@@ -30,9 +30,7 @@ export const LogEntry: React.FC<LogEntryProps> = ({ entry }) => {
   const { type, timestamp } = entry;
   // const { peers } = usePeerSelection(); // will use in production. Now use mock data for displaying
   const peers = [{ id: "Buddy" }, { id: "Dev" }, { id: "5bigBooms" }];
-  const {
-    user: { username },
-  } = useAuthUser();
+  const { username } = useAuthUser();
 
   const getColorClass = () => {
     switch (type) {
