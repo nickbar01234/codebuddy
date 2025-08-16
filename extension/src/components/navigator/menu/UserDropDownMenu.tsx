@@ -1,12 +1,11 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
+import { usePeerActions, usePeers } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
-import { useRoom } from "@cb/store";
 import { Identifiable, InternalPeerState } from "@cb/types";
 import { cn } from "@cb/utils/cn";
 import { codeViewable } from "@cb/utils/model";
-import { useShallow } from "zustand/shallow";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
 
@@ -73,12 +72,9 @@ const UserDropDownMenuTrigger = ({
 };
 
 export const UserDropDownMenu = () => {
-  const activePeer = useRoom(
-    useShallow((state) => getSelectedPeer(state.peers))
-  );
-  const selectPeer = useRoom((state) => state.actions.peers.selectPeer);
-  const peers = useRoom((state) => state.peers);
-  const ping = peers[activePeer?.id ?? ""]?.latency * 1000;
+  const { peers, selectedPeer } = usePeers();
+  const { selectPeer } = usePeerActions();
+  const ping = peers[selectedPeer?.id ?? ""]?.latency * 1000;
   const canDropdown = Object.keys(peers).length >= 2;
 
   return (
@@ -88,7 +84,7 @@ export const UserDropDownMenu = () => {
         customTrigger: true,
         node: (
           <UserDropDownMenuTrigger
-            peer={activePeer}
+            peer={selectedPeer}
             canDropdown={canDropdown}
             signalStrength={getStatus(ping)}
           />

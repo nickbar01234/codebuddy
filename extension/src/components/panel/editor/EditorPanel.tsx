@@ -3,10 +3,8 @@ import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadin
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { getRoomRef } from "@cb/db";
 import { RoomEvent } from "@cb/db/converter";
-import { useFirebaseListener } from "@cb/hooks";
-import { useAuthUser } from "@cb/hooks/store";
+import { useLeetCodeActions, usePeerActions, usePeers } from "@cb/hooks/store";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -20,11 +18,9 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus, useRoom } from "@cb/store";
-import { useLeetCode } from "@cb/store/leetCodeStore";
 import { cn } from "@cb/utils/cn";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
-import { useShallow } from "zustand/shallow";
 
 export interface TabMetadata {
   id: string;
@@ -32,36 +28,19 @@ export interface TabMetadata {
 }
 
 const EditorPanel = () => {
-  const activePeer = useRoom(
-    useShallow((state) => getSelectedPeer(state.peers))
-  );
+  const { selectedPeer, peers } = usePeers();
   const roomStatus = useRoom((state) => state.status);
-  const roomId = useRoom((state) => state.room?.id);
-  const selectTest = useRoom((state) => state.actions.peers.selectTest);
-  const { user } = useAuthUser();
-  const getLanguageExtension = useLeetCode(
-    (state) => state.actions.getLanguageExtesion
-  );
-  const roomReference = React.useMemo(
-    () => (roomId != undefined ? getRoomRef(roomId) : undefined),
-    [roomId]
-  );
-  const { data: roomInfo } = useFirebaseListener({
-    reference: roomReference,
-    // todo(nickbar01234): Port to redux
-    init: { usernames: [], isPublic: true, roomName: "" },
-  });
+  const { selectTest } = usePeerActions();
+  const { getLanguageExtension } = useLeetCodeActions();
 
   // const canViewCode = codeViewable(activePeer);
   const canViewCode = true;
-  const activeTest = activePeer?.tests.find((test) => test.selected);
-  const emptyRoom =
-    roomInfo.usernames.filter((username) => username !== user.username)
-      .length === 0;
+  const activeTest = selectedPeer?.tests.find((test) => test.selected);
+  const emptyRoom = Object.keys(peers).length === 0;
 
   const upperTabConfigs = React.useMemo(() => {
     const extension =
-      getLanguageExtension(activePeer?.code?.code.language) ?? "";
+      getLanguageExtension(selectedPeer?.code?.code.language) ?? "";
     return [
       {
         value: "code",
@@ -75,14 +54,14 @@ const EditorPanel = () => {
         Icon: FlaskConical,
         Content: (
           <TestTab
-            activePeer={activePeer}
+            activePeer={selectedPeer}
             activeTest={activeTest}
             selectTest={selectTest}
           />
         ),
       },
     ];
-  }, [activePeer, activeTest, selectTest, getLanguageExtension]);
+  }, [selectedPeer, activeTest, selectTest, getLanguageExtension]);
 
   const lowerTabConfigs = React.useMemo(() => {
     return [

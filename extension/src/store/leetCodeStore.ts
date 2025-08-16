@@ -11,7 +11,7 @@ interface LeetCodeState {
 
 interface LeetCodeAction {
   getVariables: () => Promise<string[]>;
-  getLanguageExtesion: (id?: string) => string | undefined;
+  getLanguageExtension: (id?: string) => string | undefined;
 }
 
 const createLeetCodeStore = () => {
@@ -46,7 +46,7 @@ const createLeetCodeStore = () => {
           return variables;
         },
 
-        getLanguageExtesion: (id?: string) => {
+        getLanguageExtension: (id?: string) => {
           return get().languageExtensions.find((language) => language.id === id)
             ?.extensions[0];
         },
