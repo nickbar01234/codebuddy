@@ -3,6 +3,7 @@ import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRoom } from "@cb/store";
+import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -39,14 +40,20 @@ const CreateRoomLoadingPanel = () => {
                 {roomId}
               </span>
             </SkeletonWrapper>
-            <div className="flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background] hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]">
+            <div
+              className={cn(
+                "flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background]",
+                roomId != null &&
+                  "hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]"
+              )}
+            >
               <button
                 type="button"
                 aria-label="Copy room ID"
                 disabled={roomId == null}
-                className={
+                className={cn(
                   roomId == null ? "cursor-not-allowed" : "cursor-pointer"
-                }
+                )}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigator.clipboard.writeText(roomId ?? "");
