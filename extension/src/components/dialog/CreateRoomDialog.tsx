@@ -1,8 +1,8 @@
-import { useRTC } from "@cb/hooks/index";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
+import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { PlusIcon } from "lucide-react";
@@ -10,23 +10,20 @@ import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
-  const { createRoom } = useRTC();
+  const create = useRoom((state) => state.actions.room.create);
   const [isPublic, setIsPublic] = React.useState(true);
-  const [roomName, setRoomName] = React.useState("");
+  const [name, setName] = React.useState("");
 
   const createRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<Element>) => {
       event.stopPropagation?.();
-      if (isPublic && roomName.trim() === "") {
+      if (isPublic && name.trim() === "") {
         alert("Public rooms must have a name.");
         return;
       }
-      createRoom({
-        roomName: roomName,
-        isPublic: isPublic,
-      });
+      create({ name, isPublic });
     }, 1000);
-  }, [createRoom, roomName, isPublic]);
+  }, [create, name, isPublic]);
 
   return (
     <RoomDialog
@@ -59,8 +56,8 @@ export const CreateRoomDialog = () => {
           id="roomName"
           type="text"
           placeholder="Enter Room Name"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           className="w-full border border-[#787880] px-3 py-2 placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] focus:border-transparent"
         />
         <RadioGroup

@@ -4,8 +4,6 @@ import { AppControlMenu, RoomControlMenu } from "@cb/components/navigator/menu";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
 import SignInPanel from "@cb/components/panel/SignInPanel";
-import { PeerSelectionProvider } from "@cb/context/PeerSelectionProvider";
-import { RTCProvider } from "@cb/context/RTCProvider";
 import { useContentScriptMessages } from "@cb/hooks/messages/useContentScriptMessages";
 import { AppStatus, useApp } from "@cb/store";
 import React from "react";
@@ -25,13 +23,9 @@ export const ContentScript = ({ leetCodeNode }: ContentProps) => {
     switch (auth.status) {
       case AppStatus.AUTHENTICATED:
         return (
-          <RTCProvider>
-            <PeerSelectionProvider>
-              <ContainerNavigator menu={<RoomControlMenu />}>
-                <AppNavigator />
-              </ContainerNavigator>
-            </PeerSelectionProvider>
-          </RTCProvider>
+          <ContainerNavigator menu={<RoomControlMenu />}>
+            <AppNavigator />
+          </ContainerNavigator>
         );
       case AppStatus.UNAUTHENTICATED:
         return (

@@ -1,13 +1,11 @@
+import { Selectable } from "./utils";
+
 export * from "./content";
 export * from "./db";
 export * from "./events";
 export * from "./peers";
 export * from "./services";
-export type {
-  ExtractMessage,
-  LeetCodeContentChange,
-  MessagePayload,
-} from "./utils";
+export * from "./utils";
 export * from "./webrtc";
 export * from "./window";
 
@@ -25,8 +23,7 @@ interface Assignment {
   value: string;
 }
 
-export interface TestCase {
-  selected: boolean;
+export interface TestCase extends Selectable {
   test: Assignment[];
 }
 

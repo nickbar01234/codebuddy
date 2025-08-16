@@ -1,6 +1,7 @@
 import { ContentScriptContext } from "#imports";
 import { ContentScript } from "@cb/components/root/ContentScript";
 import { DOM, URLS } from "@cb/constants";
+import { getOrCreateControllers } from "@cb/services";
 import "@cb/style/index.css";
 import { createRoot } from "react-dom/client";
 
@@ -18,6 +19,8 @@ const createUi = (ctx: ContentScriptContext) => {
     position: "inline",
     anchor: DOM.LEETCODE_ROOT_ID,
     append: (leetCodeNode, extensionRoot) => {
+      // Initialize controllers on startup
+      getOrCreateControllers();
       leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
       extensionRoot.classList.add("relative", "h-full", "w-full");
 

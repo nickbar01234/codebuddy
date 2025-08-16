@@ -1,25 +1,24 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { CopyIcon, LeaveIcon, SignOutIcon } from "@cb/components/icons";
 import { auth } from "@cb/db";
-import { useRTC } from "@cb/hooks/index";
-import { RoomStatus, roomStore } from "@cb/store";
+import { RoomStatus, useRoom } from "@cb/store";
 import { signOut } from "firebase/auth/web-extension";
 import { throttle } from "lodash";
 import React from "react";
-import { useStore } from "zustand";
 import { _AppControlMenu } from "./AppControlMenu";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
 
 export const RoomControlMenu = () => {
-  const { roomId, leaveRoom } = useRTC();
-  const roomStatus = useStore(roomStore, (state) => state.room.status);
+  const roomId = useRoom((state) => state.room?.id);
+  const leave = useRoom((state) => state.actions.room.leave);
+  const roomStatus = useRoom((state) => state.status);
 
   const signOutThrottled = React.useMemo(() => {
     return throttle(() => {
-      leaveRoom(roomId).then(() => signOut(auth));
+      leave().then(() => signOut(auth));
     }, 1000);
-  }, [leaveRoom, roomId]);
+  }, [leave]);
 
   return (
     <Menu>

@@ -3,9 +3,10 @@ import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
 import { MAX_CAPACITY } from "@cb/context/RTCProvider";
 import { getRoomRef, getSessionRef } from "@cb/db";
-import { useFirebaseListener, useRTC } from "@cb/hooks/index";
-import { useAuthUser, useInRoom } from "@cb/hooks/store";
+import { useFirebaseListener } from "@cb/hooks/index";
+import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
+import { useRoom } from "@cb/store";
 import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
@@ -17,8 +18,9 @@ export const RoomInfoTab = () => {
   const {
     user: { username },
   } = useAuthUser();
-  const { roomId, handleNavigateToNextQuestion } = useRTC();
-  const { peers } = useInRoom();
+  // const { roomId, handleNavigateToNextQuestion } = useRTC();
+  const roomId = useRoom((state) => state.room?.id);
+  const peers = useRoom((state) => state.peers);
   const [chooseNextQuestion, setChooseNextQuestion] = React.useState(false);
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
@@ -154,7 +156,7 @@ export const RoomInfoTab = () => {
           </h1>
           <div className="flex justify-center gap-4">
             <Button
-              onClick={handleNavigateToNextQuestion}
+              // onClick={handleNavigateToNextQuestion}
               className={baseButtonClassName}
             >
               Yes

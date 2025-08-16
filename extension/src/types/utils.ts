@@ -16,7 +16,10 @@ export type ExtractMessage<
   key extends T["action"],
 > = Extract<T, { action: key }>;
 
-export type MessagePayload<T extends GenericMessage> = Omit<T, "action">;
+export type MessagePayload<T extends GenericMessage> = Omit<
+  T,
+  "action" | "timestamp"
+>;
 
 // https://stackoverflow.com/a/57103940/19129136
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,3 +50,7 @@ export interface Connection {
 export type Unsubscribe = () => void;
 
 export type Identifiable<T> = { id: Id } & T;
+
+export interface Selectable {
+  selected: boolean;
+}

@@ -21,7 +21,6 @@ import {
   sendServiceRequest,
   setLocalStorage,
 } from "@cb/services";
-import { RoomStatus, roomStore } from "@cb/store";
 import {
   EventType,
   ExtractMessage,
@@ -50,7 +49,6 @@ import {
 } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-import { useStore } from "zustand";
 import { additionalServers } from "./additionalServers";
 
 const servers = {
@@ -114,17 +112,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
   const {
     user: { username },
   } = useAuthUser();
-  const roomStatus = useStore(roomStore, (state) => state.room.status);
-  const createRoomInternal = useStore(
-    roomStore,
-    (state) => state.actions.createRoom
-  );
-  const leaveRoomInternal = useStore(
-    roomStore,
-    (state) => state.actions.leaveRoom
-  );
-  const updatePeer = useStore(roomStore, (state) => state.actions.updatePeer);
-  const removePeers = useStore(roomStore, (state) => state.actions.removePeers);
 
   const sendMessageToAll = React.useRef((fn: ReturnType<typeof withPayload>) =>
     Object.entries(getConnection()).forEach(([peer, connection]) =>
@@ -158,18 +145,16 @@ export const RTCProvider = (props: RTCProviderProps) => {
     (payload: ExtractMessage<PeerMessage, "code">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { action: _, ...code } = payload;
-      updatePeer(peer, { code });
     },
-    [updatePeer]
+    []
   );
 
   const receiveTests = React.useCallback(
     (payload: ExtractMessage<PeerMessage, "tests">, peer: string) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { action: _, ...tests } = payload;
-      updatePeer(peer, { tests });
     },
-    [updatePeer]
+    []
   );
 
   const onOpen = React.useRef((peer: string) => async () => {
@@ -181,7 +166,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
 
     getCodeMessagePayload({}).then((fn) => fn(peer, getConnection()[peer]));
     getTestsMessagePayload()(peer, getConnection()[peer]);
-    updatePeer(peer, { latency: 0, finished: false });
   });
 
   const onClose = React.useRef(
@@ -261,12 +245,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     });
     console.log("Created room", newRoomId);
     setRoomId(newRoomId);
-    // todo(nickbar01234): Fix type for roomName
-    createRoomInternal({
-      id: newRoomId,
-      name: roomName ?? "",
-      public: isPublic,
-    });
     navigator.clipboard.writeText(newRoomId);
     toast.success(`Session ID ${newRoomId} copied to clipboard`);
   };
@@ -484,13 +462,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           `You have successfully joined the room with ID ${roomId}.`
         );
       }
-
-      createRoomInternal({
-        id: roomId,
-        public: roomDoc.data().isPublic,
-        name: roomDoc.data().roomName,
-      });
-      return true;
+      return false;
     },
     [
       username,
@@ -499,7 +471,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
       registerConnection,
       getConnection,
       evictSnapshot,
-      createRoomInternal,
     ]
   );
 
@@ -554,10 +525,9 @@ export const RTCProvider = (props: RTCProviderProps) => {
         cleanupSnapshot();
         cleanupConnection();
         setRoomId(null);
-        leaveRoomInternal();
       }
     },
-    [username, cleanupSnapshot, cleanupConnection, leaveRoomInternal]
+    [username, cleanupSnapshot, cleanupConnection]
   );
 
   const handleSucessfulSubmission = React.useCallback(async () => {
@@ -608,9 +578,8 @@ export const RTCProvider = (props: RTCProviderProps) => {
         usernames: arrayRemove(...peers),
       });
       await batch.commit();
-      removePeers(peers);
     },
-    [roomId, username, evictConnection, removePeers]
+    [roomId, username, evictConnection]
   );
 
   const deleteMe = React.useCallback(async () => {
@@ -721,11 +690,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
           addedPeers.forEach((peer) => {
             createOffer(roomId, peer);
           });
-          const finishedUsers = data.finishedUsers;
           // todo(nickbar01234): Do we need bulk update?
-          finishedUsers.forEach((peer) => {
-            updatePeer(peer, { finished: true });
-          });
         }
       );
       registerSnapshot(roomId, unsubscribe, (prev) => prev());
@@ -741,7 +706,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
     registerSnapshot,
     getConnection,
     evictSnapshot,
-    updatePeer,
   ]);
 
   React.useEffect(() => {
@@ -755,12 +719,12 @@ export const RTCProvider = (props: RTCProviderProps) => {
     };
   });
 
-  React.useEffect(() => {
-    const refreshInfo = getLocalStorage("tabs");
-    if (roomStatus === RoomStatus.LOADING && refreshInfo?.roomId) {
-      afterReloadJoin();
-    }
-  }, [afterReloadJoin, roomStatus]);
+  // React.useEffect(() => {
+  //   const refreshInfo = getLocalStorage("tabs");
+  //   if (roomStatus === RoomStatus.LOADING && refreshInfo?.roomId) {
+  //     afterReloadJoin();
+  //   }
+  // }, [afterReloadJoin, roomStatus]);
 
   React.useEffect(() => {
     deletePeersRef.current = deletePeers;
@@ -848,11 +812,6 @@ export const RTCProvider = (props: RTCProviderProps) => {
             getCodeMessagePayload(windowMessage.changes).then(sendMessageToAll);
             break;
           }
-
-          // Only for tests
-          case "createRoom":
-          case "joinRoom":
-            break;
           default:
             console.error("Unhandled window message", windowMessage);
             break;

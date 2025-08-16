@@ -2,12 +2,12 @@ import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { useRTC } from "@cb/hooks/index";
+import { useRoom } from "@cb/store";
 import { CopyIcon } from "lucide-react";
 import { toast } from "sonner";
 
 const CreateRoomLoadingPanel = () => {
-  const { roomId } = useRTC();
+  const roomId = useRoom((state) => state.room?.id);
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4">

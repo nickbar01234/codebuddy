@@ -1,10 +1,9 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { usePeerSelection } from "@cb/hooks/index";
-import { Peer, TestCase } from "@cb/types";
+import { Identifiable, InternalPeerState, TestCase } from "@cb/types";
 import React from "react";
 
 interface TestTabProps {
-  activePeer: Peer | undefined;
+  activePeer: Identifiable<InternalPeerState> | undefined;
   activeTest: TestCase | undefined;
   selectTest: (index: number) => void;
 }
@@ -14,10 +13,8 @@ export const TestTab: React.FC<TestTabProps> = ({
   activeTest,
   selectTest,
 }) => {
-  const { isBuffer } = usePeerSelection();
-
   return (
-    <SkeletonWrapper loading={isBuffer} className="relative">
+    <SkeletonWrapper loading={false} className="relative">
       <div className="p-5 flex flex-col space-y-4 h-full w-full">
         <div className="flex w-full flex-row items-start justify-between gap-4">
           <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">

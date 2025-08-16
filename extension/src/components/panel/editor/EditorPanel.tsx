@@ -5,7 +5,7 @@ import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/Activit
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { getRoomRef } from "@cb/db";
 import { RoomEvent } from "@cb/db/converter";
-import { useFirebaseListener, usePeerSelection, useRTC } from "@cb/hooks";
+import { useFirebaseListener } from "@cb/hooks";
 import { useAuthUser } from "@cb/hooks/store";
 import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import {
@@ -20,13 +20,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
-import { RoomStatus, roomStore } from "@cb/store";
+import { RoomStatus, useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { codeViewable } from "@cb/utils/model";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
-import { useStore } from "zustand";
-import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
+import { useShallow } from "zustand/shallow";
 
 export interface TabMetadata {
   id: string;
@@ -34,14 +32,16 @@ export interface TabMetadata {
 }
 
 const EditorPanel = () => {
-  const { activePeer, unblur, selectTest, isBuffer, activeUserInformation } =
-    usePeerSelection();
-  const roomStatus = useStore(roomStore, (state) => state.room.status);
+  const activePeer = useRoom(
+    useShallow((state) => getSelectedPeer(state.peers))
+  );
+  const roomStatus = useRoom((state) => state.status);
+  const roomId = useRoom((state) => state.room?.id);
+  const selectTest = useRoom((state) => state.actions.peers.selectTest);
   const { user } = useAuthUser();
-  const { roomId } = useRTC();
   const { getLanguageExtension } = useLanguageExtension();
   const roomReference = React.useMemo(
-    () => (roomId != null ? getRoomRef(roomId) : undefined),
+    () => (roomId != undefined ? getRoomRef(roomId) : undefined),
     [roomId]
   );
   const { data: roomInfo } = useFirebaseListener({
@@ -50,7 +50,8 @@ const EditorPanel = () => {
     init: { usernames: [], isPublic: true, roomName: "" },
   });
 
-  const canViewCode = codeViewable(activePeer);
+  // const canViewCode = codeViewable(activePeer);
+  const canViewCode = true;
   const activeTest = activePeer?.tests.find((test) => test.selected);
   const emptyRoom =
     roomInfo.usernames.filter((username) => username !== user.username)
@@ -58,7 +59,7 @@ const EditorPanel = () => {
 
   const upperTabConfigs = React.useMemo(() => {
     const extension =
-      getLanguageExtension(activeUserInformation?.code?.code.language) ?? "";
+      getLanguageExtension(activePeer?.code?.code.language) ?? "";
     return [
       {
         value: "code",
@@ -79,13 +80,7 @@ const EditorPanel = () => {
         ),
       },
     ];
-  }, [
-    activePeer,
-    activeTest,
-    selectTest,
-    activeUserInformation,
-    getLanguageExtension,
-  ]);
+  }, [activePeer, activeTest, selectTest, getLanguageExtension]);
 
   const lowerTabConfigs = React.useMemo(() => {
     return [
@@ -99,7 +94,8 @@ const EditorPanel = () => {
         value: "roomInfo",
         label: "Room Info",
         Icon: Info,
-        Content: <RoomInfoTab />,
+        Content: null,
+        // Content: <RoomInfoTab />,
       },
     ];
   }, []);
@@ -111,7 +107,7 @@ const EditorPanel = () => {
       })}
     >
       {emptyRoom && (
-        <SkeletonWrapper loading={isBuffer}>
+        <SkeletonWrapper loading={false}>
           <CreateRoomLoadingPanel />
         </SkeletonWrapper>
       )}
@@ -127,10 +123,10 @@ const EditorPanel = () => {
             className="relative"
           >
             {/* todo(nickbar01234): Fix styling */}
-            {!canViewCode && !isBuffer && (
+            {!canViewCode && (
               <button
                 className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
-                onClick={unblur}
+                // onClick={unblur}
                 type="button"
               >
                 View
