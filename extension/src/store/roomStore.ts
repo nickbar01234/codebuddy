@@ -1,6 +1,6 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers, sendServiceRequest } from "@cb/services";
-import { Id, InternalPeerState, PeerState } from "@cb/types";
+import { BoundStore, Id, InternalPeerState, PeerState } from "@cb/types";
 import { Identifiable } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
@@ -8,7 +8,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
-import { MutableState } from "./type";
+import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
 export enum RoomStatus {
   HOME,
@@ -21,12 +21,6 @@ interface RoomState {
   status: RoomStatus;
   room?: Identifiable<{ name: string; isPublic: boolean }>;
   peers: Record<Id, InternalPeerState>;
-  /**
-   * Internal use only.
-   *
-   * @see RoomAction#getVariables for API consumption
-   */
-  _variables: string[];
 }
 
 interface RoomAction {
@@ -42,25 +36,20 @@ interface RoomAction {
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
   };
-  getVariables: () => Promise<string[]>;
 }
 
-type _RoomStore = MutableState<RoomState, RoomAction>;
-
-const createRoomStore = () => {
+const createRoomStore = (leetcodeStore: LeetCodeStore) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
       state.room = room;
     });
 
-  const useRoom = create<_RoomStore>()(
+  const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
       immer((set, get) => ({
         status: RoomStatus.HOME,
         peers: {},
-        _variables: [],
-
         actions: {
           room: {
             create: async (args) => {
@@ -92,7 +81,9 @@ const createRoomStore = () => {
           },
           peers: {
             update: async (id, peer) => {
-              const variables = await get().actions.getVariables();
+              const variables = await leetcodeStore
+                .getState()
+                .actions.getVariables();
               set((state) => {
                 const peerOrDefault =
                   state.peers[id] ??
@@ -154,30 +145,6 @@ const createRoomStore = () => {
                 }
               }),
           },
-          getVariables: async () => {
-            if (get()._variables.length > 0) {
-              return get()._variables;
-            }
-            const variables = await waitForElement(DOM.PROBLEM_ID)
-              .then((node) => node as HTMLElement)
-              .then((node) => {
-                const input = node.innerText.match(/.*Input:(.*)\n/);
-                if (input != null) {
-                  return Array.from(input[1].matchAll(/(\w+)\s=/g)).map(
-                    (matched) => matched[1]
-                  );
-                }
-                throw new Error("Unable to determine test variables");
-              })
-              .catch((e) => {
-                console.error(e);
-                return [];
-              });
-            set((state) => {
-              state._variables = variables;
-            });
-            return variables;
-          },
         },
       }))
     )
@@ -206,6 +173,6 @@ const createRoomStore = () => {
   return useRoom;
 };
 
-export const useRoom = createRoomStore();
+export const useRoom = createRoomStore(useLeetCode);
 
 export type RoomStore = typeof useRoom;

@@ -5,6 +5,7 @@ export * from "./db";
 export * from "./events";
 export * from "./peers";
 export * from "./services";
+export * from "./store";
 export * from "./utils";
 export * from "./webrtc";
 export * from "./window";

@@ -1,6 +1,5 @@
 import { DOM } from "@cb/constants";
 import { useOnMount } from "@cb/hooks";
-import useInferTests from "@cb/hooks/useInferTests";
 import {
   getLocalStorage,
   sendServiceRequest,
@@ -32,6 +31,8 @@ interface PeerSelectionProviderProps {
   children: React.ReactNode;
 }
 
+const variables: string[] = [];
+
 export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   children,
 }) => {
@@ -41,7 +42,6 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
   const [activePeer, setActivePeer] = React.useState<Peer>();
   const [changeUser, setChangeUser] = React.useState<boolean>(false);
   const [isBuffer, setIsBuffer] = React.useState<boolean>(true);
-  const { variables } = useInferTests();
 
   const activeUserInformation = React.useMemo(
     () => (activePeer == undefined ? undefined : informations[activePeer?.id]),
@@ -90,7 +90,7 @@ export const PeerSelectionProvider: React.FC<PeerSelectionProviderProps> = ({
         })),
       }));
     },
-    [variables]
+    []
   );
 
   const findActivePeer = React.useCallback(
