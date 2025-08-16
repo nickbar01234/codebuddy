@@ -7,7 +7,6 @@ import { getRoomRef } from "@cb/db";
 import { RoomEvent } from "@cb/db/converter";
 import { useFirebaseListener } from "@cb/hooks";
 import { useAuthUser } from "@cb/hooks/store";
-import useLanguageExtension from "@cb/hooks/useLanguageExtension";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -21,6 +20,7 @@ import {
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus, useRoom } from "@cb/store";
+import { useLeetCode } from "@cb/store/leetCodeStore";
 import { cn } from "@cb/utils/cn";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
@@ -39,7 +39,9 @@ const EditorPanel = () => {
   const roomId = useRoom((state) => state.room?.id);
   const selectTest = useRoom((state) => state.actions.peers.selectTest);
   const { user } = useAuthUser();
-  const { getLanguageExtension } = useLanguageExtension();
+  const getLanguageExtension = useLeetCode(
+    (state) => state.actions.getLanguageExtesion
+  );
   const roomReference = React.useMemo(
     () => (roomId != undefined ? getRoomRef(roomId) : undefined),
     [roomId]

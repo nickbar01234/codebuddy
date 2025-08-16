@@ -1,7 +1,7 @@
+import { BoundStore } from "@cb/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { MutableState } from "./type";
 
 export const DEFAULT_PANEL_SIZE = 25;
 
@@ -53,9 +53,7 @@ interface AppAction {
   getAuthUser: () => AppUser;
 }
 
-type _AppStore = MutableState<AppState, AppAction>;
-
-export const useApp = create<_AppStore>()(
+export const useApp = create<BoundStore<AppState, AppAction>>()(
   persist(
     immer((set, get) => ({
       app: {
