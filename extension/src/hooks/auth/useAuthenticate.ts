@@ -1,8 +1,8 @@
-import { auth } from "@cb/db";
 import { useOnMount } from "@cb/hooks";
 import { useAuthActions } from "@cb/hooks/store";
 import { getLocalStorage, removeLocalStorage } from "@cb/services";
 import background from "@cb/services/background";
+import { auth } from "@cb/services/db";
 import { ResponseStatus } from "@cb/types";
 import {
   isSignInWithEmailLink,
