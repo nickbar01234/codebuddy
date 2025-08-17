@@ -1,6 +1,6 @@
 import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
-import { Ripple } from "@cb/components/panel/Ripple";
+import { Ripple } from "@cb/components/ui/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyRoomId } from "@cb/hooks";
 import { useRoom } from "@cb/store";

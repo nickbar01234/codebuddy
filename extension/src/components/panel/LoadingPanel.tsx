@@ -1,6 +1,6 @@
 import { UserIcon } from "@cb/components/icons/UserIcon";
-import { Ripple } from "@cb/components/panel/Ripple";
 import { AnimatedBeam } from "@cb/components/ui/AnimatedBeam";
+import { Ripple } from "@cb/components/ui/Ripple";
 import React from "react";
 
 const Circle = React.forwardRef<
