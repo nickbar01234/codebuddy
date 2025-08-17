@@ -1,6 +1,6 @@
 import { CaretDownIcon } from "@cb/components/icons";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { HEARTBEAT_INTERVAL } from "@cb/context/RTCProvider";
+import { HEARTBEAT } from "@cb/constants";
 import { usePeerActions, usePeers } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
 import { Identifiable, InternalPeerState } from "@cb/types";
@@ -9,8 +9,8 @@ import { codeViewable } from "@cb/utils/model";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
 
-const GREENTHRESHOLD = HEARTBEAT_INTERVAL + 10;
-const YELLOWTHRESHOLD = HEARTBEAT_INTERVAL * 1.25 + 10;
+const GREENTHRESHOLD = HEARTBEAT.INTERVAL + 10;
+const YELLOWTHRESHOLD = HEARTBEAT.INTERVAL * 1.25 + 10;
 
 interface UserDropDownMenuTriggerProps {
   peer?: Identifiable<InternalPeerState>;

@@ -1,5 +1,6 @@
 import { auth } from "@cb/db";
-import { sendServiceRequest, setLocalStorage } from "@cb/services";
+import { setLocalStorage } from "@cb/services";
+import background from "@cb/services/background";
 import { constructUrlFromQuestionId, getSessionId } from "@cb/utils";
 import { FirebaseError } from "firebase/app";
 import {
@@ -66,7 +67,7 @@ export const useSignInWithEmailLink = () => {
               setLocalStorage("signIn", {
                 email,
                 url: actionCodeSettings.url,
-                tabId: await sendServiceRequest({ action: "getActiveTabId" }),
+                tabId: await background.getActiveTab({}),
               });
               setStatus({ status: "SENT" });
             })

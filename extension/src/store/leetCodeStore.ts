@@ -1,5 +1,5 @@
 import { DOM } from "@cb/constants";
-import { sendServiceRequest } from "@cb/services";
+import background, { BackgroundProxy } from "@cb/services/background";
 import { BoundStore, ServiceResponse } from "@cb/types";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
@@ -14,7 +14,7 @@ interface LeetCodeAction {
   getLanguageExtension: (id?: string) => string | undefined;
 }
 
-const createLeetCodeStore = () => {
+const createLeetCodeStore = (background: BackgroundProxy) => {
   const leetCodeStore = create<BoundStore<LeetCodeState, LeetCodeAction>>()(
     immer((set, get) => ({
       variables: [],
@@ -57,7 +57,7 @@ const createLeetCodeStore = () => {
   // Immediately initialize
   leetCodeStore.getState().actions.getVariables();
   poll({
-    fn: async () => sendServiceRequest({ action: "getLanguageExtension" }),
+    fn: () => background.getAllLanguageExtensions({}),
     until: (response) => response instanceof Array && response.length > 0,
   })
     .then((extensions) => {
@@ -70,6 +70,6 @@ const createLeetCodeStore = () => {
   return leetCodeStore;
 };
 
-export const useLeetCode = createLeetCodeStore();
+export const useLeetCode = createLeetCodeStore(background);
 
 export type LeetCodeStore = typeof useLeetCode;

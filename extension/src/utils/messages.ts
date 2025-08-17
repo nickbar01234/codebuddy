@@ -1,5 +1,5 @@
 import { DOM } from "@cb/constants";
-import { sendServiceRequest } from "@cb/services";
+import background from "@cb/services/background";
 import {
   Connection,
   DistributiveOmit,
@@ -36,7 +36,7 @@ export const getTestsPayload = (): PeerMessage => {
 export const getCodePayload = async (
   changes: Partial<LeetCodeContentChange>
 ): Promise<PeerMessage> => {
-  const { value, language } = await sendServiceRequest({ action: "getValue" });
+  const { value, language } = await background.getCode({});
   return {
     action: "code",
     timestamp: getUnixTs(),

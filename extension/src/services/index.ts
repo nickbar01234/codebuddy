@@ -7,6 +7,7 @@ import {
   ServiceResponse,
 } from "@cb/types";
 import mitt from "mitt";
+import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
 import { RoomController } from "./controllers/RoomController";
 import { WebRtcController } from "./controllers/WebRtcController";
@@ -66,7 +67,8 @@ interface Controllers {
 const createControllersFactory = (
   db: DatabaseService,
   appStore: AppStore,
-  roomStore: RoomStore
+  roomStore: RoomStore,
+  background: BackgroundProxy
 ) => {
   let initialized = false;
   let controllers: Controllers | undefined = undefined;
@@ -77,7 +79,7 @@ const createControllersFactory = (
     const emitter: EventEmitter = mitt();
     const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y);
     const room = new RoomController(db.room, emitter, appStore);
-    const message = new MessageDispatcher(emitter, roomStore);
+    const message = new MessageDispatcher(emitter, roomStore, background);
     initialized = true;
     controllers = {
       emitter,
@@ -92,5 +94,6 @@ const createControllersFactory = (
 export const getOrCreateControllers = createControllersFactory(
   db,
   useApp,
-  useRoom
+  useRoom,
+  background
 );
