@@ -1,7 +1,6 @@
 import { useRoom } from "@cb/store";
 import React from "react";
 import { toast } from "sonner";
-import { useFirebaseListener } from "./useFirebaseListener";
 import { useOnMount } from "./useOnMount";
 
 export { useFirebaseListener, useOnMount };

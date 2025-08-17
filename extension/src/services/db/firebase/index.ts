@@ -1,4 +1,3 @@
-import { firestore } from "@cb/db";
 import {
   DatabaseService,
   Models,
@@ -25,6 +24,8 @@ import {
   where,
 } from "firebase/firestore";
 import { negotiationConverter, roomConverter } from "./converter";
+import { auth, firestore } from "./setup";
+export { auth };
 
 type FirebaseTypes = {
   [Models.ROOMS]: Room;

@@ -1,5 +1,5 @@
-import { auth } from "@cb/db";
 import { useRoomActions } from "@cb/hooks/store";
+import { auth } from "@cb/services/db";
 import { signOut } from "firebase/auth/web-extension";
 import _ from "lodash";
 import React from "react";
