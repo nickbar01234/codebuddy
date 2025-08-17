@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 const CreateRoomLoadingPanel = () => {
   const roomId = useRoom((state) => state.room?.id);
+  const roomReady = roomId != null;
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4">
@@ -43,16 +44,18 @@ const CreateRoomLoadingPanel = () => {
             <div
               className={cn(
                 "flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background]",
-                roomId != null &&
-                  "hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]"
+                {
+                  "hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]":
+                    roomReady,
+                }
               )}
             >
               <button
                 type="button"
                 aria-label="Copy room ID"
-                disabled={roomId == null}
+                disabled={!roomReady}
                 className={cn(
-                  roomId == null ? "cursor-not-allowed" : "cursor-pointer"
+                  roomReady ? "cursor-not-allowed" : "cursor-pointer"
                 )}
                 onClick={(e) => {
                   e.stopPropagation();
