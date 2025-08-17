@@ -2,12 +2,15 @@ import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { useCopyRoomId } from "@cb/hooks";
 import { useRoom } from "@cb/store";
+import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
   const roomId = useRoom((state) => state.room?.id);
   const copyRoomId = useCopyRoomId();
+  const roomReady = roomId != null;
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4">
@@ -39,13 +42,25 @@ const CreateRoomLoadingPanel = () => {
                 {roomId}
               </span>
             </SkeletonWrapper>
-            <div className="flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background] hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]">
+            <div
+              className={cn(
+                "flex h-full w-12 items-center justify-center bg-[--color-button-background] dark:bg-[--color-button-background]",
+                {
+                  "hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]":
+                    roomReady,
+                }
+              )}
+            >
               <button
                 type="button"
                 aria-label="Copy room ID"
+                disabled={!roomReady}
+                className={cn(
+                  roomReady ? "cursor-not-allowed" : "cursor-pointer"
+                )}
                 onClick={copyRoomId}
               >
-                <CopyIcon className="h-6 w-6 cursor-pointer" />
+                <CopyIcon className="h-6 w-6" />
               </button>
             </div>
           </div>
