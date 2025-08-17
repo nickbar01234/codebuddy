@@ -6,6 +6,7 @@ import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLa
 import SignInPanel from "@cb/components/panel/SignInPanel";
 import { useAuthenticate } from "@cb/hooks/auth";
 import { useContentScriptMessages } from "@cb/hooks/messages/useContentScriptMessages";
+import { useToast } from "@cb/hooks/toasts";
 import { AppStatus, useApp } from "@cb/store";
 import React from "react";
 import { Toaster } from "sonner";
@@ -19,6 +20,7 @@ export const ContentScript = ({ leetCodeNode }: ContentProps) => {
 
   useContentScriptMessages();
   useAuthenticate({});
+  useToast();
 
   const root = React.useMemo(() => {
     switch (auth.status) {

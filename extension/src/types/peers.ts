@@ -1,4 +1,4 @@
-import { TestCase } from ".";
+import { Id, TestCase } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, MessagePayload, Selectable } from "./utils";
 
@@ -31,7 +31,7 @@ export enum EventType {
 interface PeerEventMessage extends PeerGenericMessage {
   action: "event";
   event: EventType;
-  eventMessage: string;
+  user: Id;
 }
 
 export type PeerMessage =
