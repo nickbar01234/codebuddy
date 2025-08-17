@@ -15,9 +15,7 @@ import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 
 export const RoomInfoTab = () => {
-  const {
-    user: { username },
-  } = useAuthUser();
+  const { username } = useAuthUser();
   // const { roomId, handleNavigateToNextQuestion } = useRTC();
   const roomId = useRoom((state) => state.room?.id);
   const peers = useRoom((state) => state.peers);

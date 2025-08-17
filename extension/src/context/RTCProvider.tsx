@@ -109,9 +109,7 @@ export const RTCProvider = (props: RTCProviderProps) => {
     evict: evictSnapshot,
   } = useResource<Unsubscribe>({ name: "snapshot" });
 
-  const {
-    user: { username },
-  } = useAuthUser();
+  const { username } = useAuthUser();
 
   const sendMessageToAll = React.useRef((fn: ReturnType<typeof withPayload>) =>
     Object.entries(getConnection()).forEach(([peer, connection]) =>

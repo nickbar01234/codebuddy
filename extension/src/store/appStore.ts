@@ -1,4 +1,5 @@
 import { BoundStore } from "@cb/types";
+import _ from "lodash";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -80,9 +81,13 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
             state.app.width = DEFAULT_PANEL_SIZE;
           }),
         setAppWidth: (width) =>
-          set((state) => {
-            state.app.width = width;
-          }),
+          _.debounce(
+            () =>
+              set((state) => {
+                state.app.width = width;
+              }),
+            1000
+          ),
         authenticate: (user: AppUser) =>
           set((state) => {
             state.auth = {

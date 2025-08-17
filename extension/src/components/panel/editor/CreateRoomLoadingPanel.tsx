@@ -2,13 +2,14 @@ import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/panel/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { useCopyRoomId } from "@cb/hooks";
 import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
-import { toast } from "sonner";
 
 const CreateRoomLoadingPanel = () => {
   const roomId = useRoom((state) => state.room?.id);
+  const copyRoomId = useCopyRoomId();
   const roomReady = roomId != null;
 
   return (
@@ -57,11 +58,7 @@ const CreateRoomLoadingPanel = () => {
                 className={cn(
                   roomReady ? "cursor-not-allowed" : "cursor-pointer"
                 )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(roomId ?? "");
-                  toast.success(`Session ID ${roomId} copied to clipboard`);
-                }}
+                onClick={copyRoomId}
               >
                 <CopyIcon className="h-6 w-6" />
               </button>
