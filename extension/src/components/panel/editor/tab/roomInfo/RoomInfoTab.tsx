@@ -1,12 +1,12 @@
 import { PromptNavigateDialog } from "@cb/components/dialog/PromptNavigateDialog";
 import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { SelectProblemDialog } from "@cb/components/dialog/SelectProblemDialog";
-import { MAX_CAPACITY } from "@cb/context/RTCProvider";
-import { getRoomRef, getSessionRef } from "@cb/db";
-import { useFirebaseListener } from "@cb/hooks/index";
+import { ROOM } from "@cb/constants";
+import { Session } from "@cb/db/converter";
 import { useAuthUser } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { useRoom } from "@cb/store";
+import { Room } from "@cb/types";
 import { getSessionId } from "@cb/utils";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/heartbeat";
@@ -14,6 +14,15 @@ import { Timestamp } from "firebase/firestore";
 import { Grid2X2, Timer, Users } from "lucide-react";
 import React from "react";
 
+const roomDoc: Room = { usernames: [], isPublic: true, name: "", version: 0 };
+const sessionDoc: Session = {
+  usernames: [],
+  finishedUsers: [],
+  nextQuestion: "",
+  createdAt: Timestamp.fromDate(new Date()),
+};
+
+// todo(nickbar01234): This component is not code-ready. We will need to re-evaluate and re-write
 export const RoomInfoTab = () => {
   const { username } = useAuthUser();
   // const { roomId, handleNavigateToNextQuestion } = useRTC();
@@ -23,34 +32,13 @@ export const RoomInfoTab = () => {
   const [showNavigatePrompt, setShowNavigatePrompt] = React.useState(false);
   const [choosePopUp, setChoosePopup] = React.useState(false);
   const [elapsed, setElapsed] = React.useState(0);
-  const { roomReference, sessionReference } = React.useMemo(
-    () => ({
-      roomReference: roomId != null ? getRoomRef(roomId) : undefined,
-      sessionReference:
-        roomId != null ? getSessionRef(roomId, getSessionId()) : undefined,
-    }),
-    [roomId]
-  );
-  const { data: roomDoc } = useFirebaseListener({
-    reference: roomReference,
-    init: { usernames: [], isPublic: true, roomName: "" },
-  });
-  const { data: sessionDoc } = useFirebaseListener({
-    reference: sessionReference,
-    init: {
-      usernames: [],
-      finishedUsers: [],
-      nextQuestion: "",
-      createdAt: Timestamp.fromDate(new Date()),
-    },
-  });
 
   const unfinishedPeers = React.useMemo(
     () =>
       roomDoc.usernames.filter(
         (username) => !sessionDoc.finishedUsers.includes(username)
       ).length,
-    [roomDoc, sessionDoc]
+    []
   );
 
   React.useEffect(() => {
@@ -64,7 +52,7 @@ export const RoomInfoTab = () => {
       nextQuestionChosen &&
         usernames.every((user) => finishedUsers.includes(user))
     );
-  }, [sessionDoc, username]);
+  }, [username]);
 
   //we need this to prevent other user from choosing the question if there is already someone choose it
   React.useEffect(() => {
@@ -79,18 +67,18 @@ export const RoomInfoTab = () => {
       setElapsed(() => Date.now() - sessionDoc.createdAt.toDate().getTime());
     }, 1000);
     return () => clearInterval(interval);
-  }, [sessionDoc]);
+  }, []);
 
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-start p-2 pb-">
       <h1 className="text-center text-lg font-semibold">
-        {roomDoc?.roomName ?? "Room Name"}
+        {roomDoc?.name ?? "Room Name"}
       </h1>
       <div className="flex w-full justify-center gap-4 items-center">
         <div className="flex items-center">
           <Users className="mr-1" />
           <span className="text-sm font-medium text-tertiary">
-            {Object.keys(peers).length + 1}/{MAX_CAPACITY}
+            {Object.keys(peers).length + 1}/{ROOM.CAPACITY}
           </span>
         </div>
         <div className="flex items-center">
