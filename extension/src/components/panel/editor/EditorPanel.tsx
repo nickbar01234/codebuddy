@@ -39,8 +39,7 @@ const EditorPanel = () => {
   const emptyRoom = Object.keys(peers).length === 0;
 
   const upperTabConfigs = React.useMemo(() => {
-    const extension =
-      getLanguageExtension(selectedPeer?.code?.code.language) ?? "";
+    const extension = getLanguageExtension(selectedPeer?.code?.language) ?? "";
     return [
       {
         value: "code",

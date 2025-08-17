@@ -56,7 +56,7 @@ const CreateRoomLoadingPanel = () => {
                 aria-label="Copy room ID"
                 disabled={!roomReady}
                 className={cn(
-                  roomReady ? "cursor-not-allowed" : "cursor-pointer"
+                  roomReady ? "cursor-pointer" : "cursor-not-allowed"
                 )}
                 onClick={copyRoomId}
               >
