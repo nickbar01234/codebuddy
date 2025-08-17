@@ -1,5 +1,6 @@
 import { DOM } from "@cb/constants";
-import { getOrCreateControllers, sendServiceRequest } from "@cb/services";
+import { getOrCreateControllers } from "@cb/services";
+import background, { BackgroundProxy } from "@cb/services/background";
 import { BoundStore, Id, InternalPeerState, PeerState } from "@cb/types";
 import { Identifiable } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
@@ -38,7 +39,10 @@ interface RoomAction {
   };
 }
 
-const createRoomStore = (leetcodeStore: LeetCodeStore) => {
+const createRoomStore = (
+  leetcodeStore: LeetCodeStore,
+  background: BackgroundProxy
+) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -156,8 +160,7 @@ const createRoomStore = (leetcodeStore: LeetCodeStore) => {
       if (current == undefined) {
         return;
       } else {
-        sendServiceRequest({
-          action: "setValueOtherEditor",
+        background.applyCodeToEditor({
           code: current.code?.value ?? "",
           language: current.code?.language ?? "",
           changes: JSON.parse(current.code?.changes ?? "{}"),
@@ -173,6 +176,6 @@ const createRoomStore = (leetcodeStore: LeetCodeStore) => {
   return useRoom;
 };
 
-export const useRoom = createRoomStore(useLeetCode);
+export const useRoom = createRoomStore(useLeetCode, background);
 
 export type RoomStore = typeof useRoom;

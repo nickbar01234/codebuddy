@@ -1,11 +1,8 @@
 import { auth } from "@cb/db";
 import { useOnMount } from "@cb/hooks";
 import { useAuthActions } from "@cb/hooks/store";
-import {
-  getLocalStorage,
-  removeLocalStorage,
-  sendServiceRequest,
-} from "@cb/services";
+import { getLocalStorage, removeLocalStorage } from "@cb/services";
+import background from "@cb/services/background";
 import { ResponseStatus } from "@cb/types";
 import {
   isSignInWithEmailLink,
@@ -51,7 +48,7 @@ export const useAuthenticate = (_props: UseDevAuthenticateProps) => {
       // todo(nickbar01234): Handle signin from different device
       // todo(nickbar01234): Handle error code
       signInWithEmailLink(auth, signIn.email, window.location.href)
-        .then(() => sendServiceRequest({ action: "closeSignInTab", signIn }))
+        .then(() => background.closeSignInTab({ signIn }))
         .then((response) => {
           if (response.status === ResponseStatus.SUCCESS) {
             toast.info("Closed sign-in tab");

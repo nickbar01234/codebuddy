@@ -16,3 +16,12 @@ export const DOM = {
   PROBLEM_ID: ".elfjS",
   TIMEOUT: 10_000,
 };
+
+export const HEARTBEAT = {
+  // ms
+  INTERVAL: 15000,
+  // ms
+  CHECK_ALIVE_INTERVAL: 15000,
+  // seconds
+  TIMEOUT: 100,
+};

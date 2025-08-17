@@ -1,5 +1,5 @@
 import { DOM } from "@cb/constants";
-import { sendServiceRequest } from "@cb/services";
+import { BackgroundProxy } from "@cb/services/background";
 import { RoomStore } from "@cb/store";
 import { EventEmitter, Events, ResponseStatus, WindowMessage } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
@@ -11,27 +11,31 @@ export class MessageDispatcher {
 
   private roomStore: RoomStore;
 
+  private background: BackgroundProxy;
+
   private unsubscribers: Unsubscribe[];
 
-  public constructor(emitter: EventEmitter, roomStore: RoomStore) {
+  public constructor(
+    emitter: EventEmitter,
+    roomStore: RoomStore,
+    background: BackgroundProxy
+  ) {
     this.emitter = emitter;
     this.roomStore = roomStore;
     this.unsubscribers = [];
+    this.background = background;
     this.init();
   }
 
   private init() {
     poll({
       fn: () =>
-        sendServiceRequest({
-          action: "setupCodeBuddyModel",
-          id: DOM.CODEBUDDY_EDITOR_ID,
-        }),
+        this.background.setupCodeBuddyEditor({ id: DOM.CODEBUDDY_EDITOR_ID }),
       until: (response) => response?.status === ResponseStatus.SUCCESS,
     });
 
     poll({
-      fn: () => sendServiceRequest({ action: "setupLeetCodeModel" }),
+      fn: () => this.background.setupLeetCodeEditor({}),
       until: (response) => response?.status === ResponseStatus.SUCCESS,
     });
 
