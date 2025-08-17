@@ -1,13 +1,20 @@
 import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
-import { RoomStore } from "@cb/store";
-import { EventEmitter, Events, ResponseStatus, WindowMessage } from "@cb/types";
+import { AppStatus, AppStore, RoomStore } from "@cb/store";
+import {
+  EventEmitter,
+  Events,
+  EventType,
+  ResponseStatus,
+  WindowMessage,
+} from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
-import { toast } from "sonner";
 
 export class MessageDispatcher {
   private emitter: EventEmitter;
+
+  private appStore: AppStore;
 
   private roomStore: RoomStore;
 
@@ -17,10 +24,12 @@ export class MessageDispatcher {
 
   public constructor(
     emitter: EventEmitter,
+    appStore: AppStore,
     roomStore: RoomStore,
     background: BackgroundProxy
   ) {
     this.emitter = emitter;
+    this.appStore = appStore;
     this.roomStore = roomStore;
     this.unsubscribers = [];
     this.background = background;
@@ -44,6 +53,7 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcOpen());
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
+    this.subscribeToSubmission();
   }
 
   private subscribeToCodeEditor() {
@@ -81,6 +91,57 @@ export class MessageDispatcher {
       })
     );
     return () => observer.disconnect();
+  }
+
+  private subscribeToSubmission() {
+    // todo(nickbar01234): On teardown, we need to revert the changes
+    const sendSuccessSubmission = () => {
+      if (this.appStore.getState().auth.status === AppStatus.AUTHENTICATED) {
+        this.emitter.emit("rtc.send.message", {
+          message: {
+            action: "event",
+            event: EventType.SUBMIT_SUCCESS,
+            user: this.appStore.getState().actions.getAuthUser().username,
+            timestamp: getUnixTs(),
+          },
+        });
+      }
+    };
+
+    const sendFailedSubmission = () => {
+      if (this.appStore.getState().auth.status === AppStatus.AUTHENTICATED) {
+        this.emitter.emit("rtc.send.message", {
+          message: {
+            action: "event",
+            event: EventType.SUBMIT_FAILURE,
+            user: this.appStore.getState().actions.getAuthUser().username,
+            timestamp: getUnixTs(),
+          },
+        });
+      }
+    };
+
+    waitForElement(DOM.LEETCODE_SUBMIT_BUTTON)
+      .then((button) => button as HTMLButtonElement)
+      .then((button) => {
+        const onclick = button.onclick;
+        if (import.meta.env.MODE === "development") {
+          const mockBtn = button.cloneNode(true) as HTMLButtonElement;
+          button.replaceWith(mockBtn);
+          mockBtn.onclick = function (event) {
+            event.preventDefault();
+            sendSuccessSubmission();
+            return;
+          };
+        } else {
+          button.onclick = function (event) {
+            if (onclick) onclick.call(this, event);
+            waitForElement(DOM.LEETCODE_SUBMISSION_RESULT)
+              .then(sendSuccessSubmission.bind(this))
+              .catch(sendFailedSubmission.bind(this));
+          };
+        }
+      });
   }
 
   private subscribeToRtcOpen() {
@@ -125,8 +186,6 @@ export class MessageDispatcher {
 
   private subscribeToRoomChanges() {
     const onRoomChange = (room: Events["room.changes"]) => {
-      room.joined.forEach((peer) => toast.info(`${peer} joined room`));
-      room.left.forEach((peer) => toast.info(`${peer} left room`));
       this.roomStore.getState().actions.peers.remove(room.left);
     };
     this.emitter.on("room.changes", onRoomChange);

@@ -1,11 +1,11 @@
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
 import { DatabaseService, EventEmitter, LocalStorage } from "@cb/types";
-import mitt from "mitt";
 import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
 import { RoomController } from "./controllers/RoomController";
 import { WebRtcController } from "./controllers/WebRtcController";
 import db from "./db";
+import { emitter } from "./events";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
@@ -54,6 +54,7 @@ interface Controllers {
 }
 
 const createControllersFactory = (
+  emitter: EventEmitter,
   db: DatabaseService,
   appStore: AppStore,
   roomStore: RoomStore,
@@ -65,10 +66,14 @@ const createControllersFactory = (
     if (initialized) {
       return controllers!;
     }
-    const emitter: EventEmitter = mitt();
     const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y);
     const room = new RoomController(db.room, emitter, appStore);
-    const message = new MessageDispatcher(emitter, roomStore, background);
+    const message = new MessageDispatcher(
+      emitter,
+      appStore,
+      roomStore,
+      background
+    );
     initialized = true;
     controllers = {
       emitter,
@@ -81,6 +86,7 @@ const createControllersFactory = (
 };
 
 export const getOrCreateControllers = createControllersFactory(
+  emitter,
   db,
   useApp,
   useRoom,
