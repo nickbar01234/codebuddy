@@ -6,9 +6,10 @@ interface PeerGenericMessage extends GenericMessage {
   timestamp: number;
 }
 
-interface PeerCodeMessage extends PeerGenericMessage {
+type Code = ServiceResponse["getValue"];
+
+interface PeerCodeMessage extends PeerGenericMessage, Code {
   action: "code";
-  code: ServiceResponse["getValue"];
   changes: string;
 }
 

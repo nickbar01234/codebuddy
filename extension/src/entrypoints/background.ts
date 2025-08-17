@@ -189,7 +189,8 @@ export default defineBackground(() => {
 
   browser.runtime.onMessage.addListener(
     (request: ServiceRequest, sender, sendResponse) => {
-      switch (request.action) {
+      const { action } = request;
+      switch (action) {
         case "getValue": {
           browser.scripting
             .executeScript({
@@ -258,9 +259,7 @@ export default defineBackground(() => {
               ],
               world: "MAIN",
             })
-            .then(() => {
-              sendResponse();
-            });
+            .then(() => sendResponse());
           break;
         }
 
@@ -310,7 +309,7 @@ export default defineBackground(() => {
 
         default:
           console.error(`Unhandled request ${request}`);
-          break;
+          assertUnreachable(action);
       }
 
       return true;

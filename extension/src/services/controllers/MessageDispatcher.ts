@@ -99,9 +99,9 @@ export class MessageDispatcher {
       console.log("Received message", from, message.action);
       switch (message.action) {
         case "code": {
-          const { code, changes } = message;
+          const { value, changes, language } = message;
           this.roomStore.getState().actions.peers.update(from, {
-            code: { code, changes },
+            code: { value, changes, language },
           });
           break;
         }

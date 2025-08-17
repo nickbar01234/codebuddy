@@ -36,10 +36,12 @@ export const getTestsPayload = (): PeerMessage => {
 export const getCodePayload = async (
   changes: Partial<LeetCodeContentChange>
 ): Promise<PeerMessage> => {
+  const { value, language } = await sendServiceRequest({ action: "getValue" });
   return {
     action: "code",
     timestamp: getUnixTs(),
-    code: await sendServiceRequest({ action: "getValue" }),
+    value,
+    language,
     changes: JSON.stringify(changes),
   };
 };

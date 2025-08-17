@@ -158,8 +158,8 @@ const createRoomStore = (leetcodeStore: LeetCodeStore) => {
       } else {
         sendServiceRequest({
           action: "setValueOtherEditor",
-          code: current.code?.code.value ?? "",
-          language: current.code?.code.language ?? "",
+          code: current.code?.value ?? "",
+          language: current.code?.language ?? "",
           changes: JSON.parse(current.code?.changes ?? "{}"),
           changeUser: current.id !== prev?.id,
           editorId: DOM.CODEBUDDY_EDITOR_ID,
