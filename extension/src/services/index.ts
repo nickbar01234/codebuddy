@@ -1,11 +1,5 @@
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
-import {
-  DatabaseService,
-  EventEmitter,
-  LocalStorage,
-  ServiceRequest,
-  ServiceResponse,
-} from "@cb/types";
+import { DatabaseService, EventEmitter, LocalStorage } from "@cb/types";
 import mitt from "mitt";
 import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
@@ -25,11 +19,6 @@ const LOCAL_STORAGE: Array<keyof LocalStorage> = [
   "navigatePrompt",
   "appEnabled",
 ];
-
-export const sendServiceRequest = <T extends ServiceRequest>(
-  request: T
-): Promise<ServiceResponse[T["action"]]> =>
-  browser.runtime.sendMessage(request);
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
