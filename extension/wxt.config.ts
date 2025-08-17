@@ -15,6 +15,7 @@ export default defineConfig({
     chromiumArgs: [
       "--disable-web-security",
       `--user-data-dir=./.wxt/chrome-data/${USER_PROFILE}`,
+      "--auto-open-devtools-for-tabs",
     ],
   },
   manifestVersion: 3,
