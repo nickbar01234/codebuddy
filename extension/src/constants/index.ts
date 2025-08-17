@@ -25,3 +25,7 @@ export const HEARTBEAT = {
   // seconds
   TIMEOUT: 100,
 };
+
+export const ROOM = {
+  CAPACITY: 4,
+};
