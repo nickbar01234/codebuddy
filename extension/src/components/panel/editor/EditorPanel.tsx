@@ -22,11 +22,6 @@ import { cn } from "@cb/utils/cn";
 import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
 
-export interface TabMetadata {
-  id: string;
-  displayHeader: string;
-}
-
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
   const roomStatus = useRoom((state) => state.status);
