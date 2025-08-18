@@ -40,20 +40,10 @@ export type PeerMessage =
   | PeerHeartBeatMessage
   | PeerEventMessage;
 
-export interface PeerInformation {
-  code?: MessagePayload<PeerCodeMessage>;
-  tests?: MessagePayload<PeerTestMessage>;
-}
-
-// todo(nickbar01234): Rename
 export interface PeerState extends Selectable {
   code?: MessagePayload<PeerCodeMessage>;
-  tests: MessagePayload<PeerTestMessage>;
+  tests: TestCase[];
   latency: number;
   finished: boolean;
   viewable: boolean;
-}
-
-export interface InternalPeerState extends Omit<PeerState, "tests"> {
-  tests: TestCase[];
 }
