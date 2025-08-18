@@ -3,7 +3,7 @@ import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { HEARTBEAT } from "@cb/constants";
 import { usePeerActions, usePeers } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
-import { Identifiable, InternalPeerState } from "@cb/types";
+import { Identifiable, PeerState } from "@cb/types";
 import { cn } from "@cb/utils/cn";
 import { codeViewable } from "@cb/utils/model";
 import { DropdownMenuItem } from "./DropdownMenuItem";
@@ -13,7 +13,7 @@ const GREENTHRESHOLD = HEARTBEAT.INTERVAL + 10;
 const YELLOWTHRESHOLD = HEARTBEAT.INTERVAL * 1.25 + 10;
 
 interface UserDropDownMenuTriggerProps {
-  peer?: Identifiable<InternalPeerState>;
+  peer?: Identifiable<PeerState>;
   canDropdown: boolean;
   signalStrength: ReturnType<typeof getStatus>;
 }

@@ -1,8 +1,8 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
-import { BoundStore, Id, InternalPeerState, PeerState } from "@cb/types";
-import { Identifiable } from "@cb/types/utils";
+import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
+import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
 import { create } from "zustand";
@@ -18,10 +18,14 @@ export enum RoomStatus {
   REJOINING,
 }
 
+interface UpdatePeerArgs extends Omit<PeerState, "tests"> {
+  tests: MessagePayload<ExtractMessage<PeerMessage, "tests">>;
+}
+
 interface RoomState {
   status: RoomStatus;
   room?: Identifiable<{ name: string; isPublic: boolean }>;
-  peers: Record<Id, InternalPeerState>;
+  peers: Record<Id, PeerState>;
 }
 
 interface RoomAction {
@@ -32,7 +36,7 @@ interface RoomAction {
     loading: () => void;
   };
   peers: {
-    update: (id: Id, peer: Partial<PeerState>) => Promise<void>;
+    update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
@@ -97,7 +101,7 @@ const createRoomStore = (
                     finished: false,
                     viewable: true,
                     selected: getSelectedPeer(state.peers) == undefined,
-                  } as InternalPeerState);
+                  } as PeerState);
                 const { tests: payload, ...rest } = peer;
                 const tests =
                   payload != undefined

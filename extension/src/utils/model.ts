@@ -1,4 +1,4 @@
-import { InternalPeerState } from "@cb/types";
+import { PeerState } from "@cb/types";
 
-export const codeViewable = (peer: InternalPeerState | undefined) =>
+export const codeViewable = (peer: PeerState | undefined) =>
   peer?.viewable ?? false;
