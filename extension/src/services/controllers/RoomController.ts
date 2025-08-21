@@ -91,6 +91,7 @@ class RoomLifeCycle {
                 from,
                 to,
                 data: message.data,
+                source: "firebase",
               });
               break;
             }
@@ -99,6 +100,7 @@ class RoomLifeCycle {
                 from,
                 to,
                 data: message.data,
+                source: "firebase",
               });
               break;
             }
@@ -126,8 +128,9 @@ class RoomLifeCycle {
     };
   }
 
-  private handleIceEvents({ from, to, data }: Events["rtc.ice"]) {
-    if (from === this.me) {
+  private handleIceEvents({ from, to, data, source }: Events["rtc.ice"]) {
+    // Only forward my local WebRTC events to Firebase (ignore events from Firebase to prevent loops)
+    if (from === this.me && source !== "firebase") {
       this.database.addNegotiation(this.room.id, {
         from,
         to,
@@ -141,8 +144,10 @@ class RoomLifeCycle {
     from,
     to,
     data,
+    source,
   }: Events["rtc.description"]) {
-    if (from === this.me) {
+    // Only forward my local WebRTC events to Firebase (ignore events from Firebase to prevent loops)
+    if (from === this.me && source !== "firebase") {
       this.database.addNegotiation(this.room.id, {
         from,
         to,
