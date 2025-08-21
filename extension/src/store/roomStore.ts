@@ -140,11 +140,22 @@ const createRoomStore = (
               });
             },
             remove: (ids) => {
-              // todo(nickbar01234): If currently selected peer is remove, we should pick a new one
               set((state) => {
+                const currentlySelected = getSelectedPeer(state.peers);
+                const selectedPeerBeingRemoved =
+                  currentlySelected && ids.includes(currentlySelected.id);
+
                 ids.forEach((id) => delete state.peers[id]);
-                const active = getSelectedPeer(state.peers);
-                console.log("active", active);
+
+                // If the selected peer was removed, select a new one from remaining peers
+                if (selectedPeerBeingRemoved) {
+                  const remainingPeerIds = Object.keys(state.peers);
+                  if (remainingPeerIds.length > 0) {
+                    // Select the first available peer
+                    const newSelectedPeerId = remainingPeerIds[0];
+                    state.peers[newSelectedPeerId].selected = true;
+                  }
+                }
               });
             },
             selectPeer: (id) => {
