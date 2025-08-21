@@ -5,6 +5,7 @@ import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
+import { toast } from "sonner";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
@@ -61,18 +62,32 @@ const createRoomStore = (
         actions: {
           room: {
             create: async (args) => {
-              // todo(nickbar01234): Error handling
-              get().actions.room.loading();
-              const room = await getOrCreateControllers().room.create(args);
-              const { id, name, isPublic } = room.getRoom();
-              setRoom({ id, name, isPublic });
+              try {
+                get().actions.room.loading();
+                const room = await getOrCreateControllers().room.create(args);
+                const { id, name, isPublic } = room.getRoom();
+                setRoom({ id, name, isPublic });
+              } catch (error) {
+                toast.error("Failed to create room. Please try again.");
+                console.error("Failed to create room", error);
+                set((state) => {
+                  state.status = RoomStatus.HOME;
+                });
+              }
             },
             join: async (id) => {
-              // todo(nickbar01234): Error handling
-              get().actions.room.loading();
-              const room = await getOrCreateControllers().room.join(id);
-              const { name, isPublic } = room.getRoom();
-              setRoom({ id, name, isPublic });
+              try {
+                get().actions.room.loading();
+                const room = await getOrCreateControllers().room.join(id);
+                const { name, isPublic } = room.getRoom();
+                setRoom({ id, name, isPublic });
+              } catch (error) {
+                toast.error("Room ID is invalid. Please try again.");
+                console.error("Failed to join room", error);
+                set((state) => {
+                  state.status = RoomStatus.HOME;
+                });
+              }
             },
             leave: async () => {
               get().actions.room.loading();
@@ -126,7 +141,11 @@ const createRoomStore = (
             },
             remove: (ids) => {
               // todo(nickbar01234): If currently selected peer is remove, we should pick a new one
-              set((state) => ids.forEach((id) => delete state.peers[id]));
+              set((state) => {
+                ids.forEach((id) => delete state.peers[id]);
+                const active = getSelectedPeer(state.peers);
+                console.log("active", active);
+              });
             },
             selectPeer: (id) => {
               set((state) => {
