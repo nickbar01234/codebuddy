@@ -45,6 +45,10 @@ export class WebRtcController {
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
+
+    // Global event handlers, then check if message is intended for me inside the handler
+    this.emitter.on("rtc.ice", this.handleIceEvents.bind(this));
+    this.emitter.on("rtc.description", this.handleDescriptionEvents.bind(this));
   }
 
   private leave() {
@@ -108,23 +112,13 @@ export class WebRtcController {
       }
     };
 
-    const handleIceEvents = this.handleIceEvents.bind(this);
-    const handleDescriptionEvents = this.handleDescriptionEvents.bind(this);
-
-    this.emitter.on("rtc.ice", handleIceEvents);
-    this.emitter.on("rtc.description", handleDescriptionEvents);
-
     channel.onopen = () => {
       console.log("Channel open", user);
-      this.emitter.off("rtc.ice", handleIceEvents);
-      this.emitter.off("rtc.description", handleDescriptionEvents);
       this.emitter.emit("rtc.open", { user });
     };
 
     channel.onclose = () => {
       console.log("Channel closed", user);
-      this.emitter.off("rtc.ice", handleIceEvents);
-      this.emitter.off("rtc.description", handleDescriptionEvents);
     };
 
     channel.onmessage = (event: MessageEvent) => {
@@ -139,13 +133,18 @@ export class WebRtcController {
 
   private async handleDescriptionEvents({
     from,
+    to,
     data,
   }: Events["rtc.description"]) {
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
+
+    // Since message is sent to all peers, only proceed with message intended for me
+    if (to !== me) return;
+
     const connection = this.pcs.get(from);
 
     if (connection == undefined) return;
 
-    const { username: me } = this.appStore.getState().actions.getAuthUser();
     // whether im polite or not
     const polite = this.iamPolite(me, from);
     const pc = connection.pc;
@@ -178,9 +177,13 @@ export class WebRtcController {
     }
   }
 
-  private async handleIceEvents({ from, data }: Events["rtc.ice"]) {
-    const connection = this.pcs.get(from);
+  private async handleIceEvents({ from, to, data }: Events["rtc.ice"]) {
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
 
+    // Since message is sent to all peers, only proceed with message intended for me
+    if (to !== me) return;
+
+    const connection = this.pcs.get(from);
     if (connection == undefined) return;
 
     try {
