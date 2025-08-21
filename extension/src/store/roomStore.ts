@@ -90,12 +90,22 @@ const createRoomStore = (
               }
             },
             leave: async () => {
-              get().actions.room.loading();
-              await getOrCreateControllers().room.leave();
-              set((state) => {
-                state.status = RoomStatus.HOME;
-                state.peers = {};
-              });
+              try {
+                get().actions.room.loading();
+                await getOrCreateControllers().room.leave();
+                set((state) => {
+                  state.status = RoomStatus.HOME;
+                  state.peers = {};
+                });
+              } catch (error) {
+                toast.error("Failed to leave room. Please try again.");
+                console.error("Failed to leave room", error);
+                // Reset to home state even if leave operation failed
+                set((state) => {
+                  state.status = RoomStatus.HOME;
+                  state.peers = {};
+                });
+              }
             },
             loading: () =>
               set((state) => {
@@ -141,13 +151,10 @@ const createRoomStore = (
             },
             remove: (ids) => {
               set((state) => {
-                const currentlySelected = getSelectedPeer(state.peers);
-                const selectedPeerBeingRemoved =
-                  currentlySelected && ids.includes(currentlySelected.id);
-
+                const selectedPeerBeingRemoved = ids.includes(
+                  getSelectedPeer(state.peers)?.id ?? ""
+                );
                 ids.forEach((id) => delete state.peers[id]);
-
-                // If the selected peer was removed, select a new one from remaining peers
                 if (selectedPeerBeingRemoved) {
                   const remainingPeerIds = Object.keys(state.peers);
                   if (remainingPeerIds.length > 0) {
