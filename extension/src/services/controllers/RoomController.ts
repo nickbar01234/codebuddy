@@ -1,12 +1,6 @@
+import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
-import {
-  DatabaseService,
-  EventEmitter,
-  Events,
-  Id,
-  Room,
-  User,
-} from "@cb/types";
+import { DatabaseService, Events, Id, Room, User } from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 
 class RoomLifeCycle {
@@ -114,27 +108,30 @@ class RoomLifeCycle {
   }
 
   private subscribeToEventsEmitter() {
-    const iceEvents = this.handleIceEvents.bind(this);
-    const descriptionEvents = this.handleDescriptionEvents.bind(this);
-
-    this.emitter.on("rtc.ice", iceEvents);
-    this.emitter.on("rtc.description", descriptionEvents);
+    const unsubscribeFromIceEvents = this.emitter.on(
+      "rtc.ice",
+      this.handleIceEvents.bind(this),
+      (event) => event.from === this.me
+    );
+    const unsubscribeFromDescriptionEvents = this.emitter.on(
+      "rtc.description",
+      this.handleDescriptionEvents.bind(this),
+      (event) => event.from === this.me
+    );
 
     return () => {
-      this.emitter.off("rtc.ice", iceEvents);
-      this.emitter.off("rtc.description", descriptionEvents);
+      unsubscribeFromIceEvents();
+      unsubscribeFromDescriptionEvents();
     };
   }
 
   private handleIceEvents({ from, to, data }: Events["rtc.ice"]) {
-    if (from === this.me) {
-      this.database.addNegotiation(this.room.id, {
-        from,
-        to,
-        message: { action: "ice", data },
-        version: this.room.version,
-      });
-    }
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "ice", data },
+      version: this.room.version,
+    });
   }
 
   private handleDescriptionEvents({
@@ -142,14 +139,12 @@ class RoomLifeCycle {
     to,
     data,
   }: Events["rtc.description"]) {
-    if (from === this.me) {
-      this.database.addNegotiation(this.room.id, {
-        from,
-        to,
-        message: { action: "description", data },
-        version: this.room.version,
-      });
-    }
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "description", data },
+      version: this.room.version,
+    });
   }
 }
 
