@@ -50,9 +50,7 @@ const createEmitter = <
       emitter.off(type, filterable);
     },
 
-    emit<Key extends keyof Events>(type: Key, event: Events[Key]) {
-      emitter.emit(type, event);
-    },
+    emit: emitter.emit,
   };
 };
 
