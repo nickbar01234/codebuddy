@@ -42,7 +42,7 @@ const createEmitter = <
       handlers.get(type)?.set(handler, filterable);
 
       emitter.on(type, filterable);
-      return () => emitter.off(type, filterable);
+      return () => this.off(type, handler);
     },
 
     off<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) {
