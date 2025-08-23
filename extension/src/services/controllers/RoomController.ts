@@ -1,6 +1,13 @@
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
-import { DatabaseService, Events, Id, Room, User } from "@cb/types";
+import {
+  AddressableEvent,
+  DatabaseService,
+  Events,
+  Id,
+  Room,
+  User,
+} from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 
 class RoomLifeCycle {
@@ -108,15 +115,17 @@ class RoomLifeCycle {
   }
 
   private subscribeToEventsEmitter() {
+    const isFromMe = ({ from }: AddressableEvent<unknown>) => from === this.me;
+
     const unsubscribeFromIceEvents = this.emitter.on(
       "rtc.ice",
       this.handleIceEvents.bind(this),
-      (event) => event.from === this.me
+      isFromMe.bind(this)
     );
     const unsubscribeFromDescriptionEvents = this.emitter.on(
       "rtc.description",
       this.handleDescriptionEvents.bind(this),
-      (event) => event.from === this.me
+      isFromMe.bind(this)
     );
 
     return () => {

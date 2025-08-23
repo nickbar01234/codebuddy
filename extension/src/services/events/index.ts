@@ -47,6 +47,7 @@ const createEmitter = <
 
     off<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) {
       const filterable = handlers.get(type)?.get(handler);
+      handlers.get(type)?.delete(handler);
       emitter.off(type, filterable);
     },
 
