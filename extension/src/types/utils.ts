@@ -27,19 +27,6 @@ export type DistributiveOmit<T, K extends keyof any> = T extends any
   ? Omit<T, K>
   : never;
 
-export interface LeetCodeContentChange {
-  range: {
-    startLineNumber: number;
-    startColumn: number;
-    endLineNumber: number;
-    endColumn: number;
-  };
-  rangeLength: number;
-  text: string;
-  rangeOffset: number;
-  forceMoveMarkers: boolean;
-}
-
 export interface Connection {
   username: string;
   pc: RTCPeerConnection;

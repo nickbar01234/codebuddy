@@ -9,6 +9,8 @@ export default defineContentScript({
   matches: [URLS.ALL_PROBLEMS],
   runAt: "document_end",
   main(ctx) {
+    // Initialize controllers on startup
+    getOrCreateControllers();
     const ui = createUi(ctx);
     ui.mount();
   },
@@ -19,8 +21,6 @@ const createUi = (ctx: ContentScriptContext) => {
     position: "inline",
     anchor: DOM.LEETCODE_ROOT_ID,
     append: (leetCodeNode, extensionRoot) => {
-      // Initialize controllers on startup
-      getOrCreateControllers();
       leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
       extensionRoot.classList.add("relative", "h-full", "w-full");
 
