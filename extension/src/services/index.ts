@@ -1,11 +1,11 @@
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
-import { DatabaseService, EventEmitter, LocalStorage } from "@cb/types";
+import { DatabaseService, LocalStorage } from "@cb/types";
 import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
 import { RoomController } from "./controllers/RoomController";
 import { WebRtcController } from "./controllers/WebRtcController";
 import db from "./db";
-import { emitter } from "./events";
+import { emitter, EventEmitter } from "./events";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution

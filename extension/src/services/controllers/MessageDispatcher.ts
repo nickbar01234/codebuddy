@@ -1,13 +1,8 @@
 import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
+import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
-import {
-  EventEmitter,
-  Events,
-  EventType,
-  ResponseStatus,
-  WindowMessage,
-} from "@cb/types";
+import { Events, EventType, ResponseStatus, WindowMessage } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
 

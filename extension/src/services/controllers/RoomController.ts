@@ -1,7 +1,8 @@
+import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
+  AddressableEvent,
   DatabaseService,
-  EventEmitter,
   Events,
   Id,
   Room,
@@ -114,27 +115,32 @@ class RoomLifeCycle {
   }
 
   private subscribeToEventsEmitter() {
-    const iceEvents = this.handleIceEvents.bind(this);
-    const descriptionEvents = this.handleDescriptionEvents.bind(this);
+    const isFromMe = ({ from }: AddressableEvent<unknown>) => from === this.me;
 
-    this.emitter.on("rtc.ice", iceEvents);
-    this.emitter.on("rtc.description", descriptionEvents);
+    const unsubscribeFromIceEvents = this.emitter.on(
+      "rtc.ice",
+      this.handleIceEvents.bind(this),
+      isFromMe.bind(this)
+    );
+    const unsubscribeFromDescriptionEvents = this.emitter.on(
+      "rtc.description",
+      this.handleDescriptionEvents.bind(this),
+      isFromMe.bind(this)
+    );
 
     return () => {
-      this.emitter.off("rtc.ice", iceEvents);
-      this.emitter.off("rtc.description", descriptionEvents);
+      unsubscribeFromIceEvents();
+      unsubscribeFromDescriptionEvents();
     };
   }
 
   private handleIceEvents({ from, to, data }: Events["rtc.ice"]) {
-    if (from === this.me) {
-      this.database.addNegotiation(this.room.id, {
-        from,
-        to,
-        message: { action: "ice", data },
-        version: this.room.version,
-      });
-    }
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "ice", data },
+      version: this.room.version,
+    });
   }
 
   private handleDescriptionEvents({
@@ -142,14 +148,12 @@ class RoomLifeCycle {
     to,
     data,
   }: Events["rtc.description"]) {
-    if (from === this.me) {
-      this.database.addNegotiation(this.room.id, {
-        from,
-        to,
-        message: { action: "description", data },
-        version: this.room.version,
-      });
-    }
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "description", data },
+      version: this.room.version,
+    });
   }
 }
 

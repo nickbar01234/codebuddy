@@ -1,6 +1,6 @@
+import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
-  EventEmitter,
   Events,
   IamPolite,
   PeerConnection,
