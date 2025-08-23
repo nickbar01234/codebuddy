@@ -1,14 +1,15 @@
 import { usePeers } from "@cb/hooks/store";
-import background from "@cb/services/background";
+import { getOrCreateWindowMesseger } from "@cb/services/messenger";
 import React from "react";
 
 export const usePasteCode = () => {
   const { selectedPeer } = usePeers();
   return React.useCallback(
     () =>
-      background.pasteCode({
-        value: selectedPeer?.code?.value ?? "",
-      }),
+      getOrCreateWindowMesseger().sendMessage(
+        "paste",
+        selectedPeer?.code?.value ?? ""
+      ),
     [selectedPeer]
   );
 };

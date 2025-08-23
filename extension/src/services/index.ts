@@ -1,6 +1,5 @@
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
 import { DatabaseService, EventEmitter, LocalStorage } from "@cb/types";
-import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
 import { RoomController } from "./controllers/RoomController";
 import { WebRtcController } from "./controllers/WebRtcController";
@@ -57,8 +56,7 @@ const createControllersFactory = (
   emitter: EventEmitter,
   db: DatabaseService,
   appStore: AppStore,
-  roomStore: RoomStore,
-  background: BackgroundProxy
+  roomStore: RoomStore
 ) => {
   let initialized = false;
   let controllers: Controllers | undefined = undefined;
@@ -68,12 +66,7 @@ const createControllersFactory = (
     }
     const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y);
     const room = new RoomController(db.room, emitter, appStore);
-    const message = new MessageDispatcher(
-      emitter,
-      appStore,
-      roomStore,
-      background
-    );
+    const message = new MessageDispatcher(emitter, appStore, roomStore);
     initialized = true;
     controllers = {
       emitter,
@@ -89,6 +82,5 @@ export const getOrCreateControllers = createControllersFactory(
   emitter,
   db,
   useApp,
-  useRoom,
-  background
+  useRoom
 );

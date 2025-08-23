@@ -1,13 +1,6 @@
 import { DOM } from "@cb/constants";
-import { BackgroundProxy } from "@cb/services/background";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
-import {
-  EventEmitter,
-  Events,
-  EventType,
-  ResponseStatus,
-  WindowMessage,
-} from "@cb/types";
+import { EventEmitter, Events, EventType, WindowMessage } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
 
@@ -18,36 +11,21 @@ export class MessageDispatcher {
 
   private roomStore: RoomStore;
 
-  private background: BackgroundProxy;
-
   private unsubscribers: Unsubscribe[];
 
   public constructor(
     emitter: EventEmitter,
     appStore: AppStore,
-    roomStore: RoomStore,
-    background: BackgroundProxy
+    roomStore: RoomStore
   ) {
     this.emitter = emitter;
     this.appStore = appStore;
     this.roomStore = roomStore;
     this.unsubscribers = [];
-    this.background = background;
     this.init();
   }
 
   private init() {
-    poll({
-      fn: () =>
-        this.background.setupCodeBuddyEditor({ id: DOM.CODEBUDDY_EDITOR_ID }),
-      until: (response) => response?.status === ResponseStatus.SUCCESS,
-    });
-
-    poll({
-      fn: () => this.background.setupLeetCodeEditor({}),
-      until: (response) => response?.status === ResponseStatus.SUCCESS,
-    });
-
     this.unsubscribers.push(this.subscribeToCodeEditor());
     this.unsubscribers.push(this.subscribeToTestEditor());
     this.unsubscribers.push(this.subscribeToRtcOpen());

@@ -3,6 +3,7 @@ import { Selectable } from "./utils";
 export * from "./content";
 export * from "./db";
 export * from "./events";
+export * from "./extension";
 export * from "./peers";
 export * from "./services";
 export * from "./store";

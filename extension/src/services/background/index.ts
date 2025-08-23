@@ -1,3 +1,4 @@
+import { getOrCreateBackgroundMessenging } from "@cb/services/messenger";
 import {
   ExtractMessage,
   MessagePayload,
@@ -17,10 +18,6 @@ const background = {
       ...args,
     }),
 
-  pasteCode: (
-    args: MessagePayload<ExtractMessage<ServiceRequest, "pasteCode">>
-  ) => sendServiceRequest({ action: "pasteCode", ...args }),
-
   setupCodeBuddyEditor: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "setupCodeBuddyModel">>
   ) => sendServiceRequest({ action: "setupCodeBuddyModel", ...args }),
@@ -35,11 +32,17 @@ const background = {
 
   getActiveTab: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "getActiveTabId">>
-  ) => sendServiceRequest({ action: "getActiveTabId", ...args }),
+  ) =>
+    getOrCreateBackgroundMessenging().then(({ sendMessage }) =>
+      sendMessage("getActiveTabId")
+    ),
 
   closeSignInTab: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "closeSignInTab">>
-  ) => sendServiceRequest({ action: "closeSignInTab", ...args }),
+  ) =>
+    getOrCreateBackgroundMessenging().then(({ sendMessage }) =>
+      sendMessage("closeSignInTab", args)
+    ),
 
   getAllLanguageExtensions: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "getLanguageExtension">>

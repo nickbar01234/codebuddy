@@ -1,4 +1,5 @@
 import { URLS } from "@cb/constants";
+import { getOrCreateBackgroundMessenging } from "@cb/services/messenger";
 import {
   ContentRequest,
   ExtractMessage,
@@ -205,18 +206,6 @@ export default defineBackground(() => {
           break;
         }
 
-        case "pasteCode": {
-          browser.scripting
-            .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
-              func: pasteCode,
-              args: [request.value],
-              world: "MAIN",
-            })
-            .then(sendResponse);
-          break;
-        }
-
         case "setupCodeBuddyModel": {
           browser.scripting
             .executeScript({
@@ -271,23 +260,6 @@ export default defineBackground(() => {
         }
 
         case "closeSignInTab": {
-          const {
-            signIn: { url, tabId },
-          } = request;
-          browser.tabs
-            .get(tabId)
-            .then(async (tab) => {
-              const response = servicePayload<"closeSignInTab">({
-                status: tab.url?.startsWith(url)
-                  ? ResponseStatus.SUCCESS
-                  : ResponseStatus.FAIL,
-              });
-              if (response.status === ResponseStatus.SUCCESS) {
-                await browser.tabs.remove(tabId);
-              }
-              sendResponse(response);
-            })
-            .catch(console.error);
           break;
         }
 
@@ -315,4 +287,31 @@ export default defineBackground(() => {
       return true;
     }
   );
+
+  getOrCreateBackgroundMessenging().then(({ onMessage }) => {
+    onMessage("getExtensionId", () => ({
+      status: ResponseStatus.SUCCESS,
+      payload: chrome.runtime.id,
+    }));
+
+    onMessage("getActiveTabId", ({ sender }) => ({
+      status: ResponseStatus.SUCCESS,
+      payload: sender.tab.id,
+    }));
+
+    onMessage("closeSignInTab", async ({ data }) => {
+      const {
+        signIn: { url, tabId },
+      } = data;
+      const tab = await browser.tabs.get(tabId);
+      if (tab.url?.startsWith(url)) {
+        await browser.tabs.remove(tabId);
+        return { status: ResponseStatus.SUCCESS };
+      }
+      return {
+        status: ResponseStatus.FAIL,
+        payload: "User have interacted with sign-in tab",
+      };
+    });
+  });
 });

@@ -29,3 +29,7 @@ export const HEARTBEAT = {
 export const ROOM = {
   CAPACITY: 4,
 };
+
+export const IDS = {
+  CODE_BUDDY: "CodeBuddy",
+};
