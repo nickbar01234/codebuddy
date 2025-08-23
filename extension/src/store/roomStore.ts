@@ -93,14 +93,8 @@ const createRoomStore = (
               try {
                 get().actions.room.loading();
                 await getOrCreateControllers().room.leave();
-                set((state) => {
-                  state.status = RoomStatus.HOME;
-                  state.peers = {};
-                });
-              } catch (error) {
-                toast.error("Failed to leave room. Please try again.");
-                console.error("Failed to leave room", error);
-                // Reset to home state even if leave operation failed
+              } finally {
+                // Reset to home even if error
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
