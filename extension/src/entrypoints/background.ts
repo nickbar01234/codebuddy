@@ -16,107 +16,95 @@ export default defineBackground(() => {
   const contentPayload = <T extends ContentRequest>(payload: T) => payload;
 
   const getValue = async () => {
-    const monaco = (window as any).monaco;
-
-    const lcCodeEditor = monaco.editor
+    const model = window.monaco?.editor
       .getEditors()
-      .filter((e: any) => e.id !== "CodeBuddy")
-      .map((e: any) => e.getModel())
-      .find((m: any) => m.getLanguageId() !== "plaintext");
-
+      .filter((editor: any) => editor.id !== "CodeBuddy")
+      .map((editor) => editor.getModel())
+      .find((model) => model?.getLanguageId() !== "plaintext");
     return {
-      value: lcCodeEditor.getValue(),
-      language: lcCodeEditor.getLanguageId(),
+      value: model?.getValue(),
+      language: model?.getLanguageId(),
     };
   };
 
   const pasteCode = async (value: string) => {
-    const monaco = (window as any).monaco;
-    const myEditor = monaco.editor
+    const editor = window.monaco?.editor
       .getEditors()
-      .filter((e: any) => e.id !== "CodeBuddy")
-      .find((m: any) => m.getModel().getLanguageId() !== "plaintext");
-    try {
-      const fullRange = myEditor.getModel().getFullModelRange();
-      myEditor.executeEdits(null, [
+      .find(
+        (editor) =>
+          (editor as any).id !== "CodeBuddy" &&
+          editor.getModel()?.getLanguageId() !== "plaintext"
+      );
+    const model = editor?.getModel();
+
+    if (editor != undefined && model != undefined) {
+      editor.executeEdits(null, [
         {
-          range: fullRange,
+          range: model.getFullModelRange(),
           text: value,
         },
       ]);
-      myEditor.pushUndoStop();
-    } catch (e) {
-      console.error(e);
+      editor.pushUndoStop();
     }
   };
 
   const setupCodeBuddyModel = async (id: string) => {
-    const windowAsAny = window as any;
-    if (windowAsAny.monaco == undefined) {
+    if (window.monaco == undefined) {
       return {
         status: 1,
       };
-    } else {
-      const monaco = windowAsAny.monaco;
-      console.log("Setting up CodeBuddy model");
-      if (
-        monaco.editor
-          .getEditors()
-          .find((editor: any) => editor.id === "CodeBuddy") == undefined
-      ) {
-        // console.log("No Editor Found");
-        const buddyEditor = await monaco.editor.create(
-          document.getElementById(id),
-          {
-            readOnly: true,
-            scrollBeyondLastLine: false,
-            automaticLayout: true,
-            minimap: { enabled: false },
-            padding: {
-              top: 8,
-            },
-          }
-        );
-        buddyEditor.id = "CodeBuddy";
-      }
-      console.log("Finished setting up CodeBuddy model");
+    }
+
+    const hasNotSetup =
+      window.monaco.editor
+        .getEditors()
+        .find((editor: any) => editor.id === "CodeBuddy") == undefined;
+    const editorDom = document.getElementById(id);
+    if (hasNotSetup && editorDom != null) {
+      const editor = window.monaco.editor.create(editorDom, {
+        readOnly: true,
+        scrollBeyondLastLine: false,
+        automaticLayout: true,
+        minimap: { enabled: false },
+        padding: {
+          top: 8,
+        },
+      });
+      (editor as any).id = "CodeBuddy";
       return {
         status: 0,
       };
     }
+
+    return {
+      status: 1,
+    };
   };
 
   const setupLeetCodeModel = async () => {
-    const windowAsAny = window as any;
-    if (windowAsAny.monaco == undefined) {
+    const model = window.monaco?.editor
+      .getEditors()
+      .filter((editor: any) => editor.id !== "CodeBuddy")
+      .map((editor) => editor.getModel())
+      .find((model) => model?.getLanguageId() !== "plaintext");
+
+    if (model == undefined) {
       return {
         status: 1,
       };
-    } else {
-      console.log("Setting up LeetCode model");
-      const leetCodeEditor = windowAsAny.monaco.editor
-        .getEditors()
-        .filter((e: any) => e.id !== "CodeBuddy")
-        .map((e: any) => e.getModel())
-        .find((m: any) => m.getLanguageId() !== "plaintext");
-      if (!leetCodeEditor) {
-        console.error("LeetCode editor model not found");
-        return { status: ResponseStatus.FAIL };
-      }
-      leetCodeEditor.onDidChangeContent((event: any) => {
-        // todo(nickbar01234): Don't have a good way to include function from a different file yet
-        // Ideally, we should do the same pattern as services/index.ts
-        const leetCodeOnChange: WindowMessage = {
-          action: "leetCodeOnChange",
-          changes: event.changes[0],
-        };
-        window.postMessage(leetCodeOnChange);
-      });
-      console.log("Finished setting up LeetCode model");
-      return {
-        status: 0,
-      };
     }
+
+    model.onDidChangeContent((event) => {
+      const onChange: WindowMessage = {
+        action: "leetCodeOnChange",
+        changes: event.changes[0],
+      };
+      window.postMessage(onChange);
+    });
+
+    return {
+      status: 0,
+    };
   };
 
   const setValueModel = async (
@@ -125,29 +113,33 @@ export default defineBackground(() => {
       "code" | "language" | "changes" | "changeUser" | "editorId"
     >
   ) => {
-    // console.log("using setValueModel");
     const { code, language, changes, changeUser } = args;
-
-    const monaco = (window as any).monaco;
-    const myEditor = await monaco.editor
+    const editor = window.monaco?.editor
       .getEditors()
-      .find((e: any) => e.id === "CodeBuddy");
-    const myLanguage = await myEditor.getModel().getLanguageId();
+      .find((editor: any) => editor.id === "CodeBuddy");
+    const model = editor?.getModel();
 
     if (
-      myLanguage !== language ||
+      editor == undefined ||
+      model == undefined ||
+      window.monaco == undefined
+    ) {
+      return;
+    }
+
+    if (
+      model.getLanguageId() != language ||
       changeUser ||
       Object.keys(changes).length === 0
     ) {
-      console.log("Setting Value Model");
-      await monaco.editor.setModelLanguage(myEditor.getModel(), language);
-      myEditor.setValue(code);
+      window.monaco.editor.setModelLanguage(model, language);
+      editor.setValue(code);
       return;
     }
 
     const editOperations = {
       identifier: { major: 1, minor: 1 },
-      range: new monaco.Range(
+      range: new window.monaco.Range(
         changes.range.startLineNumber,
         changes.range.startColumn,
         changes.range.endLineNumber,
@@ -156,13 +148,12 @@ export default defineBackground(() => {
       text: changes.text,
       forceMoveMarkers: false,
     };
-    await myEditor.updateOptions({ readOnly: false });
-    await myEditor.executeEdits("apply changes", [editOperations]);
-    const myCode = await myEditor.getValue();
-    if (myCode !== code) {
-      await myEditor.setValue(code);
+    editor.updateOptions({ readOnly: false });
+    editor.executeEdits("apply changes", [editOperations]);
+    if (editor.getValue() !== code) {
+      editor.setValue(code);
     }
-    await myEditor.updateOptions({ readOnly: true });
+    editor.updateOptions({ readOnly: true });
   };
 
   const getLanguageExtension = () => {
