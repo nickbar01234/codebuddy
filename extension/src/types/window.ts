@@ -6,4 +6,9 @@ interface LeetCodeOnChangeMessage extends GenericMessage {
   changes: monaco.editor.IModelContentChange;
 }
 
-export type WindowMessage = LeetCodeOnChangeMessage;
+interface NavigateMessage extends GenericMessage {
+  action: "navigate";
+  url: string;
+}
+
+export type WindowMessage = LeetCodeOnChangeMessage | NavigateMessage;
