@@ -47,8 +47,10 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
         },
 
         getLanguageExtension: (id?: string) => {
-          return get().languageExtensions.find((language) => language.id === id)
-            ?.extensions[0];
+          const extensions =
+            get().languageExtensions.find((language) => language.id === id)
+              ?.extensions ?? [];
+          return extensions[0];
         },
       },
     }))

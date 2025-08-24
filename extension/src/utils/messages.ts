@@ -1,6 +1,7 @@
 import { DOM } from "@cb/constants";
 import background from "@cb/services/background";
-import { LeetCodeContentChange, PeerMessage } from "@cb/types";
+import { PeerMessage } from "@cb/types";
+import monaco from "monaco-editor";
 import { getUnixTs } from "./heartbeat";
 
 export const getTestsPayload = (): PeerMessage => {
@@ -14,7 +15,7 @@ export const getTestsPayload = (): PeerMessage => {
 };
 
 export const getCodePayload = async (
-  changes: Partial<LeetCodeContentChange>
+  changes: Partial<monaco.editor.IModelContentChange>
 ): Promise<PeerMessage> => {
   const { value, language } = await background.getCode({});
   return {

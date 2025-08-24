@@ -1,4 +1,3 @@
-import { Emitter } from "mitt";
 import { Room, User } from "./db";
 import { PeerMessage } from "./peers";
 
@@ -39,5 +38,3 @@ export type Events = {
   "room.changes": RoomEvent;
   "room.left": void;
 };
-
-export type EventEmitter = Emitter<Events>;

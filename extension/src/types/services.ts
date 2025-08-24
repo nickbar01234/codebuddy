@@ -1,9 +1,6 @@
+import monaco from "monaco-editor";
 import { LocalStorage } from ".";
-import type {
-  GenericMessage,
-  GenericResponse,
-  LeetCodeContentChange,
-} from "./utils";
+import type { GenericMessage, GenericResponse } from "./utils";
 
 interface GetValueRequest extends GenericMessage {
   action: "getValue";
@@ -27,7 +24,7 @@ interface SetOtherEditorRequest extends GenericMessage {
   action: "setValueOtherEditor";
   code: string;
   language: string;
-  changes: LeetCodeContentChange;
+  changes: monaco.editor.IModelContentChange;
   changeUser: boolean;
   editorId: string;
 }
@@ -78,6 +75,6 @@ export type ServiceResponse = GenericResponse<
     reloadExtension: void;
     getActiveTabId: number;
     closeSignInTab: ServiceGenericResponse;
-    getLanguageExtension: Array<{ id: string; extensions: string[] }>;
+    getLanguageExtension: Array<monaco.languages.ILanguageExtensionPoint>;
   }
 >;

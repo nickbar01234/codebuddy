@@ -1,7 +1,8 @@
+import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
+  AddressableEvent,
   DatabaseService,
-  EventEmitter,
   Events,
   Id,
   Room,
@@ -116,28 +117,32 @@ class RoomLifeCycle {
   }
 
   private subscribeToEventsEmitter() {
-    const iceEvents = this.handleIceEvents.bind(this);
-    const descriptionEvents = this.handleDescriptionEvents.bind(this);
+    const isFromMe = ({ from }: AddressableEvent<unknown>) => from === this.me;
 
-    this.emitter.on("rtc.ice", iceEvents);
-    this.emitter.on("rtc.description", descriptionEvents);
+    const unsubscribeFromIceEvents = this.emitter.on(
+      "rtc.ice",
+      this.handleIceEvents.bind(this),
+      isFromMe.bind(this)
+    );
+    const unsubscribeFromDescriptionEvents = this.emitter.on(
+      "rtc.description",
+      this.handleDescriptionEvents.bind(this),
+      isFromMe.bind(this)
+    );
 
     return () => {
-      this.emitter.off("rtc.ice", iceEvents);
-      this.emitter.off("rtc.description", descriptionEvents);
+      unsubscribeFromIceEvents();
+      unsubscribeFromDescriptionEvents();
     };
   }
 
-  private handleIceEvents({ from, to, data, source }: Events["rtc.ice"]) {
-    // Only forward my local WebRTC events to Firebase (ignore events from Firebase to prevent loops)
-    if (from === this.me && source !== "firebase") {
-      this.database.addNegotiation(this.room.id, {
-        from,
-        to,
-        message: { action: "ice", data },
-        version: this.room.version,
-      });
-    }
+  private handleIceEvents({ from, to, data }: Events["rtc.ice"]) {
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "ice", data },
+      version: this.room.version,
+    });
   }
 
   private handleDescriptionEvents({
@@ -146,15 +151,12 @@ class RoomLifeCycle {
     data,
     source,
   }: Events["rtc.description"]) {
-    // Only forward my local WebRTC events to Firebase (ignore events from Firebase to prevent loops)
-    if (from === this.me && source !== "firebase") {
-      this.database.addNegotiation(this.room.id, {
-        from,
-        to,
-        message: { action: "description", data },
-        version: this.room.version,
-      });
-    }
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "description", data },
+      version: this.room.version,
+    });
   }
 }
 
