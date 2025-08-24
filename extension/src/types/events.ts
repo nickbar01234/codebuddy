@@ -5,7 +5,6 @@ export interface AddressableEvent<T> {
   from: User;
   to: User;
   data: T;
-  source?: "firebase" | "webrtc";
 }
 
 interface RoomEvent {

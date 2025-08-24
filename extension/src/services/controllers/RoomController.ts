@@ -92,7 +92,6 @@ class RoomLifeCycle {
                 from,
                 to,
                 data: message.data,
-                source: "firebase",
               });
               break;
             }
@@ -101,7 +100,6 @@ class RoomLifeCycle {
                 from,
                 to,
                 data: message.data,
-                source: "firebase",
               });
               break;
             }
@@ -149,7 +147,6 @@ class RoomLifeCycle {
     from,
     to,
     data,
-    source,
   }: Events["rtc.description"]) {
     this.database.addNegotiation(this.room.id, {
       from,
