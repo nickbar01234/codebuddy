@@ -5,5 +5,10 @@ declare global {
     // Only defined if running in the context of Leetcode dom. Chrome "components" like content scripts do not have
     // access to this.
     monaco: typeof monaco | undefined;
+    next?: {
+      router: {
+        push: (url: string) => Promise<boolean>;
+      };
+    };
   }
 }

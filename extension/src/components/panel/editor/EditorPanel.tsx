@@ -1,9 +1,7 @@
 import { UserDropDownMenu } from "@cb/components/navigator/menu/UserDropDownMenu";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
-import { ActivityLogTab } from "@cb/components/panel/editor/tab/activity/ActivityLogTab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { RoomEvent } from "@cb/db/converter";
 import { useLeetCodeActions, usePeerActions, usePeers } from "@cb/hooks/store";
 import {
   ResizableHandle,
@@ -19,8 +17,9 @@ import {
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus, useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { Activity, CodeXml, FlaskConical, Info } from "lucide-react";
+import { CodeXml, FlaskConical, Info } from "lucide-react";
 import React from "react";
+import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
 
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
@@ -59,18 +58,17 @@ const EditorPanel = () => {
 
   const lowerTabConfigs = React.useMemo(() => {
     return [
-      {
-        value: "activity",
-        label: "Activity Log",
-        Icon: Activity,
-        Content: <ActivityLogTab roomEvents={roomEvents} />,
-      },
+      // {
+      //   value: "activity",
+      //   label: "Activity Log",
+      //   Icon: Activity,
+      //   Content: <ActivityLogTab roomEvents={roomEvents} />,
+      // },
       {
         value: "roomInfo",
         label: "Room Info",
         Icon: Info,
-        Content: null,
-        // Content: <RoomInfoTab />,
+        Content: <RoomInfoTab />,
       },
     ];
   }, []);
@@ -164,7 +162,7 @@ const EditorPanel = () => {
           </div>
           <ResizablePanel>
             <Tabs
-              defaultValue="activity"
+              defaultValue="roomInfo"
               className="h-full w-full bg-secondary text-inherit"
             >
               <TabsList className="hide-scrollbar bg-inherit flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
@@ -206,7 +204,7 @@ const EditorPanel = () => {
 
 export default EditorPanel;
 
-const roomEvents: RoomEvent[] = [
+const roomEvents = [
   {
     type: "submission",
     username: "Buddy",

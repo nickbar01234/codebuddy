@@ -1,12 +1,26 @@
+import { WindowMessage } from "@cb/types";
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script";
 
 export default defineUnlistedScript(() => {
   console.log("Inject proxy");
-  setTimeout(() => {
-    console.log("Push state");
-    (window as any).next.router.push("/problems/add-two-numbers");
-  }, 5_000);
-  // const root = document.createElement("div");
-  // document.body.appendChild(root);
-  // createRoot(root).render(<Proxy />);
+  window.addEventListener("message", (message: MessageEvent<WindowMessage>) => {
+    if (message.data.action == undefined) {
+      return;
+    }
+    const action = message.data.action;
+    switch (action) {
+      case "navigate": {
+        const { url } = message.data;
+        window.next?.router.push(url);
+        break;
+      }
+
+      case "leetCodeOnChange": {
+        break;
+      }
+
+      default:
+        assertUnreachable(action);
+    }
+  });
 });
