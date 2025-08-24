@@ -8,9 +8,10 @@ import { createRoot } from "react-dom/client";
 export default defineContentScript({
   matches: [URLS.ALL_PROBLEMS],
   runAt: "document_end",
-  main(ctx) {
+  async main(ctx) {
     // Initialize controllers on startup
     getOrCreateControllers();
+    await injectScript("/proxy.js", { keepInDom: true });
     const ui = createUi(ctx);
     ui.mount();
   },

@@ -40,6 +40,10 @@ export default defineConfig({
         resources: ["images/*.png"],
         matches: ["<all_urls>"],
       },
+      {
+        resources: ["proxy.js"],
+        matches: ["https://leetcode.com/*"],
+      },
     ],
   },
   vite: () => ({
