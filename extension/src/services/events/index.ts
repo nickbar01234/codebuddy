@@ -48,7 +48,8 @@ const createEmitter = <
     off<Key extends keyof Events>(type: Key, handler: Handler<Events[Key]>) {
       const filterable = handlers.get(type)?.get(handler);
       handlers.get(type)?.delete(handler);
-      emitter.off(type, filterable);
+      // mitt removes all handlers for type if filterable is undefined
+      if (filterable != undefined) emitter.off(type, filterable);
     },
 
     emit: emitter.emit,
