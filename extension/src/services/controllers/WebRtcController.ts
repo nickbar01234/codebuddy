@@ -45,10 +45,6 @@ export class WebRtcController {
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
-
-    // Global event handlers, then check if message is intended for me inside the handler
-    this.emitter.on("rtc.ice", this.handleIceEvents.bind(this));
-    this.emitter.on("rtc.description", this.handleDescriptionEvents.bind(this));
   }
 
   private leave() {
@@ -112,23 +108,26 @@ export class WebRtcController {
       }
     };
 
-    const handleIceEvents = this.handleIceEvents.bind(this);
-    const handleDescriptionEvents = this.handleDescriptionEvents.bind(this);
-
-    this.emitter.on("rtc.ice", handleIceEvents);
-    this.emitter.on("rtc.description", handleDescriptionEvents);
+    const unsubscribeFromIceEvents = this.emitter.on(
+      "rtc.ice",
+      this.handleIceEvents.bind(this)
+    );
+    const unsubscribeFromDescriptionEvents = this.emitter.on(
+      "rtc.description",
+      this.handleDescriptionEvents.bind(this)
+    );
 
     channel.onopen = () => {
       console.log("Channel open", user);
-      this.emitter.off("rtc.ice", handleIceEvents);
-      this.emitter.off("rtc.description", handleDescriptionEvents);
+      unsubscribeFromIceEvents();
+      unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
     };
 
     channel.onclose = () => {
       console.log("Channel closed", user);
-      this.emitter.off("rtc.ice", handleIceEvents);
-      this.emitter.off("rtc.description", handleDescriptionEvents);
+      unsubscribeFromIceEvents();
+      unsubscribeFromDescriptionEvents();
     };
 
     channel.onmessage = (event: MessageEvent) => {
