@@ -142,17 +142,12 @@ export class WebRtcController {
 
   private async handleDescriptionEvents({
     from,
-    to,
     data,
   }: Events["rtc.description"]) {
-    const { username: me } = this.appStore.getState().actions.getAuthUser();
-
-    // Since message is sent to all peers, only proceed with message intended for me
-    if (to !== me) return;
-
     const connection = this.pcs.get(from);
-
     if (connection == undefined) return;
+
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
 
     // whether im polite or not
     const polite = this.iamPolite(me, from);
@@ -186,12 +181,7 @@ export class WebRtcController {
     }
   }
 
-  private async handleIceEvents({ from, to, data }: Events["rtc.ice"]) {
-    const { username: me } = this.appStore.getState().actions.getAuthUser();
-
-    // Since message is sent to all peers, only proceed with message intended for me
-    if (to !== me) return;
-
+  private async handleIceEvents({ from, data }: Events["rtc.ice"]) {
     const connection = this.pcs.get(from);
     if (connection == undefined) return;
 
