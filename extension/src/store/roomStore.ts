@@ -159,7 +159,14 @@ const createRoomStore = (
   );
 
   useRoom.subscribe(
-    (state) => getSelectedPeer(state.peers),
+    (state) => {
+      const selectedPeer = getSelectedPeer(state.peers);
+
+      return {
+        code: selectedPeer?.code,
+        id: selectedPeer?.id,
+      };
+    },
     (current, prev) => {
       if (current == undefined) {
         return;
