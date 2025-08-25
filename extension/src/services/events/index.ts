@@ -3,9 +3,7 @@ import mitt, { EventType, Handler } from "mitt";
 
 type FilterHandler<T> = (event: T) => boolean;
 
-export interface FilterableEventEmitter<
-  Events extends Record<EventType, unknown>,
-> {
+interface FilterableEventEmitter<Events extends Record<EventType, unknown>> {
   on<Key extends keyof Events>(
     type: Key,
     handler: Handler<Events[Key]>,
