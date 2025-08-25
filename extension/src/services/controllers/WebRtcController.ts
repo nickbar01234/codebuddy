@@ -112,13 +112,23 @@ export class WebRtcController {
       }
     };
 
+    const handleIceEvents = this.handleIceEvents.bind(this);
+    const handleDescriptionEvents = this.handleDescriptionEvents.bind(this);
+
+    this.emitter.on("rtc.ice", handleIceEvents);
+    this.emitter.on("rtc.description", handleDescriptionEvents);
+
     channel.onopen = () => {
       console.log("Channel open", user);
+      this.emitter.off("rtc.ice", handleIceEvents);
+      this.emitter.off("rtc.description", handleDescriptionEvents);
       this.emitter.emit("rtc.open", { user });
     };
 
     channel.onclose = () => {
       console.log("Channel closed", user);
+      this.emitter.off("rtc.ice", handleIceEvents);
+      this.emitter.off("rtc.description", handleDescriptionEvents);
     };
 
     channel.onmessage = (event: MessageEvent) => {

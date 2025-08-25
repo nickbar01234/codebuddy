@@ -64,6 +64,11 @@ export class MessageDispatcher {
           });
           break;
         }
+
+        case "navigate": {
+          break;
+        }
+
         default:
           assertUnreachable(action);
       }
