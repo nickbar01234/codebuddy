@@ -7,6 +7,7 @@ import {
   PeerMessage,
   User,
 } from "@cb/types";
+import { isEventToMe } from "@cb/utils";
 
 const WEB_RTC_CONFIG = {
   iceServers: [
@@ -110,11 +111,13 @@ export class WebRtcController {
 
     const unsubscribeFromIceEvents = this.emitter.on(
       "rtc.ice",
-      this.handleIceEvents.bind(this)
+      this.handleIceEvents.bind(this),
+      isEventToMe(me)
     );
     const unsubscribeFromDescriptionEvents = this.emitter.on(
       "rtc.description",
-      this.handleDescriptionEvents.bind(this)
+      this.handleDescriptionEvents.bind(this),
+      isEventToMe(me)
     );
 
     channel.onopen = () => {
@@ -145,10 +148,10 @@ export class WebRtcController {
     data,
   }: Events["rtc.description"]) {
     const connection = this.pcs.get(from);
-
     if (connection == undefined) return;
 
     const { username: me } = this.appStore.getState().actions.getAuthUser();
+
     // whether im polite or not
     const polite = this.iamPolite(me, from);
     const pc = connection.pc;
@@ -183,7 +186,6 @@ export class WebRtcController {
 
   private async handleIceEvents({ from, data }: Events["rtc.ice"]) {
     const connection = this.pcs.get(from);
-
     if (connection == undefined) return;
 
     try {
