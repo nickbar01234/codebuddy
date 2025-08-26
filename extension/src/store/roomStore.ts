@@ -206,7 +206,6 @@ const createRoomStore = (
         });
       }
     },
-    // todo(nickbar01234): We can be more efficient with equality function
     { equalityFn: shallow }
   );
 
