@@ -7,6 +7,7 @@ import {
   PeerMessage,
   User,
 } from "@cb/types";
+import { isEventToMe } from "@cb/utils";
 
 const WEB_RTC_CONFIG = {
   iceServers: [
@@ -110,11 +111,13 @@ export class WebRtcController {
 
     const unsubscribeFromIceEvents = this.emitter.on(
       "rtc.ice",
-      this.handleIceEvents.bind(this)
+      this.handleIceEvents.bind(this),
+      isEventToMe(me)
     );
     const unsubscribeFromDescriptionEvents = this.emitter.on(
       "rtc.description",
-      this.handleDescriptionEvents.bind(this)
+      this.handleDescriptionEvents.bind(this),
+      isEventToMe(me)
     );
 
     channel.onopen = () => {

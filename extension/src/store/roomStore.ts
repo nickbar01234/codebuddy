@@ -94,7 +94,6 @@ const createRoomStore = (
                 get().actions.room.loading();
                 await getOrCreateControllers().room.leave();
               } finally {
-                // Reset to home even if error
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
