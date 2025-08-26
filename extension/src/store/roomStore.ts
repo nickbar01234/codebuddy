@@ -189,9 +189,12 @@ const createRoomStore = (
   );
 
   useRoom.subscribe(
-    (state) => getSelectedPeer(state.peers),
+    (state) => {
+      const selected = getSelectedPeer(state.peers);
+      return { code: selected?.code, id: selected?.id };
+    },
     (current, prev) => {
-      if (current == undefined) {
+      if (current.id == undefined) {
         return;
       } else {
         background.applyCodeToEditor({
@@ -203,7 +206,6 @@ const createRoomStore = (
         });
       }
     },
-    // todo(nickbar01234): We can be more efficient with equality function
     { equalityFn: shallow }
   );
 
