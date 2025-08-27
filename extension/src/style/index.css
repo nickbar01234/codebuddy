@@ -1,3 +1,5 @@
+@import url("./leetcode.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,6 +10,9 @@
   }
 }
 
+/**
+ * shadcn/ui
+ */
 @layer base {
   :root {
     /* shadcn/ui Design System Variables */
@@ -38,61 +43,8 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     --gray: 0 0 6%;
-
-    /* Layout System Variables */
-    --color-button-background: var(--fill-tertiary);
-    --color-button-hover-background: rgba(0, 0, 0, 0.1);
-    --color-drag: var(--blue-60);
-    --color-drag-background: #007aff14;
-    --color-tabset-background: var(--layer-01);
-    --color-tabset-tabbar-background: var(--fill-quaternary);
-    --color-tabset-tabbar-background-fixed: #fafafa;
-    --color-tabset-border: var(--border-secondary);
-    --color-tab-divider: var(--border-tertiary);
-    --color-tab-hover-background: var(--fill-tertiary);
-    --color-tab-hover-background-fixed: #f0f0f0;
-    --color-tab-selected: var(--text-primary);
-    --color-tab-selected-background: #0000;
-    --color-tab-unselected: var(--text-secondary);
-    --color-tab-unselected-background: #0000;
-    --color-tab-close-background: var(--fill-tertiary);
-    --color-tab-close-icon: var(--gray-60);
-    --color-tab-close-icon-hover: var(--gray-60);
-    --color-splitter: var(--border-tertiary);
-    --color-splitter-hover: var(--blue-60);
-    --color-splitter-drag: var(--blue-60);
-    --color-drag-rect-border: var(--border-tertiary);
-    --color-drag-rect-background: var(--layer-02);
-    --color-drag-rect: var(--text-primary);
-    --color-edge-marker: var(--blue-60);
-    --color-sd-background-gray: 0 0% 94.1%;
-
-    /* Custom Application Colors */
-    --background-primary: rgb(255 255 255); /* From LC: .bg-layer-1 */
-    --background-secondary: rgb(255 255 255); /* From LC: .bg-layer-1 */
-    --text-primary: #1a1a1aff;
-    --text-secondary: #0000008c;
-    --text-tertiary: #00000057;
-
-    --color-default-bg-hover: #f5f5f5ff;
-    --color-button-primary-background: #78788033;
-    --color-button-primary-border: #78788033;
-    --color-button-primary-hover: #2c2c2cff;
-    --color-button-primary-hover-text: #f5f5f5ff;
-    --color-table-bg: #f0f0f0ff;
-    --color-icon-default: #1e1e1eff;
-    --color-icon-secondary: #757575ff;
-    --color-pink: #dd5471ff;
-    --color-red: #ff3b30ff;
-    --color-green: #02b128ff;
-    --color-blue: #007bffff;
-    --color-orange: #ffa116ff; /* From LC: --brand-orange */
-    --color-lc-bg: #ffffffff; /* From LC: --color-tabset-background */
-    --color-lc-nav: #00000005; /* From LC: --color-tabset-tabbar-background */
-    --color-lc-hard: #f63636; /* From LC: --difficulty-hard */
-    --color-lc-medium: #ffb800; /* From LC: --difficulty-medium */
-    --color-lc-easy: #1cb8b8; /* From LC: --difficulty-easy */
   }
+
   .dark {
     /* shadcn/ui Dark Mode Variables */
     --background: 0 0% 3.9%;
@@ -120,15 +72,48 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+  }
+}
 
+/**
+ * CodeBuddy specific overrides
+ */
+@layer base {
+  :root {
+    /* Layout System Variables */
+    --color-button-background: var(--fill-tertiary);
+    --color-button-hover-background: rgba(0, 0, 0, 0.1);
+
+    --background-primary: rgb(255 255 255); /* From LC: .bg-layer-1 */
+    --background-secondary: rgb(255 255 255); /* From LC: .bg-layer-1 */
+
+    --text-primary: #1a1a1aff;
+    --text-secondary: #0000008c;
+    --text-tertiary: #00000057;
+
+    --color-default-bg-hover: #f5f5f5ff;
+    --color-button-primary-background: #78788033;
+    --color-button-primary-border: #78788033;
+    --color-button-primary-hover: #2c2c2cff;
+    --color-button-primary-hover-text: #f5f5f5ff;
+    --color-table-bg: #f0f0f0ff;
+    --color-icon-default: #1e1e1eff;
+    --color-icon-secondary: #757575ff;
+
+    --color-pink: #dd5471ff;
+    --color-red: #ff3b30ff;
+    --color-green: #02b128ff;
+    --color-blue: #007bffff;
+  }
+
+  .dark {
     /* Layout System Dark Mode Overrides */
     --color-button-background: var(--fill-tertiary);
     --color-button-hover-background: rgba(255, 255, 255, 0.2);
-    --color-sd-background-gray: 0 0% 6%;
 
-    /* Custom Application Colors */
     --background-primary: rgb(26 26 26); /* From LC: bg-dark-layer-bg */
     --background-secondary: rgb(40 40 40); /* From LC: .bg-dark-layer-1 */
+
     --text-primary: #f5f5f5ff;
     --text-secondary: #ffffff99;
     --text-tertiary: #ffffff66;
@@ -141,16 +126,11 @@
     --color-table-bg: #353535ff;
     --color-icon-default: #ffffffff;
     --color-icon-secondary: #757575ff;
+
     --color-pink: #ff6586ff;
     --color-red: #ff3b30ff;
     --color-green: #02b128ff;
     --color-blue: #007bffff;
-    --color-orange: #ffa116ff; /* From LC: --brand-orange */
-    --color-lc-bg: #282828ff; /* From LC: --color-tabset-background */
-    --color-lc-nav: #303030ff; /* From LC: --color-tabset-tabbar-background */
-    --color-lc-hard: #f8615c; /* From LC: --difficulty-hard */
-    --color-lc-medium: #fac31d; /* From LC: --difficulty-medium */
-    --color-lc-easy: #46c6c2; /* From LC: --difficulty-easy */
   }
 }
 
