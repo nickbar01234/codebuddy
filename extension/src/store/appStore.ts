@@ -112,10 +112,7 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
     })),
     {
       name: APP_STORAGE,
-      partialize: (state) => {
-        const { app } = state;
-        return { ...app };
-      },
+      partialize: (state) => ({ app: state.app }),
     }
   )
 );
