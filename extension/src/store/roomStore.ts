@@ -107,7 +107,6 @@ const createRoomStore = (
           },
           peers: {
             update: async (id, peer) => {
-              console.log("Received peer information", peer.url);
               const variables = await leetcodeStore
                 .getState()
                 .actions.getVariables();

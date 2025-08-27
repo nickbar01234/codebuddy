@@ -180,14 +180,10 @@ export default defineBackground(() => {
 
   browser.tabs.onUpdated.addListener((tab, change) => {
     if (change.url) {
-      try {
-        browser.tabs.sendMessage(
-          tab,
-          contentPayload({ action: "url", url: change.url })
-        );
-      } catch (e) {
-        console.error("Error when sending message", e);
-      }
+      browser.tabs.sendMessage(
+        tab,
+        contentPayload({ action: "url", url: change.url })
+      );
     }
   });
 
