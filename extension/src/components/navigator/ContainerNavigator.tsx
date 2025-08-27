@@ -11,7 +11,7 @@ export const ContainerNavigator = ({
 }: ContainerNavigatorProps) => {
   return (
     <div className="bg-secondary flex h-full w-full flex-col rounded-lg">
-      <div className="hide-scrollbar flex h-9 w-full items-center justify-between gap-2 overflow-y-hidden overflow-x-scroll rounded-t-lg bg-[--color-tabset-tabbar-background] p-2">
+      <div className="hide-scrollbar flex h-9 w-full items-center justify-between gap-2 overflow-y-hidden overflow-x-scroll rounded-t-lg bg-tabbar p-2">
         <Header />
         {menu}
       </div>

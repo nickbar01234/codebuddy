@@ -35,7 +35,8 @@ export default {
         DEFAULT: "var(--background-primary)",
         primary: "var(--background-primary)",
         secondary: "var(--background-secondary)",
-        base: "hsl(var(--color-sd-background-gray))",
+        base: "hsl(var(--sd-background-gray))",
+        tabbar: "var(--color-tabset-tabbar-background)",
       },
       colors: {
         background: "var(--background)",
@@ -80,13 +81,6 @@ export default {
           3: "hsl(var(--chart-3))",
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
-        },
-        leetcode: {
-          hard: "var(--color-lc-hard)",
-          medium: "var(--color-lc-medium)",
-          easy: "var(--color-lc-easy)",
-          bg: "var(--color-lc-bg)",
-          nav: "var(--color-lc-nav)",
         },
         codebuddy: {
           pink: "var(--color-pink)",
