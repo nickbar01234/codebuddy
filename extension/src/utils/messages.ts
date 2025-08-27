@@ -26,3 +26,9 @@ export const getCodePayload = async (
     changes: JSON.stringify(changes),
   };
 };
+
+export const getUrlPayload = (url: string): PeerMessage => ({
+  action: "url",
+  url,
+  timestamp: getUnixTs(),
+});

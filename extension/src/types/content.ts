@@ -4,9 +4,14 @@ interface ToggleUi extends GenericMessage {
   action: "toggleUi";
 }
 
-export type ContentRequest = ToggleUi;
+interface UrlChange extends GenericMessage {
+  action: "url";
+  url: string;
+}
+
+export type ContentRequest = ToggleUi | UrlChange;
 
 export type ContentResponse = GenericResponse<
   ContentRequest,
-  { toggleUi: void }
+  { toggleUi: void; url: void }
 >;
