@@ -10,7 +10,11 @@ import {
   WindowMessage,
 } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
-import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
+import {
+  getCodePayload,
+  getTestsPayload,
+  getUrlPayload,
+} from "@cb/utils/messages";
 
 export class MessageDispatcher {
   private emitter: EventEmitter;
