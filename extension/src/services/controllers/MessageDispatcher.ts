@@ -2,7 +2,13 @@ import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
-import { Events, EventType, ResponseStatus, WindowMessage } from "@cb/types";
+import {
+  ContentRequest,
+  Events,
+  EventType,
+  ResponseStatus,
+  WindowMessage,
+} from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
 
@@ -49,6 +55,7 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
     this.subscribeToSubmission();
+    this.subscribeToBackground();
   }
 
   private subscribeToCodeEditor() {
@@ -190,5 +197,20 @@ export class MessageDispatcher {
     };
     this.emitter.on("room.changes", onRoomChange);
     return () => this.emitter.off("room.changes", onRoomChange);
+  }
+
+  private subscribeToBackground() {
+    browser.runtime.onMessage.addListener((request: ContentRequest) => {
+      const { action } = request;
+      switch (action) {
+        case "toggleUi": {
+          this.appStore.getState().actions.toggleEnabledApp();
+          break;
+        }
+
+        default:
+          assertUnreachable(action);
+      }
+    });
   }
 }
