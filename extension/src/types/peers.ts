@@ -22,6 +22,11 @@ interface PeerHeartBeatMessage extends PeerGenericMessage {
   action: "heartbeat";
 }
 
+interface UrlChangeMessage extends PeerGenericMessage {
+  action: "url";
+  url: string;
+}
+
 export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
@@ -38,11 +43,13 @@ export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
   | PeerHeartBeatMessage
-  | PeerEventMessage;
+  | PeerEventMessage
+  | UrlChangeMessage;
 
 export interface PeerState extends Selectable {
   code?: MessagePayload<PeerCodeMessage>;
   tests: TestCase[];
+  url?: string;
   latency: number;
   finished: boolean;
   viewable: boolean;

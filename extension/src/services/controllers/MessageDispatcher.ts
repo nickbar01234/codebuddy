@@ -161,6 +161,10 @@ export class MessageDispatcher {
         to: user,
         message: getTestsPayload(),
       });
+      this.emitter.emit("rtc.send.message", {
+        to: user,
+        message: getUrlPayload(window.location.href),
+      });
     };
     this.emitter.on("rtc.open", exchangeInitialCode);
     return () => this.emitter.off("rtc.open", exchangeInitialCode);
@@ -185,6 +189,11 @@ export class MessageDispatcher {
           });
           break;
         }
+        case "url": {
+          this.roomStore.getState().actions.peers.update(from, {
+            url: message.url,
+          });
+        }
       }
     };
     this.emitter.on("rtc.receive.message", onMessage);
@@ -205,6 +214,13 @@ export class MessageDispatcher {
       switch (action) {
         case "toggleUi": {
           this.appStore.getState().actions.toggleEnabledApp();
+          break;
+        }
+
+        case "url": {
+          this.emitter.emit("rtc.send.message", {
+            message: getUrlPayload(request.url),
+          });
           break;
         }
 
