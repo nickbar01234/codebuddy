@@ -2,7 +2,13 @@ import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
-import { Events, EventType, ResponseStatus, WindowMessage } from "@cb/types";
+import {
+  ContentRequest,
+  Events,
+  EventType,
+  ResponseStatus,
+  WindowMessage,
+} from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
 
@@ -49,6 +55,7 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
     this.subscribeToSubmission();
+    this.subscribeToBackground();
   }
 
   private subscribeToCodeEditor() {
@@ -154,6 +161,10 @@ export class MessageDispatcher {
         to: user,
         message: getTestsPayload(),
       });
+      this.emitter.emit("rtc.send.message", {
+        to: user,
+        message: getUrlPayload(window.location.href),
+      });
     };
     this.emitter.on("rtc.open", exchangeInitialCode);
     return () => this.emitter.off("rtc.open", exchangeInitialCode);
@@ -178,6 +189,11 @@ export class MessageDispatcher {
           });
           break;
         }
+        case "url": {
+          this.roomStore.getState().actions.peers.update(from, {
+            url: message.url,
+          });
+        }
       }
     };
     this.emitter.on("rtc.receive.message", onMessage);
@@ -190,5 +206,27 @@ export class MessageDispatcher {
     };
     this.emitter.on("room.changes", onRoomChange);
     return () => this.emitter.off("room.changes", onRoomChange);
+  }
+
+  private subscribeToBackground() {
+    browser.runtime.onMessage.addListener((request: ContentRequest) => {
+      const { action } = request;
+      switch (action) {
+        case "toggleUi": {
+          this.appStore.getState().actions.toggleEnabledApp();
+          break;
+        }
+
+        case "url": {
+          this.emitter.emit("rtc.send.message", {
+            message: getUrlPayload(request.url),
+          });
+          break;
+        }
+
+        default:
+          assertUnreachable(action);
+      }
+    });
   }
 }

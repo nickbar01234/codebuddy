@@ -96,7 +96,7 @@ const EditorPanel = () => {
             defaultSize={60}
             minSize={30}
             maxSize={80}
-            className="relative rounded-b-lg"
+            className="relative rounded-b-lg bg-secondary"
           >
             {/* todo(nickbar01234): Fix styling */}
             {!canViewCode && (

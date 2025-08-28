@@ -178,6 +178,15 @@ export default defineBackground(() => {
     );
   });
 
+  browser.tabs.onUpdated.addListener((tab, change) => {
+    if (change.url) {
+      browser.tabs.sendMessage(
+        tab,
+        contentPayload({ action: "url", url: change.url })
+      );
+    }
+  });
+
   browser.runtime.onMessage.addListener(
     (request: ServiceRequest, sender, sendResponse) => {
       const { action } = request;
