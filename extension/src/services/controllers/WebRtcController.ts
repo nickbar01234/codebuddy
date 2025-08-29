@@ -113,6 +113,7 @@ export class WebRtcController {
     pc.oniceconnectionstatechange = () => {
       if (pc.iceConnectionState === "failed") {
         console.log("Restarting ICE gathering");
+        // See https://github.com/w3c/webrtc-pc/issues/2167
         pc.restartIce();
       }
     };
@@ -154,6 +155,7 @@ export class WebRtcController {
       console.error("Error on RTC data channel", error);
       // todo(nickbar01234): Need to recover when error is thrown. Easiest is to re-do the entire process.
       this.disconnect(user);
+      this.emitter.emit("rtc.error.connection", { user });
     };
   }
 

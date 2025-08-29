@@ -16,6 +16,7 @@ import {
   getTestsPayload,
   getUrlPayload,
 } from "@cb/utils/messages";
+import { toast } from "sonner";
 
 export class MessageDispatcher {
   private emitter: EventEmitter;
@@ -59,6 +60,7 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcOpen());
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
+    this.unsubscribers.push(this.subscribeToRtcConnectionError());
     this.subscribeToSubmission();
     this.subscribeToBackground();
   }
@@ -222,6 +224,17 @@ export class MessageDispatcher {
           assertUnreachable(action);
       }
     });
+  }
+  private subscribeToRtcConnectionError() {
+    const unsubscribeFromRtcConnectionError = this.emitter.on(
+      "rtc.error.connection",
+      ({ user }) => {
+        toast.error(
+          `Failed to connect to ${user}. Please leave the room and re-join`
+        );
+      }
+    );
+    return () => unsubscribeFromRtcConnectionError();
   }
 
   private async broadCastInformation(user?: User) {
