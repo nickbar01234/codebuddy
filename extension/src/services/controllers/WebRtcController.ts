@@ -121,6 +121,9 @@ export class WebRtcController {
     );
 
     channel.onopen = () => {
+      if (this.iamPolite(me, user)) {
+        channel.close();
+      }
       console.log("Channel open", user);
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
