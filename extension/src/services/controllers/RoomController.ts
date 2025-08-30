@@ -1,3 +1,4 @@
+import { ROOM } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import { DatabaseService, Events, Id, Room, User } from "@cb/types";
@@ -186,7 +187,13 @@ export class RoomController {
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     const room = await this.database.get(id);
     if (room == undefined) {
-      throw new Error(`Room with ${id} not found`);
+      throw new Error(`Room with ID ${id} not found`);
+    }
+    if (
+      room.usernames.length >= ROOM.CAPACITY &&
+      !room.usernames.includes(me)
+    ) {
+      throw new Error("Room is full");
     }
     this.room = new RoomLifeCycle(
       this.database,

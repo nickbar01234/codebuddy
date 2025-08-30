@@ -82,7 +82,7 @@ const createRoomStore = (
                 const { name, isPublic } = room.getRoom();
                 setRoom({ id, name, isPublic });
               } catch (error) {
-                toast.error("Room ID is invalid. Please try again.");
+                toast.error(`${error}. Please try again.`);
                 console.error("Failed to join room", error);
                 set((state) => {
                   state.status = RoomStatus.HOME;
