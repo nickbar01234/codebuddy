@@ -13,6 +13,7 @@ export const DOM = {
   LEETCODE_SUBMIT_BUTTON: '[data-e2e-locator="console-submit-button"]',
   LEETCODE_SUBMISSION_RESULT: '[data-e2e-locator="submission-result"]',
   INJECTED_LEETCODE_PROBLEMSET_IFRAME: "LeetCodeProblemSet",
+  INJECTED_LEETCODE_PROBLEMSET_IFRAME_CONTAINER: "LeetCodeProblemSetContainer",
   PROBLEM_ID: ".elfjS",
   TIMEOUT: 10_000,
 };

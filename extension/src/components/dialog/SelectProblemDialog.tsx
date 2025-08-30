@@ -42,6 +42,7 @@ export const SelectProblemDialog = ({
         }}
         filterQuestionIds={[]}
         container={{}}
+        visible={open}
       />
     </RoomDialog>
   );
