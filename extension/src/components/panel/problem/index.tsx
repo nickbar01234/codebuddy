@@ -65,7 +65,7 @@ export const QuestionSelectorPanel = React.memo(
                   for (const anchorContainer of rowList) {
                     try {
                       const link = anchorContainer.href;
-                      if (link === "") {
+                      if (!link) {
                         continue;
                       }
                       const questionId = getQuestionIdFromUrl(link);
