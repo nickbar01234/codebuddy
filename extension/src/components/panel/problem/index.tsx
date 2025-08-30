@@ -33,26 +33,21 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const removeSidebarToggles = () => {
-          const candidates = iframeDoc.querySelectorAll<HTMLButtonElement>(
-            'button[data-state="closed"]'
-          );
-          for (const btn of candidates) {
-            const hasSidebarIcon = !!btn.querySelector(
-              'svg[data-icon="sidebar"]'
-            );
-            if (hasSidebarIcon) {
-              btn.remove();
-            }
+        const sidebarObserver = new MutationObserver((_, obs) => {
+          const btn = iframeDoc
+            .querySelector(
+              'button[data-state="closed"] svg[data-icon="sidebar"]'
+            )
+            ?.closest("button");
+
+          if (btn) {
+            btn.remove();
+            console.log("Sidebar toggle button removed");
+
+            obs.disconnect();
           }
-        };
+        });
 
-        removeSidebarToggles();
-
-        const sidebarObserver = new MutationObserver(removeSidebarToggles);
-        registerObserver("lc-sidebar-btn", sidebarObserver, (obs) =>
-          obs.disconnect()
-        );
         sidebarObserver.observe(iframeDoc.body, {
           childList: true,
           subtree: true,
