@@ -46,7 +46,6 @@ export const QuestionSelectorPanel = React.memo(
               problemSetContainerRef.current!
             );
           }, 0);
-          return;
         }
 
         // For first time, process content first, then position iframe
