@@ -13,7 +13,7 @@ const CreateRoomLoadingPanel = () => {
   const roomReady = roomId != null;
 
   return (
-    <div className="flex h-full w-full flex-col relative items-center p-4">
+    <div className="flex h-full w-full flex-col relative items-center p-4 bg-secondary">
       <div className="left-7 top-5 absolute self-start z-30">
         <LeaveRoomDialog
           node={

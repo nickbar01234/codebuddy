@@ -2,9 +2,21 @@ import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
-import { Events, EventType, ResponseStatus, WindowMessage } from "@cb/types";
+import {
+  ContentRequest,
+  Events,
+  EventType,
+  ResponseStatus,
+  User,
+  WindowMessage,
+} from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
-import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
+import {
+  getCodePayload,
+  getTestsPayload,
+  getUrlPayload,
+} from "@cb/utils/messages";
+import { toast } from "sonner";
 
 export class MessageDispatcher {
   private emitter: EventEmitter;
@@ -48,7 +60,9 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcOpen());
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
+    this.unsubscribers.push(this.subscribeToRtcConnectionError());
     this.subscribeToSubmission();
+    this.subscribeToBackground();
   }
 
   private subscribeToCodeEditor() {
@@ -145,18 +159,13 @@ export class MessageDispatcher {
   }
 
   private subscribeToRtcOpen() {
-    const exchangeInitialCode = async ({ user }: Events["rtc.open"]) => {
-      this.emitter.emit("rtc.send.message", {
-        to: user,
-        message: await getCodePayload({}),
-      });
-      this.emitter.emit("rtc.send.message", {
-        to: user,
-        message: getTestsPayload(),
-      });
-    };
-    this.emitter.on("rtc.open", exchangeInitialCode);
-    return () => this.emitter.off("rtc.open", exchangeInitialCode);
+    const unsubscribeFromRtcOpen = this.emitter.on(
+      "rtc.open",
+      ({ user }: Events["rtc.open"]) => {
+        this.broadCastInformation(user);
+      }
+    );
+    return () => unsubscribeFromRtcOpen();
   }
 
   private subscribeToRtcMessage() {
@@ -178,6 +187,11 @@ export class MessageDispatcher {
           });
           break;
         }
+        case "url": {
+          this.roomStore.getState().actions.peers.update(from, {
+            url: message.url,
+          });
+        }
       }
     };
     this.emitter.on("rtc.receive.message", onMessage);
@@ -190,5 +204,51 @@ export class MessageDispatcher {
     };
     this.emitter.on("room.changes", onRoomChange);
     return () => this.emitter.off("room.changes", onRoomChange);
+  }
+
+  private subscribeToBackground() {
+    browser.runtime.onMessage.addListener((request: ContentRequest) => {
+      const { action } = request;
+      switch (action) {
+        case "toggleUi": {
+          this.appStore.getState().actions.toggleEnabledApp();
+          break;
+        }
+
+        case "url": {
+          this.broadCastInformation();
+          break;
+        }
+
+        default:
+          assertUnreachable(action);
+      }
+    });
+  }
+  private subscribeToRtcConnectionError() {
+    const unsubscribeFromRtcConnectionError = this.emitter.on(
+      "rtc.error.connection",
+      ({ user }) => {
+        toast.error(
+          `Failed to connect to ${user}. Please leave the room and re-join`
+        );
+      }
+    );
+    return () => unsubscribeFromRtcConnectionError();
+  }
+
+  private async broadCastInformation(user?: User) {
+    this.emitter.emit("rtc.send.message", {
+      to: user,
+      message: await getCodePayload({}),
+    });
+    this.emitter.emit("rtc.send.message", {
+      to: user,
+      message: getTestsPayload(),
+    });
+    this.emitter.emit("rtc.send.message", {
+      to: user,
+      message: getUrlPayload(window.location.href),
+    });
   }
 }

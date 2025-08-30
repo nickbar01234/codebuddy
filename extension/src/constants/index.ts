@@ -30,3 +30,38 @@ export const HEARTBEAT = {
 export const ROOM = {
   CAPACITY: 4,
 };
+
+export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
+  STUN: [
+    {
+      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+    },
+  ],
+
+  // todo(nickbar01234): Potentially more dynamic RTC configuration. See https://www.metered.ca/tools/openrelay/
+  TURN: [
+    {
+      urls: "stun:stun.relay.metered.ca:80",
+    },
+    {
+      urls: "turn:standard.relay.metered.ca:80",
+      username: "d10b718111d856f26b3b1c23",
+      credential: "RdNfpZTnep+QhVDg",
+    },
+    {
+      urls: "turn:standard.relay.metered.ca:80?transport=tcp",
+      username: "d10b718111d856f26b3b1c23",
+      credential: "RdNfpZTnep+QhVDg",
+    },
+    {
+      urls: "turn:standard.relay.metered.ca:443",
+      username: "d10b718111d856f26b3b1c23",
+      credential: "RdNfpZTnep+QhVDg",
+    },
+    {
+      urls: "turns:standard.relay.metered.ca:443?transport=tcp",
+      username: "d10b718111d856f26b3b1c23",
+      credential: "RdNfpZTnep+QhVDg",
+    },
+  ],
+};

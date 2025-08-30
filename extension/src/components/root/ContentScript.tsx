@@ -5,7 +5,6 @@ import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
 import SignInPanel from "@cb/components/panel/SignInPanel";
 import { useAuthenticate } from "@cb/hooks/auth";
-import { useContentScriptMessages } from "@cb/hooks/messages/useContentScriptMessages";
 import { useToast } from "@cb/hooks/toasts";
 import { AppStatus, useApp } from "@cb/store";
 import React from "react";
@@ -18,7 +17,6 @@ interface ContentProps {
 export const ContentScript = ({ leetCodeNode }: ContentProps) => {
   const auth = useApp((state) => state.auth);
 
-  useContentScriptMessages();
   useAuthenticate({});
   useToast();
 

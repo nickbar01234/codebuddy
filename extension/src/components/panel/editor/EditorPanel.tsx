@@ -75,9 +75,12 @@ const EditorPanel = () => {
 
   return (
     <div
-      className={cn("relative flex h-full w-full grow flex-col gap-y-2", {
-        hidden: roomStatus !== RoomStatus.IN_ROOM,
-      })}
+      className={cn(
+        "relative flex h-full w-full grow flex-col gap-y-2 bg-base overflow-hidden",
+        {
+          hidden: roomStatus !== RoomStatus.IN_ROOM,
+        }
+      )}
     >
       {emptyRoom && (
         <SkeletonWrapper loading={false}>
@@ -87,13 +90,13 @@ const EditorPanel = () => {
       <div className={cn("h-full w-full", { hidden: emptyRoom })}>
         <ResizablePanelGroup
           direction="vertical"
-          className={cn("relative h-full w-full")}
+          className="relative h-full w-full"
         >
           <ResizablePanel
             defaultSize={60}
             minSize={30}
             maxSize={80}
-            className="relative"
+            className="relative rounded-b-lg bg-secondary"
           >
             {/* todo(nickbar01234): Fix styling */}
             {!canViewCode && (
@@ -149,7 +152,7 @@ const EditorPanel = () => {
                     key={value}
                     value={value}
                     forceMount
-                    className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
+                    className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full oveflow-y-hidden w-full mt-0"
                   >
                     {Content}
                   </TabsContent>
@@ -160,12 +163,13 @@ const EditorPanel = () => {
           <div className="h-[8px] bg-base w-full">
             <ResizableHandle className="flexlayout__splitter flexlayout__splitter_horz h-2 w-full cursor-ns-resize after:w-[20px] after:bg-[--color-splitter] hover:after:w-full hover:after:bg-[--color-splitter-drag]" />
           </div>
+          {/* <ResizablePanel className="rounded-t-lg h-full overflow-hidden bg-secondary"></ResizablePanel> */}
           <ResizablePanel>
             <Tabs
               defaultValue="roomInfo"
-              className="h-full w-full bg-secondary text-inherit"
+              className="h-full w-full text-inherit rounded-t-lg overflow-hidden bg-secondary"
             >
-              <TabsList className="hide-scrollbar bg-inherit flex  h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none text-inherit">
+              <TabsList className="hide-scrollbar text-inherit flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-secondary">
                 {lowerTabConfigs.map((tab, index) => (
                   <React.Fragment key={tab.value}>
                     <TabsTrigger
@@ -178,7 +182,7 @@ const EditorPanel = () => {
                     {index !== lowerTabConfigs.length - 1 && (
                       <Separator
                         orientation="vertical"
-                        className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                        className="flexlayout__tabset_tab_divider h-[1rem] bg-tabbar"
                       />
                     )}
                   </React.Fragment>

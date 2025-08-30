@@ -61,6 +61,7 @@ class RoomLifeCycle {
         const left = this.room.usernames.filter(
           (user) => !room.usernames.includes(user) && user !== this.me
         );
+        console.log("Observed participants", joined, left);
         this.emitter.emit("room.changes", { room, joined, left });
         this.room = {
           ...this.room,

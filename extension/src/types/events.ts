@@ -27,12 +27,17 @@ interface ReceiveMessageEvent {
   message: PeerMessage;
 }
 
+interface RtcConnectionError {
+  user: User;
+}
+
 export type Events = {
   "rtc.ice": AddressableEvent<RTCIceCandidateInit | null>;
   "rtc.description": AddressableEvent<RTCSessionDescriptionInit>;
   "rtc.open": ChannelOpenEvent;
   "rtc.send.message": SendMessageEvent;
   "rtc.receive.message": ReceiveMessageEvent;
+  "rtc.error.connection": RtcConnectionError;
 
   "room.changes": RoomEvent;
   "room.left": void;
