@@ -9,15 +9,6 @@ import {
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
 
-const WEB_RTC_CONFIG = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
-
 export class WebRtcController {
   private appStore: AppStore;
 
@@ -27,15 +18,19 @@ export class WebRtcController {
 
   private pcs: Map<User, PeerConnection>;
 
+  private rtcConfiguration: RTCConfiguration;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
-    iamPolite: IamPolite
+    iamPolite: IamPolite,
+    rtcConfiguration: RTCConfiguration
   ) {
     this.appStore = appStore;
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
 
@@ -65,12 +60,13 @@ export class WebRtcController {
   }
 
   private connect(user: User) {
+    console.log("Connecting user", user, this.pcs.has(user));
     if (this.pcs.has(user)) {
       return;
     }
 
     const { username: me } = this.appStore.getState().actions.getAuthUser();
-    const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
+    const pc = new RTCPeerConnection(this.rtcConfiguration);
     // See https://stackoverflow.com/a/43788873
     const channel = pc.createDataChannel(user, { negotiated: true, id: 0 });
     this.pcs.set(user, {
@@ -109,6 +105,14 @@ export class WebRtcController {
       }
     };
 
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === "failed") {
+        console.log("Restarting ICE gathering");
+        // See https://github.com/w3c/webrtc-pc/issues/2167
+        pc.restartIce();
+      }
+    };
+
     const unsubscribeFromIceEvents = this.emitter.on(
       "rtc.ice",
       this.handleIceEvents.bind(this),
@@ -141,6 +145,13 @@ export class WebRtcController {
         console.error("Unable to parse rtc message", error);
       }
     };
+
+    channel.onerror = (error) => {
+      console.error("Error on RTC data channel", error);
+      // todo(nickbar01234): Need to recover when error is thrown. Easiest is to re-do the entire process.
+      this.disconnect(user);
+      this.emitter.emit("rtc.error.connection", { user });
+    };
   }
 
   private async handleDescriptionEvents({
@@ -152,7 +163,6 @@ export class WebRtcController {
 
     const { username: me } = this.appStore.getState().actions.getAuthUser();
 
-    // whether im polite or not
     const polite = this.iamPolite(me, from);
     const pc = connection.pc;
     const readyOffer =
@@ -165,12 +175,9 @@ export class WebRtcController {
     if (connection.ignoreOffer) return;
 
     try {
-      if (offerCollision && polite) {
-        await pc.setLocalDescription({ type: "rollback" });
-      }
-
       connection.isSettingRemoteAnswerPending = data.type === "answer";
       await pc.setRemoteDescription(data);
+      connection.isSettingRemoteAnswerPending = false;
       if (data.type === "offer") {
         await pc.setLocalDescription();
         this.emitter.emit("rtc.description", {
