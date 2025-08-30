@@ -9,15 +9,6 @@ import {
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
 
-const WEB_RTC_CONFIG = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
-
 export class WebRtcController {
   private appStore: AppStore;
 
@@ -27,15 +18,19 @@ export class WebRtcController {
 
   private pcs: Map<User, PeerConnection>;
 
+  private rtcConfiguration: RTCConfiguration;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
-    iamPolite: IamPolite
+    iamPolite: IamPolite,
+    rtcConfiguration: RTCConfiguration
   ) {
     this.appStore = appStore;
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
 
@@ -71,7 +66,7 @@ export class WebRtcController {
     }
 
     const { username: me } = this.appStore.getState().actions.getAuthUser();
-    const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
+    const pc = new RTCPeerConnection(this.rtcConfiguration);
     // See https://stackoverflow.com/a/43788873
     const channel = pc.createDataChannel(user, { negotiated: true, id: 0 });
     this.pcs.set(user, {
