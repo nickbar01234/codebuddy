@@ -33,6 +33,31 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
+        const removeSidebarToggles = () => {
+          const candidates = iframeDoc.querySelectorAll<HTMLButtonElement>(
+            'button[data-state="closed"]'
+          );
+          for (const btn of candidates) {
+            const hasSidebarIcon = !!btn.querySelector(
+              'svg[data-icon="sidebar"]'
+            );
+            if (hasSidebarIcon) {
+              btn.remove();
+            }
+          }
+        };
+
+        removeSidebarToggles();
+
+        const sidebarObserver = new MutationObserver(removeSidebarToggles);
+        registerObserver("lc-sidebar-btn", sidebarObserver, (obs) =>
+          obs.disconnect()
+        );
+        sidebarObserver.observe(iframeDoc.body, {
+          childList: true,
+          subtree: true,
+        });
+
         const rowContainer = (await waitForElement("a#\\31 ", iframeDoc))
           .parentNode as Element;
         hideToRoot(rowContainer.parentElement?.parentElement);
