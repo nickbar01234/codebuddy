@@ -1,7 +1,6 @@
 import { Selectable } from "./utils";
 
 export * from "./content";
-export * from "./controllers";
 export * from "./db";
 export * from "./events";
 export * from "./peers";
