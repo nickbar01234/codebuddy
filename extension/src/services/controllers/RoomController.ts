@@ -157,6 +157,10 @@ class RoomLifeCycle {
   }
 }
 
+type RoomJoinResponse =
+  | { code: RoomJoinCode.SUCCESS; data: RoomLifeCycle }
+  | { code: Exclude<RoomJoinCode, RoomJoinCode.SUCCESS> };
+
 export class RoomController {
   private database: DatabaseService["room"];
 
@@ -186,7 +190,7 @@ export class RoomController {
     return this.room;
   }
 
-  public async join(id: Id) {
+  public async join(id: Id): Promise<RoomJoinResponse> {
     if (this.room != null) {
       return { code: RoomJoinCode.SUCCESS, data: this.room };
     }

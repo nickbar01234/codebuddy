@@ -81,7 +81,7 @@ const createRoomStore = (
                 get().actions.room.loading();
                 const response = await getOrCreateControllers().room.join(id);
                 if (response.code === RoomJoinCode.SUCCESS) {
-                  const { name, isPublic } = response.data!.getRoom();
+                  const { name, isPublic } = response.data.getRoom();
                   setRoom({ id, name, isPublic });
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
