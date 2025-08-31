@@ -70,6 +70,12 @@ export default defineBackground(() => {
           top: 8,
         },
       });
+      editor.updateOptions({
+        padding: {
+          bottom:
+            editor.getOption(window.monaco.editor.EditorOption.lineHeight) * 8,
+        },
+      });
       (editor as any).id = "CodeBuddy";
       return {
         status: 0,
