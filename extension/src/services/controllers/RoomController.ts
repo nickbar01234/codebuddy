@@ -5,6 +5,18 @@ import { DatabaseService, Events, Id, Room, User } from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { isEventFromMe } from "@cb/utils";
 
+export class RoomNotFoundError extends Error {
+  constructor(id: Id) {
+    super(`Room with ID ${id} not found`);
+  }
+}
+
+export class RoomFullError extends Error {
+  constructor() {
+    super("Room is full");
+  }
+}
+
 class RoomLifeCycle {
   private database: DatabaseService["room"];
 
@@ -187,13 +199,13 @@ export class RoomController {
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     const room = await this.database.get(id);
     if (room == undefined) {
-      throw new Error(`Room with ID ${id} not found`);
+      throw new RoomNotFoundError(id);
     }
     if (
-      room.usernames.length >= ROOM.CAPACITY &&
+      room.usernames.length === ROOM.CAPACITY &&
       !room.usernames.includes(me)
     ) {
-      throw new Error("Room is full");
+      throw new RoomFullError();
     }
     this.room = new RoomLifeCycle(
       this.database,

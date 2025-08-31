@@ -1,6 +1,10 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
+import {
+  RoomFullError,
+  RoomNotFoundError,
+} from "@cb/services/controllers/RoomController";
 import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
@@ -82,7 +86,13 @@ const createRoomStore = (
                 const { name, isPublic } = room.getRoom();
                 setRoom({ id, name, isPublic });
               } catch (error) {
-                toast.error(`${error}. Please try again.`);
+                if (error instanceof RoomNotFoundError) {
+                  toast.error("Room ID is invalid. Please try again.");
+                } else if (error instanceof RoomFullError) {
+                  toast.error("Room is full. Please try another one.");
+                } else {
+                  toast.error("Failed to join room. Please try again.");
+                }
                 console.error("Failed to join room", error);
                 set((state) => {
                   state.status = RoomStatus.HOME;
