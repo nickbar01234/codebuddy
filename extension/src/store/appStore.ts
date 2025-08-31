@@ -54,6 +54,10 @@ interface AppAction {
   getAuthUser: () => AppUser;
 }
 
+const debouncedSetWidth = _.debounce((width) => {
+  useApp.setState({ app: { ...useApp.getState().app, width } });
+}, 1000);
+
 export const useApp = create<BoundStore<AppState, AppAction>>()(
   persist(
     immer((set, get) => ({
@@ -80,14 +84,7 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
             state.app.collapsed = false;
             state.app.width = DEFAULT_PANEL_SIZE;
           }),
-        setAppWidth: (width) =>
-          _.debounce(
-            () =>
-              set((state) => {
-                state.app.width = width;
-              }),
-            1000
-          ),
+        setAppWidth: (width) => debouncedSetWidth(width),
         authenticate: (user: AppUser) =>
           set((state) => {
             state.auth = {
