@@ -1,14 +1,8 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
-import {
-  BoundStore,
-  Id,
-  PeerMessage,
-  PeerState,
-  ResponseStatus,
-  RoomJoinError,
-} from "@cb/types";
+import { RoomJoinCode } from "@cb/services/controllers/RoomController";
+import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
@@ -85,20 +79,17 @@ const createRoomStore = (
             join: async (id) => {
               get().actions.room.loading();
               const response = await getOrCreateControllers().room.join(id);
-              if (response.status === ResponseStatus.SUCCESS) {
-                const { name, isPublic } = response.room.getRoom();
+              if (response.code === RoomJoinCode.SUCCESS && response.data) {
+                const { name, isPublic } = response.data.getRoom();
                 setRoom({ id, name, isPublic });
               } else {
-                if (response.error === RoomJoinError.ROOM_NOT_FOUND) {
+                if (response.code === RoomJoinCode.NOT_EXISTS) {
                   toast.error("Room ID is invalid. Please try again.");
-                } else if (response.error === RoomJoinError.ROOM_FULL) {
+                  console.error(`Room with ID ${id} does not exist.`);
+                } else if (response.code === RoomJoinCode.MAX_CAPACITY) {
                   toast.error("Room is full. Please try another one.");
-                } else {
-                  toast.error("Failed to join room. Please try again.");
+                  console.error(`Room with ID ${id} is full.`);
                 }
-                console.error(
-                  `Failed to join room with ID ${id}: ${response.error}`
-                );
                 set((state) => {
                   state.status = RoomStatus.HOME;
                 });

@@ -1,20 +1,17 @@
 import { ROOM } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
-import {
-  DatabaseService,
-  Events,
-  Id,
-  ResponseStatus,
-  Room,
-  RoomJoinError,
-  RoomJoinResponse,
-  User,
-} from "@cb/types";
+import { DatabaseService, Events, Id, Room, User } from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { isEventFromMe } from "@cb/utils";
 
-export class RoomLifeCycle {
+export enum RoomJoinCode {
+  SUCCESS,
+  NOT_EXISTS,
+  MAX_CAPACITY,
+}
+
+class RoomLifeCycle {
   private database: DatabaseService["room"];
 
   private emitter: EventEmitter;
@@ -189,23 +186,20 @@ export class RoomController {
     return this.room;
   }
 
-  public async join(id: Id): Promise<RoomJoinResponse> {
+  public async join(id: Id) {
     if (this.room != null) {
-      return { status: ResponseStatus.SUCCESS, room: this.room };
+      return { code: RoomJoinCode.SUCCESS, data: this.room };
     }
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     const room = await this.database.get(id);
     if (room == undefined) {
-      return {
-        status: ResponseStatus.FAIL,
-        error: RoomJoinError.ROOM_NOT_FOUND,
-      };
+      return { code: RoomJoinCode.NOT_EXISTS };
     }
     if (
       room.usernames.length === ROOM.CAPACITY &&
       !room.usernames.includes(me)
     ) {
-      return { status: ResponseStatus.FAIL, error: RoomJoinError.ROOM_FULL };
+      return { code: RoomJoinCode.MAX_CAPACITY };
     }
     this.room = new RoomLifeCycle(
       this.database,
@@ -213,7 +207,7 @@ export class RoomController {
       { id, ...room },
       me
     );
-    return { status: ResponseStatus.SUCCESS, room: this.room };
+    return { code: RoomJoinCode.SUCCESS, data: this.room };
   }
 
   public async leave() {
