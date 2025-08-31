@@ -77,19 +77,27 @@ const createRoomStore = (
               }
             },
             join: async (id) => {
-              get().actions.room.loading();
-              const response = await getOrCreateControllers().room.join(id);
-              if (response.code === RoomJoinCode.SUCCESS && response.data) {
-                const { name, isPublic } = response.data.getRoom();
-                setRoom({ id, name, isPublic });
-              } else {
-                if (response.code === RoomJoinCode.NOT_EXISTS) {
-                  toast.error("Room ID is invalid. Please try again.");
-                  console.error(`Room with ID ${id} does not exist.`);
-                } else if (response.code === RoomJoinCode.MAX_CAPACITY) {
-                  toast.error("Room is full. Please try another one.");
-                  console.error(`Room with ID ${id} is full.`);
+              try {
+                get().actions.room.loading();
+                const response = await getOrCreateControllers().room.join(id);
+                if (response.code === RoomJoinCode.SUCCESS) {
+                  const { name, isPublic } = response.data!.getRoom();
+                  setRoom({ id, name, isPublic });
+                } else {
+                  if (response.code === RoomJoinCode.NOT_EXISTS) {
+                    toast.error("Room ID is invalid. Please try again.");
+                    console.error(`Room with ID ${id} does not exist.`);
+                  } else if (response.code === RoomJoinCode.MAX_CAPACITY) {
+                    toast.error("Room is full. Please try another one.");
+                    console.error(`Room with ID ${id} is full.`);
+                  }
+                  set((state) => {
+                    state.status = RoomStatus.HOME;
+                  });
                 }
+              } catch (error) {
+                toast.error("Failed to join room. Please try again.");
+                console.error("Failed to join room", error);
                 set((state) => {
                   state.status = RoomStatus.HOME;
                 });
