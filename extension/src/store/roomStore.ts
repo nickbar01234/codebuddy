@@ -2,10 +2,13 @@ import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import {
-  RoomFullError,
-  RoomNotFoundError,
-} from "@cb/services/controllers/RoomController";
-import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
+  BoundStore,
+  Id,
+  PeerMessage,
+  PeerState,
+  ResponseStatus,
+  RoomJoinError,
+} from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
@@ -80,20 +83,22 @@ const createRoomStore = (
               }
             },
             join: async (id) => {
-              try {
-                get().actions.room.loading();
-                const room = await getOrCreateControllers().room.join(id);
-                const { name, isPublic } = room.getRoom();
+              get().actions.room.loading();
+              const response = await getOrCreateControllers().room.join(id);
+              if (response.status === ResponseStatus.SUCCESS) {
+                const { name, isPublic } = response.room.getRoom();
                 setRoom({ id, name, isPublic });
-              } catch (error) {
-                if (error instanceof RoomNotFoundError) {
+              } else {
+                if (response.error === RoomJoinError.ROOM_NOT_FOUND) {
                   toast.error("Room ID is invalid. Please try again.");
-                } else if (error instanceof RoomFullError) {
+                } else if (response.error === RoomJoinError.ROOM_FULL) {
                   toast.error("Room is full. Please try another one.");
                 } else {
                   toast.error("Failed to join room. Please try again.");
                 }
-                console.error("Failed to join room", error);
+                console.error(
+                  `Failed to join room with ID ${id}: ${response.error}`
+                );
                 set((state) => {
                   state.status = RoomStatus.HOME;
                 });
