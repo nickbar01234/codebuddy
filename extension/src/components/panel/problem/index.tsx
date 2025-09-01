@@ -3,14 +3,14 @@ import {
   SkeletonWrapper,
 } from "@cb/components/ui/SkeletonWrapper";
 import useResource from "@cb/hooks/useResource";
-import { iframeService } from "@cb/services/iframe";
+import { getIframeService } from "@cb/services";
 import {
   appendClassIdempotent,
   getQuestionIdFromUrl,
   hideToRoot,
   waitForElement,
 } from "@cb/utils";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useLayoutEffect, useRef } from "react";
 
 const INJECTED_ATTRIBUTE = "data-injected";
 
@@ -29,27 +29,31 @@ export const QuestionSelectorPanel = React.memo(
     visible = true,
   }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
+    const [contentProcessed, setContentProcessed] = React.useState(false);
     const problemSetContainerRef = useRef<HTMLDivElement>(null);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
 
+    // Move iframe to this container when visible, before DOM paints
+    useLayoutEffect(() => {
+      if (visible && problemSetContainerRef.current && contentProcessed) {
+        getIframeService()?.showIframeAtContainer(
+          problemSetContainerRef.current
+        );
+      }
+    }, [visible, contentProcessed]);
+
     // Move iframe to this container when visible, back to hidden when not visible
     useEffect(() => {
       if (visible && problemSetContainerRef.current) {
-        // If content has already been processed, show immediately
-        if (iframeService.isContentProcessed()) {
+        const service = getIframeService();
+        if (service?.isContentProcessed()) {
           setLoading(false);
-          // Handle race condition: https://stackoverflow.com/a/779785
-          setTimeout(() => {
-            iframeService.moveIframeToContainer(
-              problemSetContainerRef.current!
-            );
-          }, 0);
+          setContentProcessed(true);
         }
 
-        // For first time, process content first, then position iframe
-        const iframe = iframeService.getIframeElement();
+        const iframe = service?.getIframeElement();
         if (iframe) {
           const processIframe = async () => {
             const handleIframeStyle = async (iframeDoc: Document) => {
@@ -113,10 +117,11 @@ export const QuestionSelectorPanel = React.memo(
                 };
 
                 iframeDoc.addEventListener("click", preventNavigation, true);
-                iframeService.setContentProcessed(true);
+                getIframeService()?.setContentProcessed(true);
+                setContentProcessed(true);
 
                 if (problemSetContainerRef.current) {
-                  iframeService.moveIframeToContainer(
+                  getIframeService()?.showIframeAtContainer(
                     problemSetContainerRef.current
                   );
                 }
@@ -142,7 +147,7 @@ export const QuestionSelectorPanel = React.memo(
               }
             };
 
-            if (iframeService.isIframeLoaded()) {
+            if (getIframeService()?.isIframeLoaded()) {
               await processIframeDocument();
             } else {
               // Set up load event listener
@@ -152,48 +157,55 @@ export const QuestionSelectorPanel = React.memo(
               };
 
               iframe.addEventListener("load", onLoad);
-
-              // Experimental: Also try after a delay in case the load event already fired
-              setTimeout(async () => {
-                if (
-                  iframeService.isIframeLoaded() &&
-                  !iframeService.isContentProcessed()
-                ) {
-                  console.log("Iframe loaded, attempting to process...");
-                  iframe.removeEventListener("load", onLoad);
-                  await processIframeDocument();
-                }
-              }, 500);
             }
           };
 
           processIframe();
         }
       } else if (!visible) {
-        iframeService.moveIframeToHiddenContainer();
+        getIframeService()?.hideIframe();
+        setContentProcessed(false);
       }
     }, [visible, handleQuestionSelect, filterQuestionIds, registerObserver]);
 
-    // Handle container resize to reposition iframe
+    // Handle container resize and window resize to reposition iframe
     useEffect(() => {
-      if (
-        visible &&
-        problemSetContainerRef.current &&
-        iframeService.isContentProcessed()
-      ) {
-        const resizeObserver = new ResizeObserver(() => {
-          if (problemSetContainerRef.current) {
-            iframeService.moveIframeToContainer(problemSetContainerRef.current);
-          }
-        });
+      if (visible && problemSetContainerRef.current && contentProcessed) {
+        let animationFrameId: number;
 
+        const repositionIframe = () => {
+          if (problemSetContainerRef.current) {
+            getIframeService()?.showIframeAtContainer(
+              problemSetContainerRef.current
+            );
+          }
+        };
+
+        // repositioning synchronized with browser frames
+        const throttledRepositionIframe = () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+          }
+          animationFrameId = requestAnimationFrame(() => {
+            // Add a small delay to ensure dialog recentering completes
+            requestAnimationFrame(repositionIframe);
+          });
+        };
+
+        // Watch for container size changes
+        const resizeObserver = new ResizeObserver(throttledRepositionIframe);
         resizeObserver.observe(problemSetContainerRef.current);
+        window.addEventListener("resize", throttledRepositionIframe);
 
         return () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+          }
           resizeObserver.disconnect();
+          window.removeEventListener("resize", throttledRepositionIframe);
         };
       }
-    }, [visible]);
+    }, [visible, contentProcessed]);
 
     return (
       <SkeletonWrapper

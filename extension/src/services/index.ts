@@ -99,4 +99,4 @@ export const getOrCreateControllers = createControllersFactory(
   background
 );
 
-export { iframeService } from "./iframe";
+export { getIframeService } from "../components/iframe/IframeContainer";
