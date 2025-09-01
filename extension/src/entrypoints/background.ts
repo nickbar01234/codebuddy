@@ -27,7 +27,7 @@ export default defineBackground(() => {
     };
   };
 
-  const pasteCode = async (value: string) => {
+  const pasteCode = async (value: string, language: string) => {
     const editor = window.monaco?.editor
       .getEditors()
       .find(
@@ -38,13 +38,54 @@ export default defineBackground(() => {
     const model = editor?.getModel();
 
     if (editor != undefined && model != undefined) {
-      editor.executeEdits(null, [
-        {
-          range: model.getFullModelRange(),
-          text: value,
+      const needChangeLanguage = model.getLanguageId() !== language;
+      if (needChangeLanguage) {
+        const languageButton = document.querySelector<HTMLButtonElement>(
+          "#editor > div.lc-md\\:pl-1.lc-md\\:pr-1.flex.h-8.items-center.justify-between.border-b.py-1.pl-\\[10px\\].pr-\\[10px\\].border-border-quaternary.dark\\:border-border-quaternary > div.flex.h-full.flex-nowrap.items-center > div:nth-child(1) > button"
+        );
+        if (languageButton) {
+          languageButton.click();
+
+          setTimeout(() => {
+            const languagePopup = document.querySelector(
+              "body > div:nth-child(20)"
+            );
+            if (!languagePopup) {
+              console.error("Cannot find language popup");
+              return;
+            }
+
+            languagePopup.firstChild?.firstChild?.childNodes.forEach((col) => {
+              for (const option of col.childNodes) {
+                const languageOption =
+                  option.textContent === "C++"
+                    ? "cpp"
+                    : option.textContent === "C#"
+                      ? "csharp"
+                      : option.textContent?.toLowerCase();
+                if (languageOption === language) {
+                  console.log(`Selecting language: ${option.textContent}`);
+                  (option as HTMLElement).click();
+                  return;
+                }
+              }
+            });
+          }, 100);
+        }
+      }
+
+      setTimeout(
+        () => {
+          editor.executeEdits(null, [
+            {
+              range: model.getFullModelRange(),
+              text: value,
+            },
+          ]);
+          editor.pushUndoStop();
         },
-      ]);
-      editor.pushUndoStop();
+        needChangeLanguage ? 200 : 0
+      );
     }
   };
 
@@ -216,7 +257,7 @@ export default defineBackground(() => {
             .executeScript({
               target: { tabId: sender.tab?.id ?? 0 },
               func: pasteCode,
-              args: [request.value],
+              args: [request.value, request.language],
               world: "MAIN",
             })
             .then(sendResponse);

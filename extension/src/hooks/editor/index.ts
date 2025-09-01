@@ -8,6 +8,7 @@ export const usePasteCode = () => {
     () =>
       background.pasteCode({
         value: selectedPeer?.code?.value ?? "",
+        language: selectedPeer?.code?.language ?? "",
       }),
     [selectedPeer]
   );
