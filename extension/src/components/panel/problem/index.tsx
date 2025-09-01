@@ -75,7 +75,6 @@ export const QuestionSelectorPanel = React.memo(
 
                       if (!anchorContainer.hasAttribute(INJECTED_ATTRIBUTE)) {
                         const originalHref = anchorContainer.href;
-                        anchorContainer.removeAttribute("href");
                         anchorContainer.removeAttribute("onclick");
                         anchorContainer.addEventListener(
                           "click",
