@@ -55,7 +55,9 @@ interface AppAction {
 }
 
 const debouncedSetWidth = _.debounce((width) => {
-  useApp.setState({ app: { ...useApp.getState().app, width } });
+  useApp.setState((state) => {
+    state.app.width = width;
+  });
 }, 1000);
 
 export const useApp = create<BoundStore<AppState, AppAction>>()(
