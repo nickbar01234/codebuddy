@@ -33,25 +33,9 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
-        const sidebarObserver = new MutationObserver((_, obs) => {
-          const btn = iframeDoc
-            .querySelector(
-              'button[data-state="closed"] svg[data-icon="sidebar"]'
-            )
-            ?.closest("button");
-
-          if (btn) {
-            btn.remove();
-            console.log("Sidebar toggle button removed");
-
-            obs.disconnect();
-          }
-        });
-
-        sidebarObserver.observe(iframeDoc.body, {
-          childList: true,
-          subtree: true,
-        });
+        waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
+          .then((el) => el.closest("button")?.remove())
+          .catch(() => {});
 
         const rowContainer = (await waitForElement("a#\\31 ", iframeDoc))
           .parentNode as Element;
