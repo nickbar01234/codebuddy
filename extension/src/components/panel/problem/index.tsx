@@ -3,7 +3,7 @@ import {
   SkeletonWrapper,
 } from "@cb/components/ui/SkeletonWrapper";
 import useResource from "@cb/hooks/useResource";
-import { getIframeService } from "@cb/services";
+import { useHtml } from "@cb/store/htmlStore";
 import {
   appendClassIdempotent,
   getQuestionIdFromUrl,
@@ -35,26 +35,24 @@ export const QuestionSelectorPanel = React.memo(
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
+    const { actions: iframeActions } = useHtml();
 
     // Move iframe to this container when visible, before DOM paints
     useLayoutEffect(() => {
       if (visible && problemSetContainerRef.current && contentProcessed) {
-        getIframeService()?.showIframeAtContainer(
-          problemSetContainerRef.current
-        );
+        iframeActions.showHtmlAtContainer(problemSetContainerRef.current);
       }
-    }, [visible, contentProcessed]);
+    }, [visible, contentProcessed, iframeActions]);
 
     // Move iframe to this container when visible, back to hidden when not visible
     useEffect(() => {
       if (visible && problemSetContainerRef.current) {
-        const service = getIframeService();
-        if (service?.isContentProcessed()) {
+        if (iframeActions.isContentProcessed()) {
           setLoading(false);
           setContentProcessed(true);
         }
 
-        const iframe = service?.getIframeElement();
+        const iframe = iframeActions.getHtmlElement();
         if (iframe) {
           const processIframe = async () => {
             const handleIframeStyle = async (iframeDoc: Document) => {
@@ -96,7 +94,6 @@ export const QuestionSelectorPanel = React.memo(
                         anchorContainer.setAttribute(INJECTED_ATTRIBUTE, "");
                       }
                     } catch (e) {
-                      // TODO(dlinh31): Error is caught for each link at getQuestionIdFromUrl(), need to know why
                       console.error("Unable to locate question link", e);
                     }
                   }
@@ -118,11 +115,11 @@ export const QuestionSelectorPanel = React.memo(
                 };
 
                 iframeDoc.addEventListener("click", preventNavigation, true);
-                getIframeService()?.setContentProcessed(true);
+                iframeActions.setContentProcessed(true);
                 setContentProcessed(true);
 
                 if (problemSetContainerRef.current) {
-                  getIframeService()?.showIframeAtContainer(
+                  iframeActions.showHtmlAtContainer(
                     problemSetContainerRef.current
                   );
                 }
@@ -148,7 +145,7 @@ export const QuestionSelectorPanel = React.memo(
               }
             };
 
-            if (getIframeService()?.isIframeLoaded()) {
+            if (iframeActions.isHtmlLoaded()) {
               await processIframeDocument();
             } else {
               // Set up load event listener
@@ -164,10 +161,16 @@ export const QuestionSelectorPanel = React.memo(
           processIframe();
         }
       } else if (!visible) {
-        getIframeService()?.hideIframe();
+        iframeActions.hideHtml();
         setContentProcessed(false);
       }
-    }, [visible, handleQuestionSelect, filterQuestionIds, registerObserver]);
+    }, [
+      visible,
+      handleQuestionSelect,
+      filterQuestionIds,
+      registerObserver,
+      iframeActions,
+    ]);
 
     // Handle container resize and window resize to reposition iframe
     useEffect(() => {
@@ -176,9 +179,7 @@ export const QuestionSelectorPanel = React.memo(
 
         const repositionIframe = () => {
           if (problemSetContainerRef.current) {
-            getIframeService()?.showIframeAtContainer(
-              problemSetContainerRef.current
-            );
+            iframeActions.showHtmlAtContainer(problemSetContainerRef.current);
           }
         };
 
@@ -206,7 +207,7 @@ export const QuestionSelectorPanel = React.memo(
           window.removeEventListener("resize", throttledRepositionIframe);
         };
       }
-    }, [visible, contentProcessed]);
+    }, [visible, contentProcessed, iframeActions]);
 
     return (
       <SkeletonWrapper

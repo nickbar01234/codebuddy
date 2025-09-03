@@ -98,5 +98,3 @@ export const getOrCreateControllers = createControllersFactory(
   useRoom,
   background
 );
-
-export { getIframeService } from "../components/iframe/IframeContainer";
