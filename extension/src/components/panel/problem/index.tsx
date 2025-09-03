@@ -47,6 +47,9 @@ export const QuestionSelectorPanel = React.memo(
     // Move iframe to this container when visible, back to hidden when not visible
     useEffect(() => {
       if (visible && problemSetContainerRef.current) {
+        setContentProcessed(false);
+        setLoading(true);
+
         if (iframeActions.isContentProcessed()) {
           setLoading(false);
           setContentProcessed(true);
@@ -62,7 +65,7 @@ export const QuestionSelectorPanel = React.memo(
                 ).parentNode as Element;
                 hideToRoot(rowContainer.parentElement?.parentElement);
 
-                const addButton = async () => {
+                const processQuestionLinks = async () => {
                   const rowList = rowContainer.querySelectorAll("a");
                   appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
                   for (const anchorContainer of rowList) {
@@ -99,22 +102,13 @@ export const QuestionSelectorPanel = React.memo(
                   }
                 };
 
-                const observer = new MutationObserver(addButton);
+                const observer = new MutationObserver(processQuestionLinks);
                 registerObserver("leetcode-table", observer, (obs) =>
                   obs.disconnect()
                 );
                 observer.observe(rowContainer, { childList: true });
-                addButton();
+                processQuestionLinks();
 
-                const preventNavigation = (e: Event) => {
-                  const target = e.target as HTMLElement;
-                  if (target.tagName === "A" && target.hasAttribute("href")) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-                };
-
-                iframeDoc.addEventListener("click", preventNavigation, true);
                 iframeActions.setContentProcessed(true);
                 setContentProcessed(true);
 
