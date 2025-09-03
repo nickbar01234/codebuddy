@@ -9,6 +9,47 @@ import {
 } from "@cb/types";
 
 export default defineBackground(() => {
+  let requestQueue: Array<{
+    request: any;
+    sendResponse: () => void;
+    tabId: number;
+  }> = [];
+  let isProcessing = false;
+
+  const processQueue = async () => {
+    if (isProcessing || requestQueue.length === 0) return;
+
+    isProcessing = true;
+    const latestRequest = requestQueue.pop();
+    requestQueue = [];
+
+    if (latestRequest) {
+      try {
+        await browser.scripting.executeScript({
+          target: { tabId: latestRequest.tabId },
+          func: setValueModel,
+          args: [
+            {
+              code: latestRequest.request.code,
+              language: latestRequest.request.language,
+              changes: latestRequest.request.changes,
+              changeUser: latestRequest.request.changeUser,
+              editorId: latestRequest.request.editorId,
+            },
+          ],
+          world: "MAIN",
+        });
+        latestRequest.sendResponse();
+      } catch (error) {
+        console.error("setValueModel execution failed:", error);
+        latestRequest.sendResponse();
+      }
+    }
+
+    isProcessing = false;
+    setTimeout(processQueue, 0);
+  };
+
   const servicePayload = <T extends ServiceRequest["action"]>(
     payload: ServiceResponse[T]
   ) => payload;
@@ -244,23 +285,13 @@ export default defineBackground(() => {
         }
 
         case "setValueOtherEditor": {
-          browser.scripting
-            .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
-              func: setValueModel,
-              args: [
-                {
-                  code: request.code,
-                  language: request.language,
-                  changes: request.changes,
-                  changeUser: request.changeUser,
-                  editorId: request.editorId,
-                },
-              ],
-              world: "MAIN",
-            })
-            .then(() => sendResponse());
-          break;
+          requestQueue.push({
+            request,
+            sendResponse,
+            tabId: sender.tab?.id ?? 0,
+          });
+          processQueue();
+          return true;
         }
 
         case "getActiveTabId": {
