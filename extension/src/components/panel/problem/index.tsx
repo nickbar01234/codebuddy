@@ -11,6 +11,7 @@ import {
   waitForElement,
 } from "@cb/utils";
 import React, { useEffect, useLayoutEffect, useRef } from "react";
+import { toast } from "sonner";
 
 const INJECTED_ATTRIBUTE = "data-injected";
 
@@ -128,12 +129,12 @@ export const QuestionSelectorPanel = React.memo(
                 setLoading(false);
               } catch (e) {
                 console.error("Unable to mount Leetcode iframe", e);
+                toast.error(
+                  "Unable to show question selector, please try again later."
+                );
                 setLoading(false);
               }
             };
-
-            // TODO(dlinh31): Now, iframe needs a small delay to ensure iframe is attached to DOM, and the modal animation finishes
-            await new Promise((resolve) => setTimeout(resolve, 100));
 
             // Try to process immediately if iframe is loaded, otherwise wait for load event
             const processIframeDocument = async () => {
