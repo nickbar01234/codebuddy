@@ -1,3 +1,4 @@
+import { WEB_RTC_ICE_SERVERS } from "@cb/constants";
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
 import { DatabaseService, LocalStorage } from "@cb/types";
 import background, { BackgroundProxy } from "./background";
@@ -66,7 +67,12 @@ const createControllersFactory = (
     if (initialized) {
       return controllers!;
     }
-    const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y);
+    const iceServers = import.meta.env.DEV
+      ? WEB_RTC_ICE_SERVERS["STUN"]
+      : [...WEB_RTC_ICE_SERVERS["STUN"], ...WEB_RTC_ICE_SERVERS["TURN"]];
+    const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y, {
+      iceServers,
+    });
     const room = new RoomController(db.room, emitter, appStore);
     const message = new MessageDispatcher(
       emitter,
