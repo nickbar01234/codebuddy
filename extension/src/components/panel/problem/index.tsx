@@ -10,7 +10,7 @@ import {
   hideToRoot,
   waitForElement,
 } from "@cb/utils";
-import React, { useEffect, useLayoutEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 const INJECTED_ATTRIBUTE = "data-injected";
@@ -31,22 +31,26 @@ export const QuestionSelectorPanel = React.memo(
   }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     const [contentProcessed, setContentProcessed] = React.useState(false);
-    const problemSetContainerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
     const { actions: iframeActions } = useHtml();
 
-    // Move iframe to this container when visible, before DOM paints
-    useLayoutEffect(() => {
-      if (visible && problemSetContainerRef.current && contentProcessed) {
-        iframeActions.showHtmlAtContainer(problemSetContainerRef.current);
-      }
-    }, [visible, contentProcessed, iframeActions]);
+    // Callback ref that runs side effects when the container is available
+    const problemSetContainerRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        containerRef.current = node;
+        if (node && visible && contentProcessed) {
+          iframeActions.showHtmlAtContainer(node);
+        }
+      },
+      [visible, contentProcessed, iframeActions]
+    );
 
-    // Move iframe to this container when visible, back to hidden when not visible
+    // Process iframe content when visible
     useEffect(() => {
-      if (visible && problemSetContainerRef.current) {
+      if (visible) {
         setContentProcessed(false);
         setLoading(true);
 
@@ -115,12 +119,6 @@ export const QuestionSelectorPanel = React.memo(
 
                 iframeActions.setContentProcessed(true);
                 setContentProcessed(true);
-
-                if (problemSetContainerRef.current) {
-                  iframeActions.showHtmlAtContainer(
-                    problemSetContainerRef.current
-                  );
-                }
                 setLoading(false);
               } catch (e) {
                 console.error("Unable to mount Leetcode iframe", e);
@@ -172,12 +170,12 @@ export const QuestionSelectorPanel = React.memo(
 
     // Handle container resize and window resize to reposition iframe
     useEffect(() => {
-      if (visible && problemSetContainerRef.current && contentProcessed) {
+      if (visible && containerRef.current && contentProcessed) {
         let animationFrameId: number;
 
         const repositionIframe = () => {
-          if (problemSetContainerRef.current) {
-            iframeActions.showHtmlAtContainer(problemSetContainerRef.current);
+          if (containerRef.current) {
+            iframeActions.showHtmlAtContainer(containerRef.current);
           }
         };
 
@@ -194,7 +192,7 @@ export const QuestionSelectorPanel = React.memo(
 
         // Watch for container size changes
         const resizeObserver = new ResizeObserver(throttledRepositionIframe);
-        resizeObserver.observe(problemSetContainerRef.current);
+        resizeObserver.observe(containerRef.current);
         window.addEventListener("resize", throttledRepositionIframe);
 
         return () => {
