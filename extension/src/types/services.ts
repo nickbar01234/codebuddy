@@ -6,11 +6,6 @@ interface GetValueRequest extends GenericMessage {
   action: "getValue";
 }
 
-interface PastCodeRequest extends GenericMessage {
-  action: "pasteCode";
-  value: string;
-}
-
 interface SetupCodeBuddyModel extends GenericMessage {
   action: "setupCodeBuddyModel";
   id: string;
@@ -44,7 +39,6 @@ interface GetLanguageExtensionRequest extends GenericMessage {
 
 export type ServiceRequest =
   | GetValueRequest
-  | PastCodeRequest
   | SetupCodeBuddyModel
   | SetOtherEditorRequest
   | SetupLeetCodeModel
@@ -68,7 +62,6 @@ export type ServiceResponse = GenericResponse<
       value: string;
       language: string;
     };
-    pasteCode: void;
     setupCodeBuddyModel: ServiceGenericResponse;
     setupLeetCodeModel: ServiceGenericResponse;
     setValueOtherEditor: void;

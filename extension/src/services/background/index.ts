@@ -17,10 +17,6 @@ const background = {
       ...args,
     }),
 
-  pasteCode: (
-    args: MessagePayload<ExtractMessage<ServiceRequest, "pasteCode">>
-  ) => sendServiceRequest({ action: "pasteCode", ...args }),
-
   setupCodeBuddyEditor: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "setupCodeBuddyModel">>
   ) => sendServiceRequest({ action: "setupCodeBuddyModel", ...args }),
