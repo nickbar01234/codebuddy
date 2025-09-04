@@ -59,6 +59,10 @@ export const QuestionSelectorPanel = React.memo(
         if (iframe) {
           const processIframe = async () => {
             const handleIframeStyle = async (iframeDoc: Document) => {
+              waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
+                .then((el) => el.closest("button")?.remove())
+                .catch(() => {});
+
               try {
                 const rowContainer = (
                   await waitForElement("a#\\31 ", iframeDoc)
