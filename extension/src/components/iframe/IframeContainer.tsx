@@ -1,25 +1,15 @@
-import { DOM, URLS } from "@cb/constants";
+import { URLS } from "@cb/constants";
 import { useHtml } from "@cb/store/htmlStore";
-import React, { useEffect, useRef } from "react";
+import React from "react";
 
 export const IframeContainer: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const { actions } = useHtml();
-
-  useEffect(() => {
-    if (containerRef.current && iframeRef.current) {
-      containerRef.current.id =
-        DOM.INJECTED_LEETCODE_PROBLEMSET_IFRAME_CONTAINER;
-      iframeRef.current.id = DOM.INJECTED_LEETCODE_PROBLEMSET_IFRAME;
-      actions.initialize(iframeRef.current, containerRef.current);
-    }
-  }, [actions]);
+  const hiddenContainer = useHtml((state) => state.hiddenContainer);
+  const htmlElement = useHtml((state) => state.htmlElement);
 
   return (
-    <div ref={containerRef} className="hidden pointer-events-none">
+    <div ref={hiddenContainer} className="hidden pointer-events-none">
       <iframe
-        ref={iframeRef}
+        ref={htmlElement}
         src={URLS.PROBLEMSET}
         title="LeetCode Question"
         className="h-full w-full border-2 border-[#78788033]"
