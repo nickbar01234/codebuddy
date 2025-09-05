@@ -1,14 +1,15 @@
 import { BoundStore } from "@cb/types";
+import { createRef, MutableRefObject } from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface HtmlState {
   contentProcessed: boolean;
-  isVisible: boolean;
+  hiddenContainer: MutableRefObject<HTMLDivElement | null>;
+  htmlElement: MutableRefObject<HTMLIFrameElement | null>;
 }
 
 interface HtmlActions {
-  initialize: (html: HTMLIFrameElement, container: HTMLElement) => void;
   showHtmlAtContainer: (container: HTMLElement) => void;
   hideHtml: () => void;
   setContentProcessed: (processed: boolean) => void;
@@ -16,48 +17,36 @@ interface HtmlActions {
   isHtmlInHiddenContainer: () => boolean;
   isContentProcessed: () => boolean;
   isHtmlLoaded: () => boolean;
-  isHtmlVisible: () => boolean;
 }
-
-let htmlElement: HTMLIFrameElement | null = null;
-let hiddenContainer: HTMLElement | null = null;
 
 export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
   immer((set, get) => ({
     contentProcessed: false,
     isVisible: false,
+    hiddenContainer: createRef(),
+    htmlElement: createRef(),
     actions: {
-      initialize: (html: HTMLIFrameElement, container: HTMLElement) => {
-        htmlElement = html;
-        hiddenContainer = container;
-      },
       showHtmlAtContainer: (container: HTMLElement) => {
-        if (!hiddenContainer || !htmlElement) return;
-
+        const { hiddenContainer, htmlElement } = get();
+        if (!hiddenContainer.current || !htmlElement.current) return;
         const containerRect = container.getBoundingClientRect();
 
         // static styles
-        hiddenContainer.className = "block fixed z-[1000] pointer-events-auto";
-        htmlElement.className = "w-full h-full block";
+        hiddenContainer.current.className =
+          "block fixed z-[1000] pointer-events-auto";
+        htmlElement.current.className = "w-full h-full block";
 
         // Runtime-calculated positions, doesn't work with Tailwind classes
-        hiddenContainer.style.top = `${containerRect.top}px`;
-        hiddenContainer.style.left = `${containerRect.left}px`;
-        hiddenContainer.style.width = `${containerRect.width}px`;
-        hiddenContainer.style.height = `${containerRect.height}px`;
-
-        set((state) => {
-          state.isVisible = true;
-        });
+        hiddenContainer.current.style.top = `${containerRect.top}px`;
+        hiddenContainer.current.style.left = `${containerRect.left}px`;
+        hiddenContainer.current.style.width = `${containerRect.width}px`;
+        hiddenContainer.current.style.height = `${containerRect.height}px`;
       },
       hideHtml: () => {
-        if (!hiddenContainer) return;
-
-        hiddenContainer.className = "hidden pointer-events-none fixed z-[1000]";
-
-        set((state) => {
-          state.isVisible = false;
-        });
+        const { hiddenContainer, htmlElement } = get();
+        if (!hiddenContainer.current || !htmlElement.current) return;
+        hiddenContainer.current.className =
+          "hidden pointer-events-none fixed z-[1000]";
       },
       setContentProcessed: (processed: boolean) => {
         set((state) => {
@@ -65,21 +54,20 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
         });
       },
       getHtmlElement: () => {
-        return htmlElement;
+        return get().htmlElement.current;
       },
       isHtmlInHiddenContainer: () => {
-        if (!hiddenContainer || !htmlElement) return false;
-        return hiddenContainer.contains(htmlElement);
+        const { hiddenContainer, htmlElement } = get();
+        if (!hiddenContainer.current || !htmlElement.current) return false;
+        return hiddenContainer.current.contains(get().htmlElement.current);
       },
       isContentProcessed: () => {
         return get().contentProcessed;
       },
       isHtmlLoaded: () => {
-        if (!htmlElement?.contentDocument) return false;
-        return htmlElement.contentDocument.readyState === "complete";
-      },
-      isHtmlVisible: () => {
-        return get().isVisible;
+        const { htmlElement } = get();
+        if (!htmlElement.current?.contentDocument) return false;
+        return htmlElement.current.contentDocument.readyState === "complete";
       },
     },
   }))
