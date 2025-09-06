@@ -27,27 +27,6 @@ export default defineBackground(() => {
     };
   };
 
-  const pasteCode = async (value: string) => {
-    const editor = window.monaco?.editor
-      .getEditors()
-      .find(
-        (editor) =>
-          (editor as any).id !== "CodeBuddy" &&
-          editor.getModel()?.getLanguageId() !== "plaintext"
-      );
-    const model = editor?.getModel();
-
-    if (editor != undefined && model != undefined) {
-      editor.executeEdits(null, [
-        {
-          range: model.getFullModelRange(),
-          text: value,
-        },
-      ]);
-      editor.pushUndoStop();
-    }
-  };
-
   const setupCodeBuddyModel = async (id: string) => {
     if (window.monaco == undefined) {
       return {
@@ -68,6 +47,12 @@ export default defineBackground(() => {
         minimap: { enabled: false },
         padding: {
           top: 8,
+        },
+      });
+      editor.updateOptions({
+        padding: {
+          bottom:
+            editor.getOption(window.monaco.editor.EditorOption.lineHeight) * 8,
         },
       });
       (editor as any).id = "CodeBuddy";
@@ -202,18 +187,6 @@ export default defineBackground(() => {
               sendResponse(result[0].result);
             });
 
-          break;
-        }
-
-        case "pasteCode": {
-          browser.scripting
-            .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
-              func: pasteCode,
-              args: [request.value],
-              world: "MAIN",
-            })
-            .then(sendResponse);
           break;
         }
 

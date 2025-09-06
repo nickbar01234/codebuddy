@@ -1,14 +1,14 @@
 import { usePeers } from "@cb/hooks/store";
-import background from "@cb/services/background";
 import React from "react";
+import { toast } from "sonner";
 
-export const usePasteCode = () => {
+export const useCopyCode = () => {
   const { selectedPeer } = usePeers();
-  return React.useCallback(
-    () =>
-      background.pasteCode({
-        value: selectedPeer?.code?.value ?? "",
-      }),
-    [selectedPeer]
-  );
+  return React.useCallback(() => {
+    if (selectedPeer?.code?.value) {
+      navigator.clipboard.writeText(selectedPeer.code.value).then(() => {
+        toast.success("Code copied to clipboard!");
+      });
+    }
+  }, [selectedPeer]);
 };

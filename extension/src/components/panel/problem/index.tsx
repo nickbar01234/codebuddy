@@ -33,6 +33,10 @@ export const QuestionSelectorPanel = React.memo(
 
     useEffect(() => {
       const handleIframeStyle = async (iframeDoc: Document) => {
+        waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
+          .then((el) => el.closest("button")?.remove())
+          .catch(() => {});
+
         const rowContainer = (await waitForElement("a#\\31 ", iframeDoc))
           .parentNode as Element;
         hideToRoot(rowContainer.parentElement?.parentElement);
