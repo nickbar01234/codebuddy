@@ -5,7 +5,6 @@ import React from "react";
 
 export const RoomInfoTab = () => {
   const [open, setOpen] = React.useState(false);
-
   return (
     <div className="h-full w-full flex flex-col gap-4 items-center justify-center">
       <SelectProblemDialog
