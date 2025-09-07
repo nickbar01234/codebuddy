@@ -2,7 +2,7 @@ export type ProblemMeta = {
   id: string;
   title: string;
   slug: string;
-  difficulty: "Easy" | "Medium" | "Hard" | string;
+  difficulty: string;
   tags: string[];
   url: string;
 };
