@@ -31,7 +31,7 @@ export const QuestionSelectorPanel = React.memo(
     const problemSetContainerRef = useCallback(
       (node: HTMLDivElement | null) => {
         if (node) {
-          iframeActions.showHtmlAtContainer(node);
+          iframeActions.showHtml(node);
           let animationFrameId: number;
           // repositioning synchronized with browser frames
           const throttledRepositionIframe = () => {
@@ -40,9 +40,7 @@ export const QuestionSelectorPanel = React.memo(
             }
             animationFrameId = requestAnimationFrame(() => {
               // Add a small delay to ensure dialog recentering completes
-              requestAnimationFrame(() =>
-                iframeActions.showHtmlAtContainer(node)
-              );
+              requestAnimationFrame(() => iframeActions.showHtml(node));
             });
           };
 

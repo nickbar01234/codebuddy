@@ -9,7 +9,7 @@ interface HtmlState {
 }
 
 interface HtmlActions {
-  showHtmlAtContainer: (container: HTMLElement) => void;
+  showHtml: (container: HTMLElement) => void;
   hideHtml: () => void;
   setContentProcessed: (processed: boolean) => void;
   getHtmlElement: () => HTMLIFrameElement | null;
@@ -22,7 +22,7 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
     contentProcessed: false,
     htmlElement: createRef(),
     actions: {
-      showHtmlAtContainer: (container: HTMLElement) => {
+      showHtml: (container: HTMLElement) => {
         const { htmlElement } = get();
         if (!htmlElement.current) return;
         const containerRect = container.getBoundingClientRect();
