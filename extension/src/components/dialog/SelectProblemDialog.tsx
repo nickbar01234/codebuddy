@@ -1,5 +1,6 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { windowMessager } from "@cb/services/window";
+import { useHtml } from "@cb/store/htmlStore";
 import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
 interface SelectProblemDialog {
@@ -13,6 +14,7 @@ export const SelectProblemDialog = ({
   open,
   setOpen,
 }: SelectProblemDialog) => {
+  const iframeActions = useHtml((state) => state.actions);
   return (
     <RoomDialog
       trigger={{
@@ -24,7 +26,10 @@ export const SelectProblemDialog = ({
         props: {
           open,
           modal: true,
-          onOpenChange: setOpen,
+          onOpenChange: (state) => {
+            iframeActions.hideHtml();
+            setOpen(state);
+          },
         },
       }}
       content={{

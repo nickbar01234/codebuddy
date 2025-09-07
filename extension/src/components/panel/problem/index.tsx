@@ -4,13 +4,7 @@ import {
 } from "@cb/components/ui/SkeletonWrapper";
 import useResource from "@cb/hooks/useResource";
 import { useHtml } from "@cb/store/htmlStore";
-import {
-  appendClassIdempotent,
-  getQuestionIdFromUrl,
-  hideToRoot,
-  waitForElement,
-} from "@cb/utils";
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
 const INJECTED_ATTRIBUTE = "data-injected";
@@ -28,8 +22,6 @@ export const QuestionSelectorPanel = React.memo(
     container = {},
   }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
-    const [contentProcessed, setContentProcessed] = React.useState(false);
-    const containerRef = useRef<HTMLDivElement | null>(null);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
@@ -38,22 +30,42 @@ export const QuestionSelectorPanel = React.memo(
     // Callback ref that runs side effects when the container is available
     const problemSetContainerRef = useCallback(
       (node: HTMLDivElement | null) => {
-        containerRef.current = node;
-        if (node && contentProcessed) {
-          iframeActions.showHtmlAtContainer(node);
+        if (node) {
+          iframeActions.showHtml(node);
+          let animationFrameId: number;
+          // repositioning synchronized with browser frames
+          const throttledRepositionIframe = () => {
+            if (animationFrameId) {
+              cancelAnimationFrame(animationFrameId);
+            }
+            animationFrameId = requestAnimationFrame(() => {
+              // Add a small delay to ensure dialog recentering completes
+              requestAnimationFrame(() => iframeActions.showHtml(node));
+            });
+          };
+
+          // Watch for container size changes
+          const resizeObserver = new ResizeObserver(throttledRepositionIframe);
+          resizeObserver.observe(node);
+          window.addEventListener("resize", throttledRepositionIframe);
+
+          return () => {
+            if (animationFrameId) {
+              cancelAnimationFrame(animationFrameId);
+              resizeObserver.disconnect();
+              window.removeEventListener("resize", throttledRepositionIframe);
+            }
+          };
         }
       },
-      [contentProcessed, iframeActions]
+      [iframeActions]
     );
 
-    // Process iframe content on mount
     useEffect(() => {
-      setContentProcessed(false);
       setLoading(true);
 
       if (iframeActions.isContentProcessed()) {
         setLoading(false);
-        setContentProcessed(true);
       }
 
       const iframe = iframeActions.getHtmlElement();
@@ -114,7 +126,6 @@ export const QuestionSelectorPanel = React.memo(
               processQuestionLinks();
 
               iframeActions.setContentProcessed(true);
-              setContentProcessed(true);
               setLoading(false);
             } catch (e) {
               console.error("Unable to mount Leetcode iframe", e);
@@ -153,54 +164,13 @@ export const QuestionSelectorPanel = React.memo(
         processIframe();
       }
 
-      // Cleanup function on unmount
-      return () => {
-        iframeActions.hideHtml();
-        setContentProcessed(false);
-      };
+      return () => iframeActions.setContentProcessed(false);
     }, [
       handleQuestionSelect,
       filterQuestionIds,
       registerObserver,
       iframeActions,
     ]);
-
-    // Handle container resize and window resize to reposition iframe
-    useEffect(() => {
-      if (containerRef.current && contentProcessed) {
-        let animationFrameId: number;
-
-        const repositionIframe = () => {
-          if (containerRef.current) {
-            iframeActions.showHtmlAtContainer(containerRef.current);
-          }
-        };
-
-        // repositioning synchronized with browser frames
-        const throttledRepositionIframe = () => {
-          if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-          }
-          animationFrameId = requestAnimationFrame(() => {
-            // Add a small delay to ensure dialog recentering completes
-            requestAnimationFrame(repositionIframe);
-          });
-        };
-
-        // Watch for container size changes
-        const resizeObserver = new ResizeObserver(throttledRepositionIframe);
-        resizeObserver.observe(containerRef.current);
-        window.addEventListener("resize", throttledRepositionIframe);
-
-        return () => {
-          if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-          }
-          resizeObserver.disconnect();
-          window.removeEventListener("resize", throttledRepositionIframe);
-        };
-      }
-    }, [contentProcessed, iframeActions]);
 
     return (
       <SkeletonWrapper
