@@ -1,6 +1,7 @@
 import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
+import { RoomInfo } from "@cb/components/panel/info";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { getLocalStorage } from "@cb/services";
 import { RoomStatus, useRoom } from "@cb/store";
@@ -26,6 +27,7 @@ export const AppNavigator = () => {
         ) : null}
       </div>
       <EditorPanel />
+      <RoomInfo />
     </div>
   );
 };
