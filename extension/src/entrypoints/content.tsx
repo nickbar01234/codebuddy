@@ -1,4 +1,5 @@
 import { ContentScriptContext } from "#imports";
+import { IframeContainer } from "@cb/components/iframe/IframeContainer";
 import { ContentScript } from "@cb/components/root/ContentScript";
 import { DOM, URLS } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
@@ -29,7 +30,10 @@ const createUi = (ctx: ContentScriptContext) => {
       leetCodeRoot.appendChild(leetCodeNode);
 
       createRoot(extensionRoot).render(
-        <ContentScript leetCodeNode={leetCodeNode} />
+        <>
+          <IframeContainer />
+          <ContentScript leetCodeNode={leetCodeNode} />
+        </>
       );
     },
     onMount: () => {},
