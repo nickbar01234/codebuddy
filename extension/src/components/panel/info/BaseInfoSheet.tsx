@@ -15,7 +15,7 @@ export const BaseInfoSheet = ({ trigger, children }: BaseInfoSheetProps) => {
       </SheetTrigger>
       <SheetContent
         className={cn(
-          "bg-secondary z-[2000] [&>button:first-of-type]:hidden w-3/12"
+          "bg-secondary z-[2000] [&>button:first-of-type]:hidden w-5/12"
         )}
       >
         {children}
