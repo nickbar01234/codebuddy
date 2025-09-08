@@ -35,6 +35,7 @@ export default {
         DEFAULT: "var(--background-primary)",
         primary: "var(--background-primary)",
         secondary: "var(--background-secondary)",
+        quaternary: "var(--fill-quaternary)",
         base: "hsl(var(--sd-background-gray))",
         tabbar: "var(--color-tabset-tabbar-background)",
       },
