@@ -7,7 +7,17 @@ import {
   Unsubscribe,
 } from "@cb/types/utils";
 
-export type User = string;
+export interface User {
+  id: string;
+  questions: {
+    [roomId: string]: {
+      [questionId: string]: {
+        code: string;
+        timestamp: number;
+      };
+    };
+  };
+}
 
 export type Version = number;
 
