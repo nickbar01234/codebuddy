@@ -94,12 +94,6 @@ interface DatabaseRoomService {
     username: User,
     progress: Partial<UserProgress>
   ): Promise<void>;
-  updateUserQuestion(
-    roomId: Id,
-    username: User,
-    questionSlug: string,
-    questionProgress: Partial<QuestionProgress>
-  ): Promise<void>;
 
   observer: DatabaseRoomObserver;
 }
