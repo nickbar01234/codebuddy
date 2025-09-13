@@ -1,16 +1,6 @@
 import { GenericMessage, Identifiable, Unsubscribe } from "@cb/types/utils";
 
-export interface User {
-  id: string;
-  questions: {
-    [roomId: string]: {
-      [questionId: string]: {
-        code: string;
-        timestamp: number;
-      };
-    };
-  };
-}
+export type User = string;
 
 export type Version = number;
 
@@ -28,9 +18,23 @@ interface DescriptionNegotiation extends GenericMessage {
 
 type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
 
+export type QuestionProgress = {
+  code: string;
+  language: string;
+  status: "not-started" | "in-progress" | "completed";
+};
+
+export type UserProgress = {
+  status: "working" | "completed";
+  questions: {
+    [questionSlug: string]: QuestionProgress;
+  };
+};
+
 export enum Models {
   ROOMS = "rooms",
   NEGOTIATIONS = "negotiations",
+  USER = "user",
 }
 
 export interface Negotiation {
@@ -45,7 +49,7 @@ export interface Room {
   version: Version;
   isPublic: boolean;
   name: string;
-  questions: string[];
+  questionQueue: string[];
 }
 
 export type ObserverDocumentCallback<T> = {
@@ -66,6 +70,11 @@ interface DatabaseRoomObserver {
     version: Version,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
+  user(
+    roomId: Id,
+    username: User,
+    cb: ObserverCollectionCallback<UserProgress>
+  ): Unsubscribe;
 }
 
 interface DatabaseRoomService {
@@ -74,6 +83,21 @@ interface DatabaseRoomService {
   addUser(id: Id, user: User): Promise<void>;
   removeUser(id: Id, user: User): Promise<void>;
   addNegotiation(id: Id, data: Negotiation): Promise<void>;
+
+  getUser(roomId: Id, username: User): Promise<UserProgress | undefined>;
+  setUser(
+    roomId: Id,
+    username: User,
+    progress: Partial<UserProgress>
+  ): Promise<void>;
+  updateUserQuestion(
+    roomId: Id,
+    username: User,
+    questionSlug: string,
+    questionProgress: Partial<QuestionProgress>
+  ): Promise<void>;
+  getAllUsers(roomId: Id): Promise<Record<string, UserProgress>>;
+
   observer: DatabaseRoomObserver;
 }
 
