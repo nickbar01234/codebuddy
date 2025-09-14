@@ -21,12 +21,11 @@ export const negotiationConverter: FirestoreDataConverter<
     snapshot.data(options),
 };
 
-export const userProgressConverter: FirestoreDataConverter<UserProgress> = {
-  toFirestore(userProgress: UserProgress) {
-    return userProgress;
-  },
-  fromFirestore(snapshot, options) {
-    const data = snapshot.data(options);
-    return data as UserProgress;
-  },
+export const userProgressConverter: FirestoreDataConverter<
+  UserProgress,
+  UserProgress
+> = {
+  toFirestore: identity,
+  fromFirestore: (snapshot: QueryDocumentSnapshot<UserProgress>, options) =>
+    snapshot.data(options),
 };
