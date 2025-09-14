@@ -37,7 +37,7 @@ export type UserProgress = {
 export enum Models {
   ROOMS = "rooms",
   NEGOTIATIONS = "negotiations",
-  USERPROGRESS = "user_progress",
+  USER_PROGRESS = "user_progress",
 }
 
 export interface Negotiation {
