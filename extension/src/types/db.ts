@@ -1,5 +1,6 @@
 import { PeerMessage } from "@cb/types/peers";
 import {
+  ExtractMessage,
   GenericMessage,
   Identifiable,
   MessagePayload,
@@ -25,20 +26,18 @@ interface DescriptionNegotiation extends GenericMessage {
 type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
 
 export type QuestionProgress = {
-  code: MessagePayload<PeerMessage>;
+  code: MessagePayload<ExtractMessage<PeerMessage, "code">>;
   status: "not-started" | "in-progress" | "completed";
 };
 
 export type UserProgress = {
-  questions: {
-    [questionSlug: string]: QuestionProgress;
-  };
+  questions: Record<string, QuestionProgress>;
 };
 
 export enum Models {
   ROOMS = "rooms",
   NEGOTIATIONS = "negotiations",
-  USER = "user",
+  USERPROGRESS = "user_progress",
 }
 
 export interface Negotiation {
