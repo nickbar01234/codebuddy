@@ -73,6 +73,11 @@ interface DatabaseRoomObserver {
     version: Version,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
+  user(
+    roomId: Id,
+    username: User,
+    cb: ObserverDocumentCallback<UserProgress>
+  ): Unsubscribe;
 }
 
 interface DatabaseRoomService {
