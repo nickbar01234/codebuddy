@@ -1,5 +1,5 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
-import { windowMessager } from "@cb/services/window";
+import { useRoomActions } from "@cb/hooks/store";
 import { useHtml } from "@cb/store/htmlStore";
 import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
@@ -15,6 +15,8 @@ export const SelectProblemDialog = ({
   setOpen,
 }: SelectProblemDialog) => {
   const iframeActions = useHtml((state) => state.actions);
+  const { addQuestion } = useRoomActions();
+
   return (
     <RoomDialog
       trigger={{
@@ -41,8 +43,8 @@ export const SelectProblemDialog = ({
       title={{ node: "Select next problem" }}
     >
       <QuestionSelectorPanel
-        handleQuestionSelect={(question) => {
-          windowMessager.navigate({ url: question });
+        handleQuestionSelect={(url) => {
+          addQuestion(url);
           setOpen(false);
         }}
         filterQuestionIds={[]}

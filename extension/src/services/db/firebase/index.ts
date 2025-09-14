@@ -113,7 +113,7 @@ const getUserRef = (roomId: string, username: string) =>
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
     async create(room) {
-      const doc = { ...room, usernames: [], version: 0, questions: [] };
+      const doc = { ...room, usernames: [], version: 0 };
       const ref = await addDoc(getRoomRefs(), doc);
       return {
         id: ref.id,
@@ -129,6 +129,14 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
       return setDoc(
         getRoomRef(id),
         { usernames: arrayUnion(user), version: increment(1) },
+        { merge: true }
+      );
+    },
+
+    addQuestion(id, question) {
+      return setDoc(
+        getRoomRef(id),
+        { questions: arrayUnion(question) },
         { merge: true }
       );
     },
