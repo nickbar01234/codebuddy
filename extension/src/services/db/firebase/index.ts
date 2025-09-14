@@ -5,6 +5,7 @@ import {
   ObserverCollectionCallback,
   ObserverDocumentCallback,
   Room,
+  UserProgress,
 } from "@cb/types";
 import {
   addDoc,
@@ -23,13 +24,18 @@ import {
   SnapshotOptions,
   where,
 } from "firebase/firestore";
-import { negotiationConverter, roomConverter } from "./converter";
+import {
+  negotiationConverter,
+  roomConverter,
+  userProgressConverter,
+} from "./converter";
 import { auth, firestore } from "./setup";
 export { auth };
 
 type FirebaseTypes = {
   [Models.ROOMS]: Room;
   [Models.NEGOTIATIONS]: Negotiation;
+  [Models.USER_PROGRESS]: UserProgress;
 };
 
 const SNAPSHOT_OPTIONS: SnapshotOptions = {
@@ -41,6 +47,7 @@ const firebaseConverters: {
 } = {
   [Models.ROOMS]: roomConverter,
   [Models.NEGOTIATIONS]: negotiationConverter,
+  [Models.USER_PROGRESS]: userProgressConverter,
 };
 
 const withDocumentSnapshot = <T>(
@@ -94,10 +101,19 @@ const getNegotiationRefs = (id: string) =>
     firebaseConverters[Models.NEGOTIATIONS]
   );
 
+const getUserRef = (roomId: string, username: string) =>
+  doc(
+    firestore,
+    Models.ROOMS,
+    roomId,
+    Models.USER_PROGRESS,
+    username
+  ).withConverter(firebaseConverters[Models.USER_PROGRESS]);
+
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
     async create(room) {
-      const doc = { ...room, usernames: [], version: 0 };
+      const doc = { ...room, usernames: [], version: 0, questions: [] };
       const ref = await addDoc(getRoomRefs(), doc);
       return {
         id: ref.id,
@@ -128,6 +144,16 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     async addNegotiation(id, data) {
       await addDoc(getNegotiationRefs(id), data);
       return Promise.resolve();
+    },
+
+    getUser(roomId, username) {
+      return getDoc(getUserRef(roomId, username)).then((user) =>
+        user.data(SNAPSHOT_OPTIONS)
+      );
+    },
+
+    setUser(roomId, username, progress) {
+      return setDoc(getUserRef(roomId, username), progress, { merge: true });
     },
 
     observer: {
