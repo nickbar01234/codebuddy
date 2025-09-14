@@ -1,4 +1,11 @@
-import { GenericMessage, Identifiable, Unsubscribe } from "@cb/types/utils";
+import { PeerMessage } from "@cb/types/peers";
+import {
+  ExtractMessage,
+  GenericMessage,
+  Identifiable,
+  MessagePayload,
+  Unsubscribe,
+} from "@cb/types/utils";
 
 export type User = string;
 
@@ -18,9 +25,19 @@ interface DescriptionNegotiation extends GenericMessage {
 
 type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
 
+export type QuestionProgress = {
+  code: MessagePayload<ExtractMessage<PeerMessage, "code">>;
+  status: "not-started" | "in-progress" | "completed";
+};
+
+export type UserProgress = {
+  questions: Record<string, QuestionProgress>;
+};
+
 export enum Models {
   ROOMS = "rooms",
   NEGOTIATIONS = "negotiations",
+  USER_PROGRESS = "user_progress",
 }
 
 export interface Negotiation {
@@ -35,6 +52,7 @@ export interface Room {
   version: Version;
   isPublic: boolean;
   name: string;
+  questions: string[];
 }
 
 export type ObserverDocumentCallback<T> = {
@@ -55,6 +73,11 @@ interface DatabaseRoomObserver {
     version: Version,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
+  user(
+    roomId: Id,
+    username: User,
+    cb: ObserverDocumentCallback<UserProgress>
+  ): Unsubscribe;
 }
 
 interface DatabaseRoomService {
@@ -63,6 +86,14 @@ interface DatabaseRoomService {
   addUser(id: Id, user: User): Promise<void>;
   removeUser(id: Id, user: User): Promise<void>;
   addNegotiation(id: Id, data: Negotiation): Promise<void>;
+
+  getUser(roomId: Id, username: User): Promise<UserProgress | undefined>;
+  setUser(
+    roomId: Id,
+    username: User,
+    progress: Partial<UserProgress>
+  ): Promise<void>;
+
   observer: DatabaseRoomObserver;
 }
 
