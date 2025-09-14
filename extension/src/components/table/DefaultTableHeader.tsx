@@ -9,7 +9,9 @@ export const DefaultTableHeader = ({ headers }: DefaultTableHeaderProps) => {
     <TableHeader className="text-secondary">
       <TableRow className={cn("border-none")}>
         {headers.map((header) => (
-          <TableHead key={header}>{header}</TableHead>
+          <TableHead key={header} className="text-tertiary text-lg">
+            {header}
+          </TableHead>
         ))}
       </TableRow>
     </TableHeader>

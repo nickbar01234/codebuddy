@@ -1,17 +1,26 @@
 import { DOM } from "@cb/constants";
 import background, { BackgroundProxy } from "@cb/services/background";
+import {
+  Code,
+  getProblemMetaBySlugServer,
+  ProblemMeta,
+} from "@cb/services/graphql/metadata";
 import { BoundStore, ServiceResponse } from "@cb/types";
+import { toast } from "sonner";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface LeetCodeState {
   variables: string[];
+  problemMetadata: Record<string, ProblemMeta | undefined>;
   languageExtensions: ServiceResponse["getLanguageExtension"];
 }
 
 interface LeetCodeAction {
   getVariables: () => Promise<string[]>;
   getLanguageExtension: (id?: string) => string | undefined;
+  getProblemMetadata: (slugs: string[]) => LeetCodeState["problemMetadata"];
+  fetchProblemMetadata: (slugs: string[]) => Promise<void>;
 }
 
 const createLeetCodeStore = (background: BackgroundProxy) => {
@@ -19,6 +28,7 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
     immer((set, get) => ({
       variables: [],
       languageExtensions: [],
+      problemMetadata: {},
 
       actions: {
         getVariables: async () => {
@@ -51,6 +61,35 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
             get().languageExtensions.find((language) => language.id === id)
               ?.extensions ?? [];
           return extensions[0];
+        },
+
+        getProblemMetadata: (slugs) =>
+          slugs.reduce(
+            (metadata, slug) => ({
+              ...metadata,
+              [slug]: get().problemMetadata[slug],
+            }),
+            {}
+          ),
+
+        fetchProblemMetadata: async (slugs) => {
+          const responses = await Promise.all(
+            slugs.map(getProblemMetaBySlugServer)
+          );
+          const failures = responses.filter(
+            (response) => response.code !== Code.SUCCESS
+          );
+          if (failures.length > 0) {
+            toast.error("Encountered exception when fetching problem metadata");
+            console.error(failures);
+          }
+          set((state) => {
+            responses
+              .filter((response) => response.code === Code.SUCCESS)
+              .forEach((response) => {
+                state.problemMetadata[response.data.slug] = response.data;
+              });
+          });
         },
       },
     }))

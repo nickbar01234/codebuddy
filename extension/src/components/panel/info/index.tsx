@@ -1,10 +1,9 @@
 import { FEATURE_FLAG } from "@cb/constants";
 import { useRoomStatus } from "@cb/hooks/store";
 import { RoomStatus } from "@cb/store";
-import { List } from "lucide-react";
 import { createPortal } from "react-dom";
-import { BaseInfoSheet } from "./BaseInfoSheet";
 import { GeneralRoomInfo } from "./GeneralRoomInfo";
+import { ProblemInfo } from "./ProblemInfo";
 
 export const RoomInfo = () => {
   const roomStatus = useRoomStatus();
@@ -22,9 +21,7 @@ export const RoomInfo = () => {
     >
       <div className="flex flex-col gap-y-2 p-2">
         <GeneralRoomInfo />
-        <BaseInfoSheet trigger={<List />}>
-          <div>Question queue</div>
-        </BaseInfoSheet>
+        <ProblemInfo />
       </div>
     </div>,
     document.body

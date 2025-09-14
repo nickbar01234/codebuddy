@@ -90,6 +90,11 @@ export default {
           blue: "var(--color-blue)",
           orange: "var(--color-orange)",
         },
+        leetcode: {
+          "difficulty-easy": "var(--difficulty-easy)",
+          "difficulty-medium": "var(--difficulty-medium)",
+          "difficulty-hard": "var(--difficulty-hard)",
+        },
       },
     },
   },

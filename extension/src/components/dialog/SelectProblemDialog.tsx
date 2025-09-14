@@ -16,7 +16,6 @@ export const SelectProblemDialog = ({
 }: SelectProblemDialog) => {
   const iframeActions = useHtml((state) => state.actions);
   const { addQuestion } = useRoomActions();
-
   return (
     <RoomDialog
       trigger={{

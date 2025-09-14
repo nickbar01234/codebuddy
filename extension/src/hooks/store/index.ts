@@ -1,6 +1,7 @@
 import { useApp, useRoom } from "@cb/store";
 import { useLeetCode } from "@cb/store/leetCodeStore";
 import React from "react";
+import { useShallow } from "zustand/shallow";
 
 export const useAuthUser = () => useApp((state) => state.actions.getAuthUser());
 
@@ -16,6 +17,13 @@ export const usePeers = () => {
 };
 
 export const useRoomStatus = () => useRoom((state) => state.status);
+
+export const useRoomQuestions = () => {
+  const questions = useRoom(useShallow((state) => state.room?.questions ?? []));
+  return useLeetCode(
+    useShallow((state) => state.actions.getProblemMetadata(questions))
+  );
+};
 
 export const useRoomActions = () => useRoom((state) => state.actions.room);
 
