@@ -58,12 +58,6 @@ const EditorPanel = () => {
 
   const lowerTabConfigs = React.useMemo(() => {
     return [
-      // {
-      //   value: "activity",
-      //   label: "Activity Log",
-      //   Icon: Activity,
-      //   Content: <ActivityLogTab roomEvents={roomEvents} />,
-      // },
       {
         value: "roomInfo",
         label: "Room Info",
@@ -163,7 +157,6 @@ const EditorPanel = () => {
           <div className="h-[8px] bg-base w-full">
             <ResizableHandle className="flexlayout__splitter flexlayout__splitter_horz h-2 w-full cursor-ns-resize after:w-[20px] after:bg-[--color-splitter] hover:after:w-full hover:after:bg-[--color-splitter-drag]" />
           </div>
-          {/* <ResizablePanel className="rounded-t-lg h-full overflow-hidden bg-secondary"></ResizablePanel> */}
           <ResizablePanel>
             <Tabs
               defaultValue="roomInfo"
@@ -207,118 +200,3 @@ const EditorPanel = () => {
 };
 
 export default EditorPanel;
-
-const roomEvents = [
-  {
-    type: "submission",
-    username: "Buddy",
-    output: "Accepted",
-    status: "success",
-    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
-  },
-  {
-    type: "submission",
-    username: "Code",
-    output: "Time limit exceeded",
-    status: "error",
-    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
-  },
-  {
-    type: "connection",
-    username: "Dev",
-    status: "join",
-    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Code",
-    message: "RAHHHhHHH can someone take a look at my code",
-    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Buddy",
-    message: "um no sry",
-    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
-  },
-  {
-    type: "connection",
-    username: "Buddy",
-    status: "leave",
-    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Code",
-    message: "???",
-    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Dev",
-    message: "lmao",
-    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "5bigBooms",
-    message: "lmao",
-    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
-  },
-  {
-    type: "submission",
-    username: "Buddy",
-    output: "Accepted",
-    status: "success",
-    timestamp: Date.now() - Math.floor(Math.random() * 10), // Random timestamp
-  },
-  {
-    type: "submission",
-    username: "Code",
-    output: "Time limit exceeded",
-    status: "error",
-    timestamp: Date.now() - Math.floor(Math.random() * 4000), // Random timestamp
-  },
-  {
-    type: "connection",
-    username: "Dev",
-    status: "join",
-    timestamp: Date.now() - Math.floor(Math.random() * 110), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Code",
-    message: "RAHHHhHHH can someone take a look at my code",
-    timestamp: Date.now() - Math.floor(Math.random() * 3130), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Buddy",
-    message: "um no sry",
-    timestamp: Date.now() - Math.floor(Math.random() * 13470), // Random timestamp
-  },
-  {
-    type: "connection",
-    username: "Buddy",
-    status: "leave",
-    timestamp: Date.now() - Math.floor(Math.random() * 1220), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Code",
-    message: "???",
-    timestamp: Date.now() - Math.floor(Math.random() * 1234109), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "Dev",
-    message: "lmao",
-    timestamp: Date.now() - Math.floor(Math.random() * 223410), // Random timestamp
-  },
-  {
-    type: "message",
-    username: "5bigBooms",
-    message: "lmao",
-    timestamp: Date.now() - Math.floor(Math.random() * 232410), // Random timestamp
-  },
-];

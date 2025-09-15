@@ -2,7 +2,12 @@ import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { RoomJoinCode } from "@cb/services/controllers/RoomController";
-import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
+import {
+  getProblemMetaBySlugServer,
+  GetProblemMetadataBySlugServerCode,
+} from "@cb/services/graphql/metadata";
+import { windowMessager } from "@cb/services/window";
+import { BoundStore, Id, PeerMessage, PeerState, Question } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
@@ -26,16 +31,24 @@ interface UpdatePeerArgs extends Omit<PeerState, "tests"> {
 
 interface RoomState {
   status: RoomStatus;
-  room?: Identifiable<{ name: string; isPublic: boolean }>;
+  room?: Identifiable<{
+    name: string;
+    isPublic: boolean;
+    questions: Question[];
+  }>;
   peers: Record<Id, PeerState>;
 }
 
 interface RoomAction {
   room: {
-    create: (args: Omit<NonNullable<RoomState["room"]>, "id">) => Promise<void>;
+    create: (
+      args: Omit<NonNullable<RoomState["room"]>, "id" | "questions">
+    ) => Promise<void>;
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;
     loading: () => void;
+    addQuestion: (url: string) => Promise<void>;
+    updateRoomStoreQuestion: (question: Question) => void;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -65,9 +78,20 @@ const createRoomStore = (
             create: async (args) => {
               try {
                 get().actions.room.loading();
-                const room = await getOrCreateControllers().room.create(args);
+                const metadata = await getProblemMetaBySlugServer(
+                  getQuestionIdFromUrl(window.location.href)
+                );
+                if (
+                  metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS
+                ) {
+                  throw new Error(`Graphql metadata errors ${metadata}`);
+                }
+                const room = await getOrCreateControllers().room.create({
+                  ...args,
+                  questions: [metadata.data],
+                });
                 const { id, name, isPublic } = room.getRoom();
-                setRoom({ id, name, isPublic });
+                setRoom({ id, name, isPublic, questions: [metadata.data] });
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -81,8 +105,8 @@ const createRoomStore = (
                 get().actions.room.loading();
                 const response = await getOrCreateControllers().room.join(id);
                 if (response.code === RoomJoinCode.SUCCESS) {
-                  const { name, isPublic } = response.data.getRoom();
-                  setRoom({ id, name, isPublic });
+                  const { name, isPublic, questions } = response.data.getRoom();
+                  setRoom({ id, name, isPublic, questions });
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -118,6 +142,31 @@ const createRoomStore = (
               set((state) => {
                 state.status = RoomStatus.LOADING;
               }),
+            addQuestion: async (url) => {
+              const metadata = await getProblemMetaBySlugServer(
+                getQuestionIdFromUrl(url)
+              );
+              if (
+                metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS
+              ) {
+                console.error("Failed to fetch graphql metadata", metadata);
+                toast.error("Failed to select next problem. Please try again");
+                return;
+              }
+              get().actions.room.updateRoomStoreQuestion(metadata.data);
+              windowMessager.navigate({ url });
+            },
+            updateRoomStoreQuestion(question) {
+              // todo(nickbar01234): We need a timestamp on question so the ordering is stable.
+              set((state) => {
+                if (
+                  state.room != undefined &&
+                  !state.room.questions.includes(question)
+                ) {
+                  state.room.questions.push(question);
+                }
+              });
+            },
           },
           peers: {
             update: async (id, peer) => {

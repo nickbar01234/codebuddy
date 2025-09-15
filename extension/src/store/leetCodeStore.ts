@@ -19,6 +19,7 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
     immer((set, get) => ({
       variables: [],
       languageExtensions: [],
+      problemMetadata: {},
 
       actions: {
         getVariables: async () => {
