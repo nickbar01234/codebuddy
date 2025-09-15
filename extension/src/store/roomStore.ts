@@ -91,7 +91,7 @@ const createRoomStore = (
                   questions: [metadata.data],
                 });
                 const { id, name, isPublic } = room.getRoom();
-                setRoom({ id, name, isPublic, questions: [] });
+                setRoom({ id, name, isPublic, questions: [metadata.data] });
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);

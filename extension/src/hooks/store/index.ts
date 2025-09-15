@@ -18,12 +18,8 @@ export const usePeers = () => {
 
 export const useRoomStatus = () => useRoom((state) => state.status);
 
-export const useRoomQuestions = () => {
-  const questions = useRoom(useShallow((state) => state.room?.questions ?? []));
-  return useLeetCode(
-    useShallow((state) => state.actions.getProblemMetadata(questions))
-  );
-};
+export const useRoomQuestions = () =>
+  useRoom(useShallow((state) => state.room?.questions ?? []));
 
 export const useRoomActions = () => useRoom((state) => state.actions.room);
 

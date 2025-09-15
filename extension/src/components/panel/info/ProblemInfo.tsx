@@ -3,7 +3,6 @@ import { DefaultTable } from "@cb/components/table/DefaultTable";
 import { DefaultTableBody } from "@cb/components/table/DefaultTableBody";
 import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
-import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { CSS } from "@cb/constants";
 import { useRoomQuestions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
@@ -16,30 +15,27 @@ export const ProblemInfo = () => {
   const [open, setOpen] = React.useState(false);
   const questions = useRoomQuestions();
 
+  console.log(questions);
   return (
     <BaseInfoSheet trigger={<List />}>
       <div className="h-full w-full flex flex-col justify-between">
-        <DefaultTable loading={Object.keys(questions).length === 0}>
+        <DefaultTable loading={questions.length === 0}>
           <DefaultTableHeader headers={["Question", "Difficulty", "Users"]} />
           <DefaultTableBody>
-            {Object.keys(questions).map((question) => (
-              <DefaultTableRow key={question}>
+            {questions.map((question) => (
+              <DefaultTableRow key={question.id}>
                 <TableCell className="w-6/12 overflow-hidden text-ellipsis whitespace-nowrap font-medium">
-                  {question}
+                  {question.id}.&nbsp;{question.title}
                 </TableCell>
                 <TableCell className="w-3/12">
-                  <SkeletonWrapper
-                    loading={questions[question]?.difficulty == undefined}
+                  <span
+                    className={cn(
+                      CSS.DIFFICULTY[question.difficulty],
+                      "font-medium"
+                    )}
                   >
-                    <span
-                      className={cn(
-                        CSS.DIFFICULTY[questions[question]?.difficulty ?? ""],
-                        "font-medium"
-                      )}
-                    >
-                      {questions[question]?.difficulty}
-                    </span>
-                  </SkeletonWrapper>
+                    {question.difficulty}
+                  </span>
                 </TableCell>
                 <TableCell className="w-3/12"></TableCell>
               </DefaultTableRow>
