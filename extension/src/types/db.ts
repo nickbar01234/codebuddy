@@ -47,12 +47,21 @@ export interface Negotiation {
   message: NegotiationMessage;
 }
 
+export interface Question {
+  id: string;
+  title: string;
+  slug: string;
+  difficulty: "Easy" | "Medium" | "Hard";
+  tags: string[];
+  url: string;
+}
+
 export interface Room {
   usernames: User[];
   version: Version;
   isPublic: boolean;
   name: string;
-  questions: string[];
+  questions: Question[];
 }
 
 export type ObserverDocumentCallback<T> = {
@@ -76,10 +85,13 @@ interface DatabaseRoomObserver {
 }
 
 interface DatabaseRoomService {
-  create(room: Pick<Room, "name" | "isPublic">): Promise<Identifiable<Room>>;
+  create(
+    room: Pick<Room, "name" | "isPublic" | "questions">
+  ): Promise<Identifiable<Room>>;
   get(id: Id): Promise<Room | undefined>;
   addUser(id: Id, user: User): Promise<void>;
   removeUser(id: Id, user: User): Promise<void>;
+  addQuestion(id: Id, question: Question): Promise<void>;
   addNegotiation(id: Id, data: Negotiation): Promise<void>;
 
   getUser(roomId: Id, username: User): Promise<UserProgress | undefined>;
