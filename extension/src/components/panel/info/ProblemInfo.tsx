@@ -15,7 +15,6 @@ export const ProblemInfo = () => {
   const [open, setOpen] = React.useState(false);
   const questions = useRoomQuestions();
 
-  console.log(questions);
   return (
     <BaseInfoSheet trigger={<List />}>
       <div className="h-full w-full flex flex-col justify-between">
