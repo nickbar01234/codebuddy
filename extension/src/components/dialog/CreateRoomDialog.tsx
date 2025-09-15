@@ -21,10 +21,7 @@ export const CreateRoomDialog = () => {
         alert("Public rooms must have a name.");
         return;
       }
-      create({
-        name,
-        isPublic,
-      });
+      create({ name, isPublic });
     }, 1000);
   }, [create, name, isPublic]);
 
