@@ -180,7 +180,7 @@ export class RoomController {
     this.appStore = appStore;
   }
 
-  public async create(room: Pick<Room, "name" | "isPublic">) {
+  public async create(room: Pick<Room, "name" | "isPublic" | "questions">) {
     if (this.room != null) {
       return this.room;
     }

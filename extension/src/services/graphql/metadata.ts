@@ -1,23 +1,19 @@
-export type ProblemMeta = {
-  id: string;
-  title: string;
-  slug: string;
-  difficulty: string;
-  tags: string[];
-  url: string;
-};
+import { Question } from "@cb/types";
 
-export enum Code {
+export enum GetProblemMetadataBySlugServerCode {
   SUCCESS = "SUCCESS",
   NOT_FOUND = "NOT_FOUND",
   BAD_RESPONSE = "BAD_RESPONSE",
   NETWORK_ERROR = "NETWORK_ERROR",
 }
 
-export type MetaResult =
-  | { code: Code.SUCCESS; data: ProblemMeta }
+export type GetProblemMetadataBySlugServerResponse =
+  | { code: GetProblemMetadataBySlugServerCode.SUCCESS; data: Question }
   | {
-      code: Code.NOT_FOUND | Code.BAD_RESPONSE | Code.NETWORK_ERROR;
+      code:
+        | GetProblemMetadataBySlugServerCode.NOT_FOUND
+        | GetProblemMetadataBySlugServerCode.BAD_RESPONSE
+        | GetProblemMetadataBySlugServerCode.NETWORK_ERROR;
       message: string;
     };
 
@@ -36,7 +32,7 @@ query question($titleSlug: String!) {
 
 export async function getProblemMetaBySlugServer(
   slug: string
-): Promise<MetaResult> {
+): Promise<GetProblemMetadataBySlugServerResponse> {
   try {
     const r = await fetch(LC_GRAPHQL, {
       method: "POST",
@@ -48,17 +44,23 @@ export async function getProblemMetaBySlugServer(
     });
 
     if (!r.ok) {
-      return { code: Code.BAD_RESPONSE, message: `HTTP ${r.status}` };
+      return {
+        code: GetProblemMetadataBySlugServerCode.BAD_RESPONSE,
+        message: `HTTP ${r.status}`,
+      };
     }
 
     const json = await r.json().catch(() => null);
     const q = json?.data?.question;
     if (!q) {
-      return { code: Code.NOT_FOUND, message: "No question returned" };
+      return {
+        code: GetProblemMetadataBySlugServerCode.NOT_FOUND,
+        message: "No question returned",
+      };
     }
 
     return {
-      code: Code.SUCCESS,
+      code: GetProblemMetadataBySlugServerCode.SUCCESS,
       data: {
         id: q.questionFrontendId,
         title: q.title,
@@ -69,6 +71,9 @@ export async function getProblemMetaBySlugServer(
       },
     };
   } catch (e: any) {
-    return { code: Code.NETWORK_ERROR, message: String(e?.message ?? e) };
+    return {
+      code: GetProblemMetadataBySlugServerCode.NETWORK_ERROR,
+      message: String(e?.message ?? e),
+    };
   }
 }
