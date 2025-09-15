@@ -3,6 +3,7 @@ import background from "@cb/services/background";
 import { PeerMessage } from "@cb/types";
 import monaco from "monaco-editor";
 import { getUnixTs } from "./heartbeat";
+import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "./url";
 
 export const getTestsPayload = (): PeerMessage => {
   return {
@@ -27,8 +28,17 @@ export const getCodePayload = async (
   };
 };
 
-export const getUrlPayload = (url: string): PeerMessage => ({
-  action: "url",
-  url,
-  timestamp: getUnixTs(),
-});
+export const getUrlPayload = (url: string): PeerMessage => {
+  let normalizedUrl = url;
+  try {
+    const questionId = getQuestionIdFromUrl(url);
+    normalizedUrl = constructUrlFromQuestionId(questionId);
+  } catch (error) {
+    console.warn("Failed to normalize URL:", url, error);
+  }
+  return {
+    action: "url",
+    url: normalizedUrl,
+    timestamp: getUnixTs(),
+  };
+};
