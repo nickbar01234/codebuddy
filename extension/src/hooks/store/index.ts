@@ -34,9 +34,16 @@ export const useAuthActions = () => {
   return { authenticate, unauthenticate, getAuthUser };
 };
 
-export const useAppActions = () => {
+export const useAppActions = ({ panelRef }: any) => {
+  const handleDoubleClick = (collapsed: boolean) => {
+    if (collapsed) {
+      panelRef.current?.expand();
+    } else {
+      panelRef.current?.collapse();
+    }
+  };
   const collapseExtension = useApp((state) => state.actions.collapseExtension);
   const expandExtension = useApp((state) => state.actions.expandExtension);
   const setAppWidth = useApp((state) => state.actions.setAppWidth);
-  return { collapseExtension, expandExtension, setAppWidth };
+  return { collapseExtension, expandExtension, setAppWidth, handleDoubleClick };
 };

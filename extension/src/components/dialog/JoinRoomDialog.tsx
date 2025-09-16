@@ -18,7 +18,7 @@ export const JoinRoomDialog = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
-        await join(inputRoomId); //user join room
+        await join(inputRoomId);
       },
       1000
     );
