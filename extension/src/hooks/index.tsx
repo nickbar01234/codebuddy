@@ -6,7 +6,7 @@ import { useOnMount } from "./useOnMount";
 export { useFirebaseListener, useOnMount };
 
 export const useCopyRoomId = () => {
-  const id = useRoom((state) => state.room?.id);
+  const id = useRoom((state) => state.room?.room.id);
   return React.useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();

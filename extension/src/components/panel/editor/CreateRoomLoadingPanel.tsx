@@ -8,7 +8,7 @@ import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
-  const roomId = useRoom((state) => state.room?.id);
+  const roomId = useRoom((state) => state.room?.room.id);
   const copyRoomId = useCopyRoomId();
   const roomReady = roomId != null;
 

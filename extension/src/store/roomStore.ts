@@ -18,11 +18,27 @@ import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
 import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
+type RoomData = Identifiable<{
+  name: string;
+  isPublic: boolean;
+  questions: Question[];
+}>;
+
 export enum RoomStatus {
   HOME,
   IN_ROOM,
   LOADING,
   REJOINING,
+}
+
+export enum SidebarTabIdentifier {
+  ROOM_INFO,
+  PROBLEM_INFO,
+}
+
+interface InternalRoomState {
+  room: RoomData;
+  activeSidebarTab?: SidebarTabIdentifier;
 }
 
 interface UpdatePeerArgs extends Omit<PeerState, "tests"> {
@@ -31,24 +47,23 @@ interface UpdatePeerArgs extends Omit<PeerState, "tests"> {
 
 interface RoomState {
   status: RoomStatus;
-  room?: Identifiable<{
-    name: string;
-    isPublic: boolean;
-    questions: Question[];
-  }>;
+  room?: InternalRoomState;
   peers: Record<Id, PeerState>;
 }
 
 interface RoomAction {
   room: {
-    create: (
-      args: Omit<NonNullable<RoomState["room"]>, "id" | "questions">
-    ) => Promise<void>;
+    create: (args: Omit<RoomData, "id" | "questions">) => Promise<void>;
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;
     loading: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
+    openSidebarTab: (identifier: SidebarTabIdentifier) => void;
+    closeSidebarTabIfIsActive: (
+      identifier: SidebarTabIdentifier,
+      open: boolean
+    ) => void;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -62,10 +77,12 @@ const createRoomStore = (
   leetcodeStore: LeetCodeStore,
   background: BackgroundProxy
 ) => {
-  const setRoom = (room: NonNullable<RoomState["room"]>) =>
+  const setRoom = (room: RoomData) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
-      state.room = room;
+      state.room = {
+        room,
+      };
     });
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
@@ -135,6 +152,7 @@ const createRoomStore = (
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
+                  state.room = undefined;
                 });
               }
             },
@@ -161,12 +179,28 @@ const createRoomStore = (
               set((state) => {
                 if (
                   state.room != undefined &&
-                  !state.room.questions.includes(question)
+                  !state.room.room.questions.includes(question)
                 ) {
-                  state.room.questions.push(question);
+                  state.room.room.questions.push(question);
                 }
               });
             },
+            openSidebarTab: (identifier) =>
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.activeSidebarTab = identifier;
+                }
+              }),
+            closeSidebarTabIfIsActive: (identifier, open) =>
+              set((state) => {
+                if (
+                  state.room != undefined &&
+                  state.room.activeSidebarTab === identifier &&
+                  !open
+                ) {
+                  state.room.activeSidebarTab = undefined;
+                }
+              }),
           },
           peers: {
             update: async (id, peer) => {

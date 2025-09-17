@@ -7,6 +7,7 @@ import { CSS } from "@cb/constants";
 import { useRoomQuestions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { TableCell } from "@cb/lib/components/ui/table";
+import { SidebarTabIdentifier } from "@cb/store";
 import { Grid2X2, List } from "lucide-react";
 import React from "react";
 import { BaseInfoSheet } from "./BaseInfoSheet";
@@ -16,7 +17,10 @@ export const ProblemInfo = () => {
   const questions = useRoomQuestions();
 
   return (
-    <BaseInfoSheet trigger={<List />}>
+    <BaseInfoSheet
+      trigger={<List />}
+      sidebarTabIdentifier={SidebarTabIdentifier.PROBLEM_INFO}
+    >
       <div className="h-full w-full flex flex-col justify-between">
         <DefaultTable loading={questions.length === 0}>
           <DefaultTableHeader headers={["Question", "Difficulty", "Users"]} />

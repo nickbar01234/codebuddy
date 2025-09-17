@@ -19,7 +19,10 @@ export const usePeers = () => {
 export const useRoomStatus = () => useRoom((state) => state.status);
 
 export const useRoomQuestions = () =>
-  useRoom(useShallow((state) => state.room?.questions ?? []));
+  useRoom(useShallow((state) => state.room?.room.questions ?? []));
+
+export const useRoomSelectedSidebarTab = () =>
+  useRoom((state) => state.room?.activeSidebarTab);
 
 export const useRoomActions = () => useRoom((state) => state.actions.room);
 

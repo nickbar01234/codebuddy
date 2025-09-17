@@ -4,6 +4,7 @@ import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
 import { useAuthUser, usePeers } from "@cb/hooks/store";
 import { TableCell } from "@cb/lib/components/ui/table";
+import { SidebarTabIdentifier } from "@cb/store";
 import { Info } from "lucide-react";
 import { BaseInfoSheet } from "./BaseInfoSheet";
 
@@ -13,7 +14,10 @@ export const GeneralRoomInfo = () => {
   const users = [...Object.keys(peers), username];
 
   return (
-    <BaseInfoSheet trigger={<Info />}>
+    <BaseInfoSheet
+      trigger={<Info />}
+      sidebarTabIdentifier={SidebarTabIdentifier.ROOM_INFO}
+    >
       <DefaultTable loading={users.length === 0}>
         <DefaultTableHeader headers={["Rank", "User", "Problem solved"]} />
         <DefaultTableBody>
