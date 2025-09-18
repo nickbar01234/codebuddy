@@ -4,7 +4,7 @@ import { DefaultTableBody } from "@cb/components/table/DefaultTableBody";
 import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
 import { CSS } from "@cb/constants";
-import { useRoomQuestions } from "@cb/hooks/store";
+import { useRoomData } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { TableCell } from "@cb/lib/components/ui/table";
 import { Grid2X2, List } from "lucide-react";
@@ -13,7 +13,7 @@ import { BaseInfoSheet } from "./BaseInfoSheet";
 
 export const ProblemInfo = () => {
   const [open, setOpen] = React.useState(false);
-  const questions = useRoomQuestions();
+  const { questions } = useRoomData();
 
   return (
     <BaseInfoSheet trigger={<List />}>

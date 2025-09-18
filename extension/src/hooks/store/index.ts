@@ -18,8 +18,12 @@ export const usePeers = () => {
 
 export const useRoomStatus = () => useRoom((state) => state.status);
 
-export const useRoomQuestions = () =>
-  useRoom(useShallow((state) => state.room?.questions ?? []));
+export const useRoomData = () => {
+  const questions = useRoom(useShallow((state) => state.room?.questions ?? []));
+  const name = useRoom((state) => state.room?.name);
+  const id = useRoom((state) => state.room?.id);
+  return { name, questions, id };
+};
 
 export const useRoomActions = () => useRoom((state) => state.actions.room);
 
