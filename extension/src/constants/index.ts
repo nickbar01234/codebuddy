@@ -7,6 +7,7 @@ export const URLS = {
 };
 
 export const DOM = {
+  CODE_BUDDY_ID: "CodeBuddy",
   CODEBUDDY_EDITOR_ID: "CodeBuddyEditor",
   LEETCODE_ROOT_ID: "#qd-content",
   LEETCODE_TEST_ID: ".cm-content",
