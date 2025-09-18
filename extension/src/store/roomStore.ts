@@ -2,20 +2,24 @@ import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { RoomJoinCode } from "@cb/services/controllers/RoomController";
+import db from "@cb/services/db";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
 } from "@cb/services/graphql/metadata";
+import { UserProgressManager } from "@cb/services/userProgress";
 import { windowMessager } from "@cb/services/window";
 import { BoundStore, Id, PeerMessage, PeerState, Question } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
+import { getQuestionIdFromUrl } from "@cb/utils/url";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
+import { useApp } from "./appStore";
 import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
 export enum RoomStatus {
@@ -37,6 +41,7 @@ interface RoomState {
     questions: Question[];
   }>;
   peers: Record<Id, PeerState>;
+  userProgressManager?: UserProgressManager;
 }
 
 interface RoomAction {
@@ -62,6 +67,42 @@ const createRoomStore = (
   leetcodeStore: LeetCodeStore,
   background: BackgroundProxy
 ) => {
+  const getUsername = (): string => {
+    return useApp.getState().actions.getAuthUser().username;
+  };
+  const startUserProgressManager = (roomId: string) => {
+    try {
+      const username = getUsername();
+      const userProgressManager = new UserProgressManager(
+        db,
+        leetcodeStore,
+        roomId,
+        username
+      );
+
+      useRoom.setState((state) => {
+        state.userProgressManager = userProgressManager;
+      });
+
+      userProgressManager.start();
+      console.log(
+        `UserProgressManager started for room ${roomId}, user ${username}`
+      );
+    } catch (error) {
+      console.error("Failed to start UserProgressManager:", error);
+    }
+  };
+
+  const stopUserProgressManager = () => {
+    const { userProgressManager } = useRoom.getState();
+    if (userProgressManager) {
+      userProgressManager.stop();
+      useRoom.setState((state) => {
+        state.userProgressManager = undefined;
+      });
+      console.log("UserProgressManager stopped");
+    }
+  };
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -92,6 +133,7 @@ const createRoomStore = (
                 });
                 const { id, name, isPublic } = room.getRoom();
                 setRoom({ id, name, isPublic, questions: [metadata.data] });
+                startUserProgressManager(id);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -107,6 +149,7 @@ const createRoomStore = (
                 if (response.code === RoomJoinCode.SUCCESS) {
                   const { name, isPublic, questions } = response.data.getRoom();
                   setRoom({ id, name, isPublic, questions });
+                  startUserProgressManager(id);
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -132,6 +175,7 @@ const createRoomStore = (
                 get().actions.room.loading();
                 await getOrCreateControllers().room.leave();
               } finally {
+                stopUserProgressManager();
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};

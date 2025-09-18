@@ -1,6 +1,12 @@
 import { DOM } from "@cb/constants";
 import background, { BackgroundProxy } from "@cb/services/background";
-import { BoundStore, ServiceResponse } from "@cb/types";
+import {
+  BoundStore,
+  ExtractMessage,
+  MessagePayload,
+  PeerMessage,
+  ServiceResponse,
+} from "@cb/types";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
@@ -8,10 +14,12 @@ interface LeetCodeState {
   variables: string[];
   languageExtensions: ServiceResponse["getLanguageExtension"];
 }
-
 interface LeetCodeAction {
   getVariables: () => Promise<string[]>;
   getLanguageExtension: (id?: string) => string | undefined;
+  getCodeFromEditor: () => MessagePayload<
+    ExtractMessage<PeerMessage, "code">
+  > | null;
 }
 
 const createLeetCodeStore = (background: BackgroundProxy) => {
@@ -22,6 +30,43 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
       problemMetadata: {},
 
       actions: {
+        getCodeFromEditor: (): MessagePayload<
+          ExtractMessage<PeerMessage, "code">
+        > | null => {
+          try {
+            const selectors = [
+              ".view-lines",
+              ".monaco-editor",
+              '[class*="monaco"]',
+              DOM.LEETCODE_TEST_ID,
+            ];
+
+            let editorElement: HTMLElement | null = null;
+
+            for (const selector of selectors) {
+              editorElement = document.querySelector(selector) as HTMLElement;
+              if (editorElement && editorElement.textContent?.trim()) {
+                break;
+              }
+            }
+
+            if (!editorElement) return null;
+
+            const code = editorElement.textContent || "";
+            if (!code.trim()) return null;
+
+            const languageSelector = document.querySelector(
+              'button[aria-haspopup="dialog"][class*="rounded"]'
+            );
+            const language =
+              languageSelector?.textContent?.toLowerCase() || "javascript";
+
+            return { language, changes: code, value: code };
+          } catch (error) {
+            console.error("Failed to extract code:", error);
+            return null;
+          }
+        },
         getVariables: async () => {
           if (get().variables.length > 0) {
             return get().variables;
