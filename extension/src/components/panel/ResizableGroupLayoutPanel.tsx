@@ -35,11 +35,11 @@ export const ResizableGroupLayoutPanel = ({
       </ResizablePanel>
 
       <ResizableHandle
-        onDoubleClick={() => handleDoubleClick(collapsed)}
         className={cn(
           "flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize",
           { hidden: !enabled }
         )}
+        onDoubleClick={() => handleDoubleClick(collapsed)}
       />
 
       <ResizablePanel
