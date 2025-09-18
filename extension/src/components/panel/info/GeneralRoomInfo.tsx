@@ -7,7 +7,6 @@ import { ROOM } from "@cb/constants";
 import { useAuthUser, usePeers, useRoomData } from "@cb/hooks/store";
 import { TableCell } from "@cb/lib/components/ui/table";
 import { CopyIcon, Globe, Info, Users } from "lucide-react";
-import React from "react";
 import { BaseInfoSheet } from "./BaseInfoSheet";
 
 export const GeneralRoomInfo = () => {
@@ -17,19 +16,10 @@ export const GeneralRoomInfo = () => {
   const copyRoomId = useCopyRoomId();
   const users = [...Object.keys(peers), username];
 
-  const [display, setDisplay] = React.useState(false);
-
-  useOnMount(() => {
-    setTimeout(() => setDisplay(true), 10_000);
-  });
-
   return (
     <BaseInfoSheet trigger={<Info />}>
       <div className="flex flex-col gap-4 mb-8">
-        <SkeletonWrapper
-          loading={!display || name == undefined}
-          className="h-10 w-48"
-        >
+        <SkeletonWrapper loading={name == undefined} className="h-10 w-48">
           <div className="flex gap-2 items-center text-secondary">
             <h2 className="text-2xl">
               {name && name.length > 0 ? name : "Room Information"}
@@ -39,10 +29,7 @@ export const GeneralRoomInfo = () => {
             </div>
           </div>
         </SkeletonWrapper>
-        <SkeletonWrapper
-          loading={!display || id == undefined}
-          className="w-60 h-8"
-        >
+        <SkeletonWrapper loading={id == undefined} className="w-60 h-8">
           <div className="flex gap-2 text-tertiary">
             <span className="text-lg">ID: {id}</span>
             <CopyIcon
