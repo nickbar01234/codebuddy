@@ -9,7 +9,7 @@ export const BaseInfoSheet = ({ trigger, children }: BaseInfoSheetProps) => {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <div className="cursor-pointer hover:bg-[--color-tab-hover-background] focus:bg-[--color-tab-hover-background]">
+        <div className="cursor-pointer hover:bg-[--color-tab-hover-background] focus:bg-[--color-tab-hover-background] p-1 hover:rounded-md">
           {trigger}
         </div>
       </SheetTrigger>

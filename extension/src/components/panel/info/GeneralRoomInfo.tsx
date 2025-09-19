@@ -30,10 +30,10 @@ export const GeneralRoomInfo = () => {
           </div>
         </SkeletonWrapper>
         <SkeletonWrapper loading={id == undefined} className="w-60 h-8">
-          <div className="flex gap-2 text-tertiary">
+          <div className="flex gap-1 text-tertiary">
             <span className="text-lg">ID: {id}</span>
             <CopyIcon
-              className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background]"
+              className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
               onClick={copyRoomId}
             />
           </div>
