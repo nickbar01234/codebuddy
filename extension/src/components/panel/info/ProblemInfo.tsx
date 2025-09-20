@@ -8,19 +8,20 @@ import { useRoomData } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { TableCell } from "@cb/lib/components/ui/table";
 import { SidebarTabIdentifier } from "@cb/store";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { Grid2X2 } from "lucide-react";
 import React from "react";
+import { SidebarTabLayout } from "./SidebarTabLayout";
 
 export const ProblemInfo = () => {
   const [open, setOpen] = React.useState(false);
-  const { questions, activeSidebarTab } = useRoomData();
+  const { questions } = useRoomData();
 
   return (
-    <div
-      className={cn("h-full w-full", {
-        hidden: activeSidebarTab !== SidebarTabIdentifier.ROOM_QUESTIONS,
-      })}
-    >
+    <SidebarTabLayout forTab={SidebarTabIdentifier.ROOM_QUESTIONS}>
+      <DialogTitle className="text-secondary text-2xl">
+        Problem Queue
+      </DialogTitle>
       <div className="h-full w-full flex flex-col justify-between">
         <DefaultTable loading={questions.length === 0}>
           <DefaultTableHeader headers={["Question", "Difficulty", "Users"]} />
@@ -63,6 +64,6 @@ export const ProblemInfo = () => {
           setOpen={setOpen}
         />
       </div>
-    </div>
+    </SidebarTabLayout>
   );
 };
