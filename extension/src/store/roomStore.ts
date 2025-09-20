@@ -18,6 +18,11 @@ import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
 import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
+export enum SidebarTabIdentifier {
+  ROOM_INFO,
+  ROOM_QUESTIONS,
+}
+
 export enum RoomStatus {
   HOME,
   IN_ROOM,
@@ -35,6 +40,7 @@ interface RoomState {
     name: string;
     isPublic: boolean;
     questions: Question[];
+    activeSidebarTab?: SidebarTabIdentifier;
   }>;
   peers: Record<Id, PeerState>;
 }
@@ -49,6 +55,8 @@ interface RoomAction {
     loading: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
+    selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
+    closeSidebarTab: () => void;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -164,6 +172,19 @@ const createRoomStore = (
                   !state.room.questions.includes(question)
                 ) {
                   state.room.questions.push(question);
+                }
+              });
+            },
+            selectSidebarTab: (identifier) =>
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.activeSidebarTab = identifier;
+                }
+              }),
+            closeSidebarTab: () => {
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.activeSidebarTab = undefined;
                 }
               });
             },

@@ -22,7 +22,8 @@ export const useRoomData = () => {
   const questions = useRoom(useShallow((state) => state.room?.questions ?? []));
   const name = useRoom((state) => state.room?.name);
   const id = useRoom((state) => state.room?.id);
-  return { name, questions, id };
+  const activeSidebarTab = useRoom((state) => state.room?.activeSidebarTab);
+  return { name, questions, id, activeSidebarTab };
 };
 
 export const useRoomActions = () => useRoom((state) => state.actions.room);
