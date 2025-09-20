@@ -143,6 +143,7 @@ const createRoomStore = (
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
+                  state.room = undefined;
                 });
               }
             },
