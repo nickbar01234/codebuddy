@@ -65,7 +65,7 @@ export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
 };
 
 export const FEATURE_FLAG = {
-  DISABLE_MULTI_URLS: false,
+  DISABLE_MULTI_URLS: true,
 };
 
 export const CSS = {
