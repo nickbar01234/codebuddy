@@ -6,18 +6,22 @@ import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { ROOM } from "@cb/constants";
 import { useAuthUser, usePeers, useRoomData } from "@cb/hooks/store";
 import { TableCell } from "@cb/lib/components/ui/table";
-import { CopyIcon, Globe, Info, Users } from "lucide-react";
-import { BaseInfoSheet } from "./BaseInfoSheet";
+import { SidebarTabIdentifier } from "@cb/store";
+import { CopyIcon, Globe, Users } from "lucide-react";
 
 export const GeneralRoomInfo = () => {
-  const { name, id } = useRoomData();
+  const { name, id, activeSidebarTab } = useRoomData();
   const { peers } = usePeers();
   const { username } = useAuthUser();
   const copyRoomId = useCopyRoomId();
   const users = [...Object.keys(peers), username];
 
   return (
-    <BaseInfoSheet trigger={<Info />}>
+    <div
+      className={cn("h-full w-full", {
+        hidden: activeSidebarTab !== SidebarTabIdentifier.ROOM_INFO,
+      })}
+    >
       <div className="flex flex-col gap-4 mb-8">
         <SkeletonWrapper loading={name == undefined} className="h-10 w-48">
           <div className="flex gap-2 items-center text-secondary">
@@ -60,6 +64,6 @@ export const GeneralRoomInfo = () => {
           ))}
         </DefaultTableBody>
       </DefaultTable>
-    </BaseInfoSheet>
+    </div>
   );
 };

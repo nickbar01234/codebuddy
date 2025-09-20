@@ -7,16 +7,20 @@ import { CSS } from "@cb/constants";
 import { useRoomData } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { TableCell } from "@cb/lib/components/ui/table";
-import { Grid2X2, List } from "lucide-react";
+import { SidebarTabIdentifier } from "@cb/store";
+import { Grid2X2 } from "lucide-react";
 import React from "react";
-import { BaseInfoSheet } from "./BaseInfoSheet";
 
 export const ProblemInfo = () => {
   const [open, setOpen] = React.useState(false);
-  const { questions } = useRoomData();
+  const { questions, activeSidebarTab } = useRoomData();
 
   return (
-    <BaseInfoSheet trigger={<List />}>
+    <div
+      className={cn("h-full w-full", {
+        hidden: activeSidebarTab !== SidebarTabIdentifier.ROOM_QUESTIONS,
+      })}
+    >
       <div className="h-full w-full flex flex-col justify-between">
         <DefaultTable loading={questions.length === 0}>
           <DefaultTableHeader headers={["Question", "Difficulty", "Users"]} />
@@ -59,6 +63,6 @@ export const ProblemInfo = () => {
           setOpen={setOpen}
         />
       </div>
-    </BaseInfoSheet>
+    </div>
   );
 };
