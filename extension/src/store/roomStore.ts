@@ -21,6 +21,7 @@ import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 export enum SidebarTabIdentifier {
   ROOM_INFO,
   ROOM_QUESTIONS,
+  LEETCODE_QUESTIONS,
 }
 
 export enum RoomStatus {

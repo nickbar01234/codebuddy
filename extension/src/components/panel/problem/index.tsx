@@ -1,10 +1,7 @@
-import {
-  SkelentonWrapperProps,
-  SkeletonWrapper,
-} from "@cb/components/ui/SkeletonWrapper";
+import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import useResource from "@cb/hooks/useResource";
 import { useHtml } from "@cb/store/htmlStore";
-import React, { useCallback, useEffect } from "react";
+import React, { useEffect } from "react";
 import { toast } from "sonner";
 
 const INJECTED_ATTRIBUTE = "data-injected";
@@ -12,54 +9,20 @@ const INJECTED_ATTRIBUTE = "data-injected";
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
   filterQuestionIds: string[];
-  container?: Omit<SkelentonWrapperProps, "loading">;
+  onContainerRefCallback: (node: HTMLElement | null) => void;
 }
 
 export const QuestionSelectorPanel = React.memo(
   ({
     handleQuestionSelect,
     filterQuestionIds,
-    container = {},
+    onContainerRefCallback,
   }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
     const { actions: iframeActions } = useHtml();
-
-    // Callback ref that runs side effects when the container is available
-    const problemSetContainerRef = useCallback(
-      (node: HTMLDivElement | null) => {
-        if (node) {
-          iframeActions.showHtml(node);
-          let animationFrameId: number;
-          // repositioning synchronized with browser frames
-          const throttledRepositionIframe = () => {
-            if (animationFrameId) {
-              cancelAnimationFrame(animationFrameId);
-            }
-            animationFrameId = requestAnimationFrame(() => {
-              // Add a small delay to ensure dialog recentering completes
-              requestAnimationFrame(() => iframeActions.showHtml(node));
-            });
-          };
-
-          // Watch for container size changes
-          const resizeObserver = new ResizeObserver(throttledRepositionIframe);
-          resizeObserver.observe(node);
-          window.addEventListener("resize", throttledRepositionIframe);
-
-          return () => {
-            if (animationFrameId) {
-              cancelAnimationFrame(animationFrameId);
-              resizeObserver.disconnect();
-              window.removeEventListener("resize", throttledRepositionIframe);
-            }
-          };
-        }
-      },
-      [iframeActions]
-    );
 
     useEffect(() => {
       setLoading(true);
@@ -173,12 +136,8 @@ export const QuestionSelectorPanel = React.memo(
     ]);
 
     return (
-      <SkeletonWrapper
-        loading={loading}
-        className="w-full h-full"
-        {...container}
-      >
-        <div ref={problemSetContainerRef} className="h-full w-full" />
+      <SkeletonWrapper loading={loading} className="w-full h-full">
+        <div ref={onContainerRefCallback} className="h-full w-full" />
       </SkeletonWrapper>
     );
   }

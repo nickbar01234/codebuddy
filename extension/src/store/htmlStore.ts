@@ -22,14 +22,14 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
     contentProcessed: false,
     htmlElement: createRef(),
     actions: {
-      showHtml: (container: HTMLElement) => {
+      showHtml: (container) => {
         const { htmlElement } = get();
         if (!htmlElement.current) return;
         const containerRect = container.getBoundingClientRect();
 
         // static styles
         htmlElement.current.className =
-          "block fixed z-[1000] pointer-events-auto w-full h-full";
+          "block absolute z-[3000] pointer-events-auto w-full h-full";
         // Runtime-calculated positions, doesn't work with Tailwind classes
         htmlElement.current.style.top = `${containerRect.top}px`;
         htmlElement.current.style.left = `${containerRect.left}px`;
@@ -39,8 +39,7 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
       hideHtml: () => {
         const { htmlElement } = get();
         if (!htmlElement.current) return;
-        htmlElement.current.className =
-          "hidden pointer-events-none fixed z-[1000]";
+        htmlElement.current.className = "hidden pointer-events-none fixed";
       },
       setContentProcessed: (processed: boolean) => {
         set((state) => {

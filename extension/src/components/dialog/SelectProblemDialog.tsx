@@ -1,6 +1,7 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
 import { useRoomActions } from "@cb/hooks/store";
 import { useHtml } from "@cb/store/htmlStore";
+import React from "react";
 import { RoomDialog, RoomDialogProps } from "./RoomDialog";
 
 interface SelectProblemDialog {
@@ -14,8 +15,43 @@ export const SelectProblemDialog = ({
   open,
   setOpen,
 }: SelectProblemDialog) => {
-  const iframeActions = useHtml((state) => state.actions);
+  const showHtml = useHtml((state) => state.actions.showHtml);
+  const hideHtml = useHtml((state) => state.actions.hideHtml);
   const { addQuestion } = useRoomActions();
+
+  // Callback ref that runs side effects when the container is available
+  const onContainerRefCallback = React.useCallback(
+    (node: HTMLElement | null) => {
+      if (node) {
+        showHtml(node);
+        let animationFrameId: number;
+        // repositioning synchronized with browser frames
+        const throttledRepositionIframe = () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+          }
+          animationFrameId = requestAnimationFrame(() => {
+            // Add a small delay to ensure dialog recentering completes
+            requestAnimationFrame(() => showHtml(node));
+          });
+        };
+
+        // Watch for container size changes
+        const resizeObserver = new ResizeObserver(throttledRepositionIframe);
+        resizeObserver.observe(node);
+        window.addEventListener("resize", throttledRepositionIframe);
+
+        return () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            resizeObserver.disconnect();
+            window.removeEventListener("resize", throttledRepositionIframe);
+          }
+        };
+      }
+    },
+    [showHtml]
+  );
 
   return (
     <RoomDialog
@@ -29,7 +65,7 @@ export const SelectProblemDialog = ({
           open,
           modal: true,
           onOpenChange: (state) => {
-            iframeActions.hideHtml();
+            hideHtml();
             setOpen(state);
           },
         },
@@ -48,7 +84,7 @@ export const SelectProblemDialog = ({
           setOpen(false);
         }}
         filterQuestionIds={[]}
-        container={{}}
+        onContainerRefCallback={onContainerRefCallback}
       />
     </RoomDialog>
   );
