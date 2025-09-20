@@ -5,29 +5,27 @@ import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { ROOM } from "@cb/constants";
 import { useAuthUser, usePeers, useRoomData } from "@cb/hooks/store";
+import { DialogTitle } from "@cb/lib/components/ui/dialog";
 import { TableCell } from "@cb/lib/components/ui/table";
 import { SidebarTabIdentifier } from "@cb/store";
 import { CopyIcon, Globe, Users } from "lucide-react";
+import { SidebarTabLayout } from "./SidebarTabLayout";
 
 export const GeneralRoomInfo = () => {
-  const { name, id, activeSidebarTab } = useRoomData();
+  const { name, id } = useRoomData();
   const { peers } = usePeers();
   const { username } = useAuthUser();
   const copyRoomId = useCopyRoomId();
   const users = [...Object.keys(peers), username];
 
   return (
-    <div
-      className={cn("h-full w-full", {
-        hidden: activeSidebarTab !== SidebarTabIdentifier.ROOM_INFO,
-      })}
-    >
-      <div className="flex flex-col gap-4 mb-8">
+    <SidebarTabLayout forTab={SidebarTabIdentifier.ROOM_INFO}>
+      <div className="flex flex-col gap-4">
         <SkeletonWrapper loading={name == undefined} className="h-10 w-48">
           <div className="flex gap-2 items-center text-secondary">
-            <h2 className="text-2xl">
+            <DialogTitle className="text-2xl">
               {name && name.length > 0 ? name : "Room Information"}
-            </h2>
+            </DialogTitle>
             <div className="rounded-md bg-quaternary p-2 text-center self-center">
               <Globe />
             </div>
@@ -43,27 +41,29 @@ export const GeneralRoomInfo = () => {
           </div>
         </SkeletonWrapper>
       </div>
-      <div className="mb-2 flex gap-3 items-center text-secondary">
-        <div className="text-xl font-semibold">Members</div>
-        <div className="flex items-center rounded-md bg-quaternary p-2 text-sm gap-2">
-          <Users />
-          <span>
-            {users.length} / {ROOM.CAPACITY}
-          </span>
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-3 items-center text-secondary">
+          <div className="text-xl font-semibold">Members</div>
+          <div className="flex items-center rounded-md bg-quaternary p-2 text-sm gap-2">
+            <Users />
+            <span>
+              {users.length} / {ROOM.CAPACITY}
+            </span>
+          </div>
         </div>
+        <DefaultTable loading={users.length === 0}>
+          <DefaultTableHeader headers={["Rank", "User", "Problem solved"]} />
+          <DefaultTableBody>
+            {users.map((user, idx) => (
+              <DefaultTableRow key={user}>
+                <TableCell>{idx}</TableCell>
+                <TableCell>{user}</TableCell>
+                <TableCell>0</TableCell>
+              </DefaultTableRow>
+            ))}
+          </DefaultTableBody>
+        </DefaultTable>
       </div>
-      <DefaultTable loading={users.length === 0}>
-        <DefaultTableHeader headers={["Rank", "User", "Problem solved"]} />
-        <DefaultTableBody>
-          {users.map((user, idx) => (
-            <DefaultTableRow key={user}>
-              <TableCell>{idx}</TableCell>
-              <TableCell>{user}</TableCell>
-              <TableCell>0</TableCell>
-            </DefaultTableRow>
-          ))}
-        </DefaultTableBody>
-      </DefaultTable>
-    </div>
+    </SidebarTabLayout>
   );
 };
