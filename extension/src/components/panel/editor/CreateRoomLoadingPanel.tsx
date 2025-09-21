@@ -1,5 +1,3 @@
-import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
-import { LeaveIcon } from "@cb/components/icons";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyRoomId } from "@cb/hooks";
@@ -14,17 +12,6 @@ const CreateRoomLoadingPanel = () => {
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4 bg-secondary">
-      <div className="left-7 top-5 absolute self-start z-30">
-        <LeaveRoomDialog
-          node={
-            <div className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border px-4 py-2">
-              <LeaveIcon />
-              <span className="text-base font-medium">Leave Room</span>
-            </div>
-          }
-        />
-      </div>
-
       <div className="relative z-20 top-[15vh] justify-center flex flex-col gap-1 items-center">
         <span className="text-3xl font-bold text-[#1E1E1E] dark:text-white">
           Room created successfully!

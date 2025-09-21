@@ -1,3 +1,4 @@
+import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
 import { useRoomData } from "@cb/hooks/store";
 import { SidebarTabIdentifier } from "@cb/store";
 
@@ -18,6 +19,19 @@ export const SidebarTabLayout = ({
       })}
     >
       {children}
+    </div>
+  );
+};
+
+interface SidebarTabHeaderProps {
+  children: React.ReactNode;
+}
+
+export const SidebarTabHeader = ({ children }: SidebarTabHeaderProps) => {
+  return (
+    <div className="flex justify-between items-center">
+      {children}
+      <LeaveRoomDialog />
     </div>
   );
 };

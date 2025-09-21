@@ -1,5 +1,4 @@
-import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
-import { CopyIcon, LeaveIcon, SignOutIcon } from "@cb/components/icons";
+import { CopyIcon, SignOutIcon } from "@cb/components/icons";
 import { useSignOut } from "@cb/hooks/auth";
 import { RoomStatus, useRoom } from "@cb/store";
 import { _AppControlMenu } from "./AppControlMenu";
@@ -19,16 +18,6 @@ export const RoomControlMenu = () => {
             <span className="flex items-center gap-2">
               <CopyIcon /> Copy Room ID
             </span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-            <LeaveRoomDialog
-              customTrigger
-              node={
-                <span className="flex items-center gap-2">
-                  <LeaveIcon /> Leave Room
-                </span>
-              }
-            />
           </DropdownMenuItem>
         </>
       )}
