@@ -73,7 +73,9 @@ export default {
         success: {
           DEFAULT: "var(--success)",
         },
-        border: "hsl(var(--border))",
+        border: {
+          DEFAULT: "hsl(var(--border))",
+        },
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         chart: {

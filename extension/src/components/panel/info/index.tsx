@@ -1,7 +1,6 @@
 import { useRoomActions, useRoomData, useRoomStatus } from "@cb/hooks/store";
 import { Sheet, SheetContent } from "@cb/lib/components/ui/sheet";
 import { RoomStatus, SidebarTabIdentifier } from "@cb/store";
-import { useHtml } from "@cb/store/htmlStore";
 import { Info, List, ListPlus } from "lucide-react";
 import { createPortal } from "react-dom";
 import { GeneralRoomInfo } from "./GeneralRoomInfo";
@@ -28,7 +27,6 @@ export const RoomInfo = () => {
   const roomStatus = useRoomStatus();
   const { activeSidebarTab } = useRoomData();
   const { closeSidebarTab } = useRoomActions();
-  const { hideHtml } = useHtml((state) => state.actions);
 
   return createPortal(
     <div
@@ -44,7 +42,6 @@ export const RoomInfo = () => {
         onOpenChange={(open) => {
           if (!open) {
             closeSidebarTab();
-            hideHtml();
           }
         }}
       >

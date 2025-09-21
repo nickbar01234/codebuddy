@@ -11,6 +11,7 @@ import { BoundStore, Id, PeerMessage, PeerState, Question } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
+import _ from "lodash";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
@@ -56,6 +57,7 @@ interface RoomAction {
     loading: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
+    selectQuestion: (url: string) => void;
     selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
     closeSidebarTab: () => void;
   };
@@ -76,6 +78,19 @@ const createRoomStore = (
       state.status = RoomStatus.IN_ROOM;
       state.room = room;
     });
+
+  const debouncedAddQuestion = _.debounce(async (url: string) => {
+    const metadata = await getProblemMetaBySlugServer(
+      getQuestionIdFromUrl(url)
+    );
+    if (metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS) {
+      console.error("Failed to fetch graphql metadata", metadata);
+      toast.error("Failed to select next problem. Please try again");
+      return;
+    }
+    useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
+    windowMessager.navigate({ url });
+  });
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
@@ -152,20 +167,7 @@ const createRoomStore = (
               set((state) => {
                 state.status = RoomStatus.LOADING;
               }),
-            addQuestion: async (url) => {
-              const metadata = await getProblemMetaBySlugServer(
-                getQuestionIdFromUrl(url)
-              );
-              if (
-                metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS
-              ) {
-                console.error("Failed to fetch graphql metadata", metadata);
-                toast.error("Failed to select next problem. Please try again");
-                return;
-              }
-              get().actions.room.updateRoomStoreQuestion(metadata.data);
-              windowMessager.navigate({ url });
-            },
+            addQuestion: async (url) => debouncedAddQuestion(url),
             updateRoomStoreQuestion(question) {
               // todo(nickbar01234): We need a timestamp on question so the ordering is stable.
               set((state) => {
@@ -176,6 +178,10 @@ const createRoomStore = (
                   state.room.questions.push(question);
                 }
               });
+            },
+            selectQuestion: (url) => {
+              windowMessager.navigate({ url });
+              get().actions.room.closeSidebarTab();
             },
             selectSidebarTab: (identifier) =>
               set((state) => {
