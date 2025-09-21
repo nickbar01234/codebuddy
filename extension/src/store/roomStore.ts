@@ -90,7 +90,7 @@ const createRoomStore = (
     }
     useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
     windowMessager.navigate({ url });
-  });
+  }, 500);
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
