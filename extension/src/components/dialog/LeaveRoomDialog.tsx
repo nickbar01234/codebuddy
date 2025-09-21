@@ -1,21 +1,22 @@
+import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
-import { useRoom } from "@cb/store";
+import { DialogOverlay } from "@radix-ui/react-dialog";
 import { throttle } from "lodash";
+import { CornerUpLeft } from "lucide-react";
 import React from "react";
-import { RoomDialog, RoomDialogProps, baseButtonClassName } from "./RoomDialog";
+import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
-type LeaveRoomDialogProps = Partial<RoomDialogProps["trigger"]>;
-
-export function LeaveRoomDialog(props: LeaveRoomDialogProps) {
-  const leave = useRoom((state) => state.actions.room.leave);
+export function LeaveRoomDialog() {
+  const { leave, closeSidebarTab } = useRoomActions();
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation?.();
       leave();
+      closeSidebarTab();
     }, 1000);
-  }, [leave]);
+  }, [leave, closeSidebarTab]);
 
   return (
     <RoomDialog
@@ -24,10 +25,14 @@ export function LeaveRoomDialog(props: LeaveRoomDialogProps) {
         node: "You will be disconnected, and you may not be able to rejoin unless invited again.",
       }}
       trigger={{
+        customTrigger: true,
         label: "Leave Room",
-        node: "Leave Room",
-        ...(props ?? {}),
+        node: <CornerUpLeft />,
       }}
+      content={{ props: { className: "z-[9999]" } }}
+      overlay={
+        <DialogOverlay className="fixed inset-0 z-[9999] dark:bg-black/30 bg-white/30 backdrop-blur-sm" />
+      }
     >
       <div className="flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>

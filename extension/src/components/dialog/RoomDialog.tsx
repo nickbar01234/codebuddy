@@ -37,6 +37,7 @@ export interface RoomDialogProps {
   content?: {
     props: React.ComponentProps<typeof DialogDescription>;
   };
+  overlay?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -47,6 +48,7 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
   content,
   children,
   description,
+  overlay,
 }) => {
   return (
     <Dialog {...d(dialog?.props, {})}>
@@ -73,6 +75,7 @@ export const RoomDialog: React.FC<RoomDialogProps> = ({
           )}
         </DialogTrigger>
       )}
+      {overlay}
       <DialogContent
         {...d(content?.props, {})}
         className={cn("bg-primary", content?.props.className)}
