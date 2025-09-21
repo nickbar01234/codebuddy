@@ -199,8 +199,11 @@ export class MessageDispatcher {
   }
 
   private subscribeToRoomChanges() {
-    const onRoomChange = (room: Events["room.changes"]) => {
-      this.roomStore.getState().actions.peers.remove(room.left);
+    const onRoomChange = ({ left, room }: Events["room.changes"]) => {
+      this.roomStore.getState().actions.peers.remove(left);
+      this.roomStore
+        .getState()
+        .actions.room.setRoomStoreQuestions(room.questions);
     };
     this.emitter.on("room.changes", onRoomChange);
     return () => this.emitter.off("room.changes", onRoomChange);
