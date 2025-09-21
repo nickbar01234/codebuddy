@@ -39,7 +39,10 @@ export const waitForElement = (
 export const hideToRoot = (element: Element | undefined | null) => {
   let node = element;
   while (node != null) {
-    (node as HTMLElement).style.display = "block";
+    const htmlElement = node as HTMLElement;
+    setImportant(htmlElement, "display", "block");
+    setImportant(htmlElement, "margin", "0px");
+    setImportant(htmlElement, "width", "100%");
     const parent = node.parentElement;
     Array.from(parent?.children ?? []).forEach((sibling) => {
       if (sibling !== node) {
@@ -60,3 +63,9 @@ export const appendClassIdempotent = (element: Element, tokens: string[]) =>
   tokens
     .filter((token) => !element.classList.contains(token))
     .forEach((token) => element.classList.add(token));
+
+export const setImportant = (
+  element: HTMLElement,
+  key: string,
+  value: string
+) => element.style.setProperty(key, value, "important");

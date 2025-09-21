@@ -1,4 +1,5 @@
-import { TableHead, TableHeader, TableRow } from "@cb/lib/components/ui/table";
+import { TableHead, TableHeader } from "@cb/lib/components/ui/table";
+import { DefaultTableRow } from "./DefaultTableRow";
 
 interface DefaultTableHeaderProps {
   headers: string[];
@@ -6,14 +7,14 @@ interface DefaultTableHeaderProps {
 
 export const DefaultTableHeader = ({ headers }: DefaultTableHeaderProps) => {
   return (
-    <TableHeader className="text-secondary">
-      <TableRow className={cn("border-none")}>
+    <TableHeader className={cn("sticky top-0 w-full shadow-xl")}>
+      <DefaultTableRow className={cn("w-full bg-secondary")}>
         {headers.map((header) => (
           <TableHead key={header} className="text-tertiary text-lg">
             {header}
           </TableHead>
         ))}
-      </TableRow>
+      </DefaultTableRow>
     </TableHeader>
   );
 };

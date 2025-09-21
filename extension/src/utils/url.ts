@@ -1,7 +1,7 @@
 import { URLS } from "@cb/constants";
 
 export const getQuestionIdFromUrl = (url: string) => {
-  const pattern = /(?<=problems\/)[^/]+/;
+  const pattern = /(?<=problems\/)[^/?]+/;
   const match = url.match(pattern);
 
   if (match) {

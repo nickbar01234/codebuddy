@@ -4,7 +4,6 @@ import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useLeetCodeActions, usePeerActions, usePeers } from "@cb/hooks/store";
 import {
-  ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@cb/lib/components/ui/resizable";
@@ -17,9 +16,8 @@ import {
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus, useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { CodeXml, FlaskConical, Info } from "lucide-react";
+import { CodeXml, FlaskConical } from "lucide-react";
 import React from "react";
-import { RoomInfoTab } from "./tab/roomInfo/RoomInfoTab";
 
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
@@ -55,17 +53,6 @@ const EditorPanel = () => {
       },
     ];
   }, [selectedPeer, activeTest, selectTest, getLanguageExtension]);
-
-  const lowerTabConfigs = React.useMemo(() => {
-    return [
-      {
-        value: "roomInfo",
-        label: "Room Info",
-        Icon: Info,
-        Content: <RoomInfoTab />,
-      },
-    ];
-  }, []);
 
   return (
     <div
@@ -153,45 +140,6 @@ const EditorPanel = () => {
                 ))}
               </Tabs>
             </div>
-          </ResizablePanel>
-          <div className="h-[8px] bg-base w-full">
-            <ResizableHandle className="flexlayout__splitter flexlayout__splitter_horz h-2 w-full cursor-ns-resize after:w-[20px] after:bg-[--color-splitter] hover:after:w-full hover:after:bg-[--color-splitter-drag]" />
-          </div>
-          <ResizablePanel>
-            <Tabs
-              defaultValue="roomInfo"
-              className="h-full w-full text-inherit rounded-t-lg overflow-hidden bg-secondary"
-            >
-              <TabsList className="hide-scrollbar text-inherit flex h-fit w-full justify-start gap-2 overflow-x-auto border-border-quaternary dark:border-border-quaternary border-b rounded-none bg-secondary">
-                {lowerTabConfigs.map((tab, index) => (
-                  <React.Fragment key={tab.value}>
-                    <TabsTrigger
-                      value={tab.value}
-                      className="rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                    >
-                      <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
-                      {tab.label}
-                    </TabsTrigger>
-                    {index !== lowerTabConfigs.length - 1 && (
-                      <Separator
-                        orientation="vertical"
-                        className="flexlayout__tabset_tab_divider h-[1rem] bg-tabbar"
-                      />
-                    )}
-                  </React.Fragment>
-                ))}
-              </TabsList>
-              {lowerTabConfigs.map(({ value, Content }) => (
-                <TabsContent
-                  key={value}
-                  value={value}
-                  forceMount
-                  className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full w-full mt-0"
-                >
-                  {Content}
-                </TabsContent>
-              ))}
-            </Tabs>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
