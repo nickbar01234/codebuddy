@@ -9,20 +9,55 @@ const INJECTED_ATTRIBUTE = "data-injected";
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
   filterQuestionIds: string[];
-  onContainerRefCallback: (node: HTMLElement | null) => void;
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({
-    handleQuestionSelect,
-    filterQuestionIds,
-    onContainerRefCallback,
-  }: QuestionSelectorPanelProps) => {
+  ({ handleQuestionSelect, filterQuestionIds }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
     const { actions: iframeActions } = useHtml();
+
+    const onContainerRefCallback = React.useCallback(
+      (node: HTMLElement | null) => {
+        if (!node) return;
+
+        let lastRect: DOMRect;
+        let animationFrameId: number;
+        const repositionIframeOnPositionChange = () => {
+          const rect = node.getBoundingClientRect();
+          if (
+            !lastRect ||
+            rect.top !== lastRect.top ||
+            rect.left !== lastRect.left
+          ) {
+            iframeActions.showHtml(node);
+            lastRect = rect;
+          }
+          animationFrameId = requestAnimationFrame(
+            repositionIframeOnPositionChange
+          );
+        };
+
+        animationFrameId = requestAnimationFrame(
+          repositionIframeOnPositionChange
+        );
+
+        const repositionIframeOnWindowResize = () => {
+          lastRect = node.getBoundingClientRect();
+          iframeActions.showHtml(node);
+        };
+
+        window.addEventListener("resize", repositionIframeOnPositionChange);
+
+        return () => {
+          cancelAnimationFrame(animationFrameId);
+          window.removeEventListener("resize", repositionIframeOnWindowResize);
+        };
+      },
+      [iframeActions]
+    );
 
     useEffect(() => {
       setLoading(true);

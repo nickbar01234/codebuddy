@@ -9,48 +9,7 @@ import { SidebarTabLayout } from "./SidebarTabLayout";
 export const LeetCodeQuestions = () => {
   const { activeSidebarTab } = useRoomData();
   const { addQuestion, closeSidebarTab } = useRoomActions();
-  const showHtml = useHtml((state) => state.actions.showHtml);
   const hideHtml = useHtml((state) => state.actions.hideHtml);
-
-  const onContainerRefCallback = React.useCallback(
-    (node: HTMLElement | null) => {
-      if (!node) return;
-
-      let lastRect: DOMRect;
-      let animationFrameId: number;
-      const repositionIframeOnPositionChange = () => {
-        const rect = node.getBoundingClientRect();
-        if (
-          !lastRect ||
-          rect.top !== lastRect.top ||
-          rect.left !== lastRect.left
-        ) {
-          showHtml(node);
-          lastRect = rect;
-        }
-        animationFrameId = requestAnimationFrame(
-          repositionIframeOnPositionChange
-        );
-      };
-
-      animationFrameId = requestAnimationFrame(
-        repositionIframeOnPositionChange
-      );
-
-      const repositionIframeOnWindowResize = () => {
-        lastRect = node.getBoundingClientRect();
-        showHtml(node);
-      };
-
-      window.addEventListener("resize", repositionIframeOnPositionChange);
-
-      return () => {
-        cancelAnimationFrame(animationFrameId);
-        window.removeEventListener("resize", repositionIframeOnWindowResize);
-      };
-    },
-    [showHtml]
-  );
 
   React.useEffect(() => {
     if (activeSidebarTab === undefined) hideHtml();
@@ -67,7 +26,6 @@ export const LeetCodeQuestions = () => {
           addQuestion(url).then(() => closeSidebarTab())
         }
         filterQuestionIds={[]}
-        onContainerRefCallback={onContainerRefCallback}
       />
     </SidebarTabLayout>
   );
