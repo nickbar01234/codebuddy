@@ -13,7 +13,6 @@ export const ProblemInfo = () => {
   const { questions } = useRoomData();
   const { selectQuestion } = useRoomActions();
 
-  console.log("In room", questions);
   return (
     <SidebarTabLayout forTab={SidebarTabIdentifier.ROOM_QUESTIONS}>
       <DialogTitle className="text-secondary text-2xl">
