@@ -7,7 +7,7 @@ import { useRoomActions, useRoomData } from "@cb/hooks/store";
 import { TableCell } from "@cb/lib/components/ui/table";
 import { SidebarTabIdentifier } from "@cb/store";
 import { DialogTitle } from "@radix-ui/react-dialog";
-import { SidebarTabLayout } from "./SidebarTabLayout";
+import { SidebarTabHeader, SidebarTabLayout } from "./SidebarTabLayout";
 
 export const ProblemInfo = () => {
   const { questions } = useRoomData();
@@ -15,9 +15,11 @@ export const ProblemInfo = () => {
 
   return (
     <SidebarTabLayout forTab={SidebarTabIdentifier.ROOM_QUESTIONS}>
-      <DialogTitle className="text-secondary text-2xl">
-        Problem Queue
-      </DialogTitle>
+      <SidebarTabHeader>
+        <DialogTitle className="text-secondary text-2xl">
+          Problem Queue
+        </DialogTitle>
+      </SidebarTabHeader>
       <div className="h-full w-full flex flex-col justify-between overflow-hidden">
         <DefaultTable loading={questions.length === 0}>
           <DefaultTableHeader

@@ -4,7 +4,7 @@ import { SidebarTabIdentifier } from "@cb/store";
 import { useHtml } from "@cb/store/htmlStore";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import React from "react";
-import { SidebarTabLayout } from "./SidebarTabLayout";
+import { SidebarTabHeader, SidebarTabLayout } from "./SidebarTabLayout";
 
 export const LeetCodeQuestions = () => {
   const { activeSidebarTab } = useRoomData();
@@ -17,9 +17,11 @@ export const LeetCodeQuestions = () => {
 
   return (
     <SidebarTabLayout forTab={SidebarTabIdentifier.LEETCODE_QUESTIONS}>
-      <DialogTitle className="text-2xl text-secondary">
-        Select next problem
-      </DialogTitle>
+      <SidebarTabHeader>
+        <DialogTitle className="text-2xl text-secondary">
+          Select next problem
+        </DialogTitle>
+      </SidebarTabHeader>
       <QuestionSelectorPanel
         handleQuestionSelect={(url) =>
           // todo(nickbar01234): Loading animation?
