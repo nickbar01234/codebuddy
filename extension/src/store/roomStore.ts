@@ -1,7 +1,10 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
-import { RoomJoinCode } from "@cb/services/controllers/RoomController";
+import {
+  AddQuestionCode,
+  RoomJoinCode,
+} from "@cb/services/controllers/RoomController";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
@@ -57,6 +60,7 @@ interface RoomAction {
     loading: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
+    setRoomStoreQuestions: (questions: Question[]) => void;
     selectQuestion: (url: string) => void;
     selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
     closeSidebarTab: () => void;
@@ -88,8 +92,20 @@ const createRoomStore = (
       toast.error("Failed to select next problem. Please try again");
       return;
     }
-    useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
-    windowMessager.navigate({ url });
+    try {
+      const addQuestionResponse =
+        await getOrCreateControllers().room.addQuestion(metadata.data);
+      if (addQuestionResponse == AddQuestionCode.NOT_IN_ROOM) {
+        throw new Error(
+          "Attempt to add question when not in room. This is most likely a bug"
+        );
+      }
+      useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
+      windowMessager.navigate({ url });
+    } catch (error) {
+      console.error("Error when adding question", error);
+      toast.error("Failed to add question. Please try again");
+    }
   }, 500);
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
@@ -179,6 +195,12 @@ const createRoomStore = (
                 }
               });
             },
+            setRoomStoreQuestions: (questions) =>
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.questions = questions;
+                }
+              }),
             selectQuestion: (url) => {
               windowMessager.navigate({ url });
               get().actions.room.closeSidebarTab();

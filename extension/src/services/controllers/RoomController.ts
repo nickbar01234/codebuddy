@@ -1,7 +1,7 @@
 import { ROOM } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
-import { DatabaseService, Events, Id, Room, User } from "@cb/types";
+import { DatabaseService, Events, Id, Question, Room, User } from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { isEventFromMe } from "@cb/utils";
 
@@ -9,6 +9,11 @@ export enum RoomJoinCode {
   SUCCESS,
   NOT_EXISTS,
   MAX_CAPACITY,
+}
+
+export enum AddQuestionCode {
+  SUCCESS,
+  NOT_IN_ROOM,
 }
 
 class RoomLifeCycle {
@@ -47,6 +52,10 @@ class RoomLifeCycle {
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
     await this.database.removeUser(this.room.id, this.me);
     this.emitter.emit("room.left");
+  }
+
+  public async addQuestion(question: Question) {
+    this.database.addQuestion(this.room.id, question);
   }
 
   private async init() {
@@ -218,6 +227,15 @@ export class RoomController {
     if (this.room != null) {
       await this.room.leave();
       this.room = null;
+    }
+  }
+
+  public async addQuestion(question: Question): Promise<AddQuestionCode> {
+    if (this.room != null) {
+      this.room.addQuestion(question);
+      return AddQuestionCode.SUCCESS;
+    } else {
+      return AddQuestionCode.NOT_IN_ROOM;
     }
   }
 }
