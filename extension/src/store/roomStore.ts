@@ -46,6 +46,7 @@ interface RoomState {
     isPublic: boolean;
     questions: Question[];
     activeSidebarTab?: SidebarTabIdentifier;
+    leaveRoomDialogOpen: boolean;
   }>;
   peers: Record<Id, PeerState>;
 }

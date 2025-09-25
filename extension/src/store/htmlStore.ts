@@ -11,6 +11,8 @@ interface HtmlState {
 interface HtmlActions {
   showHtml: (container: HTMLElement) => void;
   hideHtml: () => void;
+  blurHtml: () => void;
+  unblurHtml: () => void;
   setContentProcessed: (processed: boolean) => void;
   getHtmlElement: () => HTMLIFrameElement | null;
   isContentProcessed: () => boolean;
@@ -29,12 +31,22 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
 
         // static styles
         htmlElement.current.className =
-          "block absolute z-[3000] pointer-events-auto w-full h-full";
+          "block absolute z-[3000] pointer-events-auto w-full h-full transition";
         // Runtime-calculated positions, doesn't work with Tailwind classes
         htmlElement.current.style.top = `${containerRect.top}px`;
         htmlElement.current.style.left = `${containerRect.left}px`;
         htmlElement.current.style.width = `${containerRect.width}px`;
         htmlElement.current.style.height = `${containerRect.height}px`;
+      },
+      blurHtml: () => {
+        const { htmlElement } = get();
+        if (!htmlElement.current) return;
+        appendClassIdempotent(htmlElement.current, ["blur-sm", "filter"]);
+      },
+      unblurHtml: () => {
+        const { htmlElement } = get();
+        if (!htmlElement.current) return;
+        htmlElement.current.classList.remove("blur-sm", "filter");
       },
       hideHtml: () => {
         const { htmlElement } = get();

@@ -1,6 +1,7 @@
 import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
+import { useHtml } from "@cb/store/htmlStore";
 import { DialogOverlay } from "@radix-ui/react-dialog";
 import { throttle } from "lodash";
 import { CornerUpLeft } from "lucide-react";
@@ -9,6 +10,7 @@ import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export function LeaveRoomDialog() {
   const { leave, closeSidebarTab } = useRoomActions();
+  const { blurHtml, unblurHtml } = useHtml((state) => state.actions);
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -27,12 +29,21 @@ export function LeaveRoomDialog() {
       trigger={{
         customTrigger: true,
         label: "Leave Room",
-        node: <CornerUpLeft />,
+        node: (
+          <CornerUpLeft onClick={() => blurHtml()} className="cursor-pointer" />
+        ),
       }}
       content={{ props: { className: "z-[9999]" } }}
       overlay={
         <DialogOverlay className="fixed inset-0 z-[9999] dark:bg-black/30 bg-white/30 backdrop-blur-sm" />
       }
+      dialog={{
+        props: {
+          onOpenChange: (open) => {
+            if (!open) unblurHtml();
+          },
+        },
+      }}
     >
       <div className="flex w-full items-center justify-end gap-2 self-end">
         <DialogClose asChild>

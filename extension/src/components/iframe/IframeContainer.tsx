@@ -9,7 +9,7 @@ export const IframeContainer: React.FC = () => {
       ref={htmlElement}
       src={URLS.PROBLEMSET}
       title="LeetCode Question"
-      className="hidden z-[1000]"
+      className="hidden"
       sandbox="allow-scripts allow-same-origin"
     />
   );
