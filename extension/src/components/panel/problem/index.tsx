@@ -1,6 +1,7 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import useResource from "@cb/hooks/useResource";
 import { useHtml } from "@cb/store/htmlStore";
+import { Question } from "@cb/types";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -8,11 +9,11 @@ const INJECTED_ATTRIBUTE = "data-injected";
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  filterQuestionIds: string[];
+  filterQuestions: Question[];
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect, filterQuestionIds }: QuestionSelectorPanelProps) => {
+  ({ handleQuestionSelect, filterQuestions }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
@@ -89,7 +90,11 @@ export const QuestionSelectorPanel = React.memo(
                       continue;
                     }
                     const questionId = getQuestionIdFromUrl(link);
-                    if (filterQuestionIds.includes(questionId)) {
+                    if (
+                      filterQuestions.some(
+                        (question) => question.slug === questionId
+                      )
+                    ) {
                       anchorContainer.style.display = "none";
                     }
 
@@ -165,7 +170,7 @@ export const QuestionSelectorPanel = React.memo(
       return () => iframeActions.setContentProcessed(false);
     }, [
       handleQuestionSelect,
-      filterQuestionIds,
+      filterQuestions,
       registerObserver,
       iframeActions,
     ]);

@@ -7,7 +7,7 @@ import React from "react";
 import { SidebarTabHeader, SidebarTabLayout } from "./SidebarTabLayout";
 
 export const LeetCodeQuestions = () => {
-  const { activeSidebarTab } = useRoomData();
+  const { activeSidebarTab, questions } = useRoomData();
   const { addQuestion, closeSidebarTab } = useRoomActions();
   const hideHtml = useHtml((state) => state.actions.hideHtml);
 
@@ -27,7 +27,7 @@ export const LeetCodeQuestions = () => {
           // todo(nickbar01234): Loading animation?
           addQuestion(url).then(() => closeSidebarTab())
         }
-        filterQuestionIds={[]}
+        filterQuestions={questions}
       />
     </SidebarTabLayout>
   );
