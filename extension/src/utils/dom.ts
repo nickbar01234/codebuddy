@@ -43,6 +43,8 @@ export const hideToRoot = (element: Element | undefined | null) => {
     setImportant(htmlElement, "display", "block");
     setImportant(htmlElement, "margin", "0px");
     setImportant(htmlElement, "width", "100%");
+    setImportant(htmlElement, "max-width", "none");
+    setImportant(htmlElement, "padding", "0px");
     const parent = node.parentElement;
     Array.from(parent?.children ?? []).forEach((sibling) => {
       if (sibling !== node) {
