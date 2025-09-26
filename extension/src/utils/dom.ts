@@ -45,7 +45,6 @@ export const hideToRoot = (element: Element | undefined | null) => {
     setImportant(htmlElement, "width", "100%");
     setImportant(htmlElement, "max-width", "none");
     setImportant(htmlElement, "padding", "0px");
-    appendClassIdempotent(htmlElement, ["hide-scollbar"]);
     const parent = node.parentElement;
     Array.from(parent?.children ?? []).forEach((sibling) => {
       if (sibling !== node) {
