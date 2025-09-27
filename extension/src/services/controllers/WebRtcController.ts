@@ -74,11 +74,10 @@ export class WebRtcController {
     }
   }
 
-  private isErrorRecoverable(error: RTCError) {
+  private isErrorRecoverable(error: RTCError): boolean {
     switch (error.errorDetail) {
-      case "data-channel-failure":
-        return true;
       case "dtls-failure":
+      case "fingerprint-failure":
       case "sdp-syntax-error":
         return false;
       default:
