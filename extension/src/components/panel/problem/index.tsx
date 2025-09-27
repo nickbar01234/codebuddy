@@ -1,4 +1,5 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { DOM, EXTENSION } from "@cb/constants";
 import useResource from "@cb/hooks/useResource";
 import { useHtml } from "@cb/store/htmlStore";
 import { Question } from "@cb/types";
@@ -71,6 +72,13 @@ export const QuestionSelectorPanel = React.memo(
       if (iframe) {
         const processIframe = async () => {
           const handleIframeStyle = async (iframeDoc: Document) => {
+            if (iframeDoc.head.querySelector(`#${DOM.IFRAME_CSS_ID}`) == null) {
+              const link = iframeDoc.createElement("link");
+              link.rel = "stylesheet";
+              link.href = chrome.runtime.getURL(EXTENSION.CSS_PATH);
+              link.id = DOM.IFRAME_CSS_ID;
+              iframeDoc.head.appendChild(link);
+            }
             waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
               .then((el) => el.closest("button")?.remove())
               .catch(() => {});
