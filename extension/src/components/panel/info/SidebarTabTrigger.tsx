@@ -21,7 +21,10 @@ export const SidebarTabTrigger = ({
         "hover:bg-[--color-tab-hover-background] focus:bg-[--color-tab-hover-background] hover:rounded-md cursor-pointer":
           forTab !== activeSidebarTab,
       })}
-      onClick={() => selectSidebarTab(forTab)}
+      onClick={(e) => {
+        e.stopPropagation();
+        selectSidebarTab(forTab);
+      }}
       disabled={forTab === activeSidebarTab}
     >
       {trigger}
