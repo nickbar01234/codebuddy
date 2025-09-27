@@ -59,6 +59,33 @@ export class WebRtcController {
     }
   }
 
+  private recoverConnection(user: User) {
+    this.disconnect(user);
+    setTimeout(() => {
+      this.connect(user);
+    }, 1000);
+  }
+
+  private reNegotiate(user: User) {
+    console.log(`Re-negotiating connection for ${user}`);
+    const connection = this.pcs.get(user);
+    if (connection) {
+      connection.pc.restartIce();
+    }
+  }
+
+  private isErrorRecoverable(error: RTCError) {
+    switch (error.errorDetail) {
+      case "data-channel-failure":
+        return true;
+      case "dtls-failure":
+      case "sdp-syntax-error":
+        return false;
+      default:
+        return true;
+    }
+  }
+
   private connect(user: User) {
     console.log("Connecting user", user, this.pcs.has(user));
     if (this.pcs.has(user)) {
@@ -146,10 +173,15 @@ export class WebRtcController {
       }
     };
 
-    channel.onerror = (error) => {
-      console.error("Error on RTC data channel", error);
-      // todo(nickbar01234): Need to recover when error is thrown. Easiest is to re-do the entire process.
-      this.disconnect(user);
+    channel.onerror = (errorEvent: RTCErrorEvent) => {
+      console.error("Error on RTC data channel", errorEvent);
+      const isRecoverable = this.isErrorRecoverable(errorEvent.error);
+      if (isRecoverable) {
+        this.recoverConnection(user);
+      } else {
+        this.reNegotiate(user);
+      }
+
       this.emitter.emit("rtc.error.connection", { user });
     };
   }
