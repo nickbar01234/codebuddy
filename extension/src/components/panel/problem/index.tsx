@@ -89,9 +89,14 @@ export const QuestionSelectorPanel = React.memo(
               hideToRoot(rowContainer.parentElement?.parentElement);
 
               const processQuestionLinks = async () => {
+                const zebraStripes = [
+                  "codebuddy-row-odd",
+                  "codebuddy-row-even",
+                ];
                 const rowList = rowContainer.querySelectorAll("a");
                 appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
                 for (const anchorContainer of rowList) {
+                  anchorContainer.classList.remove(...zebraStripes);
                   try {
                     const link = anchorContainer.href;
                     if (!link) {
@@ -104,6 +109,12 @@ export const QuestionSelectorPanel = React.memo(
                       )
                     ) {
                       anchorContainer.style.display = "none";
+                    } else {
+                      const bg = zebraStripes.shift();
+                      if (bg != undefined) {
+                        appendClassIdempotent(anchorContainer, [bg]);
+                        zebraStripes.push(bg);
+                      }
                     }
 
                     if (!anchorContainer.hasAttribute(INJECTED_ATTRIBUTE)) {
