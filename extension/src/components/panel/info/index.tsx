@@ -31,10 +31,10 @@ export const RoomInfo = () => {
   return createPortal(
     <div
       className={cn(
-        "bg-secondary border-2 rounded-tl-lg rounded-bl-lg absolute top-[256px] translate-x-2 z-[1000] border-border-button shadow-lg transition-all",
+        "border-2 rounded-tl-lg rounded-bl-lg absolute top-[256px] translate-x-2 z-[1000] border-border-button shadow-lg transition-all pointer-events-auto",
         {
-          "right-0 animate-out": activeSidebarTab == undefined,
-          "right-1/2 animate-in": activeSidebarTab != undefined,
+          "right-0 animate-out bg-secondary": activeSidebarTab == undefined,
+          "right-1/2 animate-in bg-primary": activeSidebarTab != undefined,
           hidden: roomStatus !== RoomStatus.IN_ROOM,
         }
       )}
@@ -58,7 +58,7 @@ export const RoomInfo = () => {
         </div>
         <SheetContent
           className={cn(
-            "bg-primary z-[2000] [&>button:first-of-type]:hidden w-5/12"
+            "bg-primary z-[2000] [&>button:first-of-type]:hidden w-6/12"
           )}
           forceMount
         >
