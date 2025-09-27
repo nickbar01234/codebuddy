@@ -12,11 +12,10 @@ export const RoomInfo = () => {
   return createPortal(
     <div
       className={cn(
-        "bg-secondary border-2 rounded-tl-lg rounded-bl-lg absolute top-[256px] translate-x-2 z-[1000] border-border-button shadow-lg",
+        "bg-secondary border-2 rounded-tl-lg rounded-bl-lg absolute top-[256px] translate-x-2 z-[1000] border-border-button shadow-lg transition-all",
         {
-          "right-0": activeSidebarTab == undefined,
-          "right-1/2 transition ease-in-out duration-500 slide-in-from-right animate-in":
-            activeSidebarTab != undefined,
+          "right-0 animate-out": activeSidebarTab == undefined,
+          "right-1/2 animate-in": activeSidebarTab != undefined,
           hidden:
             roomStatus !== RoomStatus.IN_ROOM ||
             FEATURE_FLAG.DISABLE_MULTI_URLS,
