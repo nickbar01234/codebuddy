@@ -17,16 +17,14 @@ export const ProblemInfo = () => {
           Problem Queue
         </DialogTitle>
       </SidebarTabHeader>
-      <div className="h-full w-full flex flex-col justify-between overflow-hidden">
-        <DefaultTable loading={questions.length === 0}>
-          <DefaultTableHeader headers={["Question", "Difficulty", "Users"]} />
-          <DefaultTableBody>
-            {questions.map((question) => (
-              <UserAwareTableRow key={question.id} question={question} />
-            ))}
-          </DefaultTableBody>
-        </DefaultTable>
-      </div>
+      <DefaultTable loading={questions.length === 0}>
+        <DefaultTableHeader headers={["Question", "Difficulty", "Users"]} />
+        <DefaultTableBody>
+          {questions.map((question) => (
+            <UserAwareTableRow key={question.id} question={question} />
+          ))}
+        </DefaultTableBody>
+      </DefaultTable>
     </SidebarTabLayout>
   );
 };
