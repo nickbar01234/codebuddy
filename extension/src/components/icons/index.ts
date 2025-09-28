@@ -9,3 +9,4 @@ export { PlusIcon } from "@cb/components/icons/PlusIcon";
 export { ResetIcon } from "@cb/components/icons/ResetIcon";
 export { SignOutIcon } from "@cb/components/icons/SignOutIcon";
 export { UserIcon } from "@cb/components/icons/UserIcon";
+export { ColorAwareUserIcon } from "./ColorAwareUserIcon";

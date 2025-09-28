@@ -74,4 +74,24 @@ export const CSS = {
     Medium: "text-difficulty-medium",
     Hard: "text-difficulty-hard",
   } as Record<any, string>,
+
+  // See index.css
+  USER_ICON_CSS: [
+    {
+      icon: "user-1",
+      accent: "user-1-accent",
+    },
+    {
+      icon: "user-2",
+      accent: "user-2-accent",
+    },
+    {
+      icon: "user-3",
+      accent: "user-3-accent",
+    },
+    {
+      icon: "user-4",
+      accent: "user-4-accent",
+    },
+  ] as const,
 };
