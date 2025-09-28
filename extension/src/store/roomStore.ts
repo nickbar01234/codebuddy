@@ -10,7 +10,14 @@ import {
   GetProblemMetadataBySlugServerCode,
 } from "@cb/services/graphql/metadata";
 import { windowMessager } from "@cb/services/window";
-import { BoundStore, Id, PeerMessage, PeerState, Question } from "@cb/types";
+import {
+  BoundStore,
+  Id,
+  PeerMessage,
+  PeerState,
+  Question,
+  User,
+} from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
@@ -46,8 +53,11 @@ interface RoomState {
     isPublic: boolean;
     questions: Question[];
     activeSidebarTab?: SidebarTabIdentifier;
+    usernames: User[];
   }>;
   peers: Record<Id, PeerState>;
+  // todo(nickbar01234): Add other states about myself
+  self?: Pick<PeerState, "url">;
 }
 
 interface RoomAction {
@@ -60,13 +70,16 @@ interface RoomAction {
     loading: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
-    setRoomStoreQuestions: (questions: Question[]) => void;
+    setRoom: (
+      room: Pick<NonNullable<RoomState["room"]>, "questions" | "usernames">
+    ) => void;
     selectQuestion: (url: string) => void;
     selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
     closeSidebarTab: () => void;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
+    updateSelf: (state: Partial<UpdatePeerArgs>) => void;
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
@@ -81,6 +94,9 @@ const createRoomStore = (
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
       state.room = room;
+      state.self = {
+        url: window.location.href,
+      };
     });
 
   const debouncedAddQuestion = _.debounce(async (url: string) => {
@@ -130,8 +146,14 @@ const createRoomStore = (
                   ...args,
                   questions: [metadata.data],
                 });
-                const { id, name, isPublic } = room.getRoom();
-                setRoom({ id, name, isPublic, questions: [metadata.data] });
+                const { id, name, isPublic, usernames } = room.getRoom();
+                setRoom({
+                  id,
+                  name,
+                  isPublic,
+                  questions: [metadata.data],
+                  usernames,
+                });
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -145,8 +167,9 @@ const createRoomStore = (
                 get().actions.room.loading();
                 const response = await getOrCreateControllers().room.join(id);
                 if (response.code === RoomJoinCode.SUCCESS) {
-                  const { name, isPublic, questions } = response.data.getRoom();
-                  setRoom({ id, name, isPublic, questions });
+                  const { name, isPublic, questions, usernames } =
+                    response.data.getRoom();
+                  setRoom({ id, name, isPublic, questions, usernames });
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -195,10 +218,11 @@ const createRoomStore = (
                 }
               });
             },
-            setRoomStoreQuestions: (questions) =>
+            setRoom: (room) =>
               set((state) => {
                 if (state.room != undefined) {
-                  state.room.questions = questions;
+                  state.room.questions = room.questions;
+                  state.room.usernames = room.usernames;
                 }
               }),
             selectQuestion: (url) => {
@@ -254,6 +278,16 @@ const createRoomStore = (
                   ...rest,
                   tests,
                 };
+              });
+            },
+            updateSelf: (data) => {
+              // todo(nickbar01234): Need to make this work on other state
+              set((state) => {
+                const selfOrDefault = state.self ?? {
+                  url: window.location.href,
+                };
+                selfOrDefault.url = data.url ?? selfOrDefault.url;
+                state.self = selfOrDefault;
               });
             },
             remove: (ids) => {
