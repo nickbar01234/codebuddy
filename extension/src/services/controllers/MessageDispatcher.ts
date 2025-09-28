@@ -199,11 +199,12 @@ export class MessageDispatcher {
   }
 
   private subscribeToRoomChanges() {
-    const onRoomChange = ({ left, room }: Events["room.changes"]) => {
+    const onRoomChange = ({
+      left,
+      room: { questions, usernames },
+    }: Events["room.changes"]) => {
       this.roomStore.getState().actions.peers.remove(left);
-      this.roomStore
-        .getState()
-        .actions.room.setRoomStoreQuestions(room.questions);
+      this.roomStore.getState().actions.room.setRoom({ questions, usernames });
     };
     this.emitter.on("room.changes", onRoomChange);
     return () => this.emitter.off("room.changes", onRoomChange);
@@ -219,7 +220,13 @@ export class MessageDispatcher {
         }
 
         case "url": {
-          this.broadCastInformation();
+          const user = this.appStore.getState().actions.getMaybeAuthUser();
+          if (user != undefined) {
+            this.roomStore
+              .getState()
+              .actions.peers.updateSelf({ url: window.location.href });
+            this.broadCastInformation();
+          }
           break;
         }
 

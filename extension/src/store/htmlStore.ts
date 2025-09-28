@@ -29,9 +29,11 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
         if (!htmlElement.current) return;
         const containerRect = container.getBoundingClientRect();
 
+        console.log(containerRect);
+
         // static styles
         htmlElement.current.className =
-          "block absolute z-[3000] pointer-events-auto w-full h-full transition";
+          "block fixed z-[3000] pointer-events-auto w-full h-full transition";
         // Runtime-calculated positions, doesn't work with Tailwind classes
         htmlElement.current.style.top = `${containerRect.top}px`;
         htmlElement.current.style.left = `${containerRect.left}px`;
