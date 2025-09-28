@@ -1,5 +1,4 @@
-import { useRoomActions } from "@cb/hooks/store";
-import { SheetTrigger } from "@cb/lib/components/ui/sheet";
+import { useRoomActions, useRoomData } from "@cb/hooks/store";
 import { SidebarTabIdentifier } from "@cb/store";
 
 interface SidebarTabTriggerProps {
@@ -12,11 +11,20 @@ export const SidebarTabTrigger = ({
   trigger,
 }: SidebarTabTriggerProps) => {
   const { selectSidebarTab } = useRoomActions();
+  const { activeSidebarTab } = useRoomData();
+
   return (
-    <SheetTrigger asChild onClick={() => selectSidebarTab(forTab)}>
-      <div className="cursor-pointer hover:bg-[--color-tab-hover-background] focus:bg-[--color-tab-hover-background] p-1 hover:rounded-md">
-        {trigger}
-      </div>
-    </SheetTrigger>
+    <button
+      className={cn("transition-colors p-1", {
+        "bg-[--color-button-primary-border] rounded-md":
+          forTab === activeSidebarTab,
+        "hover:bg-[--color-tab-hover-background] focus:bg-[--color-tab-hover-background] hover:rounded-md cursor-pointer":
+          forTab !== activeSidebarTab,
+      })}
+      onClick={() => selectSidebarTab(forTab)}
+      disabled={forTab === activeSidebarTab}
+    >
+      {trigger}
+    </button>
   );
 };
