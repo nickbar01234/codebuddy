@@ -1,4 +1,4 @@
-import { ColorAwareUserIcon } from "@cb/components/icons";
+import { ColorAwareUserIcon } from "@cb/components/icons/ColorAwareUserIcon";
 import { CSS } from "@cb/constants";
 import { useRoomActions, useRoomData } from "@cb/hooks/store";
 import { TableCell } from "@cb/lib/components/ui/table";
@@ -31,10 +31,12 @@ export const UserAwareTableRow = ({ question }: UserAwareTableRowProps) => {
           {question.difficulty}
         </span>
       </TableCell>
-      <TableCell className="w-3/12 flex gap-1">
-        {usersInQuestion.map((user) => (
-          <ColorAwareUserIcon css={user.css} />
-        ))}
+      <TableCell>
+        <div className="flex gap-1">
+          {usersInQuestion.map((user) => (
+            <ColorAwareUserIcon key={user.user} css={user.css} />
+          ))}
+        </div>
       </TableCell>
     </DefaultTableRow>
   );
