@@ -22,7 +22,7 @@ export default defineConfig({
   manifest: {
     name: "CodeBuddy",
     description: "Leetcode together",
-    version: "2.3.0",
+    version: "2.4.0",
     action: {},
     icons: {
       "16": "icons/16.png",
