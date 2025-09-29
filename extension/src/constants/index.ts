@@ -8,6 +8,7 @@ export const URLS = {
 
 export const DOM = {
   CODEBUDDY_EDITOR_ID: "CodeBuddyEditor",
+  IFRAME_CSS_ID: "codebuddy-css",
   LEETCODE_ROOT_ID: "#qd-content",
   LEETCODE_TEST_ID: ".cm-content",
   LEETCODE_SUBMIT_BUTTON: '[data-e2e-locator="console-submit-button"]',
@@ -94,4 +95,8 @@ export const CSS = {
       accent: "user-4-accent",
     },
   ] as const,
+};
+
+export const EXTENSION = {
+  CSS_PATH: "content-scripts/content.css",
 };
