@@ -41,7 +41,9 @@ const CreateRoomLoadingPanel = () => {
               <button
                 type="button"
                 aria-label="Copy room ID"
+                title="Copy room ID"
                 disabled={!roomReady}
+                data-tooltip-target="tooltip-default"
                 className={cn(
                   roomReady ? "cursor-pointer" : "cursor-not-allowed"
                 )}
