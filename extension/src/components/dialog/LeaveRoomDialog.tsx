@@ -30,7 +30,14 @@ export function LeaveRoomDialog() {
         customTrigger: true,
         label: "Leave Room",
         node: (
-          <CornerUpLeft onClick={() => blurHtml()} className="cursor-pointer" />
+          <button
+            title="Leave room"
+            type="button"
+            data-tooltip-target="tooltip-default"
+            onClick={() => blurHtml()}
+          >
+            <CornerUpLeft />
+          </button>
         ),
       }}
       content={{ props: { className: "z-[9999]" } }}

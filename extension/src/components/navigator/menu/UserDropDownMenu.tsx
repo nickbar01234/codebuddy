@@ -17,16 +17,16 @@ const UserDropDownMenuTrigger = ({
   canDropdown,
 }: UserDropDownMenuTriggerProps) => {
   return (
-    <div className="w-52">
+    <div className="w-36">
       <SkeletonWrapper
         loading={peer == undefined}
-        className="h-4 w-48 relative"
+        className="h-4 w-full relative"
       >
-        <div className="flex w-48 items-center">
+        <div className="flex w-full items-center">
           <DropdownMenuTrigger
             disabled={!canDropdown}
             className={cn(
-              "relative flex justify-between rounded-lg p-2 items-center",
+              "relative flex justify-between rounded-lg items-center p-2",
               {
                 "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary":
                   canDropdown,
@@ -35,7 +35,7 @@ const UserDropDownMenuTrigger = ({
               }
             )}
           >
-            <div className="max-w-44 overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm">
+            <div className="max-w-32 overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm">
               {peer?.id ?? ""}
             </div>
             {canDropdown && <CaretDownIcon />}
