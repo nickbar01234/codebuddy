@@ -33,10 +33,17 @@ export const GeneralRoomInfo = () => {
           <SkeletonWrapper loading={id == undefined} className="w-60 h-8">
             <div className="flex gap-1 text-tertiary">
               <span className="text-lg">ID: {id}</span>
-              <CopyIcon
-                className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
-                onClick={copyRoomId}
-              />
+              <button
+                data-tooltip-taget="tooltip-default"
+                aria-label="Copy room ID"
+                title="Copy room ID"
+                type="button"
+              >
+                <CopyIcon
+                  className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
+                  onClick={copyRoomId}
+                />
+              </button>
             </div>
           </SkeletonWrapper>
         </div>
