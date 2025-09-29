@@ -176,9 +176,9 @@ export class WebRtcController {
       console.error("Error on RTC data channel", errorEvent);
       const isRecoverable = this.isErrorRecoverable(errorEvent.error);
       if (isRecoverable) {
-        this.recoverConnection(user);
-      } else {
         this.reNegotiate(user);
+      } else {
+        this.recoverConnection(user);
       }
 
       this.emitter.emit("rtc.error.connection", { user });
