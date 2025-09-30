@@ -88,7 +88,9 @@ const createRoomStore = (
         return;
       }
 
-      const codeContent = leetcodeStore.getState().actions.getCodeFromEditor();
+      const codeContent = await leetcodeStore
+        .getState()
+        .actions.getCodeFromEditor();
       if (!codeContent) {
         console.log("No code content found in editor");
         return;

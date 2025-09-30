@@ -7,6 +7,8 @@ import {
   PeerMessage,
   ServiceResponse,
 } from "@cb/types";
+import { waitForElement } from "@cb/utils/dom";
+import { poll } from "@cb/utils/poll";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
@@ -17,9 +19,9 @@ interface LeetCodeState {
 interface LeetCodeAction {
   getVariables: () => Promise<string[]>;
   getLanguageExtension: (id?: string) => string | undefined;
-  getCodeFromEditor: () => MessagePayload<
+  getCodeFromEditor: () => Promise<MessagePayload<
     ExtractMessage<PeerMessage, "code">
-  > | null;
+  > | null>;
 }
 
 const createLeetCodeStore = (background: BackgroundProxy) => {
@@ -30,38 +32,20 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
       problemMetadata: {},
 
       actions: {
-        getCodeFromEditor: (): MessagePayload<
+        getCodeFromEditor: async (): Promise<MessagePayload<
           ExtractMessage<PeerMessage, "code">
-        > | null => {
+        > | null> => {
           try {
-            const selectors = [
-              ".view-lines",
-              ".monaco-editor",
-              '[class*="monaco"]',
-              DOM.LEETCODE_TEST_ID,
-            ];
-
-            let editorElement: HTMLElement | null = null;
-
-            for (const selector of selectors) {
-              editorElement = document.querySelector(selector) as HTMLElement;
-              if (editorElement && editorElement.textContent?.trim()) {
-                break;
-              }
+            const result = await background.getCode({});
+            if (!result || !result.value?.trim()) {
+              return null;
             }
 
-            if (!editorElement) return null;
-
-            const code = editorElement.textContent || "";
-            if (!code.trim()) return null;
-
-            const languageSelector = document.querySelector(
-              'button[aria-haspopup="dialog"][class*="rounded"]'
-            );
-            const language =
-              languageSelector?.textContent?.toLowerCase() || "javascript";
-
-            return { language, changes: code, value: code };
+            return {
+              value: result.value,
+              language: result.language || "javascript",
+              changes: result.value, // Using value as changes for now
+            };
           } catch (error) {
             console.error("Failed to extract code:", error);
             return null;
