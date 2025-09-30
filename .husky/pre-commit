@@ -1,1 +1,12 @@
-pnpm lint-staged
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Load nvm if available
+[ -s "$HOME/.nvm/nvm.sh" ] && \. "$HOME/.nvm/nvm.sh"
+
+# Try to use pnpm directly, fallback to npx if not available
+if command -v pnpm >/dev/null 2>&1; then
+  pnpm lint-staged
+else
+  npx pnpm lint-staged
+fi

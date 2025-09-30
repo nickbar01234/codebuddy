@@ -7,7 +7,6 @@ import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
 } from "@cb/services/graphql/metadata";
-import { UserProgressManager } from "@cb/services/userProgress";
 import { windowMessager } from "@cb/services/window";
 import { BoundStore, Id, PeerMessage, PeerState, Question } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
@@ -41,7 +40,7 @@ interface RoomState {
     questions: Question[];
   }>;
   peers: Record<Id, PeerState>;
-  userProgressManager?: UserProgressManager;
+  saveCodeTimer?: NodeJS.Timeout;
 }
 
 interface RoomAction {
@@ -54,6 +53,7 @@ interface RoomAction {
     loading: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
+    saveCodeProgress: () => Promise<void>;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -70,37 +70,71 @@ const createRoomStore = (
   const getUsername = (): string => {
     return useApp.getState().actions.getAuthUser().username;
   };
-  const startUserProgressManager = (roomId: string) => {
+  const extractQuestionSlug = (): string | null => {
+    if (typeof window === "undefined") return null;
+    const url = window.location.href;
+    const match = url.match(/leetcode\.com\/problems\/([^/?]+)/);
+    return match ? match[1] : null;
+  };
+
+  const saveCodeProgress = async () => {
+    const state = useRoom.getState();
+    if (!state.room?.id) return;
+
     try {
+      const questionSlug = extractQuestionSlug();
+      if (!questionSlug) {
+        console.log("No active LeetCode question detected");
+        return;
+      }
+
+      const codeContent = leetcodeStore.getState().actions.getCodeFromEditor();
+      if (!codeContent) {
+        console.log("No code content found in editor");
+        return;
+      }
+
       const username = getUsername();
-      const userProgressManager = new UserProgressManager(
-        db,
-        leetcodeStore,
-        roomId,
+      const currentProgress = (await db.room.getUser(
+        state.room.id,
         username
-      );
+      )) || { questions: {} };
 
-      useRoom.setState((state) => {
-        state.userProgressManager = userProgressManager;
-      });
+      const updatedProgress = {
+        ...currentProgress,
+        questions: {
+          ...currentProgress.questions,
+          [questionSlug]: {
+            code: codeContent,
+            status: "in-progress" as const,
+          },
+        },
+      };
 
-      userProgressManager.start();
-      console.log(
-        `UserProgressManager started for room ${roomId}, user ${username}`
-      );
+      await db.room.setUser(state.room.id, username, updatedProgress);
+      console.log(`Saved progress for question: ${questionSlug}`);
     } catch (error) {
-      console.error("Failed to start UserProgressManager:", error);
+      console.error("Error saving user progress:", error);
     }
   };
 
-  const stopUserProgressManager = () => {
-    const { userProgressManager } = useRoom.getState();
-    if (userProgressManager) {
-      userProgressManager.stop();
+  const startAutoSave = () => {
+    const timer = setInterval(() => {
+      saveCodeProgress();
+    }, 7000); // Auto-save every 7 seconds
+
+    useRoom.setState((state) => {
+      state.saveCodeTimer = timer;
+    });
+  };
+
+  const stopAutoSave = () => {
+    const { saveCodeTimer } = useRoom.getState();
+    if (saveCodeTimer) {
+      clearInterval(saveCodeTimer);
       useRoom.setState((state) => {
-        state.userProgressManager = undefined;
+        state.saveCodeTimer = undefined;
       });
-      console.log("UserProgressManager stopped");
     }
   };
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
@@ -133,7 +167,7 @@ const createRoomStore = (
                 });
                 const { id, name, isPublic } = room.getRoom();
                 setRoom({ id, name, isPublic, questions: [metadata.data] });
-                startUserProgressManager(id);
+                startAutoSave();
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -149,7 +183,7 @@ const createRoomStore = (
                 if (response.code === RoomJoinCode.SUCCESS) {
                   const { name, isPublic, questions } = response.data.getRoom();
                   setRoom({ id, name, isPublic, questions });
-                  startUserProgressManager(id);
+                  startAutoSave();
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -175,7 +209,7 @@ const createRoomStore = (
                 get().actions.room.loading();
                 await getOrCreateControllers().room.leave();
               } finally {
-                stopUserProgressManager();
+                stopAutoSave();
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
@@ -210,6 +244,9 @@ const createRoomStore = (
                   state.room.questions.push(question);
                 }
               });
+            },
+            saveCodeProgress: async () => {
+              await saveCodeProgress();
             },
           },
           peers: {
