@@ -1,10 +1,10 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { Identifiable, PeerState, TestCase } from "@cb/types";
+import { Identifiable, PeerState, SelectableTestCase } from "@cb/types";
 import React from "react";
 
 interface TestTabProps {
   activePeer: Identifiable<PeerState> | undefined;
-  activeTest: TestCase | undefined;
+  activeTest: SelectableTestCase | undefined;
   selectTest: (index: number) => void;
 }
 

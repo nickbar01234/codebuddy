@@ -1,4 +1,4 @@
-import { Id, TestCase } from ".";
+import { Id, SelectableTestCase, TestCase } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, MessagePayload, Selectable } from "./utils";
 
@@ -15,7 +15,7 @@ interface PeerCodeMessage extends PeerGenericMessage, Code {
 
 interface PeerTestMessage extends PeerGenericMessage {
   action: "tests";
-  tests: string[];
+  tests: Omit<TestCase, "selected">[];
 }
 
 interface PeerHeartBeatMessage extends PeerGenericMessage {
@@ -48,7 +48,7 @@ export type PeerMessage =
 
 export interface PeerState extends Selectable {
   code?: MessagePayload<PeerCodeMessage>;
-  tests: TestCase[];
+  tests: SelectableTestCase[];
   url?: string;
   latency: number;
   finished: boolean;

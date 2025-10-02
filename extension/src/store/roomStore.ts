@@ -16,18 +16,17 @@ import {
   PeerMessage,
   PeerState,
   Question,
+  SelectableTestCase,
   User,
 } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
-import { groupTestCases } from "@cb/utils/string";
 import _ from "lodash";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
-import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
 export enum SidebarTabIdentifier {
   ROOM_INFO,
@@ -86,10 +85,7 @@ interface RoomAction {
   };
 }
 
-const createRoomStore = (
-  leetcodeStore: LeetCodeStore,
-  background: BackgroundProxy
-) => {
+const createRoomStore = (background: BackgroundProxy) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -245,9 +241,6 @@ const createRoomStore = (
           },
           peers: {
             update: async (id, peer) => {
-              const variables = await leetcodeStore
-                .getState()
-                .actions.getVariables();
               set((state) => {
                 const peerOrDefault =
                   state.peers[id] ??
@@ -259,10 +252,9 @@ const createRoomStore = (
                     selected: getSelectedPeer(state.peers) == undefined,
                   } as PeerState);
                 const { tests: payload, ...rest } = peer;
-                const tests =
-                  payload != undefined
-                    ? groupTestCases(variables, payload.tests)
-                    : peerOrDefault.tests;
+                const tests: SelectableTestCase[] = (
+                  payload?.tests ?? peerOrDefault.tests
+                ).map((test) => ({ ...test, selected: false }));
                 if (tests.length > 0) {
                   const previousSelectedTest = peerOrDefault.tests.findIndex(
                     (test) => test.selected
@@ -360,6 +352,6 @@ const createRoomStore = (
   return useRoom;
 };
 
-export const useRoom = createRoomStore(useLeetCode, background);
+export const useRoom = createRoomStore(background);
 
 export type RoomStore = typeof useRoom;

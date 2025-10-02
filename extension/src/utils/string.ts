@@ -15,7 +15,6 @@ export const groupTestCases = (
     tests.slice(idx * variables.length, (idx + 1) * variables.length)
   );
   return groups.map((group) => ({
-    selected: false,
     test: group.map((assignment, idx) => ({
       variable: variables[idx],
       value: assignment,

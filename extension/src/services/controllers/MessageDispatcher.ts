@@ -2,6 +2,7 @@ import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
+import { LeetCodeStore } from "@cb/store/leetCodeStore";
 import {
   ContentRequest,
   Events,
@@ -25,6 +26,8 @@ export class MessageDispatcher {
 
   private roomStore: RoomStore;
 
+  private leetcodeStore: LeetCodeStore;
+
   private background: BackgroundProxy;
 
   private unsubscribers: Unsubscribe[];
@@ -33,11 +36,13 @@ export class MessageDispatcher {
     emitter: EventEmitter,
     appStore: AppStore,
     roomStore: RoomStore,
+    leetCodeStore: LeetCodeStore,
     background: BackgroundProxy
   ) {
     this.emitter = emitter;
     this.appStore = appStore;
     this.roomStore = roomStore;
+    this.leetcodeStore = leetCodeStore;
     this.unsubscribers = [];
     this.background = background;
     this.init();
@@ -92,9 +97,9 @@ export class MessageDispatcher {
   }
 
   private subscribeToTestEditor() {
-    const observer = new MutationObserver(() =>
+    const observer = new MutationObserver(async () =>
       this.emitter.emit("rtc.send.message", {
-        message: getTestsPayload(),
+        message: await this.getTestsPayload(),
       })
     );
     waitForElement(DOM.LEETCODE_TEST_ID).then((editor) =>
@@ -254,11 +259,17 @@ export class MessageDispatcher {
     });
     this.emitter.emit("rtc.send.message", {
       to: user,
-      message: getTestsPayload(),
+      message: await this.getTestsPayload(),
     });
     this.emitter.emit("rtc.send.message", {
       to: user,
       message: getUrlPayload(window.location.href),
     });
+  }
+
+  private async getTestsPayload() {
+    return getTestsPayload(
+      await this.leetcodeStore.getState().actions.getVariables()
+    );
   }
 }

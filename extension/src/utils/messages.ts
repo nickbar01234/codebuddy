@@ -5,13 +5,16 @@ import monaco from "monaco-editor";
 import { getUnixTs } from "./heartbeat";
 import { constructUrlFromQuestionId, getQuestionIdFromUrl } from "./url";
 
-export const getTestsPayload = (): PeerMessage => {
+export const getTestsPayload = (variables: string[]): PeerMessage => {
   return {
     action: "tests",
     timestamp: getUnixTs(),
-    tests: (
-      document.querySelector(DOM.LEETCODE_TEST_ID) as HTMLDivElement
-    ).innerText.split("\n"),
+    tests: groupTestCases(
+      variables,
+      (
+        document.querySelector(DOM.LEETCODE_TEST_ID) as HTMLElement
+      ).innerText.split("\n")
+    ),
   };
 };
 
