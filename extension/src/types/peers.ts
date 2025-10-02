@@ -15,7 +15,7 @@ interface PeerCodeMessage extends PeerGenericMessage, Code {
 
 interface PeerTestMessage extends PeerGenericMessage {
   action: "tests";
-  tests: Omit<TestCase, "selected">[];
+  tests: TestCase[];
 }
 
 interface PeerHeartBeatMessage extends PeerGenericMessage {
