@@ -24,15 +24,17 @@ interface Assignment {
   value: string;
 }
 
-export interface TestCase extends Selectable {
+export interface TestCase {
   test: Assignment[];
 }
+
+export interface SelectableTestCase extends TestCase, Selectable {}
 
 export interface Peer {
   id: string;
   active: boolean;
   viewable: boolean;
-  tests: TestCase[];
+  tests: SelectableTestCase[];
 }
 
 export interface Preference {
