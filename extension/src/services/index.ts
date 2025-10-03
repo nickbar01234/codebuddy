@@ -62,41 +62,45 @@ const createControllersFactory = (
   roomStore: RoomStore,
   background: BackgroundProxy
 ) => {
-  let initialized = false;
-  let controllers: Controllers | undefined = undefined;
-  return () => {
-    if (initialized) {
-      return controllers!;
-    }
-    const iceServers = import.meta.env.DEV
-      ? WEB_RTC_ICE_SERVERS["STUN"]
-      : [...WEB_RTC_ICE_SERVERS["STUN"], ...WEB_RTC_ICE_SERVERS["TURN"]];
-    const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y, {
-      iceServers,
-    });
-    const room = new RoomController(db.room, emitter, appStore);
-    const message = new MessageDispatcher(
-      emitter,
-      appStore,
-      roomStore,
-      useLeetCode,
-      background
-    );
-    initialized = true;
-    controllers = {
-      emitter,
-      webrtc,
-      room,
-      message,
-    };
-    return controllers;
+  const iceServers = import.meta.env.DEV
+    ? WEB_RTC_ICE_SERVERS["STUN"]
+    : [...WEB_RTC_ICE_SERVERS["STUN"], ...WEB_RTC_ICE_SERVERS["TURN"]];
+  const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y, {
+    iceServers,
+  });
+  const room = new RoomController(db.room, emitter, appStore);
+  const message = new MessageDispatcher(
+    emitter,
+    appStore,
+    roomStore,
+    useLeetCode,
+    background
+  );
+  return {
+    emitter,
+    webrtc,
+    room,
+    message,
   };
 };
 
-export const getOrCreateControllers = createControllersFactory(
-  emitter,
-  db,
-  useApp,
-  useRoom,
-  background
-);
+export const getOrCreateControllers = (() => {
+  let initialized = false;
+  let controllers: Controllers | undefined;
+
+  return () => {
+    if (initialized) return controllers!;
+
+    initialized = true;
+
+    controllers = createControllersFactory(
+      emitter,
+      db,
+      useApp,
+      useRoom,
+      background
+    );
+
+    return controllers!;
+  };
+})();

@@ -1,14 +1,13 @@
+import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { getLocalStorage, removeLocalStorage } from "@cb/services";
-import { useRoom } from "@cb/store";
 import { throttle } from "lodash";
 import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const RejoinPromptDialog = () => {
-  // const { joiningBackRoom, leaveRoom } = useRTC();
-  const loadingRoom = useRoom((state) => state.actions.room.loading);
+  const { loading } = useRoomActions();
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -39,8 +38,7 @@ export const RejoinPromptDialog = () => {
             className={baseButtonClassName}
             onClick={() => {
               removeLocalStorage("closingTabs");
-              loadingRoom();
-              // joiningBackRoom();
+              loading();
             }}
           >
             <span className="text-sm font-medium">Yes</span>

@@ -1,7 +1,7 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { DOM, EXTENSION } from "@cb/constants";
+import { useHtmlActions } from "@cb/hooks/store";
 import useResource from "@cb/hooks/useResource";
-import { useHtml } from "@cb/store/htmlStore";
 import { Question } from "@cb/types";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ export const QuestionSelectorPanel = React.memo(
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
-    const { actions: iframeActions } = useHtml();
+    const iframeActions = useHtmlActions();
 
     const onContainerRefCallback = React.useCallback(
       (node: HTMLElement | null) => {
