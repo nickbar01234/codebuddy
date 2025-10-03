@@ -16,10 +16,11 @@ import {
   PeerMessage,
   PeerState,
   Question,
-  SelectableTestCase,
+  Slug,
   User,
 } from "@cb/types";
 import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
+import { getNormalizedUrl } from "@cb/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import _ from "lodash";
 import { toast } from "sonner";
@@ -41,8 +42,13 @@ export enum RoomStatus {
   REJOINING,
 }
 
-interface UpdatePeerArgs extends Omit<PeerState, "tests"> {
-  tests: MessagePayload<ExtractMessage<PeerMessage, "tests">>;
+interface UpdatePeerQuestionProgress {
+  code?: Omit<MessagePayload<ExtractMessage<PeerMessage, "code">>, "url">;
+  tests?: Omit<MessagePayload<ExtractMessage<PeerMessage, "tests">>, "url">;
+}
+
+interface UpdatePeerArgs extends Partial<Pick<PeerState, "url">> {
+  questions: Record<Slug, UpdatePeerQuestionProgress>;
 }
 
 interface RoomState {
@@ -94,7 +100,7 @@ const createRoomStore = (background: BackgroundProxy) => {
       state.status = RoomStatus.IN_ROOM;
       state.room = room;
       state.self = {
-        url: window.location.href,
+        url: getNormalizedUrl(window.location.href),
       };
     });
 
@@ -116,7 +122,7 @@ const createRoomStore = (background: BackgroundProxy) => {
         );
       }
       useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
-      windowMessager.navigate({ url });
+      windowMessager.navigate({ url: getNormalizedUrl(url) });
     } catch (error) {
       console.error("Error when adding question", error);
       toast.error("Failed to add question. Please try again");
@@ -128,6 +134,7 @@ const createRoomStore = (background: BackgroundProxy) => {
       immer((set, get) => ({
         status: RoomStatus.HOME,
         peers: {},
+        self: undefined,
         actions: {
           room: {
             create: async (args) => {
@@ -225,7 +232,7 @@ const createRoomStore = (background: BackgroundProxy) => {
                 }
               }),
             selectQuestion: (url) => {
-              windowMessager.navigate({ url });
+              windowMessager.navigate({ url: getNormalizedUrl(url) });
               get().actions.room.closeSidebarTab();
             },
             selectSidebarTab: (identifier) =>
@@ -245,43 +252,71 @@ const createRoomStore = (background: BackgroundProxy) => {
           peers: {
             update: async (id, peer) => {
               set((state) => {
-                const peerOrDefault =
-                  state.peers[id] ??
-                  ({
-                    tests: [],
-                    latency: 0,
-                    finished: false,
-                    viewable: true,
-                    selected: getSelectedPeer(state.peers) == undefined,
-                  } as PeerState);
-                const { tests: payload, ...rest } = peer;
-                const tests: SelectableTestCase[] = (
-                  payload?.tests ?? peerOrDefault.tests
-                ).map((test) => ({ ...test, selected: false }));
-                if (tests.length > 0) {
-                  const previousSelectedTest = peerOrDefault.tests.findIndex(
-                    (test) => test.selected
-                  );
-                  const selectedTestIndex =
-                    previousSelectedTest >= tests.length
-                      ? tests.length - 1
-                      : Math.max(previousSelectedTest, 0);
-                  tests[selectedTestIndex].selected = true;
-                }
+                const { questions, ...rest } = peer;
+                const peerOrDefault: PeerState = state.peers[id] ?? {
+                  questions: {},
+                  selected: getSelectedPeer(state.peers) == undefined,
+                };
+                const updatedQuestionProgress = Object.entries(
+                  questions ?? {}
+                ).reduce(
+                  (acc, curr) => {
+                    const [url, data] = curr;
+                    const normalizedUrl = getNormalizedUrl(url);
+                    const { code, tests: testsPayload } = data;
+                    const questionProgressOrDefault = peerOrDefault.questions[
+                      normalizedUrl
+                    ] ?? {
+                      code: undefined,
+                      tests: [],
+                      finished: false,
+                    };
+
+                    if (code != undefined) {
+                      questionProgressOrDefault.code = code;
+                    }
+
+                    if (testsPayload != undefined) {
+                      const tests = testsPayload.tests.map((test) => ({
+                        ...test,
+                        selected: false,
+                      }));
+                      const previousSelectedTest =
+                        questionProgressOrDefault.tests.findIndex(
+                          (test) => test.selected
+                        );
+                      const selectedTestIndex =
+                        previousSelectedTest >= tests.length
+                          ? tests.length - 1
+                          : Math.max(previousSelectedTest, 0);
+                      tests[selectedTestIndex].selected = true;
+                      questionProgressOrDefault.tests = tests;
+                    }
+                    return {
+                      ...acc,
+                      [normalizedUrl]: questionProgressOrDefault,
+                    };
+                  },
+                  {} as PeerState["questions"]
+                );
                 state.peers[id] = {
                   ...peerOrDefault,
                   ...rest,
-                  tests,
+                  questions: {
+                    ...peerOrDefault.questions,
+                    ...updatedQuestionProgress,
+                  },
                 };
+                console.log("After updating", state.peers[id].questions);
               });
             },
             updateSelf: (data) => {
               // todo(nickbar01234): Need to make this work on other state
               set((state) => {
-                const selfOrDefault = state.self ?? {
-                  url: window.location.href,
-                };
-                selfOrDefault.url = data.url ?? selfOrDefault.url;
+                const selfOrDefault = state.self ?? {};
+                selfOrDefault.url = getNormalizedUrl(
+                  data.url ?? selfOrDefault.url ?? window.location.href
+                );
                 state.self = selfOrDefault;
               });
             },
@@ -316,10 +351,10 @@ const createRoomStore = (background: BackgroundProxy) => {
             selectTest: (idx) =>
               set((state) => {
                 const active = getSelectedPeer(state.peers);
-                if (active != undefined) {
-                  state.peers[active.id].tests = state.peers[
-                    active.id
-                  ].tests.map((test, i) => ({
+                const progress =
+                  state.peers[active?.id ?? ""].questions[active?.url ?? ""];
+                if (progress != undefined) {
+                  progress.tests = progress.tests.map((test, i) => ({
                     ...test,
                     selected: i === idx,
                   }));
@@ -334,7 +369,10 @@ const createRoomStore = (background: BackgroundProxy) => {
   useRoom.subscribe(
     (state) => {
       const selected = getSelectedPeer(state.peers);
-      return { code: selected?.code, id: selected?.id };
+      return {
+        code: selected?.questions[getNormalizedUrl(window.location.href)]?.code,
+        id: selected?.id,
+      };
     },
     (current, prev) => {
       if (current.id == undefined) {

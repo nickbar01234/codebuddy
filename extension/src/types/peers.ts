@@ -2,8 +2,10 @@ import { Id, SelectableTestCase, TestCase } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, MessagePayload, Selectable } from "./utils";
 
+export type Slug = string;
+
 interface PeerGenericMessage extends GenericMessage {
-  timestamp: number;
+  url: string;
 }
 
 type Code = ServiceResponse["getValue"];
@@ -24,7 +26,6 @@ interface PeerHeartBeatMessage extends PeerGenericMessage {
 
 interface UrlChangeMessage extends PeerGenericMessage {
   action: "url";
-  url: string;
 }
 
 export enum EventType {
@@ -46,11 +47,13 @@ export type PeerMessage =
   | PeerEventMessage
   | UrlChangeMessage;
 
-export interface PeerState extends Selectable {
-  code?: MessagePayload<PeerCodeMessage>;
+interface QuestionProgress {
+  code?: Omit<MessagePayload<PeerCodeMessage>, "url">;
   tests: SelectableTestCase[];
-  url?: string;
-  latency: number;
   finished: boolean;
-  viewable: boolean;
+}
+
+export interface PeerState extends Selectable {
+  questions: Record<Slug, QuestionProgress | undefined>;
+  url?: string;
 }

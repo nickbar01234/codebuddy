@@ -18,7 +18,10 @@ export const TestTab: React.FC<TestTabProps> = ({
       <div className="p-5 flex flex-col space-y-4 h-full w-full">
         <div className="flex w-full flex-row items-start justify-between gap-4">
           <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
-            {activePeer?.tests.map((test, idx) => (
+            {(
+              activePeer?.questions[getNormalizedUrl(window.location.href)]
+                ?.tests ?? []
+            ).map((test, idx) => (
               <div key={idx} onClick={() => selectTest(idx)}>
                 {test.selected ? (
                   <button className="bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1 relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 font-medium focus:outline-none">

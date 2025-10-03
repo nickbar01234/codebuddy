@@ -12,6 +12,7 @@ import {
   WindowMessage,
 } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
+import { getNormalizedUrl } from "@cb/utils";
 import {
   getCodePayload,
   getTestsPayload,
@@ -121,7 +122,7 @@ export class MessageDispatcher {
             action: "event",
             event: EventType.SUBMIT_SUCCESS,
             user: this.appStore.getState().actions.getAuthUser().username,
-            timestamp: getUnixTs(),
+            url: getNormalizedUrl(window.location.href),
           },
         });
       }
@@ -134,7 +135,7 @@ export class MessageDispatcher {
             action: "event",
             event: EventType.SUBMIT_FAILURE,
             user: this.appStore.getState().actions.getAuthUser().username,
-            timestamp: getUnixTs(),
+            url: getNormalizedUrl(window.location.href),
           },
         });
       }
@@ -178,16 +179,25 @@ export class MessageDispatcher {
       console.log("Received message", from, message.action);
       switch (message.action) {
         case "code": {
-          const { value, changes, language } = message;
+          const { url, ...code } = message;
           this.roomStore.getState().actions.peers.update(from, {
-            code: { value, changes, language },
+            questions: {
+              [url]: {
+                code,
+              },
+            },
           });
           break;
         }
         case "tests": {
+          const { tests, url } = message;
           this.roomStore.getState().actions.peers.update(from, {
-            tests: {
-              tests: message.tests,
+            questions: {
+              [url]: {
+                tests: {
+                  tests,
+                },
+              },
             },
           });
           break;
@@ -227,9 +237,9 @@ export class MessageDispatcher {
         case "url": {
           const user = this.appStore.getState().actions.getMaybeAuthUser();
           if (user != undefined) {
-            this.roomStore
-              .getState()
-              .actions.peers.updateSelf({ url: window.location.href });
+            this.roomStore.getState().actions.peers.updateSelf({
+              url: getNormalizedUrl(window.location.href),
+            });
             this.broadCastInformation();
           }
           break;
