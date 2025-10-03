@@ -3,12 +3,13 @@ import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
 import { RoomInfo } from "@cb/components/panel/info";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
+import { useRoomStatus } from "@cb/hooks/store";
 import { getLocalStorage } from "@cb/services";
-import { RoomStatus, useRoom } from "@cb/store";
+import { RoomStatus } from "@cb/store";
 import { getSessionId } from "@cb/utils";
 
 export const AppNavigator = () => {
-  const roomStatus = useRoom((state) => state.status);
+  const roomStatus = useRoomStatus();
   const currentTabInfo = getLocalStorage("tabs");
   return (
     <div className="relative h-full w-full overflow-hidden bg-secondary">
