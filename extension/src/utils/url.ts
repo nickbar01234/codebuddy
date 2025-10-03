@@ -16,3 +16,6 @@ export const getSessionId = () => getQuestionIdFromUrl(window.location.href);
 export const constructUrlFromQuestionId = (questionId: string) => {
   return `${URLS.PROBLEMS}/${questionId}`;
 };
+
+export const getNormalizedUrl = (url: string) =>
+  constructUrlFromQuestionId(getQuestionIdFromUrl(url));

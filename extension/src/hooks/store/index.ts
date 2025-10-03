@@ -45,11 +45,13 @@ export const useRoomData = () => {
   const id = useRoom((state) => state.room?.id);
   const activeSidebarTab = useRoom((state) => state.room?.activeSidebarTab);
   const usernames = useRoom(useShallow((state) => state.room?.usernames ?? []));
+  const self = useRoom((state) => state.self);
   const { allPeers } = usePeers();
   return {
     name,
     questions,
     id,
+    self,
     activeSidebarTab,
     users: usernames
       .filter((user) => Object.keys(allPeers).includes(user))

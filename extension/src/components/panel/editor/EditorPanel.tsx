@@ -7,6 +7,7 @@ import {
   useLeetCodeActions,
   usePeerActions,
   usePeers,
+  useRoomData,
   useRoomStatus,
 } from "@cb/hooks/store";
 import {
@@ -28,17 +29,22 @@ import React from "react";
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
   const roomStatus = useRoomStatus();
+  const { self } = useRoomData();
   const { selectTest } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
 
   // const canViewCode = codeViewable(activePeer);
+  const url = self?.url ?? "";
   const canViewCode = true;
-  const activeTest = selectedPeer?.tests.find((test) => test.selected);
+  const activeTest = selectedPeer?.questions[url]?.tests.find(
+    (test) => test.selected
+  );
   const emptyRoom = Object.keys(peers).length === 0;
 
   const upperTabConfigs = React.useMemo(() => {
-    const extension = getLanguageExtension(selectedPeer?.code?.language) ?? "";
+    const extension =
+      getLanguageExtension(selectedPeer?.questions[url]?.code?.language) ?? "";
     return [
       {
         value: "code",
@@ -59,7 +65,7 @@ const EditorPanel = () => {
         ),
       },
     ];
-  }, [selectedPeer, activeTest, selectTest, getLanguageExtension]);
+  }, [selectedPeer, activeTest, selectTest, getLanguageExtension, url]);
 
   return (
     <div

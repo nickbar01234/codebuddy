@@ -29,8 +29,6 @@ export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
         if (!htmlElement.current) return;
         const containerRect = container.getBoundingClientRect();
 
-        console.log(containerRect);
-
         // static styles
         htmlElement.current.className =
           "block fixed z-[3000] pointer-events-auto w-full h-full transition";
