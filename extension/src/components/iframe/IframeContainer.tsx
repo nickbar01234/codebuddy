@@ -1,9 +1,9 @@
 import { URLS } from "@cb/constants";
-import { useHtmlElement } from "@cb/hooks/store";
+import { useHtml } from "@cb/store/htmlStore";
 import React from "react";
 
 export const IframeContainer: React.FC = () => {
-  const htmlElement = useHtmlElement();
+  const htmlElement = useHtml((state) => state.htmlElement);
   return (
     <iframe
       ref={htmlElement}

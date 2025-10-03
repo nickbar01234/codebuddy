@@ -1,8 +1,8 @@
-import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
+import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { PlusIcon } from "lucide-react";
@@ -10,7 +10,7 @@ import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
-  const { create } = useRoomActions();
+  const create = useRoom((state) => state.actions.room.create);
   const [isPublic, setIsPublic] = React.useState(true);
   const [name, setName] = React.useState("");
 
