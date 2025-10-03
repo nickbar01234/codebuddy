@@ -93,5 +93,10 @@ const createControllersFactory = (
   };
 };
 
-export const getOrCreateControllers = () =>
-  createControllersFactory(emitter, db, useApp, useRoom, background)();
+export const getOrCreateControllers = createControllersFactory(
+  emitter,
+  db,
+  useApp,
+  useRoom,
+  background
+);

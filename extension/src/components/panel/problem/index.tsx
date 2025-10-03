@@ -1,7 +1,7 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { DOM, EXTENSION } from "@cb/constants";
-import { useHtmlActions } from "@cb/hooks/store";
 import useResource from "@cb/hooks/useResource";
+import { useHtml } from "@cb/store/htmlStore";
 import { Question } from "@cb/types";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
@@ -19,13 +19,7 @@ export const QuestionSelectorPanel = React.memo(
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
-    const {
-      showHtml,
-      getHtmlElement,
-      setContentProcessed,
-      isHtmlLoaded,
-      isContentProcessed,
-    } = useHtmlActions();
+    const { actions: iframeActions } = useHtml();
 
     const onContainerRefCallback = React.useCallback(
       (node: HTMLElement | null) => {
@@ -40,7 +34,7 @@ export const QuestionSelectorPanel = React.memo(
             rect.top !== lastRect.top ||
             rect.left !== lastRect.left
           ) {
-            showHtml(node);
+            iframeActions.showHtml(node);
             lastRect = rect;
           }
           animationFrameId = requestAnimationFrame(
@@ -54,7 +48,7 @@ export const QuestionSelectorPanel = React.memo(
 
         const repositionIframeOnWindowResize = () => {
           lastRect = node.getBoundingClientRect();
-          showHtml(node);
+          iframeActions.showHtml(node);
         };
 
         window.addEventListener("resize", repositionIframeOnPositionChange);
@@ -64,17 +58,17 @@ export const QuestionSelectorPanel = React.memo(
           window.removeEventListener("resize", repositionIframeOnWindowResize);
         };
       },
-      [showHtml]
+      [iframeActions]
     );
 
     useEffect(() => {
       setLoading(true);
 
-      if (isContentProcessed()) {
+      if (iframeActions.isContentProcessed()) {
         setLoading(false);
       }
 
-      const iframe = getHtmlElement();
+      const iframe = iframeActions.getHtmlElement();
       if (iframe) {
         const processIframe = async () => {
           const handleIframeStyle = async (iframeDoc: Document) => {
@@ -153,7 +147,7 @@ export const QuestionSelectorPanel = React.memo(
               observer.observe(rowContainer, { childList: true });
               processQuestionLinks();
 
-              setContentProcessed(true);
+              iframeActions.setContentProcessed(true);
               setLoading(false);
             } catch (e) {
               console.error("Unable to mount Leetcode iframe", e);
@@ -176,7 +170,7 @@ export const QuestionSelectorPanel = React.memo(
             }
           };
 
-          if (isHtmlLoaded()) {
+          if (iframeActions.isHtmlLoaded()) {
             await processIframeDocument();
           } else {
             // Set up load event listener
@@ -192,15 +186,12 @@ export const QuestionSelectorPanel = React.memo(
         processIframe();
       }
 
-      return () => setContentProcessed(false);
+      return () => iframeActions.setContentProcessed(false);
     }, [
       handleQuestionSelect,
       filterQuestions,
       registerObserver,
-      setContentProcessed,
-      getHtmlElement,
-      isHtmlLoaded,
-      isContentProcessed,
+      iframeActions,
     ]);
 
     return (

@@ -1,12 +1,12 @@
 import { Ripple } from "@cb/components/ui/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyRoomId } from "@cb/hooks";
-import { useRoomData } from "@cb/hooks/store";
+import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
-  const { id: roomId } = useRoomData();
+  const roomId = useRoom((state) => state.room?.id);
   const copyRoomId = useCopyRoomId();
   const roomReady = roomId != null;
 

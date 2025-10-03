@@ -8,7 +8,6 @@ import {
   usePeerActions,
   usePeers,
   useRoomData,
-  useRoomStatus,
 } from "@cb/hooks/store";
 import {
   ResizablePanel,
@@ -21,15 +20,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
-import { RoomStatus } from "@cb/store";
+import { RoomStatus, useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { CodeXml, Copy, FlaskConical } from "lucide-react";
 import React from "react";
 
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
-  const roomStatus = useRoomStatus();
   const { self } = useRoomData();
+  const roomStatus = useRoom((state) => state.status);
   const { selectTest } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
