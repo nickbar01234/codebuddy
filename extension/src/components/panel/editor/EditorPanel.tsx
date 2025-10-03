@@ -3,7 +3,12 @@ import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadin
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyCode } from "@cb/hooks/editor";
-import { useLeetCodeActions, usePeerActions, usePeers } from "@cb/hooks/store";
+import {
+  useLeetCodeActions,
+  usePeerActions,
+  usePeers,
+  useRoomStatus,
+} from "@cb/hooks/store";
 import {
   ResizablePanel,
   ResizablePanelGroup,
@@ -15,14 +20,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@cb/lib/components/ui/tabs";
-import { RoomStatus, useRoom } from "@cb/store";
+import { RoomStatus } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { CodeXml, Copy, FlaskConical } from "lucide-react";
 import React from "react";
 
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
-  const roomStatus = useRoom((state) => state.status);
+  const roomStatus = useRoomStatus();
   const { selectTest } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
