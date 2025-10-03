@@ -309,7 +309,6 @@ const createRoomStore = (background: BackgroundProxy) => {
                     ...updatedQuestionProgress,
                   },
                 };
-                console.log("After updating", state.peers[id].questions);
               });
             },
             updateSelf: (data) => {
