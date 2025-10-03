@@ -1,34 +1,44 @@
-import { useRoomActions } from "@cb/hooks/store";
+import { useRoomActions, useRoomData, useRoomStatus } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
-import { getLocalStorage, removeLocalStorage } from "@cb/services";
+import { windowMessager } from "@cb/services/window";
+import { RoomStatus } from "@cb/store";
 import { throttle } from "lodash";
 import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const RejoinPromptDialog = () => {
-  const { loading } = useRoomActions();
+  const { leave } = useRoomActions();
+  const { questions, self } = useRoomData();
+  const roomStatus = useRoomStatus();
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
       event.stopPropagation?.();
-      removeLocalStorage("closingTabs");
-      // todo(nickbar01234): Refactor
-      const roomId = getLocalStorage("tabs")?.roomId ?? null;
-      // leaveRoom(roomId);
+      leave();
     }, 1000);
-  }, []);
+  }, [leave]);
 
   return (
     <RoomDialog
-      title={{ node: "Do you want to rejoin the room?" }}
+      title={{
+        node: "Do you want to rejoin?",
+      }}
       description={{
-        node: "You will rejoin on the current question of the room",
+        node: `The current question is not queued. If yes, you will be navigated to ${questions[0]?.title}. Otherwise, you will leave the room.`,
       }}
       dialog={{
         props: {
-          open: true,
+          open:
+            roomStatus === RoomStatus.IN_ROOM &&
+            questions.every((question) => question.url !== self?.url) &&
+            questions.length > 0,
           modal: true,
+        },
+      }}
+      content={{
+        props: {
+          className: "[&>button]:hidden",
         },
       }}
     >
@@ -36,10 +46,7 @@ export const RejoinPromptDialog = () => {
         <DialogClose asChild>
           <Button
             className={baseButtonClassName}
-            onClick={() => {
-              removeLocalStorage("closingTabs");
-              loading();
-            }}
+            onClick={() => windowMessager.navigate({ url: questions[0].url })}
           >
             <span className="text-sm font-medium">Yes</span>
           </Button>

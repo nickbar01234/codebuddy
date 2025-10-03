@@ -134,7 +134,9 @@ const createRoomStore = (background: BackgroundProxy) => {
       immer((set, get) => ({
         status: RoomStatus.HOME,
         peers: {},
-        self: undefined,
+        self: {
+          url: getNormalizedUrl(window.location.href),
+        },
         actions: {
           room: {
             create: async (args) => {

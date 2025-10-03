@@ -67,7 +67,7 @@ export async function getProblemMetaBySlugServer(
         slug: q.titleSlug,
         difficulty: q.difficulty,
         tags: (q.topicTags || []).map((t: any) => t.name),
-        url: `https://leetcode.com/problems/${q.titleSlug}/`,
+        url: constructUrlFromQuestionId(q.titleSlug),
       },
     };
   } catch (e: any) {

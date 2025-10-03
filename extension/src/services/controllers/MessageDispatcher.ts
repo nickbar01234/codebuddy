@@ -236,10 +236,15 @@ export class MessageDispatcher {
 
         case "url": {
           const user = this.appStore.getState().actions.getMaybeAuthUser();
-          if (user != undefined) {
-            this.roomStore.getState().actions.peers.updateSelf({
-              url: getNormalizedUrl(window.location.href),
-            });
+          const url = getNormalizedUrl(window.location.href);
+          const questions = this.roomStore.getState().room?.questions ?? [];
+          if (user == undefined) {
+            return;
+          }
+          this.roomStore.getState().actions.peers.updateSelf({
+            url: getNormalizedUrl(window.location.href),
+          });
+          if (questions.some((question) => question.url === url)) {
             this.broadCastInformation();
           }
           break;
