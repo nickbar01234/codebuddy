@@ -1,7 +1,7 @@
+import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
-import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CodeIcon } from "lucide-react";
@@ -9,7 +9,7 @@ import React from "react";
 import { baseButtonClassName, RoomDialog } from "./RoomDialog";
 
 export const JoinRoomDialog = () => {
-  const join = useRoom((state) => state.actions.room.join);
+  const { join } = useRoomActions();
   const [inputRoomId, setInputRoomId] = React.useState("");
 
   const onJoinRoom = React.useMemo(() => {

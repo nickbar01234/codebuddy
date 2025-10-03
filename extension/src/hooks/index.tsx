@@ -1,12 +1,12 @@
-import { useRoom } from "@cb/store";
 import React from "react";
 import { toast } from "sonner";
+import { useRoomData } from "./store";
 import { useOnMount } from "./useOnMount";
 
 export { useFirebaseListener, useOnMount };
 
 export const useCopyRoomId = () => {
-  const id = useRoom((state) => state.room?.id);
+  const { id } = useRoomData();
   return React.useCallback(
     (e?: React.MouseEvent) => {
       e?.stopPropagation();

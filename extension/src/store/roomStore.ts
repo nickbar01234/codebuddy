@@ -62,7 +62,10 @@ interface RoomState {
 interface RoomAction {
   room: {
     create: (
-      args: Omit<NonNullable<RoomState["room"]>, "id" | "questions">
+      args: Omit<
+        NonNullable<RoomState["room"]>,
+        "id" | "questions" | "usernames"
+      >
     ) => Promise<void>;
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;

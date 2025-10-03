@@ -1,7 +1,6 @@
 import { QuestionSelectorPanel } from "@cb/components/panel/problem";
-import { useRoomActions, useRoomData } from "@cb/hooks/store";
+import { useHtmlActions, useRoomActions, useRoomData } from "@cb/hooks/store";
 import { SidebarTabIdentifier } from "@cb/store";
-import { useHtml } from "@cb/store/htmlStore";
 import { DialogTitle } from "@radix-ui/react-dialog";
 import React from "react";
 import { SidebarTabHeader, SidebarTabLayout } from "./SidebarTabLayout";
@@ -9,7 +8,7 @@ import { SidebarTabHeader, SidebarTabLayout } from "./SidebarTabLayout";
 export const LeetCodeQuestions = () => {
   const { activeSidebarTab, questions } = useRoomData();
   const { addQuestion, closeSidebarTab } = useRoomActions();
-  const hideHtml = useHtml((state) => state.actions.hideHtml);
+  const { hideHtml } = useHtmlActions();
 
   React.useEffect(() => {
     if (activeSidebarTab === undefined) hideHtml();
