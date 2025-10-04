@@ -7,8 +7,8 @@ interface DefaultTableHeaderProps {
 
 export const DefaultTableHeader = ({ headers }: DefaultTableHeaderProps) => {
   return (
-    <TableHeader className={cn("sticky top-0 w-full shadow-xl")}>
-      <DefaultTableRow className={cn("w-full bg-secondary")}>
+    <TableHeader className={cn("sticky top-0 w-full shadow-xl bg-secondary")}>
+      <DefaultTableRow className={cn("w-full hover:bg-transparent")}>
         {headers.map((header) => (
           <TableHead key={header} className="text-tertiary text-lg">
             {header}
