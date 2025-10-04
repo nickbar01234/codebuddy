@@ -134,7 +134,9 @@ const createRoomStore = (background: BackgroundProxy) => {
       immer((set, get) => ({
         status: RoomStatus.HOME,
         peers: {},
-        self: undefined,
+        self: {
+          url: getNormalizedUrl(window.location.href),
+        },
         actions: {
           room: {
             create: async (args) => {
@@ -307,7 +309,6 @@ const createRoomStore = (background: BackgroundProxy) => {
                     ...updatedQuestionProgress,
                   },
                 };
-                console.log("After updating", state.peers[id].questions);
               });
             },
             updateSelf: (data) => {
