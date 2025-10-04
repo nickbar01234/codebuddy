@@ -22,10 +22,10 @@ export const RejoinPromptDialog = () => {
   return (
     <RoomDialog
       title={{
-        node: "Do you want to rejoin?",
+        node: "The current question is not queued. Do you want to rejoin?",
       }}
       description={{
-        node: `The current question is not queued. If yes, you will be navigated to ${questions[0]?.title}. Otherwise, you will leave the room.`,
+        node: `By clicking yes, you will be navigated to ${questions[0]?.title}. Otherwise, you will leave the room.`,
       }}
       dialog={{
         props: {
