@@ -16,6 +16,7 @@ import {
   PeerMessage,
   PeerState,
   Question,
+  SelfState,
   Slug,
   User,
 } from "@cb/types";
@@ -45,10 +46,17 @@ export enum RoomStatus {
 interface UpdatePeerQuestionProgress {
   code?: Omit<MessagePayload<ExtractMessage<PeerMessage, "code">>, "url">;
   tests?: Omit<MessagePayload<ExtractMessage<PeerMessage, "tests">>, "url">;
+  finished?: boolean;
 }
 
 interface UpdatePeerArgs extends Partial<Pick<PeerState, "url">> {
   questions: Record<Slug, UpdatePeerQuestionProgress>;
+}
+
+interface UpdateSelfArgs extends Omit<SelfState, "questions"> {
+  questions: {
+    [K in keyof SelfState["questions"]]: Partial<SelfState["questions"][K]>;
+  };
 }
 
 interface RoomState {
@@ -61,8 +69,7 @@ interface RoomState {
     usernames: User[];
   }>;
   peers: Record<Id, PeerState>;
-  // todo(nickbar01234): Add other states about myself
-  self?: Pick<PeerState, "url">;
+  self?: SelfState;
 }
 
 interface RoomAction {
@@ -87,7 +94,7 @@ interface RoomAction {
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
-    updateSelf: (state: Partial<UpdatePeerArgs>) => void;
+    updateSelf: (state: Partial<UpdateSelfArgs>) => void;
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
@@ -101,6 +108,7 @@ const createRoomStore = (background: BackgroundProxy) => {
       state.room = room;
       state.self = {
         url: getNormalizedUrl(window.location.href),
+        questions: {},
       };
     });
 
@@ -136,6 +144,7 @@ const createRoomStore = (background: BackgroundProxy) => {
         peers: {},
         self: {
           url: getNormalizedUrl(window.location.href),
+          questions: {},
         },
         actions: {
           room: {
@@ -207,6 +216,7 @@ const createRoomStore = (background: BackgroundProxy) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
                   state.room = undefined;
+                  state.self = { url: state.self?.url, questions: {} };
                 });
               }
             },
@@ -265,7 +275,7 @@ const createRoomStore = (background: BackgroundProxy) => {
                   (acc, curr) => {
                     const [url, data] = curr;
                     const normalizedUrl = getNormalizedUrl(url);
-                    const { code, tests: testsPayload } = data;
+                    const { code, tests: testsPayload, finished } = data;
                     const questionProgressOrDefault = peerOrDefault.questions[
                       normalizedUrl
                     ] ?? {
@@ -294,6 +304,11 @@ const createRoomStore = (background: BackgroundProxy) => {
                       tests[selectedTestIndex].selected = true;
                       questionProgressOrDefault.tests = tests;
                     }
+
+                    if (finished) {
+                      questionProgressOrDefault.finished = finished;
+                    }
+
                     return {
                       ...acc,
                       [normalizedUrl]: questionProgressOrDefault,
@@ -312,12 +327,55 @@ const createRoomStore = (background: BackgroundProxy) => {
               });
             },
             updateSelf: (data) => {
-              // todo(nickbar01234): Need to make this work on other state
               set((state) => {
-                const selfOrDefault = state.self ?? {};
-                selfOrDefault.url = getNormalizedUrl(
-                  data.url ?? selfOrDefault.url ?? window.location.href
+                const selfOrDefault: SelfState = {
+                  url: getNormalizedUrl(window.location.href),
+                  questions: {},
+                  ...(state.self ?? {}),
+                };
+
+                if (data.url) {
+                  selfOrDefault.url = data.url;
+                }
+
+                const updatedQuestionProgress = Object.entries(
+                  data.questions ?? {}
+                ).reduce(
+                  (acc, curr) => {
+                    const [url, data] = curr;
+                    const normalizedUrl = getNormalizedUrl(url);
+                    const questionProgressOrDefault = selfOrDefault.questions[
+                      normalizedUrl
+                    ] ?? {
+                      code: undefined,
+                      tests: [],
+                      finished: false,
+                    };
+
+                    if (data.code != undefined) {
+                      questionProgressOrDefault.code = data.code;
+                    }
+
+                    if (data.tests != undefined) {
+                      questionProgressOrDefault.tests = data.tests;
+                    }
+
+                    if (data.finished != undefined) {
+                      questionProgressOrDefault.finished = data.finished;
+                    }
+
+                    return {
+                      ...acc,
+                      [normalizedUrl]: questionProgressOrDefault,
+                    };
+                  },
+                  {} as SelfState["questions"]
                 );
+
+                selfOrDefault.questions = {
+                  ...selfOrDefault.questions,
+                  ...updatedQuestionProgress,
+                };
                 state.self = selfOrDefault;
               });
             },
