@@ -7,7 +7,7 @@
     "dev:1": "USER_PROFILE=code wxt",
     "dev:2": "USER_PROFILE=buddy wxt",
     "dev:3": "USER_PROFILE=anotherbuddy wxt",
-    "build": "wxt build",
+    "build": "tsc && wxt build",
     "zip": "wxt zip",
     "postinstall": "wxt prepare"
   },

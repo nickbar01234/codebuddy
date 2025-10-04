@@ -5,8 +5,10 @@ import { toast } from "sonner";
 export const useCopyCode = () => {
   const { selectedPeer } = usePeers();
   return React.useCallback(() => {
-    if (selectedPeer?.code?.value) {
-      navigator.clipboard.writeText(selectedPeer.code.value).then(() => {
+    const maybeCode =
+      selectedPeer?.questions[selectedPeer.url ?? ""]?.code?.value;
+    if (maybeCode != undefined) {
+      navigator.clipboard.writeText(maybeCode).then(() => {
         toast.success("Code copied to clipboard!");
       });
     }
