@@ -5,6 +5,10 @@ import {
   IamPolite,
   PeerConnection,
   PeerMessage,
+  PeerRecoveryAckMessage,
+  PeerRecoveryRequestMessage,
+  RecoveryReason,
+  RecoveryState,
   User,
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
@@ -41,6 +45,11 @@ export class WebRtcController {
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
+    this.emitter.on(
+      "rtc.recovery.request",
+      this.handleRecoveryRequestEvent.bind(this)
+    );
+    this.emitter.on("rtc.recovery.ack", this.handleRecoveryAckEvent.bind(this));
   }
 
   private leave() {
@@ -56,21 +65,6 @@ export class WebRtcController {
       this.pcs.delete(user);
       connection.channel.close();
       connection.pc.close();
-    }
-  }
-
-  private recoverConnection(user: User) {
-    this.disconnect(user);
-    setTimeout(() => {
-      this.connect(user);
-    }, 1000);
-  }
-
-  private reNegotiate(user: User) {
-    console.log(`Re-negotiating connection for ${user}`);
-    const connection = this.pcs.get(user);
-    if (connection) {
-      connection.pc.restartIce();
     }
   }
 
@@ -101,6 +95,9 @@ export class WebRtcController {
       makingOffer: false,
       isSettingRemoteAnswerPending: false,
       ignoreOffer: false,
+      recoveryState: RecoveryState.IDLE,
+      recoveryRequestId: undefined,
+      recoveryTimeout: undefined,
     });
 
     pc.onicecandidate = (event) =>
@@ -175,12 +172,11 @@ export class WebRtcController {
     channel.onerror = (errorEvent: RTCErrorEvent) => {
       console.error("Error on RTC data channel", errorEvent);
       const isRecoverable = this.isErrorRecoverable(errorEvent.error);
-      if (isRecoverable) {
-        this.reNegotiate(user);
-      } else {
-        this.recoverConnection(user);
-      }
+      const reason = isRecoverable
+        ? RecoveryReason.CHANNEL_ERROR
+        : RecoveryReason.CONNECTION_TIMEOUT;
 
+      this.initiateRecovery(user, reason, errorEvent.error?.errorDetail);
       this.emitter.emit("rtc.error.connection", { user });
     };
   }
@@ -245,5 +241,141 @@ export class WebRtcController {
       }
       connection.channel.send(JSON.stringify(message));
     });
+  }
+
+  private initiateRecovery(
+    user: User,
+    reason: RecoveryReason,
+    errorDetail?: string
+  ) {
+    const connection = this.pcs.get(user);
+    if (!connection || connection.recoveryState !== RecoveryState.IDLE) {
+      return;
+    }
+
+    const recoveryId = `recovery-${Date.now()}`;
+    connection.recoveryState = RecoveryState.RECOVERY_REQUESTED;
+    connection.recoveryRequestId = recoveryId;
+
+    const recoveryRequest: PeerRecoveryRequestMessage = {
+      action: "recovery-request",
+      timestamp: Date.now(),
+      requestId: recoveryId,
+      reason,
+      errorDetail,
+    };
+
+    this.sendRecoverySignal(user, recoveryRequest);
+
+    connection.recoveryTimeout = setTimeout(() => {
+      this.handleRecoveryTimeout(user, recoveryId);
+    }, 5000);
+  }
+
+  private sendRecoverySignal(
+    user: User,
+    message: PeerRecoveryRequestMessage | PeerRecoveryAckMessage
+  ) {
+    console.log(`Sending recovery message through signaling server to ${user}`);
+
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
+
+    this.emitter.emit("rtc.recovery", {
+      from: me,
+      to: user,
+      data: message,
+    });
+  }
+
+  private handleRecoveryRequestEvent({
+    from,
+    message,
+  }: Events["rtc.recovery.request"]) {
+    this.handleRecoveryRequest(from, message);
+  }
+
+  private handleRecoveryAckEvent({
+    from,
+    message,
+  }: Events["rtc.recovery.ack"]) {
+    this.handleRecoveryAck(from, message);
+  }
+
+  private handleRecoveryRequest(
+    from: User,
+    message: PeerRecoveryRequestMessage
+  ) {
+    const connection = this.pcs.get(from);
+    if (!connection) return;
+
+    console.log(`Received recovery request from ${from}:`, message.reason);
+
+    connection.recoveryState = RecoveryState.RECOVERY_ACKNOWLEDGED;
+
+    const ackMessage: PeerRecoveryAckMessage = {
+      action: "recovery-ack",
+      timestamp: Date.now(),
+      requestId: message.requestId,
+    };
+
+    this.sendRecoverySignal(from, ackMessage);
+
+    this.emitter.emit("rtc.recovery.initiated", {
+      user: from,
+      reason: message.reason,
+    });
+  }
+
+  private handleRecoveryAck(from: User, message: PeerRecoveryAckMessage) {
+    const connection = this.pcs.get(from);
+    if (!connection || connection.recoveryRequestId !== message.requestId) {
+      return;
+    }
+
+    console.log(`Received recovery acknowledgment from ${from}`);
+
+    if (connection.recoveryTimeout) {
+      clearTimeout(connection.recoveryTimeout);
+      connection.recoveryTimeout = undefined;
+    }
+
+    connection.recoveryState = RecoveryState.RECOVERY_ACKNOWLEDGED;
+
+    this.reestablishConnection(from);
+  }
+
+  private handleRecoveryTimeout(user: User, recoveryId: string) {
+    const connection = this.pcs.get(user);
+    if (!connection || connection.recoveryRequestId !== recoveryId) {
+      return;
+    }
+
+    console.warn(
+      `Recovery timeout for ${user}, proceeding with unilateral recovery`
+    );
+
+    // Reset state and proceed with fallback recovery
+    connection.recoveryState = RecoveryState.IDLE;
+    connection.recoveryRequestId = undefined;
+
+    this.reestablishConnection(user);
+  }
+
+  private reestablishConnection(user: User) {
+    console.log(`Starting Phase 2 recovery for ${user}`);
+
+    // Reset recovery state
+    const connection = this.pcs.get(user);
+    if (connection) {
+      connection.recoveryState = RecoveryState.IDLE;
+      connection.recoveryRequestId = undefined;
+    }
+
+    this.disconnect(user);
+
+    setTimeout(() => {
+      console.log(`Reconnecting to ${user} after coordinated disconnection`);
+      this.connect(user);
+    }, 500);
   }
 }

@@ -114,6 +114,21 @@ class RoomLifeCycle {
               });
               break;
             }
+            case "recovery": {
+              const recoveryMessage = message.data;
+              if (recoveryMessage.action === "recovery-request") {
+                this.emitter.emit("rtc.recovery.request", {
+                  from,
+                  message: recoveryMessage,
+                });
+              } else if (recoveryMessage.action === "recovery-ack") {
+                this.emitter.emit("rtc.recovery.ack", {
+                  from,
+                  message: recoveryMessage,
+                });
+              }
+              break;
+            }
             default: {
               assertUnreachable(action);
             }
@@ -136,10 +151,16 @@ class RoomLifeCycle {
       this.handleDescriptionEvents.bind(this),
       isEventFromMe(this.me)
     );
+    const unsubscribeFromRecoveryEvents = this.emitter.on(
+      "rtc.recovery",
+      this.handleRecoveryEvents.bind(this),
+      isEventFromMe(this.me)
+    );
 
     return () => {
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
+      unsubscribeFromRecoveryEvents();
     };
   }
 
@@ -161,6 +182,15 @@ class RoomLifeCycle {
       from,
       to,
       message: { action: "description", data },
+      version: this.room.version,
+    });
+  }
+
+  private handleRecoveryEvents({ from, to, data }: Events["rtc.recovery"]) {
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "recovery", data },
       version: this.room.version,
     });
   }
