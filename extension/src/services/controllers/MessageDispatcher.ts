@@ -117,12 +117,18 @@ export class MessageDispatcher {
     // todo(nickbar01234): On teardown, we need to revert the changes
     const sendSuccessSubmission = () => {
       if (this.appStore.getState().auth.status === AppStatus.AUTHENTICATED) {
+        const url = getNormalizedUrl(window.location.href);
+        this.roomStore.getState().actions.peers.updateSelf({
+          questions: {
+            [url]: { finished: true },
+          },
+        });
         this.emitter.emit("rtc.send.message", {
           message: {
             action: "event",
             event: EventType.SUBMIT_SUCCESS,
             user: this.appStore.getState().actions.getAuthUser().username,
-            url: getNormalizedUrl(window.location.href),
+            url,
           },
         });
       }
@@ -189,6 +195,7 @@ export class MessageDispatcher {
           });
           break;
         }
+
         case "tests": {
           const { tests, url } = message;
           this.roomStore.getState().actions.peers.update(from, {
@@ -200,6 +207,20 @@ export class MessageDispatcher {
               },
             },
           });
+          break;
+        }
+
+        case "event": {
+          const { url, event } = message;
+          if (event === EventType.SUBMIT_SUCCESS) {
+            this.roomStore.getState().actions.peers.update(from, {
+              questions: {
+                [url]: {
+                  finished: true,
+                },
+              },
+            });
+          }
           break;
         }
         case "url": {

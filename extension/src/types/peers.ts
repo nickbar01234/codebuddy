@@ -31,7 +31,6 @@ interface UrlChangeMessage extends PeerGenericMessage {
 export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
-  SELECT_QUESTION,
 }
 
 interface PeerEventMessage extends PeerGenericMessage {
@@ -47,13 +46,23 @@ export type PeerMessage =
   | PeerEventMessage
   | UrlChangeMessage;
 
-interface QuestionProgress {
+interface PeerQuestionProgress {
   code?: Omit<MessagePayload<PeerCodeMessage>, "url">;
   tests: SelectableTestCase[];
   finished: boolean;
 }
 
+interface SelfQuestionProgress extends Omit<PeerQuestionProgress, "tests"> {
+  tests: TestCase[];
+}
+
 export interface PeerState extends Selectable {
-  questions: Record<Slug, QuestionProgress | undefined>;
+  questions: Record<Slug, PeerQuestionProgress | undefined>;
+  url?: string;
+}
+
+// todo(nickbar01234) - Better way to structure this code?
+export interface SelfState {
+  questions: Record<Slug, SelfQuestionProgress>;
   url?: string;
 }

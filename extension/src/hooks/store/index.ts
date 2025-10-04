@@ -60,7 +60,9 @@ export const useRoomData = () => {
           ({
             user,
             css: CSS["USER_ICON_CSS"][idx],
-            solved: 0,
+            solved: Object.values(allPeers[user]?.questions ?? []).filter(
+              (progress) => progress?.finished
+            ).length,
             url: allPeers[user]?.url,
           }) as UserMedata
       ),
