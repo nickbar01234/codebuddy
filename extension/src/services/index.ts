@@ -11,16 +11,7 @@ import { emitter, EventEmitter } from "./events";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
-const LOCAL_STORAGE: Array<keyof LocalStorage> = [
-  "tabs",
-  "lastActivePeer",
-  "signIn",
-  "navigate",
-  "preference",
-  "closingTabs",
-  "navigatePrompt",
-  "appEnabled",
-];
+const LOCAL_STORAGE: Array<keyof LocalStorage> = ["signIn"];
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
@@ -45,8 +36,7 @@ export const clearLocalStorage = (ignore: Array<keyof LocalStorage> = []) =>
     removeLocalStorage
   );
 
-export const clearLocalStorageForRoom = () =>
-  clearLocalStorage(["preference", "signIn"]);
+export const clearLocalStorageForRoom = () => clearLocalStorage(["signIn"]);
 
 interface Controllers {
   emitter: EventEmitter;

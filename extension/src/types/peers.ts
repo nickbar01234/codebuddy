@@ -1,4 +1,10 @@
-import { Id, QuestionProgressStatus, SelectableTestCase, TestCase } from ".";
+import {
+  Id,
+  QuestionProgressStatus,
+  SelectableTestCase,
+  TestCase,
+  TestCases,
+} from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, Selectable } from "./utils";
 
@@ -13,8 +19,6 @@ type MonacoCode = ServiceResponse["getValue"];
 export interface CodeWithChanges extends MonacoCode {
   changes: string;
 }
-
-export type TestCases = TestCase[];
 
 interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
   action: "code";

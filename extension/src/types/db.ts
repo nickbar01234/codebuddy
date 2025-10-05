@@ -1,5 +1,5 @@
 import { GenericMessage, Identifiable, Unsubscribe } from "@cb/types/utils";
-import { TestCases } from "./peers";
+import { TestCases } from ".";
 import { ServiceResponse } from "./services";
 
 export type User = string;
