@@ -19,7 +19,7 @@ interface SetOtherEditorRequest extends GenericMessage {
   action: "setValueOtherEditor";
   code: string;
   language: string;
-  changes: monaco.editor.IModelContentChange;
+  changes?: monaco.editor.IModelContentChange;
   changeUser: boolean;
   editorId: string;
 }
@@ -51,9 +51,19 @@ export enum ResponseStatus {
   FAIL,
 }
 
-interface ServiceGenericResponse {
-  status: ResponseStatus;
+interface GenericSuccessResponse<T> {
+  status: ResponseStatus.SUCCESS;
+  data: T;
 }
+
+interface GenericFailureResponse {
+  status: ResponseStatus.FAIL;
+  message?: string;
+}
+
+type ServiceGenericResponse<T> =
+  | GenericFailureResponse
+  | GenericSuccessResponse<T>;
 
 export type ServiceResponse = GenericResponse<
   ServiceRequest,
@@ -62,12 +72,12 @@ export type ServiceResponse = GenericResponse<
       value: string;
       language: string;
     };
-    setupCodeBuddyModel: ServiceGenericResponse;
-    setupLeetCodeModel: ServiceGenericResponse;
+    setupCodeBuddyModel: ServiceGenericResponse<unknown>;
+    setupLeetCodeModel: ServiceGenericResponse<{ language: string }>;
     setValueOtherEditor: void;
     reloadExtension: void;
     getActiveTabId: number;
-    closeSignInTab: ServiceGenericResponse;
+    closeSignInTab: ServiceGenericResponse<undefined>;
     getLanguageExtension: Array<monaco.languages.ILanguageExtensionPoint>;
   }
 >;

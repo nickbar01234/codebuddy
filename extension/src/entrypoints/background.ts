@@ -81,14 +81,25 @@ export default defineBackground(() => {
 
     model.onDidChangeContent((event) => {
       const onChange: WindowMessage = {
-        action: "leetCodeOnChange",
+        action: "leetCodeOnCodeChange",
         changes: event.changes[0],
+      };
+      window.postMessage(onChange);
+    });
+
+    model.onDidChangeLanguage((event) => {
+      const onChange: WindowMessage = {
+        action: "leetCodeOnLanguageChange",
+        language: event.newLanguage,
       };
       window.postMessage(onChange);
     });
 
     return {
       status: 0,
+      data: {
+        language: model.getLanguageId(),
+      },
     };
   };
 
@@ -115,7 +126,7 @@ export default defineBackground(() => {
     if (
       model.getLanguageId() != language ||
       changeUser ||
-      Object.keys(changes).length === 0
+      changes === undefined
     ) {
       window.monaco.editor.setModelLanguage(model, language);
       editor.setValue(code);
@@ -254,6 +265,7 @@ export default defineBackground(() => {
                 status: tab.url?.startsWith(url)
                   ? ResponseStatus.SUCCESS
                   : ResponseStatus.FAIL,
+                data: undefined,
               });
               if (response.status === ResponseStatus.SUCCESS) {
                 await browser.tabs.remove(tabId);

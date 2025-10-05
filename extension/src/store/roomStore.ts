@@ -32,6 +32,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
 import { AppStore, useApp } from "./appStore";
+import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
 export enum SidebarTabIdentifier {
   ROOM_INFO,
@@ -104,7 +105,11 @@ interface RoomAction {
   };
 }
 
-const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
+const createRoomStore = (
+  background: BackgroundProxy,
+  appStore: AppStore,
+  leetcodeStore: LeetCodeStore
+) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -470,6 +475,9 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
       return {
         peerCode: selected?.questions[url]?.code,
         id: selected?.id,
+        question: (state.room?.questions ?? []).find(
+          (question) => question.url === url
+        ),
       };
     },
     (current, prev) => {
@@ -491,6 +499,6 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
   return useRoom;
 };
 
-export const useRoom = createRoomStore(background, useApp);
+export const useRoom = createRoomStore(background, useApp, useLeetCode);
 
 export type RoomStore = typeof useRoom;

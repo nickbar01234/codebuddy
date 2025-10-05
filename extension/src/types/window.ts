@@ -1,9 +1,14 @@
 import monaco from "monaco-editor";
 import { GenericMessage } from "./utils";
 
-interface LeetCodeOnChangeMessage extends GenericMessage {
-  action: "leetCodeOnChange";
+interface LeetCodeOnCodeChangeMessage extends GenericMessage {
+  action: "leetCodeOnCodeChange";
   changes: monaco.editor.IModelContentChange;
+}
+
+interface LeetCodeOnLanguageChangeMessage extends GenericMessage {
+  action: "leetCodeOnLanguageChange";
+  language: string;
 }
 
 interface NavigateMessage extends GenericMessage {
@@ -11,4 +16,7 @@ interface NavigateMessage extends GenericMessage {
   url: string;
 }
 
-export type WindowMessage = LeetCodeOnChangeMessage | NavigateMessage;
+export type WindowMessage =
+  | LeetCodeOnCodeChangeMessage
+  | NavigateMessage
+  | LeetCodeOnLanguageChangeMessage;
