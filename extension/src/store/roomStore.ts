@@ -121,15 +121,16 @@ const createRoomStore = (
     });
 
   const debouncedAddQuestion = _.debounce(async (url: string) => {
-    const metadata = await getProblemMetaBySlugServer(
-      getQuestionIdFromUrl(url)
-    );
-    if (metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS) {
-      console.error("Failed to fetch graphql metadata", metadata);
-      toast.error("Failed to select next problem. Please try again");
-      return;
-    }
+    useRoom.getState().actions.room.loading();
     try {
+      const metadata = await getProblemMetaBySlugServer(
+        getQuestionIdFromUrl(url)
+      );
+      if (metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS) {
+        console.error("Failed to fetch graphql metadata", metadata);
+        toast.error("Failed to select next problem. Please try again");
+        return;
+      }
       const addQuestionResponse =
         await getOrCreateControllers().room.addQuestion(metadata.data);
       if (addQuestionResponse == AddQuestionCode.NOT_IN_ROOM) {
@@ -142,6 +143,10 @@ const createRoomStore = (
     } catch (error) {
       console.error("Error when adding question", error);
       toast.error("Failed to add question. Please try again");
+    } finally {
+      useRoom.setState((state) => {
+        state.status = RoomStatus.IN_ROOM;
+      });
     }
   }, 500);
 
@@ -327,8 +332,11 @@ const createRoomStore = (
                                     language: curr.codeSnippets[0]?.langSlug,
                                     changes: "{}",
                                   },
+                                  tests: groupTestCases(
+                                    curr.variables,
+                                    curr.testSnippets
+                                  ),
                                 },
-                                // todo(nickbar01234): Add default tests
                               },
                             });
                           }
@@ -454,7 +462,9 @@ const createRoomStore = (
               set((state) => {
                 const active = getSelectedPeer(state.peers);
                 const progress =
-                  state.peers[active?.id ?? ""].questions[active?.url ?? ""];
+                  state.peers[active?.id ?? ""].questions[
+                    getNormalizedUrl(window.location.href)
+                  ];
                 if (progress != undefined) {
                   progress.tests = progress.tests.map((test, i) => ({
                     ...test,

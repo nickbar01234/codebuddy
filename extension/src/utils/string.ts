@@ -21,3 +21,13 @@ export const groupTestCases = (
     })),
   }));
 };
+
+export const inferVariablesFromGraphql = (content: string) => {
+  const pattern = /Input:\s*([^<\n\r]+?)\s*Output:/gs;
+  // Replace any html tag before matching
+  const match = content.replace(/<[^>]+>/g, "").match(pattern);
+  if (match != null) {
+    return Array.from(match[1].matchAll(/\b([a-zA-Z_]\w*)\s*=/g), (v) => v[1]);
+  }
+  return [];
+};
