@@ -475,9 +475,6 @@ const createRoomStore = (
       return {
         peerCode: selected?.questions[url]?.code,
         id: selected?.id,
-        question: (state.room?.questions ?? []).find(
-          (question) => question.url === url
-        ),
       };
     },
     (current, prev) => {
