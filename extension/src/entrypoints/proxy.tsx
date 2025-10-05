@@ -15,8 +15,7 @@ export default defineUnlistedScript(() => {
         break;
       }
 
-      case "leetCodeOnCodeChange":
-      case "leetCodeOnLanguageChange":
+      case "leetCodeOnChange":
         break;
 
       default:

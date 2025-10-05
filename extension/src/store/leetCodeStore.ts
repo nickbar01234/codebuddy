@@ -5,21 +5,18 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface LeetCodeState {
-  preferredLanguage?: string;
   languageExtensions: ServiceResponse["getLanguageExtension"];
 }
 
 interface LeetCodeAction {
   getVariables: () => Promise<string[]>;
   getLanguageExtension: (id?: string) => string | undefined;
-  setPreferredLanguage: (language: string) => void;
 }
 
 const createLeetCodeStore = (background: BackgroundProxy) => {
   const leetCodeStore = create<BoundStore<LeetCodeState, LeetCodeAction>>()(
     immer((set, get) => ({
       languageExtensions: [],
-      preferredLanguage: undefined,
 
       actions: {
         getVariables: async () => {
@@ -47,11 +44,6 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
               ?.extensions ?? [];
           return extensions[0];
         },
-
-        setPreferredLanguage: (language: string) =>
-          set((state) => {
-            state.preferredLanguage = language;
-          }),
       },
     }))
   );

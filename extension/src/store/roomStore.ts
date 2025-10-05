@@ -31,7 +31,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
-import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
+import { AppStore, useApp } from "./appStore";
 
 export enum SidebarTabIdentifier {
   ROOM_INFO,
@@ -104,10 +104,7 @@ interface RoomAction {
   };
 }
 
-const createRoomStore = (
-  background: BackgroundProxy,
-  leetcodeStore: LeetCodeStore
-) => {
+const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -142,6 +139,59 @@ const createRoomStore = (
       toast.error("Failed to add question. Please try again");
     }
   }, 500);
+
+  const derivePeerState = (state: PeerState, args: Partial<UpdatePeerArgs>) => {
+    const { questions, ...rest } = args;
+    const updatedQuestionProgress = Object.entries(questions ?? {}).reduce(
+      (acc, curr) => {
+        const [url, data] = curr;
+        const normalizedUrl = getNormalizedUrl(url);
+        const { code, tests: testsPayload, status } = data;
+        const questionProgressOrDefault = state.questions[normalizedUrl] ?? {
+          code: undefined,
+          tests: [],
+          status: QuestionProgressStatus.NOT_STARTED,
+        };
+
+        if (code != undefined) {
+          questionProgressOrDefault.code = code;
+        }
+
+        if (testsPayload != undefined) {
+          const tests = testsPayload.map((test) => ({
+            ...test,
+            selected: false,
+          }));
+          const previousSelectedTest =
+            questionProgressOrDefault.tests.findIndex((test) => test.selected);
+          const selectedTestIndex =
+            previousSelectedTest >= tests.length
+              ? tests.length - 1
+              : Math.max(previousSelectedTest, 0);
+          tests[selectedTestIndex].selected = true;
+          questionProgressOrDefault.tests = tests;
+        }
+
+        if (status != undefined) {
+          questionProgressOrDefault.status = status;
+        }
+
+        return {
+          ...acc,
+          [normalizedUrl]: questionProgressOrDefault,
+        };
+      },
+      {} as PeerState["questions"]
+    );
+    return {
+      ...state,
+      ...rest,
+      questions: {
+        ...state.questions,
+        ...updatedQuestionProgress,
+      },
+    };
+  };
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
@@ -247,6 +297,42 @@ const createRoomStore = (
                 if (state.room != undefined) {
                   state.room.questions = room.questions;
                   state.room.usernames = room.usernames;
+                  room.usernames
+                    .filter(
+                      (username) =>
+                        username !==
+                        appStore.getState().actions.getAuthUser().username
+                    )
+                    .forEach((username) => {
+                      const peerOrDefault: PeerState = state.peers[
+                        username
+                      ] ?? {
+                        questions: {},
+                        url: undefined,
+                        selected: getSelectedPeer(state.peers) === undefined,
+                      };
+                      const peerWithOverrides = room.questions.reduce(
+                        (acc, curr) => {
+                          if (!Object.keys(acc.questions).includes(curr.url)) {
+                            return derivePeerState(acc, {
+                              questions: {
+                                [curr.url]: {
+                                  code: {
+                                    value: curr.codeSnippets[0].code,
+                                    language: curr.codeSnippets[0].langSlug,
+                                    changes: "{}",
+                                  },
+                                },
+                                // todo(nickbar01234): Add default tests
+                              },
+                            });
+                          }
+                          return acc;
+                        },
+                        peerOrDefault
+                      );
+                      state.peers[username] = peerWithOverrides;
+                    });
                 }
               }),
             selectQuestion: (url) => {
@@ -270,66 +356,12 @@ const createRoomStore = (
           peers: {
             update: async (id, peer) => {
               set((state) => {
-                const { questions, ...rest } = peer;
                 const peerOrDefault: PeerState = state.peers[id] ?? {
                   questions: {},
                   selected: getSelectedPeer(state.peers) == undefined,
+                  url: undefined,
                 };
-                const updatedQuestionProgress = Object.entries(
-                  questions ?? {}
-                ).reduce(
-                  (acc, curr) => {
-                    const [url, data] = curr;
-                    const normalizedUrl = getNormalizedUrl(url);
-                    const { code, tests: testsPayload, status } = data;
-                    const questionProgressOrDefault = peerOrDefault.questions[
-                      normalizedUrl
-                    ] ?? {
-                      code: undefined,
-                      tests: [],
-                      status: QuestionProgressStatus.NOT_STARTED,
-                    };
-
-                    if (code != undefined) {
-                      questionProgressOrDefault.code = code;
-                    }
-
-                    if (testsPayload != undefined) {
-                      const tests = testsPayload.map((test) => ({
-                        ...test,
-                        selected: false,
-                      }));
-                      const previousSelectedTest =
-                        questionProgressOrDefault.tests.findIndex(
-                          (test) => test.selected
-                        );
-                      const selectedTestIndex =
-                        previousSelectedTest >= tests.length
-                          ? tests.length - 1
-                          : Math.max(previousSelectedTest, 0);
-                      tests[selectedTestIndex].selected = true;
-                      questionProgressOrDefault.tests = tests;
-                    }
-
-                    if (status != undefined) {
-                      questionProgressOrDefault.status = status;
-                    }
-
-                    return {
-                      ...acc,
-                      [normalizedUrl]: questionProgressOrDefault,
-                    };
-                  },
-                  {} as PeerState["questions"]
-                );
-                state.peers[id] = {
-                  ...peerOrDefault,
-                  ...rest,
-                  questions: {
-                    ...peerOrDefault.questions,
-                    ...updatedQuestionProgress,
-                  },
-                };
+                state.peers[id] = derivePeerState(peerOrDefault, peer);
               });
             },
             updateSelf: (data) => {
@@ -438,9 +470,6 @@ const createRoomStore = (
       return {
         peerCode: selected?.questions[url]?.code,
         id: selected?.id,
-        question: (state.room?.questions ?? []).find(
-          (question) => question.url === url
-        ),
       };
     },
     (current, prev) => {
@@ -448,21 +477,9 @@ const createRoomStore = (
         return;
       } else if (current.peerCode != undefined) {
         background.applyCodeToEditor({
-          code: current.peerCode?.value ?? "",
-          language: current.peerCode?.language ?? "",
-          changes: JSON.parse(current.peerCode?.changes ?? "{}"),
-          changeUser: current.id !== prev?.id,
-          editorId: DOM.CODEBUDDY_EDITOR_ID,
-        });
-      } else {
-        const codeSnippet =
-          current.question?.codeSnippets.find(
-            (snippet) =>
-              snippet.langSlug === leetcodeStore.getState().preferredLanguage
-          ) ?? current.question?.codeSnippets[0];
-        background.applyCodeToEditor({
-          code: codeSnippet?.code ?? "",
-          language: codeSnippet?.langSlug ?? "",
+          code: current.peerCode.value ?? "",
+          language: current.peerCode.language ?? "",
+          changes: JSON.parse(current.peerCode.changes ?? "{}"),
           changeUser: current.id !== prev?.id,
           editorId: DOM.CODEBUDDY_EDITOR_ID,
         });
@@ -474,6 +491,6 @@ const createRoomStore = (
   return useRoom;
 };
 
-export const useRoom = createRoomStore(background, useLeetCode);
+export const useRoom = createRoomStore(background, useApp);
 
 export type RoomStore = typeof useRoom;
