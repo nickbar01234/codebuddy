@@ -283,7 +283,7 @@ const createRoomStore = (background: BackgroundProxy) => {
                     ] ?? {
                       code: undefined,
                       tests: [],
-                      status: QuestionProgressStatus.IN_PROGRESS,
+                      status: QuestionProgressStatus.NOT_STARTED,
                     };
 
                     if (code != undefined) {

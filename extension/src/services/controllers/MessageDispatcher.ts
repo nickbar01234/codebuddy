@@ -191,6 +191,7 @@ export class MessageDispatcher {
             questions: {
               [url]: {
                 code,
+                status: QuestionProgressStatus.IN_PROGRESS,
               },
             },
           });
@@ -203,6 +204,7 @@ export class MessageDispatcher {
             questions: {
               [url]: {
                 tests,
+                status: QuestionProgressStatus.IN_PROGRESS,
               },
             },
           });
