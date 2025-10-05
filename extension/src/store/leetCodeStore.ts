@@ -47,12 +47,10 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
           return extensions[0];
         },
 
-        setPreferredLanguage: (language: string) => {
-          console.log("Change preferred language", language);
+        setPreferredLanguage: (language: string) =>
           set((state) => {
             state.preferredLanguage = language;
-          });
-        },
+          }),
       },
     }))
   );
