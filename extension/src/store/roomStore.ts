@@ -31,6 +31,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
+import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
 export enum SidebarTabIdentifier {
   ROOM_INFO,
@@ -103,7 +104,10 @@ interface RoomAction {
   };
 }
 
-const createRoomStore = (background: BackgroundProxy) => {
+const createRoomStore = (
+  background: BackgroundProxy,
+  leetcodeStore: LeetCodeStore
+) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -429,20 +433,36 @@ const createRoomStore = (background: BackgroundProxy) => {
 
   useRoom.subscribe(
     (state) => {
+      const url = getNormalizedUrl(window.location.href);
       const selected = getSelectedPeer(state.peers);
       return {
-        code: selected?.questions[getNormalizedUrl(window.location.href)]?.code,
+        peerCode: selected?.questions[url]?.code,
         id: selected?.id,
+        question: (state.room?.questions ?? []).find(
+          (question) => question.url === url
+        ),
       };
     },
     (current, prev) => {
       if (current.id == undefined) {
         return;
-      } else {
+      } else if (current.peerCode != undefined) {
         background.applyCodeToEditor({
-          code: current.code?.value ?? "",
-          language: current.code?.language ?? "",
-          changes: JSON.parse(current.code?.changes ?? "{}"),
+          code: current.peerCode?.value ?? "",
+          language: current.peerCode?.language ?? "",
+          changes: JSON.parse(current.peerCode?.changes ?? "{}"),
+          changeUser: current.id !== prev?.id,
+          editorId: DOM.CODEBUDDY_EDITOR_ID,
+        });
+      } else {
+        const codeSnippet =
+          current.question?.codeSnippets.find(
+            (snippet) =>
+              snippet.langSlug === leetcodeStore.getState().preferredLanguage
+          ) ?? current.question?.codeSnippets[0];
+        background.applyCodeToEditor({
+          code: codeSnippet?.code ?? "",
+          language: codeSnippet?.langSlug ?? "",
           changeUser: current.id !== prev?.id,
           editorId: DOM.CODEBUDDY_EDITOR_ID,
         });
@@ -454,6 +474,6 @@ const createRoomStore = (background: BackgroundProxy) => {
   return useRoom;
 };
 
-export const useRoom = createRoomStore(background);
+export const useRoom = createRoomStore(background, useLeetCode);
 
 export type RoomStore = typeof useRoom;

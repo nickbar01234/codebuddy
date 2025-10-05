@@ -15,9 +15,9 @@ export default defineUnlistedScript(() => {
         break;
       }
 
-      case "leetCodeOnChange": {
+      case "leetCodeOnCodeChange":
+      case "leetCodeOnLanguageChange":
         break;
-      }
 
       default:
         assertUnreachable(action);

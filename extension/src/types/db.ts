@@ -8,6 +8,11 @@ export type Version = number;
 
 export type Id = string;
 
+interface CodeSnippet {
+  langSlug: string;
+  code: string;
+}
+
 interface IceCandidateNegotiation extends GenericMessage {
   action: "ice";
   data: RTCIceCandidateInit | null;
@@ -56,6 +61,7 @@ export interface Question {
   difficulty: "Easy" | "Medium" | "Hard";
   tags: string[];
   url: string;
+  codeSnippets: CodeSnippet[];
 }
 
 export interface Room {

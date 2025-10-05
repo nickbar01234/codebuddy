@@ -27,6 +27,7 @@ query question($titleSlug: String!) {
     titleSlug
     difficulty
     topicTags { name slug }
+    codeSnippets { langSlug code }
   }
 }`;
 
@@ -66,8 +67,9 @@ export async function getProblemMetaBySlugServer(
         title: q.title,
         slug: q.titleSlug,
         difficulty: q.difficulty,
-        tags: (q.topicTags || []).map((t: any) => t.name),
+        tags: (q.topicTags ?? []).map((t: any) => t.name),
         url: constructUrlFromQuestionId(q.titleSlug),
+        codeSnippets: q.codeSnippets,
       },
     };
   } catch (e: any) {

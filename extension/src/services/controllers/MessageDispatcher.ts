@@ -59,7 +59,15 @@ export class MessageDispatcher {
 
     poll({
       fn: () => this.background.setupLeetCodeEditor({}),
-      until: (response) => response?.status === ResponseStatus.SUCCESS,
+      until: (response) => {
+        if (response.status === ResponseStatus.SUCCESS) {
+          this.leetcodeStore
+            .getState()
+            .actions.setPreferredLanguage(response.data.language);
+          return true;
+        }
+        return false;
+      },
     });
 
     this.unsubscribers.push(this.subscribeToCodeEditor());
@@ -79,7 +87,7 @@ export class MessageDispatcher {
       }
       const action = message.data.action;
       switch (action) {
-        case "leetCodeOnChange": {
+        case "leetCodeOnCodeChange": {
           this.emitter.emit("rtc.send.message", {
             message: await getCodePayload(message.data.changes),
           });
@@ -87,6 +95,13 @@ export class MessageDispatcher {
         }
 
         case "navigate": {
+          break;
+        }
+
+        case "leetCodeOnLanguageChange": {
+          this.leetcodeStore
+            .getState()
+            .actions.setPreferredLanguage(message.data.language);
           break;
         }
 
