@@ -2,7 +2,7 @@ import { CSS } from "@cb/constants";
 import { useApp, useRoom } from "@cb/store";
 import { useHtml } from "@cb/store/htmlStore";
 import { useLeetCode } from "@cb/store/leetCodeStore";
-import { User } from "@cb/types";
+import { QuestionProgressStatus, User } from "@cb/types";
 import React from "react";
 import { useShallow } from "zustand/shallow";
 
@@ -61,7 +61,8 @@ export const useRoomData = () => {
             user,
             css: CSS["USER_ICON_CSS"][idx],
             solved: Object.values(allPeers[user]?.questions ?? []).filter(
-              (progress) => progress?.finished
+              (progress) =>
+                progress?.status === QuestionProgressStatus.COMPLETED
             ).length,
             url: allPeers[user]?.url,
           }) as UserMedata

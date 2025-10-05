@@ -12,15 +12,17 @@ import {
 import { windowMessager } from "@cb/services/window";
 import {
   BoundStore,
+  CodeWithChanges,
   Id,
-  PeerMessage,
   PeerState,
   Question,
+  QuestionProgressStatus,
   SelfState,
   Slug,
+  TestCases,
   User,
 } from "@cb/types";
-import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
+import { Identifiable } from "@cb/types/utils";
 import { getNormalizedUrl } from "@cb/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
 import _ from "lodash";
@@ -44,9 +46,9 @@ export enum RoomStatus {
 }
 
 interface UpdatePeerQuestionProgress {
-  code?: Omit<MessagePayload<ExtractMessage<PeerMessage, "code">>, "url">;
-  tests?: Omit<MessagePayload<ExtractMessage<PeerMessage, "tests">>, "url">;
-  finished?: boolean;
+  code?: CodeWithChanges;
+  tests?: TestCases;
+  status?: QuestionProgressStatus;
 }
 
 interface UpdatePeerArgs extends Partial<Pick<PeerState, "url">> {
@@ -275,13 +277,13 @@ const createRoomStore = (background: BackgroundProxy) => {
                   (acc, curr) => {
                     const [url, data] = curr;
                     const normalizedUrl = getNormalizedUrl(url);
-                    const { code, tests: testsPayload, finished } = data;
+                    const { code, tests: testsPayload, status } = data;
                     const questionProgressOrDefault = peerOrDefault.questions[
                       normalizedUrl
                     ] ?? {
                       code: undefined,
                       tests: [],
-                      finished: false,
+                      status: QuestionProgressStatus.IN_PROGRESS,
                     };
 
                     if (code != undefined) {
@@ -289,7 +291,7 @@ const createRoomStore = (background: BackgroundProxy) => {
                     }
 
                     if (testsPayload != undefined) {
-                      const tests = testsPayload.tests.map((test) => ({
+                      const tests = testsPayload.map((test) => ({
                         ...test,
                         selected: false,
                       }));
@@ -305,8 +307,8 @@ const createRoomStore = (background: BackgroundProxy) => {
                       questionProgressOrDefault.tests = tests;
                     }
 
-                    if (finished) {
-                      questionProgressOrDefault.finished = finished;
+                    if (status != undefined) {
+                      questionProgressOrDefault.status = status;
                     }
 
                     return {
@@ -349,7 +351,7 @@ const createRoomStore = (background: BackgroundProxy) => {
                     ] ?? {
                       code: undefined,
                       tests: [],
-                      finished: false,
+                      status: QuestionProgressStatus.IN_PROGRESS,
                     };
 
                     if (data.code != undefined) {
@@ -360,8 +362,8 @@ const createRoomStore = (background: BackgroundProxy) => {
                       questionProgressOrDefault.tests = data.tests;
                     }
 
-                    if (data.finished != undefined) {
-                      questionProgressOrDefault.finished = data.finished;
+                    if (data.status != undefined) {
+                      questionProgressOrDefault.status = data.status;
                     }
 
                     return {
