@@ -7,6 +7,7 @@ import {
   ContentRequest,
   Events,
   EventType,
+  QuestionProgressStatus,
   ResponseStatus,
   User,
   WindowMessage,
@@ -120,7 +121,7 @@ export class MessageDispatcher {
         const url = getNormalizedUrl(window.location.href);
         this.roomStore.getState().actions.peers.updateSelf({
           questions: {
-            [url]: { finished: true },
+            [url]: { status: QuestionProgressStatus.COMPLETED },
           },
         });
         this.emitter.emit("rtc.send.message", {
@@ -190,6 +191,7 @@ export class MessageDispatcher {
             questions: {
               [url]: {
                 code,
+                status: QuestionProgressStatus.IN_PROGRESS,
               },
             },
           });
@@ -201,9 +203,8 @@ export class MessageDispatcher {
           this.roomStore.getState().actions.peers.update(from, {
             questions: {
               [url]: {
-                tests: {
-                  tests,
-                },
+                tests,
+                status: QuestionProgressStatus.IN_PROGRESS,
               },
             },
           });
@@ -216,7 +217,7 @@ export class MessageDispatcher {
             this.roomStore.getState().actions.peers.update(from, {
               questions: {
                 [url]: {
-                  finished: true,
+                  status: QuestionProgressStatus.COMPLETED,
                 },
               },
             });

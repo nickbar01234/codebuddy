@@ -1,6 +1,12 @@
-import { Id, SelectableTestCase, TestCase } from ".";
+import {
+  Id,
+  QuestionProgressStatus,
+  SelectableTestCase,
+  TestCase,
+  TestCases,
+} from ".";
 import type { ServiceResponse } from "./services";
-import { GenericMessage, MessagePayload, Selectable } from "./utils";
+import { GenericMessage, Selectable } from "./utils";
 
 export type Slug = string;
 
@@ -8,16 +14,19 @@ interface PeerGenericMessage extends GenericMessage {
   url: string;
 }
 
-type Code = ServiceResponse["getValue"];
+type MonacoCode = ServiceResponse["getValue"];
 
-interface PeerCodeMessage extends PeerGenericMessage, Code {
-  action: "code";
+export interface CodeWithChanges extends MonacoCode {
   changes: string;
+}
+
+interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
+  action: "code";
 }
 
 interface PeerTestMessage extends PeerGenericMessage {
   action: "tests";
-  tests: TestCase[];
+  tests: TestCases;
 }
 
 interface PeerHeartBeatMessage extends PeerGenericMessage {
@@ -47,9 +56,9 @@ export type PeerMessage =
   | UrlChangeMessage;
 
 interface PeerQuestionProgress {
-  code?: Omit<MessagePayload<PeerCodeMessage>, "url">;
+  code?: CodeWithChanges;
   tests: SelectableTestCase[];
-  finished: boolean;
+  status: QuestionProgressStatus;
 }
 
 interface SelfQuestionProgress extends Omit<PeerQuestionProgress, "tests"> {

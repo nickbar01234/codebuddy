@@ -1,11 +1,6 @@
-import { PeerMessage } from "@cb/types/peers";
-import {
-  ExtractMessage,
-  GenericMessage,
-  Identifiable,
-  MessagePayload,
-  Unsubscribe,
-} from "@cb/types/utils";
+import { GenericMessage, Identifiable, Unsubscribe } from "@cb/types/utils";
+import { TestCases } from ".";
+import { ServiceResponse } from "./services";
 
 export type User = string;
 
@@ -25,9 +20,16 @@ interface DescriptionNegotiation extends GenericMessage {
 
 type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
 
+export enum QuestionProgressStatus {
+  NOT_STARTED = "not-started",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+}
+
 export type QuestionProgress = {
-  code: MessagePayload<ExtractMessage<PeerMessage, "code">>;
-  status: "not-started" | "in-progress" | "completed";
+  code: ServiceResponse["getValue"];
+  tests: TestCases;
+  status: QuestionProgressStatus;
 };
 
 export type UserProgress = {
