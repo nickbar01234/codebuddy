@@ -62,6 +62,8 @@ export interface Question {
   tags: string[];
   url: string;
   codeSnippets: CodeSnippet[];
+  testSnippets: string[];
+  variables: string[];
 }
 
 export interface Room {
