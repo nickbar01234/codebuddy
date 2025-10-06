@@ -35,6 +35,7 @@ class RoomLifeCycle {
   ) {
     this.database = database;
     this.emitter = emitter;
+    // Empty usernames ensures WebRTC connections are established when observer fires
     this.room = {
       ...room,
       usernames: [],
@@ -167,7 +168,7 @@ class RoomLifeCycle {
 }
 
 type RoomJoinResponse =
-  | { code: RoomJoinCode.SUCCESS; data: RoomLifeCycle }
+  | { code: RoomJoinCode.SUCCESS; data: RoomLifeCycle; actualUsernames: User[] }
   | { code: Exclude<RoomJoinCode, RoomJoinCode.SUCCESS> };
 
 export class RoomController {
@@ -201,7 +202,11 @@ export class RoomController {
 
   public async join(id: Id): Promise<RoomJoinResponse> {
     if (this.room != null) {
-      return { code: RoomJoinCode.SUCCESS, data: this.room };
+      return {
+        code: RoomJoinCode.SUCCESS,
+        data: this.room,
+        actualUsernames: [],
+      };
     }
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     const room = await this.database.get(id);
@@ -214,13 +219,14 @@ export class RoomController {
     ) {
       return { code: RoomJoinCode.MAX_CAPACITY };
     }
+    const actualUsernames = room.usernames;
     this.room = new RoomLifeCycle(
       this.database,
       this.emitter,
       { id, ...room },
       me
     );
-    return { code: RoomJoinCode.SUCCESS, data: this.room };
+    return { code: RoomJoinCode.SUCCESS, data: this.room, actualUsernames };
   }
 
   public async leave() {
