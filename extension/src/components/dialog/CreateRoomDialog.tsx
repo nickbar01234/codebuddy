@@ -59,6 +59,7 @@ export const CreateRoomDialog = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border border-[#787880] px-3 py-2 placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] focus:border-transparent"
+          autoComplete="off"
         />
         <RadioGroup
           value={isPublic ? "public" : "private"}
