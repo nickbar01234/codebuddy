@@ -66,6 +66,7 @@ export const JoinRoomDialog = () => {
               onJoinRoom(e);
             }
           }}
+          autoComplete="off"
         />
         <Button
           onClick={onJoinRoom}
