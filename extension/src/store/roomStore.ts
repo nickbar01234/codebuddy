@@ -318,8 +318,8 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                               questions: {
                                 [curr.url]: {
                                   code: {
-                                    value: curr.codeSnippets[0].code,
-                                    language: curr.codeSnippets[0].langSlug,
+                                    value: curr.codeSnippets[0]?.code,
+                                    language: curr.codeSnippets[0]?.langSlug,
                                     changes: "{}",
                                   },
                                 },
