@@ -32,7 +32,6 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
 import { AppStore, useApp } from "./appStore";
-import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
 
 export enum SidebarTabIdentifier {
   ROOM_INFO,
@@ -105,11 +104,7 @@ interface RoomAction {
   };
 }
 
-const createRoomStore = (
-  background: BackgroundProxy,
-  appStore: AppStore,
-  leetcodeStore: LeetCodeStore
-) => {
+const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
@@ -506,6 +501,6 @@ const createRoomStore = (
   return useRoom;
 };
 
-export const useRoom = createRoomStore(background, useApp, useLeetCode);
+export const useRoom = createRoomStore(background, useApp);
 
 export type RoomStore = typeof useRoom;
