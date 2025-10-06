@@ -47,6 +47,9 @@ export const useRoomData = () => {
   const usernames = useRoom(useShallow((state) => state.room?.usernames ?? []));
   const self = useRoom((state) => state.self);
   const { allPeers } = usePeers();
+  const currentQuestion = questions.find(
+    (question) => question.url === self?.url
+  );
   return {
     name,
     questions,
@@ -67,6 +70,7 @@ export const useRoomData = () => {
             url: allPeers[user]?.url,
           }) as UserMedata
       ),
+    currentQuestion,
   };
 };
 
