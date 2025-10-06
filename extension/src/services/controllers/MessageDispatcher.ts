@@ -104,13 +104,17 @@ export class MessageDispatcher {
         message: await this.getTestsPayload(),
       })
     );
-    waitForElement(DOM.LEETCODE_TEST_ID).then((editor) =>
-      observer.observe(editor, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      })
-    );
+    waitForElement(DOM.LEETCODE_TEST_ID)
+      .then((editor) =>
+        observer.observe(editor, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+        })
+      )
+      .catch(() =>
+        console.error("Unable to find test editor", DOM.LEETCODE_TEST_ID)
+      );
     return () => observer.disconnect();
   }
 
