@@ -5,6 +5,7 @@ import {
   AddQuestionCode,
   RoomJoinCode,
 } from "@cb/services/controllers/RoomController";
+import db from "@cb/services/db";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
@@ -94,6 +95,15 @@ interface RoomAction {
     selectQuestion: (url: string) => void;
     selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
     closeSidebarTab: () => void;
+    storeCompletedCode: (
+      questionUrl: string,
+      code: string,
+      language: string
+    ) => Promise<void>;
+    loadRoomCompletedCode: (
+      roomId: string,
+      usernames: string[]
+    ) => Promise<void>;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -247,6 +257,11 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 if (response.code === RoomJoinCode.SUCCESS) {
                   const { name, isPublic, questions, usernames } =
                     response.data.getRoom();
+
+                  await get().actions.room.loadRoomCompletedCode(
+                    id,
+                    response.actualUsernames
+                  );
                   setRoom({ id, name, isPublic, questions, usernames });
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
@@ -309,37 +324,55 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                         appStore.getState().actions.getAuthUser().username
                     )
                     .forEach((username) => {
-                      const peerOrDefault: PeerState = state.peers[
-                        username
-                      ] ?? {
-                        questions: {},
-                        url: undefined,
-                        selected: getSelectedPeer(state.peers) === undefined,
-                      };
-                      const peerWithOverrides = room.questions.reduce(
-                        (acc, curr) => {
-                          if (!Object.keys(acc.questions).includes(curr.url)) {
-                            return derivePeerState(acc, {
-                              questions: {
-                                [curr.url]: {
-                                  code: {
-                                    value: curr.codeSnippets[0]?.code,
-                                    language: curr.codeSnippets[0]?.langSlug,
-                                    changes: "{}",
-                                  },
-                                  tests: groupTestCases(
-                                    curr.variables,
-                                    curr.testSnippets
-                                  ),
-                                },
-                              },
-                            });
-                          }
-                          return acc;
-                        },
-                        peerOrDefault
-                      );
-                      state.peers[username] = peerWithOverrides;
+                      if (!state.peers[username]) {
+                        state.peers[username] = {
+                          questions: {},
+                          url: undefined,
+                          selected: getSelectedPeer(state.peers) === undefined,
+                        };
+                      }
+
+                      room.questions.forEach((curr) => {
+                        const existingQuestion =
+                          state.peers[username].questions[curr.url];
+                        const tests = groupTestCases(
+                          curr.variables,
+                          curr.testSnippets
+                        ).map((test, idx) => ({
+                          ...test,
+                          selected: idx === 0,
+                        }));
+
+                        if (!existingQuestion) {
+                          state.peers[username].questions[curr.url] = {
+                            code: {
+                              value: curr.codeSnippets[0]?.code,
+                              language: curr.codeSnippets[0]?.langSlug,
+                              changes: "{}",
+                            },
+                            tests,
+                            status: QuestionProgressStatus.NOT_STARTED,
+                          };
+                        } else if (
+                          !existingQuestion.code ||
+                          !existingQuestion.code.value
+                        ) {
+                          state.peers[username].questions[curr.url] = {
+                            ...existingQuestion,
+                            code: {
+                              value: curr.codeSnippets[0]?.code,
+                              language: curr.codeSnippets[0]?.langSlug,
+                              changes: "{}",
+                            },
+                            tests,
+                          };
+                        } else {
+                          state.peers[username].questions[curr.url] = {
+                            ...existingQuestion,
+                            tests,
+                          };
+                        }
+                      });
                     });
                 }
               }),
@@ -359,6 +392,107 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   state.room.activeSidebarTab = undefined;
                 }
               });
+            },
+            storeCompletedCode: async (
+              questionUrl: string,
+              code: string,
+              language: string
+            ) => {
+              const state = get();
+              if (!state.room?.id) return;
+
+              try {
+                const username = appStore
+                  .getState()
+                  .actions.getAuthUser().username;
+                const normalizedUrl = getNormalizedUrl(questionUrl);
+
+                // Store in database for persistence
+                const currentProgress = (await db.room.getUser(
+                  state.room.id,
+                  username
+                )) || { questions: {} };
+                const updatedProgress = {
+                  ...currentProgress,
+                  questions: {
+                    ...currentProgress.questions,
+                    [normalizedUrl]: {
+                      code: { value: code, language },
+                      tests: [], // Empty tests for now
+                      status: QuestionProgressStatus.COMPLETED,
+                    },
+                  },
+                };
+
+                await db.room.setUser(state.room.id, username, updatedProgress);
+                console.log(`Stored completed code for: ${normalizedUrl}`);
+              } catch (error) {
+                console.error("Error storing completed code:", error);
+              }
+            },
+            loadRoomCompletedCode: async (
+              roomId: string,
+              usernames: string[]
+            ) => {
+              try {
+                const currentUser = appStore
+                  .getState()
+                  .actions.getAuthUser().username;
+                const otherUsers = usernames.filter(
+                  (username) => username !== currentUser
+                );
+
+                for (const username of otherUsers) {
+                  try {
+                    const userProgress = await db.room.getUser(
+                      roomId,
+                      username
+                    );
+
+                    if (userProgress?.questions) {
+                      const completedQuestions = Object.entries(
+                        userProgress.questions
+                      ).reduce(
+                        (acc, [url, progress]) => {
+                          const questionProgress = progress as any;
+
+                          if (
+                            questionProgress.status ===
+                              QuestionProgressStatus.COMPLETED &&
+                            questionProgress.code
+                          ) {
+                            const normalizedUrl = getNormalizedUrl(url);
+
+                            acc[normalizedUrl] = {
+                              code: {
+                                value: questionProgress.code.value,
+                                language: questionProgress.code.language,
+                                changes: "{}",
+                              },
+                              status: questionProgress.status,
+                            };
+                          }
+                          return acc;
+                        },
+                        {} as Record<string, UpdatePeerQuestionProgress>
+                      );
+
+                      if (Object.keys(completedQuestions).length > 0) {
+                        await get().actions.peers.update(username, {
+                          questions: completedQuestions,
+                        });
+                      }
+                    }
+                  } catch (error) {
+                    console.error(
+                      `Error loading progress for user ${username}:`,
+                      error
+                    );
+                  }
+                }
+              } catch (error) {
+                console.error("Error loading room completed code:", error);
+              }
             },
           },
           peers: {

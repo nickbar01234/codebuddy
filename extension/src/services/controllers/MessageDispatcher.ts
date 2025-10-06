@@ -120,14 +120,43 @@ export class MessageDispatcher {
 
   private subscribeToSubmission() {
     // todo(nickbar01234): On teardown, we need to revert the changes
-    const sendSuccessSubmission = () => {
+    const sendSuccessSubmission = async () => {
       if (this.appStore.getState().auth.status === AppStatus.AUTHENTICATED) {
         const url = getNormalizedUrl(window.location.href);
-        this.roomStore.getState().actions.peers.updateSelf({
-          questions: {
-            [url]: { status: QuestionProgressStatus.COMPLETED },
-          },
-        });
+
+        // Get the submitted code
+        try {
+          const { value: code, language } = await this.background.getCode({});
+
+          // Update self state
+          this.roomStore.getState().actions.peers.updateSelf({
+            questions: {
+              [url]: {
+                code: {
+                  value: code || "",
+                  language: language || "",
+                  changes: "{}",
+                },
+                status: QuestionProgressStatus.COMPLETED,
+              },
+            },
+          });
+
+          // Store completed code in database
+          await this.roomStore
+            .getState()
+            .actions.room.storeCompletedCode(url, code || "", language || "");
+        } catch (error) {
+          console.error("Failed to capture submitted code:", error);
+
+          // Fallback: just update status without code
+          this.roomStore.getState().actions.peers.updateSelf({
+            questions: {
+              [url]: { status: QuestionProgressStatus.COMPLETED },
+            },
+          });
+        }
+
         this.emitter.emit("rtc.send.message", {
           message: {
             action: "event",
@@ -159,17 +188,17 @@ export class MessageDispatcher {
         if (import.meta.env.MODE === "development") {
           const mockBtn = button.cloneNode(true) as HTMLButtonElement;
           button.replaceWith(mockBtn);
-          mockBtn.onclick = function (event) {
+          mockBtn.onclick = async function (event) {
             event.preventDefault();
-            sendSuccessSubmission();
+            await sendSuccessSubmission();
             return;
           };
         } else {
-          button.onclick = function (event) {
+          button.onclick = async function (event) {
             if (onclick) onclick.call(this, event);
             waitForElement(DOM.LEETCODE_SUBMISSION_RESULT)
-              .then(sendSuccessSubmission.bind(this))
-              .catch(sendFailedSubmission.bind(this));
+              .then(() => sendSuccessSubmission())
+              .catch(sendFailedSubmission);
           };
         }
       });
