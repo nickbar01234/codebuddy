@@ -8,10 +8,8 @@ export const getQuestionIdFromUrl = (url: string) => {
     return match[0];
   }
 
-  throw new Error("Invalid Leetcode URL");
+  throw new Error(`Invalid Leetcode URL ${url}`);
 };
-
-export const getSessionId = () => getQuestionIdFromUrl(window.location.href);
 
 export const constructUrlFromQuestionId = (questionId: string) => {
   return `${URLS.PROBLEMS}/${questionId}`;

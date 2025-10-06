@@ -1,7 +1,6 @@
 import { setLocalStorage } from "@cb/services";
 import background from "@cb/services/background";
 import { auth } from "@cb/services/db";
-import { constructUrlFromQuestionId, getSessionId } from "@cb/utils";
 import { FirebaseError } from "firebase/app";
 import {
   ActionCodeSettings,
@@ -40,7 +39,7 @@ export const useSignInWithEmailLink = () => {
 
   const actionCodeSettings: ActionCodeSettings = React.useMemo(
     () => ({
-      url: constructUrlFromQuestionId(getSessionId()),
+      url: getNormalizedUrl(window.location.href),
       handleCodeInApp: true,
     }),
     []

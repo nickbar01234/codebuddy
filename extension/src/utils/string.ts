@@ -29,5 +29,6 @@ export const inferVariablesFromGraphql = (content: string) => {
   if (match != null) {
     return Array.from(match[1].matchAll(/\b([a-zA-Z_]\w*)\s*=/g), (v) => v[1]);
   }
+  console.error("Unable to infer variables from graphql", content);
   return [];
 };
