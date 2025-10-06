@@ -17,7 +17,6 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
   const leetCodeStore = create<BoundStore<LeetCodeState, LeetCodeAction>>()(
     immer((set, get) => ({
       languageExtensions: [],
-      problemMetadata: {},
 
       actions: {
         getVariables: async () => {

@@ -12,9 +12,13 @@ interface UserAwareTableRowProps {
 export const UserAwareTableRow = ({ question }: UserAwareTableRowProps) => {
   const { selectQuestion } = useRoomActions();
   const { users } = useRoomData();
-  const usersInQuestion = users.filter(
-    (user) => getQuestionIdFromUrl(user.url ?? "") === question.slug
-  );
+  const usersInQuestion = users.filter((user) => {
+    try {
+      return getQuestionIdFromUrl(user.url ?? "") === question.slug;
+    } catch {
+      return false;
+    }
+  });
 
   return (
     <DefaultTableRow
