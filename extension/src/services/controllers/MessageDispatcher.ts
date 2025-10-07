@@ -133,8 +133,8 @@ export class MessageDispatcher {
             questions: {
               [url]: {
                 code: {
-                  value: code || "",
-                  language: language || "",
+                  value: code,
+                  language: language,
                   changes: "{}",
                 },
                 status: QuestionProgressStatus.COMPLETED,
@@ -145,7 +145,7 @@ export class MessageDispatcher {
           // Store completed code in database
           await this.roomStore
             .getState()
-            .actions.room.storeCompletedCode(url, code || "", language || "");
+            .actions.room.storeCompletedCode(url, code, language);
         } catch (error) {
           console.error("Failed to capture submitted code:", error);
 

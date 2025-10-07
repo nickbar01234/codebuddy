@@ -22,8 +22,8 @@ export default defineBackground(() => {
       .map((editor) => editor.getModel())
       .find((model) => model?.getLanguageId() !== "plaintext");
     return {
-      value: model?.getValue(),
-      language: model?.getLanguageId(),
+      value: model?.getValue() ?? "",
+      language: model?.getLanguageId() ?? "",
     };
   };
 
