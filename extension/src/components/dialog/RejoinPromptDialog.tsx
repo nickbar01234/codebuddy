@@ -30,6 +30,8 @@ export const RejoinPromptDialog = () => {
       dialog={{
         props: {
           open:
+            // Since LC is SPA - users can navigate to problemset page without reloading
+            hasQuestionIdInUrl(self?.url ?? "") &&
             roomStatus === RoomStatus.IN_ROOM &&
             questions.every((question) => question.url !== self?.url) &&
             questions.length > 0,

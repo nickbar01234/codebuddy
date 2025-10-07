@@ -11,6 +11,16 @@ export const getQuestionIdFromUrl = (url: string) => {
   throw new Error(`Invalid Leetcode URL ${url}`);
 };
 
+export const hasQuestionIdInUrl = (url: string) => {
+  try {
+    getQuestionIdFromUrl(url);
+    return true;
+  } catch (e) {
+    console.error("Failed to extract question ID", e);
+    return false;
+  }
+};
+
 export const constructUrlFromQuestionId = (questionId: string) => {
   return `${URLS.PROBLEMS}/${questionId}`;
 };
