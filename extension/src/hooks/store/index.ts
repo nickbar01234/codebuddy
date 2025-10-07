@@ -102,5 +102,3 @@ export const useAppActions = ({ panelRef }: any) => {
 };
 
 export const useHtmlActions = () => useHtml((state) => state.actions);
-
-export const useHtmlElement = () => useHtml((state) => state.htmlElement);
