@@ -67,7 +67,7 @@ export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
 };
 
 export const FEATURE_FLAG = {
-  DISABLE_USER_TRACKING: true,
+  DISABLE_ROOM_VISIBILITY: true,
 };
 
 export const CSS = {

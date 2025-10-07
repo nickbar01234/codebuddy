@@ -1,3 +1,4 @@
+import { FEATURE_FLAG } from "@cb/constants";
 import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
@@ -64,7 +65,9 @@ export const CreateRoomDialog = () => {
         <RadioGroup
           value={isPublic ? "public" : "private"}
           onValueChange={(value) => setIsPublic(value === "public")}
-          className="space-y-1"
+          className={cn("space-y-1", {
+            hidden: FEATURE_FLAG.DISABLE_ROOM_VISIBILITY,
+          })}
         >
           <p className="font-medium ">Visibility</p>
 
