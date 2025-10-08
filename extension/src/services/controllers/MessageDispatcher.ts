@@ -120,43 +120,10 @@ export class MessageDispatcher {
 
   private subscribeToSubmission() {
     // todo(nickbar01234): On teardown, we need to revert the changes
-    const sendSuccessSubmission = async () => {
+    const sendSuccessSubmission = () => {
       if (this.appStore.getState().auth.status === AppStatus.AUTHENTICATED) {
         const url = getNormalizedUrl(window.location.href);
-
-        // Get the submitted code
-        try {
-          const { value: code, language } = await this.background.getCode({});
-
-          // Update self state
-          this.roomStore.getState().actions.peers.updateSelf({
-            questions: {
-              [url]: {
-                code: {
-                  value: code,
-                  language: language,
-                  changes: "{}",
-                },
-                status: QuestionProgressStatus.COMPLETED,
-              },
-            },
-          });
-
-          // Store completed code in database
-          await this.roomStore
-            .getState()
-            .actions.room.storeCompletedCode(url, code, language);
-        } catch (error) {
-          console.error("Failed to capture submitted code:", error);
-
-          // Fallback: just update status without code
-          this.roomStore.getState().actions.peers.updateSelf({
-            questions: {
-              [url]: { status: QuestionProgressStatus.COMPLETED },
-            },
-          });
-        }
-
+        this.roomStore.getState().actions.self.complete(url);
         this.emitter.emit("rtc.send.message", {
           message: {
             action: "event",
@@ -190,15 +157,15 @@ export class MessageDispatcher {
           button.replaceWith(mockBtn);
           mockBtn.onclick = async function (event) {
             event.preventDefault();
-            await sendSuccessSubmission();
+            sendSuccessSubmission();
             return;
           };
         } else {
           button.onclick = async function (event) {
             if (onclick) onclick.call(this, event);
             waitForElement(DOM.LEETCODE_SUBMISSION_RESULT)
-              .then(() => sendSuccessSubmission())
-              .catch(sendFailedSubmission);
+              .then(sendSuccessSubmission.bind(this))
+              .catch(sendFailedSubmission.bind(this));
           };
         }
       });
@@ -296,7 +263,7 @@ export class MessageDispatcher {
           if (user == undefined) {
             return;
           }
-          this.roomStore.getState().actions.peers.updateSelf({
+          this.roomStore.getState().actions.self.update({
             url: getNormalizedUrl(window.location.href),
           });
           if (questions.some((question) => question.url === url)) {

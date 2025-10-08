@@ -17,7 +17,7 @@ interface PeerGenericMessage extends GenericMessage {
 type MonacoCode = ServiceResponse["getValue"];
 
 export interface CodeWithChanges extends MonacoCode {
-  changes: string;
+  changes?: string;
 }
 
 interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
@@ -61,8 +61,10 @@ interface PeerQuestionProgress {
   status: QuestionProgressStatus;
 }
 
-interface SelfQuestionProgress extends Omit<PeerQuestionProgress, "tests"> {
+interface SelfQuestionProgress {
+  code?: MonacoCode;
   tests: TestCase[];
+  status: QuestionProgressStatus;
 }
 
 export interface PeerState extends Selectable {

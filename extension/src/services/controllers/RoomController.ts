@@ -1,7 +1,15 @@
 import { ROOM } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
-import { DatabaseService, Events, Id, Question, Room, User } from "@cb/types";
+import {
+  DatabaseService,
+  Events,
+  Id,
+  Question,
+  QuestionProgress,
+  Room,
+  User,
+} from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { isEventFromMe } from "@cb/utils";
 
@@ -27,9 +35,6 @@ class RoomLifeCycle {
 
   private unsubscribers: Unsubscribe[];
 
-  // Internal list used solely for signaling join/left diffs. Do not expose.
-  private signalers: User[] = [];
-
   public constructor(
     database: DatabaseService["room"],
     emitter: EventEmitter,
@@ -38,9 +43,10 @@ class RoomLifeCycle {
   ) {
     this.database = database;
     this.emitter = emitter;
-    // Keep actual usernames for consumers; use `signalers` internally
-    this.room = { ...room };
-    this.signalers = [];
+    this.room = {
+      ...room,
+      usernames: [],
+    };
     this.me = me;
     this.unsubscribers = [];
     this.init();
@@ -48,6 +54,10 @@ class RoomLifeCycle {
 
   public getRoom() {
     return this.room;
+  }
+
+  public async getMaybeQuestionProgress() {
+    return this.database.getUser(this.room.id, this.me);
   }
 
   public async leave() {
@@ -58,6 +68,12 @@ class RoomLifeCycle {
 
   public async addQuestion(question: Question) {
     this.database.addQuestion(this.room.id, question);
+  }
+
+  public async completeQuestion(url: string, progress: QuestionProgress) {
+    this.database.setUser(this.room.id, this.me, {
+      questions: { [url]: progress },
+    });
   }
 
   private async init() {
@@ -73,18 +89,18 @@ class RoomLifeCycle {
   private subscribeToRoom() {
     return this.database.observer.room(this.room.id, {
       onChange: (room) => {
-        // Compare against internal signalers list to compute diffs
         const joined = room.usernames.filter(
-          (user) => !this.signalers.includes(user) && user !== this.me
+          (user) => !this.room.usernames.includes(user) && user !== this.me
         );
-        const left = this.signalers.filter(
+        const left = this.room.usernames.filter(
           (user) => !room.usernames.includes(user) && user !== this.me
         );
         console.log("Observed participants", joined, left);
         this.emitter.emit("room.changes", { room, joined, left });
-        this.room = { ...this.room, ...room };
-        // Update signalers snapshot to latest usernames
-        this.signalers = [...room.usernames];
+        this.room = {
+          ...this.room,
+          ...room,
+        };
       },
     });
   }
@@ -225,19 +241,7 @@ export class RoomController {
     return { code: RoomJoinCode.SUCCESS, data: this.room };
   }
 
-  public async leave() {
-    if (this.room != null) {
-      await this.room.leave();
-      this.room = null;
-    }
-  }
-
-  public async addQuestion(question: Question): Promise<AddQuestionCode> {
-    if (this.room != null) {
-      this.room.addQuestion(question);
-      return AddQuestionCode.SUCCESS;
-    } else {
-      return AddQuestionCode.NOT_IN_ROOM;
-    }
+  public instance() {
+    return this.room;
   }
 }
