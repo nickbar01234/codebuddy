@@ -258,10 +258,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   const { name, isPublic, questions, usernames } =
                     response.data.getRoom();
 
-                  await get().actions.room.loadRoomCompletedCode(
-                    id,
-                    response.actualUsernames
-                  );
+                  await get().actions.room.loadRoomCompletedCode(id, usernames);
                   setRoom({ id, name, isPublic, questions, usernames });
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
@@ -407,24 +404,15 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   .actions.getAuthUser().username;
                 const normalizedUrl = getNormalizedUrl(questionUrl);
 
-                // Store in database for persistence
-                const currentProgress = (await db.room.getUser(
-                  state.room.id,
-                  username
-                )) || { questions: {} };
-                const updatedProgress = {
-                  ...currentProgress,
+                await db.room.setUser(state.room.id, username, {
                   questions: {
-                    ...currentProgress.questions,
                     [normalizedUrl]: {
                       code: { value: code, language },
-                      tests: [], // Empty tests for now
+                      tests: [],
                       status: QuestionProgressStatus.COMPLETED,
                     },
                   },
-                };
-
-                await db.room.setUser(state.room.id, username, updatedProgress);
+                });
                 console.log(`Stored completed code for: ${normalizedUrl}`);
               } catch (error) {
                 console.error("Error storing completed code:", error);

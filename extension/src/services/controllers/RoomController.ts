@@ -27,6 +27,9 @@ class RoomLifeCycle {
 
   private unsubscribers: Unsubscribe[];
 
+  // Internal list used solely for signaling join/left diffs. Do not expose.
+  private signalers: User[] = [];
+
   public constructor(
     database: DatabaseService["room"],
     emitter: EventEmitter,
@@ -35,11 +38,9 @@ class RoomLifeCycle {
   ) {
     this.database = database;
     this.emitter = emitter;
-    // Empty usernames ensures WebRTC connections are established when observer fires
-    this.room = {
-      ...room,
-      usernames: [],
-    };
+    // Keep actual usernames for consumers; use `signalers` internally
+    this.room = { ...room };
+    this.signalers = [];
     this.me = me;
     this.unsubscribers = [];
     this.init();
@@ -72,18 +73,18 @@ class RoomLifeCycle {
   private subscribeToRoom() {
     return this.database.observer.room(this.room.id, {
       onChange: (room) => {
+        // Compare against internal signalers list to compute diffs
         const joined = room.usernames.filter(
-          (user) => !this.room.usernames.includes(user) && user !== this.me
+          (user) => !this.signalers.includes(user) && user !== this.me
         );
-        const left = this.room.usernames.filter(
+        const left = this.signalers.filter(
           (user) => !room.usernames.includes(user) && user !== this.me
         );
         console.log("Observed participants", joined, left);
         this.emitter.emit("room.changes", { room, joined, left });
-        this.room = {
-          ...this.room,
-          ...room,
-        };
+        this.room = { ...this.room, ...room };
+        // Update signalers snapshot to latest usernames
+        this.signalers = [...room.usernames];
       },
     });
   }
@@ -168,7 +169,7 @@ class RoomLifeCycle {
 }
 
 type RoomJoinResponse =
-  | { code: RoomJoinCode.SUCCESS; data: RoomLifeCycle; actualUsernames: User[] }
+  | { code: RoomJoinCode.SUCCESS; data: RoomLifeCycle }
   | { code: Exclude<RoomJoinCode, RoomJoinCode.SUCCESS> };
 
 export class RoomController {
@@ -202,11 +203,7 @@ export class RoomController {
 
   public async join(id: Id): Promise<RoomJoinResponse> {
     if (this.room != null) {
-      return {
-        code: RoomJoinCode.SUCCESS,
-        data: this.room,
-        actualUsernames: [],
-      };
+      return { code: RoomJoinCode.SUCCESS, data: this.room };
     }
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     const room = await this.database.get(id);
@@ -219,14 +216,13 @@ export class RoomController {
     ) {
       return { code: RoomJoinCode.MAX_CAPACITY };
     }
-    const actualUsernames = room.usernames;
     this.room = new RoomLifeCycle(
       this.database,
       this.emitter,
       { id, ...room },
       me
     );
-    return { code: RoomJoinCode.SUCCESS, data: this.room, actualUsernames };
+    return { code: RoomJoinCode.SUCCESS, data: this.room };
   }
 
   public async leave() {
