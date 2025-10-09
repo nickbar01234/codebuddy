@@ -33,10 +33,34 @@ export enum EventType {
   SELECT_QUESTION,
 }
 
+export enum RecoveryReason {
+  CHANNEL_ERROR = "channel-error",
+  ICE_FAILURE = "ice-failure",
+  CONNECTION_TIMEOUT = "connection-timeout",
+}
+
 interface PeerEventMessage extends PeerGenericMessage {
   action: "event";
   event: EventType;
   user: Id;
+}
+
+export interface PeerRecoveryRequestMessage extends PeerGenericMessage {
+  action: "recovery-request";
+  requestId: string;
+  reason: RecoveryReason;
+  errorDetail?: string;
+}
+
+export interface PeerRecoveryAckMessage extends PeerGenericMessage {
+  action: "recovery-ack";
+  requestId: string;
+}
+
+export interface PeerRecoveryAbortMessage extends PeerGenericMessage {
+  action: "recovery-abort";
+  requestId: string;
+  reason: string;
 }
 
 export type PeerMessage =
@@ -44,7 +68,10 @@ export type PeerMessage =
   | PeerTestMessage
   | PeerHeartBeatMessage
   | PeerEventMessage
-  | UrlChangeMessage;
+  | UrlChangeMessage
+  | PeerRecoveryRequestMessage
+  | PeerRecoveryAckMessage
+  | PeerRecoveryAbortMessage;
 
 export interface PeerState extends Selectable {
   code?: MessagePayload<PeerCodeMessage>;

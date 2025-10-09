@@ -1,4 +1,8 @@
-import { PeerMessage } from "@cb/types/peers";
+import {
+  PeerMessage,
+  PeerRecoveryAckMessage,
+  PeerRecoveryRequestMessage,
+} from "@cb/types/peers";
 import {
   ExtractMessage,
   GenericMessage,
@@ -23,7 +27,15 @@ interface DescriptionNegotiation extends GenericMessage {
   data: RTCSessionDescriptionInit;
 }
 
-type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
+interface RecoveryNegotiation extends GenericMessage {
+  action: "recovery";
+  data: PeerRecoveryRequestMessage | PeerRecoveryAckMessage;
+}
+
+type NegotiationMessage =
+  | IceCandidateNegotiation
+  | DescriptionNegotiation
+  | RecoveryNegotiation;
 
 export type QuestionProgress = {
   code: MessagePayload<ExtractMessage<PeerMessage, "code">>;

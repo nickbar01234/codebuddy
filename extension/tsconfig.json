@@ -6,6 +6,6 @@
       "@cb/*": ["./src/*"]
     }
   },
-  "exclude": ["./**/*.spec.ts", ".output"],
+  "exclude": [".output"],
   "extends": ["./.wxt/tsconfig.json"]
 }
