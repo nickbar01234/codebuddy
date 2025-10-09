@@ -12,7 +12,7 @@ import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
   const { create } = useRoomActions();
-  const [isPublic, setIsPublic] = React.useState(true);
+  const [isPublic, setIsPublic] = React.useState(false);
   const [name, setName] = React.useState("");
 
   const createRoomThrottled = React.useMemo(() => {
@@ -74,7 +74,7 @@ export const CreateRoomDialog = () => {
           <div className="flex flex-col gap-y-1">
             <div className="grid grid-cols-[5%_95%]">
               <RadioGroupItem
-                value="private"
+                value="public"
                 id="public"
                 className="form-radio self-center border-[#1E1E1E] dark:border-white text-[#1E1E1E] dark:text-white"
               />
