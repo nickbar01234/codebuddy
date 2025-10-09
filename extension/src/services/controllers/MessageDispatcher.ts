@@ -200,7 +200,7 @@ export class MessageDispatcher {
           break;
         }
         case "recovery-abort": {
-          console.log(`Recovery aborted by ${from}:`, message.reason);
+          // TODO(dlinh3): Handle recovery abort, not sure how
           break;
         }
       }
