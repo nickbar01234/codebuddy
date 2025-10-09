@@ -332,14 +332,12 @@ export class WebRtcController {
       return;
     }
 
-    console.log(`Received recovery acknowledgment from ${from}`);
-
     if (connection.recoveryTimeout) {
       clearTimeout(connection.recoveryTimeout);
       connection.recoveryTimeout = undefined;
     }
 
-    connection.recoveryState = RecoveryState.RECOVERY_ACKNOWLEDGED;
+    connection.recoveryState = RecoveryState.IDLE;
 
     this.reestablishConnection(from);
   }
@@ -350,11 +348,6 @@ export class WebRtcController {
       return;
     }
 
-    console.warn(
-      `Recovery timeout for ${user}, proceeding with unilateral recovery`
-    );
-
-    // Reset state and proceed with fallback recovery
     connection.recoveryState = RecoveryState.IDLE;
     connection.recoveryRequestId = undefined;
 
@@ -362,9 +355,6 @@ export class WebRtcController {
   }
 
   private reestablishConnection(user: User) {
-    console.log(`Starting Phase 2 recovery for ${user}`);
-
-    // Reset recovery state
     const connection = this.pcs.get(user);
     if (connection) {
       connection.recoveryState = RecoveryState.IDLE;
@@ -374,7 +364,6 @@ export class WebRtcController {
     this.disconnect(user);
 
     setTimeout(() => {
-      console.log(`Reconnecting to ${user} after coordinated disconnection`);
       this.connect(user);
     }, 500);
   }
