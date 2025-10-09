@@ -56,8 +56,8 @@ class RoomLifeCycle {
     return this.room;
   }
 
-  public async getMaybeQuestionProgress() {
-    return this.database.getUser(this.room.id, this.me);
+  public async getUserProgress() {
+    return this.database.getUserProgress(this.room.id, this.me);
   }
 
   public async leave() {
@@ -71,7 +71,7 @@ class RoomLifeCycle {
   }
 
   public async completeQuestion(url: string, progress: QuestionProgress) {
-    this.database.setUser(this.room.id, this.me, {
+    this.database.setUserProgress(this.room.id, this.me, {
       questions: { [url]: progress },
     });
   }
