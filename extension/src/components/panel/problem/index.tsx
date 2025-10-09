@@ -110,6 +110,7 @@ export const QuestionSelectorPanel = React.memo(
                     ) {
                       anchorContainer.style.display = "none";
                     } else {
+                      anchorContainer.style.display = "block";
                       const bg = zebraStripes.shift();
                       if (bg != undefined) {
                         appendClassIdempotent(anchorContainer, [bg]);
