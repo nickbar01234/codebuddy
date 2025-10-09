@@ -1,10 +1,7 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
-import {
-  AddQuestionCode,
-  RoomJoinCode,
-} from "@cb/services/controllers/RoomController";
+import { RoomJoinCode } from "@cb/services/controllers/RoomController";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
@@ -97,10 +94,13 @@ interface RoomAction {
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
-    updateSelf: (state: Partial<UpdateSelfArgs>) => void;
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
+  };
+  self: {
+    update: (state: Partial<UpdateSelfArgs>) => void;
+    complete: (url: string) => void;
   };
 }
 
@@ -126,13 +126,13 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         toast.error("Failed to select next problem. Please try again");
         return;
       }
-      const addQuestionResponse =
-        await getOrCreateControllers().room.addQuestion(metadata.data);
-      if (addQuestionResponse == AddQuestionCode.NOT_IN_ROOM) {
+      const instance = getOrCreateControllers().room.instance();
+      if (instance == undefined) {
         throw new Error(
           "Attempt to add question when not in room. This is most likely a bug"
         );
       }
+      await instance.addQuestion(metadata.data);
       useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
       windowMessager.navigate({ url: getNormalizedUrl(url) });
     } catch (error) {
@@ -173,7 +173,9 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             previousSelectedTest >= tests.length
               ? tests.length - 1
               : Math.max(previousSelectedTest, 0);
-          tests[selectedTestIndex].selected = true;
+          if (tests[selectedTestIndex] != undefined) {
+            tests[selectedTestIndex].selected = true;
+          }
           questionProgressOrDefault.tests = tests;
         }
 
@@ -196,6 +198,19 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         ...updatedQuestionProgress,
       },
     };
+  };
+
+  const setSelfProgressForCurrentUrl = async (question: Question) => {
+    const code = await background.getCode({});
+    const { tests } = getTestsPayload(question.variables);
+    useRoom.getState().actions.self.update({
+      questions: {
+        [question.url]: {
+          code,
+          tests,
+        },
+      },
+    });
   };
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
@@ -232,6 +247,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   questions: [metadata.data],
                   usernames,
                 });
+                setSelfProgressForCurrentUrl(metadata.data);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -248,6 +264,21 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   const { name, isPublic, questions, usernames } =
                     response.data.getRoom();
                   setRoom({ id, name, isPublic, questions, usernames });
+
+                  const question = questions.find(
+                    (question) =>
+                      question.url === getNormalizedUrl(window.location.href)
+                  );
+                  if (question != undefined) {
+                    setSelfProgressForCurrentUrl(question);
+                  }
+
+                  // todo(nickbar01234): There's a race between populating self-data and WebRTC connection succeeding
+                  // Perhaps some sort of backfilling mechanism
+                  const progress = await response.data.getUserProgress();
+                  if (progress != undefined) {
+                    get().actions.self.update(progress);
+                  }
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -372,7 +403,51 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 state.peers[id] = derivePeerState(peerOrDefault, peer);
               });
             },
-            updateSelf: (data) => {
+            remove: (ids) => {
+              set((state) => {
+                const selectedPeerBeingRemoved = ids.includes(
+                  getSelectedPeer(state.peers)?.id ?? ""
+                );
+                ids.forEach((id) => delete state.peers[id]);
+                if (selectedPeerBeingRemoved) {
+                  const remainingPeerIds = Object.keys(state.peers);
+                  if (remainingPeerIds.length > 0) {
+                    // Select the first available peer
+                    const newSelectedPeerId = remainingPeerIds[0];
+                    state.peers[newSelectedPeerId].selected = true;
+                  }
+                }
+              });
+            },
+            selectPeer: (id) => {
+              set((state) => {
+                const active = getSelectedPeer(state.peers);
+                if (active != undefined && active.id !== id) {
+                  state.peers[active.id].selected = false;
+                }
+
+                if (state.peers[id] != undefined) {
+                  state.peers[id].selected = true;
+                }
+              });
+            },
+            selectTest: (idx) =>
+              set((state) => {
+                const active = getSelectedPeer(state.peers);
+                const progress =
+                  state.peers[active?.id ?? ""].questions[
+                    getNormalizedUrl(window.location.href)
+                  ];
+                if (progress != undefined) {
+                  progress.tests = progress.tests.map((test, i) => ({
+                    ...test,
+                    selected: i === idx,
+                  }));
+                }
+              }),
+          },
+          self: {
+            update: (data) => {
               set((state) => {
                 const selfOrDefault: SelfState = {
                   url: getNormalizedUrl(window.location.href),
@@ -425,48 +500,29 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 state.self = selfOrDefault;
               });
             },
-            remove: (ids) => {
-              set((state) => {
-                const selectedPeerBeingRemoved = ids.includes(
-                  getSelectedPeer(state.peers)?.id ?? ""
-                );
-                ids.forEach((id) => delete state.peers[id]);
-                if (selectedPeerBeingRemoved) {
-                  const remainingPeerIds = Object.keys(state.peers);
-                  if (remainingPeerIds.length > 0) {
-                    // Select the first available peer
-                    const newSelectedPeerId = remainingPeerIds[0];
-                    state.peers[newSelectedPeerId].selected = true;
-                  }
-                }
-              });
+            complete: async (url) => {
+              const instance = getOrCreateControllers().room.instance();
+              if (instance != undefined) {
+                const normalizedUrl = getNormalizedUrl(url);
+                get().actions.self.update({
+                  questions: {
+                    [normalizedUrl]: {
+                      status: QuestionProgressStatus.COMPLETED,
+                    },
+                  },
+                });
+                const progress = get().self?.questions[normalizedUrl];
+                const code = progress?.code;
+                await instance.completeQuestion(normalizedUrl, {
+                  code: {
+                    value: code?.value ?? "",
+                    language: code?.language ?? "",
+                  },
+                  tests: progress?.tests ?? [],
+                  status: QuestionProgressStatus.COMPLETED,
+                });
+              }
             },
-            selectPeer: (id) => {
-              set((state) => {
-                const active = getSelectedPeer(state.peers);
-                if (active != undefined && active.id !== id) {
-                  state.peers[active.id].selected = false;
-                }
-
-                if (state.peers[id] != undefined) {
-                  state.peers[id].selected = true;
-                }
-              });
-            },
-            selectTest: (idx) =>
-              set((state) => {
-                const active = getSelectedPeer(state.peers);
-                const progress =
-                  state.peers[active?.id ?? ""].questions[
-                    getNormalizedUrl(window.location.href)
-                  ];
-                if (progress != undefined) {
-                  progress.tests = progress.tests.map((test, i) => ({
-                    ...test,
-                    selected: i === idx,
-                  }));
-                }
-              }),
           },
         },
       }))
@@ -489,7 +545,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         background.applyCodeToEditor({
           code: current.peerCode.value ?? "",
           language: current.peerCode.language ?? "",
-          changes: JSON.parse(current.peerCode.changes ?? "{}"),
+          changes: JSON.parse(current.peerCode?.changes ?? "{}"),
           changeUser: current.id !== prev?.id,
           editorId: DOM.CODEBUDDY_EDITOR_ID,
         });

@@ -1,10 +1,12 @@
 import { DOM } from "@cb/constants";
 import background from "@cb/services/background";
-import { PeerMessage } from "@cb/types";
+import { ExtractMessage, PeerMessage } from "@cb/types";
 import monaco from "monaco-editor";
 import { getNormalizedUrl } from "./url";
 
-export const getTestsPayload = (variables: string[]): PeerMessage => {
+export const getTestsPayload = (
+  variables: string[]
+): ExtractMessage<PeerMessage, "tests"> => {
   return {
     action: "tests",
     tests: groupTestCases(
@@ -19,7 +21,7 @@ export const getTestsPayload = (variables: string[]): PeerMessage => {
 
 export const getCodePayload = async (
   changes: Partial<monaco.editor.IModelContentChange>
-): Promise<PeerMessage> => {
+): Promise<ExtractMessage<PeerMessage, "code">> => {
   const { value, language } = await background.getCode({});
   return {
     action: "code",
@@ -27,12 +29,5 @@ export const getCodePayload = async (
     language,
     changes: JSON.stringify(changes),
     url: getNormalizedUrl(window.location.href),
-  };
-};
-
-export const getUrlPayload = (url: string): PeerMessage => {
-  return {
-    action: "url",
-    url: getNormalizedUrl(url),
   };
 };

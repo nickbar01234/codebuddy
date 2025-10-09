@@ -1,7 +1,15 @@
 import { ROOM } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
-import { DatabaseService, Events, Id, Question, Room, User } from "@cb/types";
+import {
+  DatabaseService,
+  Events,
+  Id,
+  Question,
+  QuestionProgress,
+  Room,
+  User,
+} from "@cb/types";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { isEventFromMe } from "@cb/utils";
 
@@ -48,6 +56,10 @@ class RoomLifeCycle {
     return this.room;
   }
 
+  public async getUserProgress() {
+    return this.database.getUserProgress(this.room.id, this.me);
+  }
+
   public async leave() {
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
     await this.database.removeUser(this.room.id, this.me);
@@ -56,6 +68,12 @@ class RoomLifeCycle {
 
   public async addQuestion(question: Question) {
     this.database.addQuestion(this.room.id, question);
+  }
+
+  public async completeQuestion(url: string, progress: QuestionProgress) {
+    this.database.setUserProgress(this.room.id, this.me, {
+      questions: { [url]: progress },
+    });
   }
 
   private async init() {
@@ -230,12 +248,7 @@ export class RoomController {
     }
   }
 
-  public async addQuestion(question: Question): Promise<AddQuestionCode> {
-    if (this.room != null) {
-      this.room.addQuestion(question);
-      return AddQuestionCode.SUCCESS;
-    } else {
-      return AddQuestionCode.NOT_IN_ROOM;
-    }
+  public instance() {
+    return this.room;
   }
 }

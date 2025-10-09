@@ -17,7 +17,7 @@ interface PeerGenericMessage extends GenericMessage {
 type MonacoCode = ServiceResponse["getValue"];
 
 export interface CodeWithChanges extends MonacoCode {
-  changes: string;
+  changes?: string;
 }
 
 interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
@@ -29,12 +29,14 @@ interface PeerTestMessage extends PeerGenericMessage {
   tests: TestCases;
 }
 
-interface PeerHeartBeatMessage extends PeerGenericMessage {
-  action: "heartbeat";
+interface RequestProgressMessage extends PeerGenericMessage {
+  action: "request-progress";
 }
 
-interface UrlChangeMessage extends PeerGenericMessage {
-  action: "url";
+interface SendProgressMessage extends PeerGenericMessage {
+  action: "sent-progress";
+  code?: MonacoCode;
+  tests?: TestCases;
 }
 
 export enum EventType {
@@ -51,9 +53,9 @@ interface PeerEventMessage extends PeerGenericMessage {
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
-  | PeerHeartBeatMessage
   | PeerEventMessage
-  | UrlChangeMessage;
+  | RequestProgressMessage
+  | SendProgressMessage;
 
 interface PeerQuestionProgress {
   code?: CodeWithChanges;
@@ -61,8 +63,10 @@ interface PeerQuestionProgress {
   status: QuestionProgressStatus;
 }
 
-interface SelfQuestionProgress extends Omit<PeerQuestionProgress, "tests"> {
+interface SelfQuestionProgress {
+  code?: MonacoCode;
   tests: TestCase[];
+  status: QuestionProgressStatus;
 }
 
 export interface PeerState extends Selectable {

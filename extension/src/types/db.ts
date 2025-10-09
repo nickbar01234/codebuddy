@@ -104,8 +104,11 @@ interface DatabaseRoomService {
   addQuestion(id: Id, question: Question): Promise<void>;
   addNegotiation(id: Id, data: Negotiation): Promise<void>;
 
-  getUser(roomId: Id, username: User): Promise<UserProgress | undefined>;
-  setUser(
+  getUserProgress(
+    roomId: Id,
+    username: User
+  ): Promise<UserProgress | undefined>;
+  setUserProgress(
     roomId: Id,
     username: User,
     progress: Partial<UserProgress>
