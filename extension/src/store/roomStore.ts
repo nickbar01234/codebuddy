@@ -200,7 +200,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
     };
   };
 
-  const setSelfProgress = async (question: Question) => {
+  const setSelfProgressForCurrentUrl = async (question: Question) => {
     const code = await background.getCode({});
     const { tests } = getTestsPayload(question.variables);
     useRoom.getState().actions.self.update({
@@ -247,7 +247,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   questions: [metadata.data],
                   usernames,
                 });
-                setSelfProgress(metadata.data);
+                setSelfProgressForCurrentUrl(metadata.data);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -270,7 +270,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                       question.url === getNormalizedUrl(window.location.href)
                   );
                   if (question != undefined) {
-                    setSelfProgress(question);
+                    setSelfProgressForCurrentUrl(question);
                   }
 
                   // todo(nickbar01234): There's a race between populating self-data and WebRTC connection succeeding
