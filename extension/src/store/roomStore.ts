@@ -198,6 +198,19 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
     };
   };
 
+  const setSelfCodeAndTests = async (question: Question) => {
+    const code = await background.getCode({});
+    const { tests } = getTestsPayload(question.variables);
+    useRoom.getState().actions.self.update({
+      questions: {
+        [question.url]: {
+          code,
+          tests,
+        },
+      },
+    });
+  };
+
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
       immer((set, get) => ({
@@ -232,6 +245,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   questions: [metadata.data],
                   usernames,
                 });
+                setSelfCodeAndTests(metadata.data);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -248,6 +262,14 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   const { name, isPublic, questions, usernames } =
                     response.data.getRoom();
                   setRoom({ id, name, isPublic, questions, usernames });
+
+                  const question = questions.find(
+                    (question) =>
+                      question.url === getNormalizedUrl(window.location.href)
+                  );
+                  if (question != undefined) {
+                    setSelfCodeAndTests(question);
+                  }
 
                   // todo(nickbar01234): There's a race between populating self-data and WebRTC connection succeeding
                   // Perhaps some sort of backfilling mechanism
@@ -488,11 +510,12 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     },
                   },
                 });
-                // todo(nickbar01234): It's possible that user has navigated in the meantime, a better approach is
-                // to backfill the data ahead of time.
-                const code = await background.getCode({});
+                const code = get().self?.questions[normalizedUrl].code;
                 await instance.completeQuestion(normalizedUrl, {
-                  code,
+                  code: {
+                    value: code?.value ?? "",
+                    language: code?.language ?? "",
+                  },
                   tests: [],
                   status: QuestionProgressStatus.COMPLETED,
                 });

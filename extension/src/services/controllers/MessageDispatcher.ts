@@ -14,11 +14,7 @@ import {
 } from "@cb/types";
 import { Unsubscribe } from "@cb/types/utils";
 import { getNormalizedUrl } from "@cb/utils";
-import {
-  getCodePayload,
-  getTestsPayload,
-  getUrlPayload,
-} from "@cb/utils/messages";
+import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
 import { toast } from "sonner";
 
 export class MessageDispatcher {
@@ -80,8 +76,16 @@ export class MessageDispatcher {
       const action = message.data.action;
       switch (action) {
         case "leetCodeOnChange": {
+          const code = await getCodePayload(message.data.changes);
+          this.roomStore.getState().actions.self.update({
+            questions: {
+              [code.url]: {
+                code,
+              },
+            },
+          });
           this.emitter.emit("rtc.send.message", {
-            message: await getCodePayload(message.data.changes),
+            message: code,
           });
           break;
         }
@@ -175,7 +179,7 @@ export class MessageDispatcher {
     const unsubscribeFromRtcOpen = this.emitter.on(
       "rtc.open",
       ({ user }: Events["rtc.open"]) => {
-        this.broadCastInformation(user);
+        this.requestProgress(getNormalizedUrl(window.location.href), user);
       }
     );
     return () => unsubscribeFromRtcOpen();
@@ -184,7 +188,8 @@ export class MessageDispatcher {
   private subscribeToRtcMessage() {
     const onMessage = ({ from, message }: Events["rtc.receive.message"]) => {
       console.log("Received message", from, message.action);
-      switch (message.action) {
+      const { action } = message;
+      switch (action) {
         case "code": {
           const { url, ...code } = message;
           this.roomStore.getState().actions.peers.update(from, {
@@ -224,11 +229,31 @@ export class MessageDispatcher {
           }
           break;
         }
-        case "url": {
+
+        case "request-progress": {
+          this.sendProgress(from, message.url);
           this.roomStore.getState().actions.peers.update(from, {
             url: message.url,
           });
+          break;
         }
+
+        case "sent-progress": {
+          const { url, tests, code } = message;
+          this.roomStore.getState().actions.peers.update(from, {
+            questions: {
+              [url]: {
+                code,
+                tests,
+              },
+            },
+            url,
+          });
+          break;
+        }
+
+        default:
+          assertUnreachable(action);
       }
     };
     this.emitter.on("rtc.receive.message", onMessage);
@@ -267,7 +292,7 @@ export class MessageDispatcher {
             url: getNormalizedUrl(window.location.href),
           });
           if (questions.some((question) => question.url === url)) {
-            this.broadCastInformation();
+            this.requestProgress(url);
           }
           break;
         }
@@ -277,6 +302,7 @@ export class MessageDispatcher {
       }
     });
   }
+
   private subscribeToRtcConnectionError() {
     const unsubscribeFromRtcConnectionError = this.emitter.on(
       "rtc.error.connection",
@@ -289,19 +315,29 @@ export class MessageDispatcher {
     return () => unsubscribeFromRtcConnectionError();
   }
 
-  private async broadCastInformation(user?: User) {
+  private async requestProgress(url: string, user?: User) {
     this.emitter.emit("rtc.send.message", {
       to: user,
-      message: await getCodePayload({}),
+      message: {
+        action: "request-progress",
+        url,
+      },
     });
-    this.emitter.emit("rtc.send.message", {
-      to: user,
-      message: await this.getTestsPayload(),
-    });
-    this.emitter.emit("rtc.send.message", {
-      to: user,
-      message: getUrlPayload(window.location.href),
-    });
+  }
+
+  private sendProgress(user: User, url: string) {
+    const progress = this.roomStore.getState().self?.questions[url];
+    if (progress != undefined) {
+      this.emitter.emit("rtc.send.message", {
+        to: user,
+        message: {
+          action: "sent-progress",
+          code: progress.code,
+          tests: progress.tests,
+          url,
+        },
+      });
+    }
   }
 
   private async getTestsPayload() {

@@ -4,7 +4,9 @@ import { ExtractMessage, PeerMessage } from "@cb/types";
 import monaco from "monaco-editor";
 import { getNormalizedUrl } from "./url";
 
-export const getTestsPayload = (variables: string[]): PeerMessage => {
+export const getTestsPayload = (
+  variables: string[]
+): ExtractMessage<PeerMessage, "tests"> => {
   return {
     action: "tests",
     tests: groupTestCases(
@@ -27,12 +29,5 @@ export const getCodePayload = async (
     language,
     changes: JSON.stringify(changes),
     url: getNormalizedUrl(window.location.href),
-  };
-};
-
-export const getUrlPayload = (url: string): PeerMessage => {
-  return {
-    action: "url",
-    url: getNormalizedUrl(url),
   };
 };

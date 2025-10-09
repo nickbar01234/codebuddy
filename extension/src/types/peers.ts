@@ -29,12 +29,14 @@ interface PeerTestMessage extends PeerGenericMessage {
   tests: TestCases;
 }
 
-interface PeerHeartBeatMessage extends PeerGenericMessage {
-  action: "heartbeat";
+interface RequestProgressMessage extends PeerGenericMessage {
+  action: "request-progress";
 }
 
-interface UrlChangeMessage extends PeerGenericMessage {
-  action: "url";
+interface SendProgressMessage extends PeerGenericMessage {
+  action: "sent-progress";
+  code?: MonacoCode;
+  tests?: TestCases;
 }
 
 export enum EventType {
@@ -51,9 +53,9 @@ interface PeerEventMessage extends PeerGenericMessage {
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
-  | PeerHeartBeatMessage
   | PeerEventMessage
-  | UrlChangeMessage;
+  | RequestProgressMessage
+  | SendProgressMessage;
 
 interface PeerQuestionProgress {
   code?: CodeWithChanges;
