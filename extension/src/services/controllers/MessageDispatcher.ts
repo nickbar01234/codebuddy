@@ -250,7 +250,6 @@ export class MessageDispatcher {
         }
 
         case "sent-progress": {
-          console.log("Receiving message", message);
           const { url, tests, code } = message;
           this.roomStore.getState().actions.peers.update(from, {
             questions: {
