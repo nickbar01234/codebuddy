@@ -80,7 +80,10 @@ export class MessageDispatcher {
           this.roomStore.getState().actions.self.update({
             questions: {
               [code.url]: {
-                code,
+                code: {
+                  value: code.value,
+                  language: code.language,
+                },
               },
             },
           });
@@ -103,11 +106,19 @@ export class MessageDispatcher {
   }
 
   private subscribeToTestEditor() {
-    const observer = new MutationObserver(async () =>
+    const observer = new MutationObserver(async () => {
+      const tests = await this.getTestsPayload();
+      this.roomStore.getState().actions.self.update({
+        questions: {
+          [tests.url]: {
+            tests: tests.tests,
+          },
+        },
+      });
       this.emitter.emit("rtc.send.message", {
-        message: await this.getTestsPayload(),
-      })
-    );
+        message: tests,
+      });
+    });
     waitForElement(DOM.LEETCODE_TEST_ID)
       .then((editor) =>
         observer.observe(editor, {
@@ -239,6 +250,7 @@ export class MessageDispatcher {
         }
 
         case "sent-progress": {
+          console.log("Receiving message", message);
           const { url, tests, code } = message;
           this.roomStore.getState().actions.peers.update(from, {
             questions: {

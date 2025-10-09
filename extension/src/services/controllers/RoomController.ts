@@ -241,6 +241,13 @@ export class RoomController {
     return { code: RoomJoinCode.SUCCESS, data: this.room };
   }
 
+  public async leave() {
+    if (this.room != null) {
+      await this.room.leave();
+      this.room = null;
+    }
+  }
+
   public instance() {
     return this.room;
   }

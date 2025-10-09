@@ -173,7 +173,9 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             previousSelectedTest >= tests.length
               ? tests.length - 1
               : Math.max(previousSelectedTest, 0);
-          tests[selectedTestIndex].selected = true;
+          if (tests[selectedTestIndex] != undefined) {
+            tests[selectedTestIndex].selected = true;
+          }
           questionProgressOrDefault.tests = tests;
         }
 
@@ -301,7 +303,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             leave: async () => {
               try {
                 get().actions.room.loading();
-                await getOrCreateControllers().room.instance()?.leave();
+                await getOrCreateControllers().room.leave();
               } finally {
                 set((state) => {
                   state.status = RoomStatus.HOME;
@@ -510,13 +512,14 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     },
                   },
                 });
-                const code = get().self?.questions[normalizedUrl].code;
+                const progress = get().self?.questions[normalizedUrl];
+                const code = progress?.code;
                 await instance.completeQuestion(normalizedUrl, {
                   code: {
                     value: code?.value ?? "",
                     language: code?.language ?? "",
                   },
-                  tests: [],
+                  tests: progress?.tests ?? [],
                   status: QuestionProgressStatus.COMPLETED,
                 });
               }
