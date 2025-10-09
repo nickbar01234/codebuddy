@@ -74,7 +74,7 @@ export const CreateRoomDialog = () => {
           <div className="flex flex-col gap-y-1">
             <div className="grid grid-cols-[5%_95%]">
               <RadioGroupItem
-                value="public"
+                value="private"
                 id="public"
                 className="form-radio self-center border-[#1E1E1E] dark:border-white text-[#1E1E1E] dark:text-white"
               />
