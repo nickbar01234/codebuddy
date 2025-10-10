@@ -1,9 +1,9 @@
 import { URLS } from "@cb/constants";
-import { useHtmlActions } from "@cb/hooks/store";
+import { useLeetCodeProblemsHtmlActions } from "@cb/hooks/store";
 import React from "react";
 
-export const IframeContainer: React.FC = () => {
-  const { setHtmlElement } = useHtmlActions();
+export const IFramePortal: React.FC = () => {
+  const { setHtmlElement } = useLeetCodeProblemsHtmlActions();
 
   return (
     <iframe
