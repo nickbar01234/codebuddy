@@ -1,6 +1,9 @@
 import { CSS } from "@cb/constants";
 import { useApp, useRoom } from "@cb/store";
-import { useHtml } from "@cb/store/htmlStore";
+import {
+  useCodeBuddyMonacoHtml,
+  useLeetCodeProblemsHtml,
+} from "@cb/store/htmlStore";
 import { useLeetCode } from "@cb/store/leetCodeStore";
 import { QuestionProgressStatus, User } from "@cb/types";
 import React from "react";
@@ -101,4 +104,9 @@ export const useAppActions = ({ panelRef }: any) => {
   return { collapseExtension, expandExtension, setAppWidth, handleDoubleClick };
 };
 
-export const useHtmlActions = () => useHtml((state) => state.actions);
+// todo(nickbar01234): Is there such thing as a hooks factory?
+export const useLeetCodeProblemsHtmlActions = () =>
+  useLeetCodeProblemsHtml((state) => state.actions);
+
+export const useCodeBuddyMonacoHtmlActions = () =>
+  useCodeBuddyMonacoHtml((state) => state.actions);

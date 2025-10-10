@@ -2,73 +2,63 @@ import { BoundStore } from "@cb/types";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
-interface HtmlState {
-  contentProcessed: boolean;
-  htmlElement: HTMLIFrameElement | null;
+interface HtmlState<T extends HTMLElement> {
+  htmlElement: T | null;
 }
 
-interface HtmlActions {
-  showHtml: (container: HTMLElement) => void;
+interface HtmlActions<T extends HTMLElement> {
+  showHtml: (container: HTMLElement, zIndex: number) => void;
   hideHtml: () => void;
   blurHtml: () => void;
   unblurHtml: () => void;
-  setContentProcessed: (processed: boolean) => void;
-  setHtmlElement: (element: HTMLIFrameElement | null) => void;
-  getHtmlElement: () => HTMLIFrameElement | null;
-  isContentProcessed: () => boolean;
-  isHtmlLoaded: () => boolean;
+  setHtmlElement: (element: T | null) => void;
+  getHtmlElement: () => T | null;
 }
 
-export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
-  immer((set, get) => ({
-    contentProcessed: false,
-    htmlElement: null,
-    actions: {
-      showHtml: (container) => {
-        const { htmlElement } = get();
-        if (!htmlElement) return;
-        const containerRect = container.getBoundingClientRect();
+const createHtmlStore = <T extends HTMLElement>() => {
+  return create<BoundStore<HtmlState<T>, HtmlActions<T>>>()(
+    immer((set, get) => ({
+      htmlElement: null,
+      actions: {
+        showHtml: (container, zIndex) => {
+          const { htmlElement } = get();
+          if (!htmlElement) return;
+          const containerRect = container.getBoundingClientRect();
 
-        // static styles
-        htmlElement.className =
-          "block fixed z-[3000] pointer-events-auto w-full h-full transition";
-        // Runtime-calculated positions, doesn't work with Tailwind classes
-        htmlElement.style.top = `${containerRect.top}px`;
-        htmlElement.style.left = `${containerRect.left}px`;
-        htmlElement.style.width = `${containerRect.width}px`;
-        htmlElement.style.height = `${containerRect.height}px`;
+          // static styles
+          htmlElement.className = `block fixed z-[${zIndex}] pointer-events-auto w-full h-full transition isolate`;
+          // Runtime-calculated positions, doesn't work with Tailwind classes
+          htmlElement.style.top = `${containerRect.top}px`;
+          htmlElement.style.left = `${containerRect.left}px`;
+          htmlElement.style.width = `${containerRect.width}px`;
+          htmlElement.style.height = `${containerRect.height}px`;
+        },
+        blurHtml: () => {
+          const { htmlElement } = get();
+          if (!htmlElement) return;
+          appendClassIdempotent(htmlElement, ["blur-sm", "filter"]);
+        },
+        unblurHtml: () => {
+          const { htmlElement } = get();
+          if (!htmlElement) return;
+          htmlElement.classList.remove("blur-sm", "filter");
+        },
+        hideHtml: () => {
+          const { htmlElement } = get();
+          if (!htmlElement) return;
+          htmlElement.className = "hidden pointer-events-none fixed";
+        },
+        setHtmlElement: (element) => set({ htmlElement: element }),
+        getHtmlElement: () => {
+          return get().htmlElement;
+        },
       },
-      blurHtml: () => {
-        const { htmlElement } = get();
-        if (!htmlElement) return;
-        appendClassIdempotent(htmlElement, ["blur-sm", "filter"]);
-      },
-      unblurHtml: () => {
-        const { htmlElement } = get();
-        if (!htmlElement) return;
-        htmlElement.classList.remove("blur-sm", "filter");
-      },
-      hideHtml: () => {
-        const { htmlElement } = get();
-        if (!htmlElement) return;
-        htmlElement.className = "hidden pointer-events-none fixed";
-      },
-      setContentProcessed: (processed: boolean) => {
-        set((state) => {
-          state.contentProcessed = processed;
-        });
-      },
-      setHtmlElement: (element) => set({ htmlElement: element }),
-      getHtmlElement: () => {
-        return get().htmlElement;
-      },
-      isContentProcessed: () => {
-        return get().contentProcessed;
-      },
-      isHtmlLoaded: () =>
-        get().htmlElement?.contentDocument?.readyState === "complete",
-    },
-  }))
-);
+    }))
+  );
+};
 
-export type HtmlStore = typeof useHtml;
+export const useLeetCodeProblemsHtml = createHtmlStore<HTMLIFrameElement>();
+
+export const useCodeBuddyMonacoHtml = createHtmlStore();
+
+export type HtmlStore = ReturnType<typeof createHtmlStore>;

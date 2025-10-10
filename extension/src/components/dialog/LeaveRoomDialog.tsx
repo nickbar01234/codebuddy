@@ -1,4 +1,7 @@
-import { useHtmlActions, useRoomActions } from "@cb/hooks/store";
+import {
+  useLeetCodeProblemsHtmlActions,
+  useRoomActions,
+} from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { DialogOverlay } from "@radix-ui/react-dialog";
@@ -9,7 +12,7 @@ import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export function LeaveRoomDialog() {
   const { leave, closeSidebarTab } = useRoomActions();
-  const { blurHtml, unblurHtml } = useHtmlActions();
+  const { blurHtml, unblurHtml } = useLeetCodeProblemsHtmlActions();
 
   const leaveRoomThrottled = React.useMemo(() => {
     return throttle((event: React.MouseEvent<HTMLButtonElement>) => {
