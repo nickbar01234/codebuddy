@@ -59,13 +59,6 @@ export class WebRtcController {
     }
   }
 
-  private recoverConnection(user: User) {
-    this.disconnect(user);
-    setTimeout(() => {
-      this.connect(user);
-    }, 1000);
-  }
-
   private reNegotiate(user: User) {
     console.log(`Re-negotiating connection for ${user}`);
     const connection = this.pcs.get(user);
