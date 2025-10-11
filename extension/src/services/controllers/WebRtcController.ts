@@ -175,14 +175,40 @@ export class WebRtcController {
     channel.onerror = (errorEvent: RTCErrorEvent) => {
       console.error("Error on RTC data channel", errorEvent);
       const isRecoverable = this.isErrorRecoverable(errorEvent.error);
+
       if (isRecoverable) {
-        this.reNegotiate(user);
+        this.handleRecoverableError(user);
       } else {
-        this.recoverConnection(user);
+        console.log("Initiate recovery");
       }
 
       this.emitter.emit("rtc.error.connection", { user });
     };
+  }
+
+  private async handleRecoverableError(user: User) {
+    const connection = this.pcs.get(user);
+    if (!connection) return;
+
+    const pc = connection.pc;
+
+    try {
+      const { username: me } = this.appStore.getState().actions.getAuthUser();
+
+      await pc.setLocalDescription(await pc.createOffer({ iceRestart: true }));
+      const description = pc.localDescription;
+
+      if (description) {
+        this.emitter.emit("rtc.description", {
+          from: me,
+          to: user,
+          data: description.toJSON(),
+        });
+      }
+    } catch (err) {
+      console.error("Failed to renegotiate after recoverable error", err);
+      // TODO: Handle recovery
+    }
   }
 
   private async handleDescriptionEvents({
