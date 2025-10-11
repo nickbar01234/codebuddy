@@ -185,10 +185,12 @@ export class WebRtcController {
 
     const pc = connection.pc;
 
+    pc.restartIce();
+
     try {
       const { username: me } = this.appStore.getState().actions.getAuthUser();
 
-      await pc.setLocalDescription(await pc.createOffer({ iceRestart: true }));
+      await pc.setLocalDescription();
       const description = pc.localDescription;
 
       if (description) {
