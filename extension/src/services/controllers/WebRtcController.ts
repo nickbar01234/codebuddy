@@ -59,14 +59,6 @@ export class WebRtcController {
     }
   }
 
-  private reNegotiate(user: User) {
-    console.log(`Re-negotiating connection for ${user}`);
-    const connection = this.pcs.get(user);
-    if (connection) {
-      connection.pc.restartIce();
-    }
-  }
-
   private isErrorRecoverable(error: RTCError): boolean {
     switch (error.errorDetail) {
       case "dtls-failure":
