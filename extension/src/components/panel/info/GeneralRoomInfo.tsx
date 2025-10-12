@@ -3,6 +3,7 @@ import { DefaultTable } from "@cb/components/table/DefaultTable";
 import { DefaultTableBody } from "@cb/components/table/DefaultTableBody";
 import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
+import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { ROOM } from "@cb/constants";
 import { useRoomData } from "@cb/hooks/store";
@@ -33,17 +34,23 @@ export const GeneralRoomInfo = () => {
           <SkeletonWrapper loading={id == undefined} className="w-60 h-8">
             <div className="flex gap-1 text-tertiary">
               <span className="text-lg">ID: {id}</span>
-              <button
-                data-tooltip-taget="tooltip-default"
-                aria-label="Copy room ID"
-                title="Copy room ID"
-                type="button"
-              >
-                <CopyIcon
-                  className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
-                  onClick={copyRoomId}
-                />
-              </button>
+              <Tooltip
+                trigger={{
+                  props: {
+                    "aria-label": "Copy room ID",
+                    className: cn(
+                      id != undefined ? "cursor-pointer" : "cursor-not-allowed"
+                    ),
+                  },
+                  node: (
+                    <CopyIcon
+                      className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
+                      onClick={copyRoomId}
+                    />
+                  ),
+                }}
+                content="Copy room ID"
+              />
             </div>
           </SkeletonWrapper>
         </div>
