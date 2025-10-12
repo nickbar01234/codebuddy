@@ -8,7 +8,10 @@ export enum GetProblemMetadataBySlugServerCode {
 }
 
 export type GetProblemMetadataBySlugServerResponse =
-  | { code: GetProblemMetadataBySlugServerCode.SUCCESS; data: Question }
+  | {
+      code: GetProblemMetadataBySlugServerCode.SUCCESS;
+      data: Question;
+    }
   | {
       code:
         | GetProblemMetadataBySlugServerCode.NOT_FOUND
@@ -27,6 +30,9 @@ query question($titleSlug: String!) {
     titleSlug
     difficulty
     topicTags { name slug }
+    codeSnippets { langSlug code }
+    exampleTestcases
+    content
   }
 }`;
 
@@ -59,15 +65,19 @@ export async function getProblemMetaBySlugServer(
       };
     }
 
+    // todo(nickbar01234): Should log if any keys we expect is undefined
     return {
       code: GetProblemMetadataBySlugServerCode.SUCCESS,
       data: {
-        id: q.questionFrontendId,
-        title: q.title,
-        slug: q.titleSlug,
-        difficulty: q.difficulty,
-        tags: (q.topicTags || []).map((t: any) => t.name),
-        url: `https://leetcode.com/problems/${q.titleSlug}/`,
+        id: q.questionFrontendId ?? "",
+        title: q.title ?? "",
+        slug: q.titleSlug ?? "",
+        difficulty: q.difficulty ?? "",
+        tags: (q.topicTags ?? []).map((t: any) => t.name),
+        url: constructUrlFromQuestionId(q.titleSlug),
+        codeSnippets: q.codeSnippets ?? [],
+        testSnippets: (q.exampleTestcases ?? "").split("\n"),
+        variables: inferVariablesFromGraphql(q.content ?? ""),
       },
     };
   } catch (e: any) {

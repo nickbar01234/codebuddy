@@ -1,6 +1,9 @@
+// @ts-nocheck
+// todo(nickbar01234): Ignoring typecheck is never good, but this file is deprecated and is only kept around for
+// running tests, which we eventually should deprecate.
+
 /// <reference types="vitest" />
 import react from "@vitejs/plugin-react";
-import { closeSync, existsSync, openSync, unlinkSync } from "fs";
 import { join, resolve } from "path";
 import tailwindcss from "tailwindcss";
 import { defineConfig } from "vite";
@@ -14,24 +17,13 @@ export default defineConfig(() => {
       : process.env.TYPE === "service_worker"
         ? "./src/main/service_worker/background.ts"
         : null;
-  const devScriptHint = `./dist/${process.env.TYPE}`;
 
   if (input == null) {
     throw new Error("Invalid entry point");
   }
 
   return {
-    plugins: [
-      react(),
-      {
-        // https://vite.dev/guide/api-plugin#universal-hooks
-        // Only execute on dev mode
-        buildStart: () => {
-          if (existsSync(devScriptHint)) unlinkSync(devScriptHint);
-        },
-        closeBundle: () => closeSync(openSync(devScriptHint, "w")),
-      },
-    ],
+    plugins: [react()],
     publicDir: "public",
     base: "./",
     css: {

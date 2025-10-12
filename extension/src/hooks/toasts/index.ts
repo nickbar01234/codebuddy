@@ -34,10 +34,6 @@ export const useToast = () => {
           break;
         }
 
-        case EventType.SELECT_QUESTION: {
-          break;
-        }
-
         default:
           assertUnreachable(event);
       }

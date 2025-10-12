@@ -1,11 +1,10 @@
 import { BoundStore } from "@cb/types";
-import { createRef, MutableRefObject } from "react";
 import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface HtmlState {
   contentProcessed: boolean;
-  htmlElement: MutableRefObject<HTMLIFrameElement | null>;
+  htmlElement: HTMLIFrameElement | null;
 }
 
 interface HtmlActions {
@@ -14,6 +13,7 @@ interface HtmlActions {
   blurHtml: () => void;
   unblurHtml: () => void;
   setContentProcessed: (processed: boolean) => void;
+  setHtmlElement: (element: HTMLIFrameElement | null) => void;
   getHtmlElement: () => HTMLIFrameElement | null;
   isContentProcessed: () => boolean;
   isHtmlLoaded: () => boolean;
@@ -22,50 +22,51 @@ interface HtmlActions {
 export const useHtml = create<BoundStore<HtmlState, HtmlActions>>()(
   immer((set, get) => ({
     contentProcessed: false,
-    htmlElement: createRef(),
+    htmlElement: null,
     actions: {
       showHtml: (container) => {
         const { htmlElement } = get();
-        if (!htmlElement.current) return;
+        if (!htmlElement) return;
         const containerRect = container.getBoundingClientRect();
 
         // static styles
-        htmlElement.current.className =
-          "block absolute z-[3000] pointer-events-auto w-full h-full transition";
+        htmlElement.className =
+          "block fixed z-[3000] pointer-events-auto w-full h-full transition";
         // Runtime-calculated positions, doesn't work with Tailwind classes
-        htmlElement.current.style.top = `${containerRect.top}px`;
-        htmlElement.current.style.left = `${containerRect.left}px`;
-        htmlElement.current.style.width = `${containerRect.width}px`;
-        htmlElement.current.style.height = `${containerRect.height}px`;
+        htmlElement.style.top = `${containerRect.top}px`;
+        htmlElement.style.left = `${containerRect.left}px`;
+        htmlElement.style.width = `${containerRect.width}px`;
+        htmlElement.style.height = `${containerRect.height}px`;
       },
       blurHtml: () => {
         const { htmlElement } = get();
-        if (!htmlElement.current) return;
-        appendClassIdempotent(htmlElement.current, ["blur-sm", "filter"]);
+        if (!htmlElement) return;
+        appendClassIdempotent(htmlElement, ["blur-sm", "filter"]);
       },
       unblurHtml: () => {
         const { htmlElement } = get();
-        if (!htmlElement.current) return;
-        htmlElement.current.classList.remove("blur-sm", "filter");
+        if (!htmlElement) return;
+        htmlElement.classList.remove("blur-sm", "filter");
       },
       hideHtml: () => {
         const { htmlElement } = get();
-        if (!htmlElement.current) return;
-        htmlElement.current.className = "hidden pointer-events-none fixed";
+        if (!htmlElement) return;
+        htmlElement.className = "hidden pointer-events-none fixed";
       },
       setContentProcessed: (processed: boolean) => {
         set((state) => {
           state.contentProcessed = processed;
         });
       },
+      setHtmlElement: (element) => set({ htmlElement: element }),
       getHtmlElement: () => {
-        return get().htmlElement.current;
+        return get().htmlElement;
       },
       isContentProcessed: () => {
         return get().contentProcessed;
       },
       isHtmlLoaded: () =>
-        get().htmlElement.current?.contentDocument?.readyState === "complete",
+        get().htmlElement?.contentDocument?.readyState === "complete",
     },
   }))
 );

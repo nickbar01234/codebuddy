@@ -1,5 +1,8 @@
+import { CSS } from "@cb/constants";
 import { useApp, useRoom } from "@cb/store";
+import { useHtml } from "@cb/store/htmlStore";
 import { useLeetCode } from "@cb/store/leetCodeStore";
+import { QuestionProgressStatus, User } from "@cb/types";
 import React from "react";
 import { useShallow } from "zustand/shallow";
 
@@ -10,20 +13,65 @@ export const useAppPreference = () => useApp((state) => state.app);
 export const usePeers = () => {
   const peers = useRoom((state) => state.peers);
   const selectedPeer = React.useMemo(() => getSelectedPeer(peers), [peers]);
+  const maybeAuthUser = useApp((state) => state.actions.getMaybeAuthUser());
+  const allPeers = useRoom(
+    useShallow((state) => {
+      const peers = state.peers;
+      if (maybeAuthUser != undefined) {
+        return { ...peers, [maybeAuthUser.username]: state.self };
+      }
+      return peers;
+    })
+  );
   return {
     peers,
+    allPeers,
     selectedPeer,
   };
 };
 
 export const useRoomStatus = () => useRoom((state) => state.status);
 
+export interface UserMedata {
+  user: User;
+  css: (typeof CSS)["USER_ICON_CSS"][number];
+  solved: number;
+  url?: string;
+}
+
 export const useRoomData = () => {
   const questions = useRoom(useShallow((state) => state.room?.questions ?? []));
   const name = useRoom((state) => state.room?.name);
   const id = useRoom((state) => state.room?.id);
   const activeSidebarTab = useRoom((state) => state.room?.activeSidebarTab);
-  return { name, questions, id, activeSidebarTab };
+  const usernames = useRoom(useShallow((state) => state.room?.usernames ?? []));
+  const self = useRoom((state) => state.self);
+  const { allPeers } = usePeers();
+  const currentQuestion = questions.find(
+    (question) => question.url === self?.url
+  );
+  return {
+    name,
+    questions,
+    id,
+    self,
+    activeSidebarTab,
+    users: usernames
+      .filter((user) => Object.keys(allPeers).includes(user))
+      .map(
+        (user, idx) =>
+          ({
+            user,
+            css: CSS["USER_ICON_CSS"][idx],
+            solved: Object.values(allPeers[user]?.questions ?? []).filter(
+              (progress) =>
+                progress?.status === QuestionProgressStatus.COMPLETED
+            ).length,
+            url: allPeers[user]?.url,
+          }) as UserMedata
+      ),
+    currentQuestion,
+  };
 };
 
 export const useRoomActions = () => useRoom((state) => state.actions.room);
@@ -52,3 +100,5 @@ export const useAppActions = ({ panelRef }: any) => {
   const setAppWidth = useApp((state) => state.actions.setAppWidth);
   return { collapseExtension, expandExtension, setAppWidth, handleDoubleClick };
 };
+
+export const useHtmlActions = () => useHtml((state) => state.actions);

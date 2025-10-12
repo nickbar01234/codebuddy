@@ -1,10 +1,12 @@
+import { ColorAwareUserIcon } from "@cb/components/icons";
 import { DefaultTable } from "@cb/components/table/DefaultTable";
 import { DefaultTableBody } from "@cb/components/table/DefaultTableBody";
 import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
+import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { ROOM } from "@cb/constants";
-import { useAuthUser, usePeers, useRoomData } from "@cb/hooks/store";
+import { useRoomData } from "@cb/hooks/store";
 import { DialogTitle } from "@cb/lib/components/ui/dialog";
 import { TableCell } from "@cb/lib/components/ui/table";
 import { SidebarTabIdentifier } from "@cb/store";
@@ -12,11 +14,8 @@ import { CopyIcon, Globe, Users } from "lucide-react";
 import { SidebarTabHeader, SidebarTabLayout } from "./SidebarTabLayout";
 
 export const GeneralRoomInfo = () => {
-  const { name, id } = useRoomData();
-  const { peers } = usePeers();
-  const { username } = useAuthUser();
+  const { name, id, users } = useRoomData();
   const copyRoomId = useCopyRoomId();
-  const users = [...Object.keys(peers), username];
 
   return (
     <SidebarTabLayout forTab={SidebarTabIdentifier.ROOM_INFO}>
@@ -35,9 +34,22 @@ export const GeneralRoomInfo = () => {
           <SkeletonWrapper loading={id == undefined} className="w-60 h-8">
             <div className="flex gap-1 text-tertiary">
               <span className="text-lg">ID: {id}</span>
-              <CopyIcon
-                className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
-                onClick={copyRoomId}
+              <Tooltip
+                trigger={{
+                  props: {
+                    "aria-label": "Copy room ID",
+                    className: cn(
+                      id != undefined ? "cursor-pointer" : "cursor-not-allowed"
+                    ),
+                  },
+                  node: (
+                    <CopyIcon
+                      className="cursor-pointer hover:bg-[--color-button-hover-background] dark:hover:bg-[--color-button-hover-background] p-1 hover:rounded-md self-center"
+                      onClick={copyRoomId}
+                    />
+                  ),
+                }}
+                content="Copy room ID"
               />
             </div>
           </SkeletonWrapper>
@@ -56,11 +68,14 @@ export const GeneralRoomInfo = () => {
         <DefaultTable loading={users.length === 0}>
           <DefaultTableHeader headers={["Rank", "User", "Problem solved"]} />
           <DefaultTableBody>
-            {users.map((user, idx) => (
+            {users.map(({ user, solved, css }, idx) => (
               <DefaultTableRow key={user}>
                 <TableCell>{idx}</TableCell>
-                <TableCell>{user}</TableCell>
-                <TableCell>0</TableCell>
+                <TableCell className="flex gap-2 items-center">
+                  <ColorAwareUserIcon css={css} />
+                  <span>{user}</span>
+                </TableCell>
+                <TableCell>{solved}</TableCell>
               </DefaultTableRow>
             ))}
           </DefaultTableBody>

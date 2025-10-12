@@ -1,5 +1,6 @@
 import { WEB_RTC_ICE_SERVERS } from "@cb/constants";
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
+import { useLeetCode } from "@cb/store/leetCodeStore";
 import { DatabaseService, LocalStorage } from "@cb/types";
 import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
@@ -10,16 +11,7 @@ import { emitter, EventEmitter } from "./events";
 
 const LOCAL_STORAGE_PREFIX = "codebuddy";
 // todo(nickbar01234): Need a more robust typescript solution
-const LOCAL_STORAGE: Array<keyof LocalStorage> = [
-  "tabs",
-  "lastActivePeer",
-  "signIn",
-  "navigate",
-  "preference",
-  "closingTabs",
-  "navigatePrompt",
-  "appEnabled",
-];
+const LOCAL_STORAGE: Array<keyof LocalStorage> = ["signIn"];
 
 export const getLocalStorage = <K extends keyof LocalStorage>(key: K) => {
   const maybeItem = localStorage.getItem(LOCAL_STORAGE_PREFIX + key);
@@ -44,8 +36,7 @@ export const clearLocalStorage = (ignore: Array<keyof LocalStorage> = []) =>
     removeLocalStorage
   );
 
-export const clearLocalStorageForRoom = () =>
-  clearLocalStorage(["preference", "signIn"]);
+export const clearLocalStorageForRoom = () => clearLocalStorage(["signIn"]);
 
 interface Controllers {
   emitter: EventEmitter;
@@ -61,40 +52,45 @@ const createControllersFactory = (
   roomStore: RoomStore,
   background: BackgroundProxy
 ) => {
-  let initialized = false;
-  let controllers: Controllers | undefined = undefined;
-  return () => {
-    if (initialized) {
-      return controllers!;
-    }
-    const iceServers = import.meta.env.DEV
-      ? WEB_RTC_ICE_SERVERS["STUN"]
-      : [...WEB_RTC_ICE_SERVERS["STUN"], ...WEB_RTC_ICE_SERVERS["TURN"]];
-    const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y, {
-      iceServers,
-    });
-    const room = new RoomController(db.room, emitter, appStore);
-    const message = new MessageDispatcher(
-      emitter,
-      appStore,
-      roomStore,
-      background
-    );
-    initialized = true;
-    controllers = {
-      emitter,
-      webrtc,
-      room,
-      message,
-    };
-    return controllers;
+  const iceServers = import.meta.env.DEV
+    ? WEB_RTC_ICE_SERVERS["STUN"]
+    : [...WEB_RTC_ICE_SERVERS["STUN"], ...WEB_RTC_ICE_SERVERS["TURN"]];
+  const webrtc = new WebRtcController(appStore, emitter, (x, y) => x < y, {
+    iceServers,
+  });
+  const room = new RoomController(db.room, emitter, appStore);
+  const message = new MessageDispatcher(
+    emitter,
+    appStore,
+    roomStore,
+    useLeetCode,
+    background
+  );
+  return {
+    emitter,
+    webrtc,
+    room,
+    message,
   };
 };
 
-export const getOrCreateControllers = createControllersFactory(
-  emitter,
-  db,
-  useApp,
-  useRoom,
-  background
-);
+export const getOrCreateControllers = (() => {
+  let initialized = false;
+  let controllers: Controllers | undefined;
+
+  return () => {
+    if (initialized) return controllers!;
+
+    initialized = true;
+
+    controllers = createControllersFactory(
+      emitter,
+      db,
+      useApp,
+      useRoom,
+      background
+    );
+
+    return controllers!;
+  };
+})();

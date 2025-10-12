@@ -7,7 +7,9 @@ export const URLS = {
 };
 
 export const DOM = {
+  CODEBUDDY_EXTENSION_ID: "CodeBuddy",
   CODEBUDDY_EDITOR_ID: "CodeBuddyEditor",
+  IFRAME_CSS_ID: "codebuddy-css",
   LEETCODE_ROOT_ID: "#qd-content",
   LEETCODE_TEST_ID: ".cm-content",
   LEETCODE_SUBMIT_BUTTON: '[data-e2e-locator="console-submit-button"]',
@@ -65,7 +67,7 @@ export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
 };
 
 export const FEATURE_FLAG = {
-  DISABLE_USER_TRACKING: true,
+  DISABLE_ROOM_VISIBILITY: true,
 };
 
 export const CSS = {
@@ -74,4 +76,28 @@ export const CSS = {
     Medium: "text-difficulty-medium",
     Hard: "text-difficulty-hard",
   } as Record<any, string>,
+
+  // See index.css
+  USER_ICON_CSS: [
+    {
+      icon: "user-1",
+      accent: "user-1-accent",
+    },
+    {
+      icon: "user-2",
+      accent: "user-2-accent",
+    },
+    {
+      icon: "user-3",
+      accent: "user-3-accent",
+    },
+    {
+      icon: "user-4",
+      accent: "user-4-accent",
+    },
+  ] as const,
+};
+
+export const EXTENSION = {
+  CSS_PATH: "content-scripts/content.css",
 };

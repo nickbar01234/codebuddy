@@ -1,6 +1,8 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { DOM, EXTENSION } from "@cb/constants";
+import { useHtmlActions } from "@cb/hooks/store";
 import useResource from "@cb/hooks/useResource";
-import { useHtml } from "@cb/store/htmlStore";
+import { Question } from "@cb/types";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -8,16 +10,16 @@ const INJECTED_ATTRIBUTE = "data-injected";
 
 interface QuestionSelectorPanelProps {
   handleQuestionSelect: (link: string) => void;
-  filterQuestionIds: string[];
+  filterQuestions: Question[];
 }
 
 export const QuestionSelectorPanel = React.memo(
-  ({ handleQuestionSelect, filterQuestionIds }: QuestionSelectorPanelProps) => {
+  ({ handleQuestionSelect, filterQuestions }: QuestionSelectorPanelProps) => {
     const [loading, setLoading] = React.useState(true);
     const { register: registerObserver } = useResource<MutationObserver>({
       name: "observer",
     });
-    const { actions: iframeActions } = useHtml();
+    const iframeActions = useHtmlActions();
 
     const onContainerRefCallback = React.useCallback(
       (node: HTMLElement | null) => {
@@ -25,7 +27,7 @@ export const QuestionSelectorPanel = React.memo(
 
         let lastRect: DOMRect;
         let animationFrameId: number;
-        const repositionIframeOnPositionChange = () => {
+        const repositionIframeOnPositionChange = (terminate: boolean) => {
           const rect = node.getBoundingClientRect();
           if (
             !lastRect ||
@@ -35,25 +37,28 @@ export const QuestionSelectorPanel = React.memo(
             iframeActions.showHtml(node);
             lastRect = rect;
           }
-          animationFrameId = requestAnimationFrame(
-            repositionIframeOnPositionChange
-          );
+
+          if (!terminate) {
+            animationFrameId = requestAnimationFrame(() =>
+              repositionIframeOnPositionChange(false)
+            );
+          }
         };
 
-        animationFrameId = requestAnimationFrame(
-          repositionIframeOnPositionChange
+        animationFrameId = requestAnimationFrame(() =>
+          repositionIframeOnPositionChange(false)
         );
 
-        const repositionIframeOnWindowResize = () => {
-          lastRect = node.getBoundingClientRect();
-          iframeActions.showHtml(node);
-        };
-
-        window.addEventListener("resize", repositionIframeOnPositionChange);
+        const repositionIframeOnPositionChangeOnce = () =>
+          repositionIframeOnPositionChange(true);
+        window.addEventListener("resize", repositionIframeOnPositionChangeOnce);
 
         return () => {
           cancelAnimationFrame(animationFrameId);
-          window.removeEventListener("resize", repositionIframeOnWindowResize);
+          window.removeEventListener(
+            "resize",
+            repositionIframeOnPositionChangeOnce
+          );
         };
       },
       [iframeActions]
@@ -70,6 +75,13 @@ export const QuestionSelectorPanel = React.memo(
       if (iframe) {
         const processIframe = async () => {
           const handleIframeStyle = async (iframeDoc: Document) => {
+            if (iframeDoc.head.querySelector(`#${DOM.IFRAME_CSS_ID}`) == null) {
+              const link = iframeDoc.createElement("link");
+              link.rel = "stylesheet";
+              link.href = chrome.runtime.getURL(EXTENSION.CSS_PATH);
+              link.id = DOM.IFRAME_CSS_ID;
+              iframeDoc.head.appendChild(link);
+            }
             waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
               .then((el) => el.closest("button")?.remove())
               .catch(() => {});
@@ -80,17 +92,33 @@ export const QuestionSelectorPanel = React.memo(
               hideToRoot(rowContainer.parentElement?.parentElement);
 
               const processQuestionLinks = async () => {
+                const zebraStripes = [
+                  "codebuddy-row-odd",
+                  "codebuddy-row-even",
+                ];
                 const rowList = rowContainer.querySelectorAll("a");
                 appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
                 for (const anchorContainer of rowList) {
+                  anchorContainer.classList.remove(...zebraStripes);
                   try {
                     const link = anchorContainer.href;
                     if (!link) {
                       continue;
                     }
                     const questionId = getQuestionIdFromUrl(link);
-                    if (filterQuestionIds.includes(questionId)) {
+                    if (
+                      filterQuestions.some(
+                        (question) => question.slug === questionId
+                      )
+                    ) {
                       anchorContainer.style.display = "none";
+                    } else {
+                      anchorContainer.style.display = "block";
+                      const bg = zebraStripes.shift();
+                      if (bg != undefined) {
+                        appendClassIdempotent(anchorContainer, [bg]);
+                        zebraStripes.push(bg);
+                      }
                     }
 
                     if (!anchorContainer.hasAttribute(INJECTED_ATTRIBUTE)) {
@@ -165,7 +193,7 @@ export const QuestionSelectorPanel = React.memo(
       return () => iframeActions.setContentProcessed(false);
     }, [
       handleQuestionSelect,
-      filterQuestionIds,
+      filterQuestions,
       registerObserver,
       iframeActions,
     ]);

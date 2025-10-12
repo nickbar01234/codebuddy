@@ -52,6 +52,7 @@ interface AppAction {
   authenticate: (user: AppUser) => void;
   unauthenticate: () => void;
   getAuthUser: () => AppUser;
+  getMaybeAuthUser: () => AppUser | undefined;
 }
 
 const debouncedSetWidth = _.debounce((width) => {
@@ -99,13 +100,20 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
             state.auth = { status: AppStatus.UNAUTHENTICATED };
           }),
         getAuthUser: () => {
-          const auth = get().auth;
-          if (auth.status != AppStatus.AUTHENTICATED) {
+          const user = get().actions.getMaybeAuthUser();
+          if (user == undefined) {
             throw new Error(
               "Get auth user when status is not authenticated. This is most likely a bug"
             );
           }
-          return auth.user;
+          return user;
+        },
+        getMaybeAuthUser: () => {
+          const auth = get().auth;
+          if (auth.status === AppStatus.AUTHENTICATED) {
+            return auth.user;
+          }
+          return undefined;
         },
       },
     })),

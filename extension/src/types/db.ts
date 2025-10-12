@@ -1,17 +1,17 @@
-import { PeerMessage } from "@cb/types/peers";
-import {
-  ExtractMessage,
-  GenericMessage,
-  Identifiable,
-  MessagePayload,
-  Unsubscribe,
-} from "@cb/types/utils";
+import { GenericMessage, Identifiable, Unsubscribe } from "@cb/types/utils";
+import { TestCases } from ".";
+import { ServiceResponse } from "./services";
 
 export type User = string;
 
 export type Version = number;
 
 export type Id = string;
+
+interface CodeSnippet {
+  langSlug: string;
+  code: string;
+}
 
 interface IceCandidateNegotiation extends GenericMessage {
   action: "ice";
@@ -25,9 +25,16 @@ interface DescriptionNegotiation extends GenericMessage {
 
 type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
 
+export enum QuestionProgressStatus {
+  NOT_STARTED = "not-started",
+  IN_PROGRESS = "in-progress",
+  COMPLETED = "completed",
+}
+
 export type QuestionProgress = {
-  code: MessagePayload<ExtractMessage<PeerMessage, "code">>;
-  status: "not-started" | "in-progress" | "completed";
+  code: ServiceResponse["getValue"];
+  tests: TestCases;
+  status: QuestionProgressStatus;
 };
 
 export type UserProgress = {
@@ -54,6 +61,9 @@ export interface Question {
   difficulty: "Easy" | "Medium" | "Hard";
   tags: string[];
   url: string;
+  codeSnippets: CodeSnippet[];
+  testSnippets: string[];
+  variables: string[];
 }
 
 export interface Room {
@@ -94,8 +104,11 @@ interface DatabaseRoomService {
   addQuestion(id: Id, question: Question): Promise<void>;
   addNegotiation(id: Id, data: Negotiation): Promise<void>;
 
-  getUser(roomId: Id, username: User): Promise<UserProgress | undefined>;
-  setUser(
+  getUserProgress(
+    roomId: Id,
+    username: User
+  ): Promise<UserProgress | undefined>;
+  setUserProgress(
     roomId: Id,
     username: User,
     progress: Partial<UserProgress>
