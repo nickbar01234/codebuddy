@@ -82,8 +82,12 @@ export const QuestionSelectorPanel = React.memo(
               link.id = DOM.IFRAME_CSS_ID;
               iframeDoc.head.appendChild(link);
             }
+
             waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
               .then((el) => el.closest("button")?.remove())
+              .catch(() => {});
+            waitForElement('svg[data-icon="magnifying-glass"]', iframeDoc)
+              .then((element) => element.remove())
               .catch(() => {});
 
             try {
