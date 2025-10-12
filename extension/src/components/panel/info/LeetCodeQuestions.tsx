@@ -14,6 +14,14 @@ export const LeetCodeQuestions = () => {
     if (activeSidebarTab === undefined) hideHtml();
   }, [activeSidebarTab, hideHtml]);
 
+  const handleQuestionSelect = React.useCallback(
+    (url: string) => {
+      // todo(nickbar01234): Loading animation?
+      addQuestion(url).then(() => closeSidebarTab());
+    },
+    [addQuestion, closeSidebarTab]
+  );
+
   return (
     <SidebarTabLayout forTab={SidebarTabIdentifier.LEETCODE_QUESTIONS}>
       <SidebarTabHeader>
@@ -22,10 +30,7 @@ export const LeetCodeQuestions = () => {
         </DialogTitle>
       </SidebarTabHeader>
       <QuestionSelectorPanel
-        handleQuestionSelect={(url) =>
-          // todo(nickbar01234): Loading animation?
-          addQuestion(url).then(() => closeSidebarTab())
-        }
+        handleQuestionSelect={handleQuestionSelect}
         filterQuestions={questions}
       />
     </SidebarTabLayout>
