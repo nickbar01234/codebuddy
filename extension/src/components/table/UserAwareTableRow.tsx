@@ -38,7 +38,11 @@ export const UserAwareTableRow = ({ question }: UserAwareTableRowProps) => {
       <TableCell>
         <div className="flex gap-1">
           {usersInQuestion.map((user) => (
-            <ColorAwareUserIcon key={user.user} css={user.css} />
+            <ColorAwareUserIcon
+              key={user.user}
+              css={user.css}
+              user={user.user}
+            />
           ))}
         </div>
       </TableCell>

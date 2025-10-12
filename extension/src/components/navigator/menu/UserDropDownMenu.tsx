@@ -1,4 +1,5 @@
 import { CaretDownIcon } from "@cb/components/icons";
+import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { usePeerActions, usePeers, useRoomData } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
@@ -57,7 +58,10 @@ const UserDropDownMenuTrigger = ({
             )}
           >
             <div className="max-w-32 overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm">
-              {peer?.id ?? ""}
+              <Tooltip
+                trigger={{ node: <span>{peer?.id ?? ""}</span> }}
+                content={peer?.id}
+              />
             </div>
             {
               STATUS_ICON_MAP[

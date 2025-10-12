@@ -1,6 +1,7 @@
 import { UserDropDownMenu } from "@cb/components/navigator/menu/UserDropDownMenu";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
+import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyCode } from "@cb/hooks/editor";
 import {
@@ -142,15 +143,16 @@ const EditorPanel = () => {
                       </React.Fragment>
                     ))}
                   </TabsList>
-                  <button
-                    title="Copy code"
-                    type="button"
-                    data-tooltip-target="tooltip-default"
-                    onClick={copyCode}
-                    className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md"
-                  >
-                    <Copy size={16} />
-                  </button>
+                  <Tooltip
+                    trigger={{
+                      node: (
+                        <div className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer">
+                          <Copy size={16} />
+                        </div>
+                      ),
+                    }}
+                    content="Copy code"
+                  />
                 </div>
                 {upperTabConfigs.map(({ value, Content }) => (
                   <TabsContent
