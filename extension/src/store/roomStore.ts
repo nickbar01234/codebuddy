@@ -133,6 +133,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         );
       }
       await instance.addQuestion(metadata.data);
+      getOrCreateControllers().message.dispatchAddQuestion(metadata.data.title);
       useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
       windowMessager.navigate({ url: getNormalizedUrl(url) });
     } catch (error) {

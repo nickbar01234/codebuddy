@@ -46,6 +46,20 @@ export class MessageDispatcher {
     this.init();
   }
 
+  public dispatchAddQuestion(question: string) {
+    if (this.appStore.getState().auth.status === AppStatus.AUTHENTICATED) {
+      this.emitter.emit("rtc.send.message", {
+        message: {
+          action: "event",
+          event: EventType.ADD_QUESTION,
+          user: this.appStore.getState().actions.getAuthUser().username,
+          url: getNormalizedUrl(window.location.href),
+          question,
+        },
+      });
+    }
+  }
+
   private init() {
     poll({
       fn: () =>

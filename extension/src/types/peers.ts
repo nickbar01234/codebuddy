@@ -42,13 +42,25 @@ interface SendProgressMessage extends PeerGenericMessage {
 export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
+  ADD_QUESTION,
 }
 
-interface PeerEventMessage extends PeerGenericMessage {
+interface PeerGenericEventMessage extends PeerGenericMessage {
   action: "event";
   event: EventType;
   user: Id;
 }
+
+interface PeerEventSubmissionMesage extends PeerGenericEventMessage {
+  event: EventType.SUBMIT_SUCCESS | EventType.SUBMIT_FAILURE;
+}
+
+interface PeerEventAddQuestionMessage extends PeerGenericEventMessage {
+  event: EventType.ADD_QUESTION;
+  question: string;
+}
+
+type PeerEventMessage = PeerEventSubmissionMesage | PeerEventAddQuestionMessage;
 
 export type PeerMessage =
   | PeerCodeMessage
