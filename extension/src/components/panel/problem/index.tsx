@@ -46,16 +46,14 @@ export const QuestionSelectorPanel = React.memo(
           repositionIframeOnPositionChange
         );
 
-        const repositionIframeOnWindowResize = () => {
-          lastRect = node.getBoundingClientRect();
-          iframeActions.showHtml(node);
-        };
-
         window.addEventListener("resize", repositionIframeOnPositionChange);
 
         return () => {
           cancelAnimationFrame(animationFrameId);
-          window.removeEventListener("resize", repositionIframeOnWindowResize);
+          window.removeEventListener(
+            "resize",
+            repositionIframeOnPositionChange
+          );
         };
       },
       [iframeActions]
