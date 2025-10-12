@@ -38,7 +38,7 @@ const UserDropDownMenuTrigger = ({
   question,
 }: UserDropDownMenuTriggerProps) => {
   return (
-    <div className="w-40">
+    <div className="w-48">
       <SkeletonWrapper
         loading={peer == undefined}
         className="h-4 w-full relative"
