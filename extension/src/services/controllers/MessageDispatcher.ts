@@ -258,7 +258,6 @@ export class MessageDispatcher {
                 tests,
               },
             },
-            url,
           });
           break;
         }
