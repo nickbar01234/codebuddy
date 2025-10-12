@@ -27,7 +27,7 @@ export const QuestionSelectorPanel = React.memo(
 
         let lastRect: DOMRect;
         let animationFrameId: number;
-        const repositionIframeOnPositionChange = () => {
+        const repositionIframeOnPositionChange = (terminate: boolean) => {
           const rect = node.getBoundingClientRect();
           if (
             !lastRect ||
@@ -37,22 +37,27 @@ export const QuestionSelectorPanel = React.memo(
             iframeActions.showHtml(node);
             lastRect = rect;
           }
-          animationFrameId = requestAnimationFrame(
-            repositionIframeOnPositionChange
-          );
+
+          if (!terminate) {
+            animationFrameId = requestAnimationFrame(() =>
+              repositionIframeOnPositionChange(false)
+            );
+          }
         };
 
-        animationFrameId = requestAnimationFrame(
-          repositionIframeOnPositionChange
+        animationFrameId = requestAnimationFrame(() =>
+          repositionIframeOnPositionChange(false)
         );
 
-        window.addEventListener("resize", repositionIframeOnPositionChange);
+        const repositionIframeOnPositionChangeOnce = () =>
+          repositionIframeOnPositionChange(true);
+        window.addEventListener("resize", repositionIframeOnPositionChangeOnce);
 
         return () => {
           cancelAnimationFrame(animationFrameId);
           window.removeEventListener(
             "resize",
-            repositionIframeOnPositionChange
+            repositionIframeOnPositionChangeOnce
           );
         };
       },
