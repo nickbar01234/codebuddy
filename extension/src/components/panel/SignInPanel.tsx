@@ -62,7 +62,7 @@ const SignInPanel = () => {
             </div>
             <div className="flex gap-2 text-lg">
               <div className="text-[#0000008C] dark:text-[#FFFFFF99]">
-                Haven&apos;t received any email?
+                Haven&apos;t received any email? Check your spam folder.
               </div>
               {/* todo(nickbar01234): Should wait for X duration before displaying this, since we throttle anyway */}
               <ClickableText
