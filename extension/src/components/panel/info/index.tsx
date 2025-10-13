@@ -1,3 +1,4 @@
+import { DOM } from "@cb/constants";
 import { useRoomActions, useRoomData, useRoomStatus } from "@cb/hooks/store";
 import { Sheet, SheetContent } from "@cb/lib/components/ui/sheet";
 import { RoomStatus, SidebarTabIdentifier } from "@cb/store";
@@ -27,6 +28,14 @@ export const RoomInfo = () => {
   const roomStatus = useRoomStatus();
   const { activeSidebarTab } = useRoomData();
   const { closeSidebarTab } = useRoomActions();
+
+  const sidebar = document.getElementById(DOM.CODEBUDDY_SIDEBAR_ID);
+  if (sidebar == null) {
+    console.log(
+      `DOM ${DOM.CODEBUDDY_SIDEBAR_ID} not found. This is most likely a bug`
+    );
+    return null;
+  }
 
   return createPortal(
     <>
@@ -66,6 +75,6 @@ export const RoomInfo = () => {
         </Sheet>
       </div>
     </>,
-    document.body
+    sidebar
   );
 };

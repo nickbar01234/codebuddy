@@ -9,6 +9,7 @@ export const URLS = {
 export const DOM = {
   CODEBUDDY_EXTENSION_ID: "CodeBuddy",
   CODEBUDDY_EDITOR_ID: "CodeBuddyEditor",
+  CODEBUDDY_SIDEBAR_ID: "CodeBuddySidebar",
   IFRAME_CSS_ID: "codebuddy-css",
   LEETCODE_ROOT_ID: "#qd-content",
   LEETCODE_TEST_ID: ".cm-content",
