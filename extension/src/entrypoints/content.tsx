@@ -1,5 +1,6 @@
 import { ContentScriptContext } from "#imports";
 import { IframeContainer } from "@cb/components/iframe/IframeContainer";
+import { SidebarPortal } from "@cb/components/portal/SidebarPortal";
 import { ContentScript } from "@cb/components/root/ContentScript";
 import { DOM, URLS } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
@@ -45,6 +46,7 @@ const createUi = (ctx: ContentScriptContext) => {
 
       createRoot(extensionRoot).render(
         <>
+          <SidebarPortal />
           <IframeContainer />
           <ContentScript leetCodeNode={leetCodeNode} />
         </>
