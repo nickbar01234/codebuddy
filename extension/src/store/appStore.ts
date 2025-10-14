@@ -40,6 +40,7 @@ interface AppState {
     enabled: boolean;
     width: number;
     collapsed: boolean;
+    displayBanner: boolean;
   };
   auth: AuthenticationStatus;
 }
@@ -48,6 +49,7 @@ interface AppAction {
   toggleEnabledApp: () => void;
   collapseExtension: () => void;
   expandExtension: () => void;
+  hideBanner: () => void;
   setAppWidth: (width: number) => void;
   authenticate: (user: AppUser) => void;
   unauthenticate: () => void;
@@ -68,6 +70,7 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
         enabled: true,
         width: DEFAULT_PANEL_SIZE,
         collapsed: false,
+        displayBanner: true,
       },
       auth: {
         status: AppStatus.LOADING,
@@ -86,6 +89,10 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
           set((state) => {
             state.app.collapsed = false;
             state.app.width = DEFAULT_PANEL_SIZE;
+          }),
+        hideBanner: () =>
+          set((state) => {
+            state.app.displayBanner = false;
           }),
         setAppWidth: (width) => debouncedSetWidth(width),
         authenticate: (user: AppUser) =>
