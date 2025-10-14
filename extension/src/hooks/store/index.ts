@@ -4,6 +4,7 @@ import { useHtml } from "@cb/store/htmlStore";
 import { useLeetCode } from "@cb/store/leetCodeStore";
 import { QuestionProgressStatus, User } from "@cb/types";
 import React from "react";
+import { ImperativePanelHandle } from "react-resizable-panels";
 import { useShallow } from "zustand/shallow";
 
 export const useAuthUser = () => useApp((state) => state.actions.getAuthUser());
@@ -87,18 +88,29 @@ export const useAuthActions = () => {
   return { authenticate, unauthenticate, getAuthUser };
 };
 
-export const useAppActions = ({ panelRef }: any) => {
+interface UseAppActionProps {
+  panelRef?: React.RefObject<ImperativePanelHandle>;
+}
+
+export const useAppActions = ({ panelRef }: UseAppActionProps) => {
   const handleDoubleClick = (collapsed: boolean) => {
     if (collapsed) {
-      panelRef.current?.expand();
+      panelRef?.current?.expand();
     } else {
-      panelRef.current?.collapse();
+      panelRef?.current?.collapse();
     }
   };
   const collapseExtension = useApp((state) => state.actions.collapseExtension);
   const expandExtension = useApp((state) => state.actions.expandExtension);
   const setAppWidth = useApp((state) => state.actions.setAppWidth);
-  return { collapseExtension, expandExtension, setAppWidth, handleDoubleClick };
+  const hideBanner = useApp((state) => state.actions.hideBanner);
+  return {
+    collapseExtension,
+    expandExtension,
+    setAppWidth,
+    handleDoubleClick,
+    hideBanner,
+  };
 };
 
 export const useHtmlActions = () => useHtml((state) => state.actions);

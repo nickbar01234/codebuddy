@@ -1,6 +1,7 @@
 import { AppNavigator } from "@cb/components/navigator/AppNavigator";
 import { ContainerNavigator } from "@cb/components/navigator/ContainerNavigator";
 import { AppControlMenu, RoomControlMenu } from "@cb/components/navigator/menu";
+import { BottomBannerPanel } from "@cb/components/panel/BottomBannerPanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
 import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
 import SignInPanel from "@cb/components/panel/SignInPanel";
@@ -25,7 +26,9 @@ export const ContentScript = ({ leetCodeNode }: ContentProps) => {
       case AppStatus.AUTHENTICATED:
         return (
           <ContainerNavigator menu={<RoomControlMenu />}>
-            <AppNavigator />
+            <BottomBannerPanel>
+              <AppNavigator />
+            </BottomBannerPanel>
           </ContainerNavigator>
         );
       case AppStatus.UNAUTHENTICATED:
