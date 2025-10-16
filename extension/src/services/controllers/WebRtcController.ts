@@ -170,23 +170,16 @@ export class WebRtcController {
       const isRecoverable = this.isErrorRecoverable(errorEvent.error);
 
       if (isRecoverable) {
-        this.handleRecoverableError(user);
+        const connection = this.pcs.get(user);
+        if (!connection) return;
+        const pc = connection.pc;
+        pc.restartIce();
       } else {
         console.log("Initiate recovery");
         this.emitter.emit("rtc.error.connection", { user });
       }
     };
   }
-
-  private async handleRecoverableError(user: User) {
-    const connection = this.pcs.get(user);
-    if (!connection) return;
-
-    const pc = connection.pc;
-
-    pc.restartIce();
-  }
-
   private async handleDescriptionEvents({
     from,
     data,
