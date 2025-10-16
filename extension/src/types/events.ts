@@ -31,6 +31,10 @@ interface RtcConnectionError {
   user: User;
 }
 
+interface UserDisconnectedEvent {
+  user: User;
+}
+
 export type Events = {
   "rtc.ice": AddressableEvent<RTCIceCandidateInit | null>;
   "rtc.description": AddressableEvent<RTCSessionDescriptionInit>;
@@ -38,6 +42,7 @@ export type Events = {
   "rtc.send.message": SendMessageEvent;
   "rtc.receive.message": ReceiveMessageEvent;
   "rtc.error.connection": RtcConnectionError;
+  "rtc.user.disconnected": UserDisconnectedEvent;
 
   "room.changes": RoomEvent;
   "room.left": void;

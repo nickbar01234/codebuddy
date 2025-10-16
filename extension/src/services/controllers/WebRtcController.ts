@@ -158,6 +158,14 @@ export class WebRtcController {
     };
 
     channel.onerror = (errorEvent: RTCErrorEvent) => {
+      if (
+        errorEvent.error.errorDetail === "sctp-failure" &&
+        errorEvent.error.message.includes("User-Initiated")
+      ) {
+        this.disconnect(user);
+        this.emitter.emit("rtc.user.disconnected", { user });
+        return;
+      }
       console.error("Error on RTC data channel", errorEvent);
       const isRecoverable = this.isErrorRecoverable(errorEvent.error);
 
@@ -165,9 +173,8 @@ export class WebRtcController {
         this.handleRecoverableError(user);
       } else {
         console.log("Initiate recovery");
+        this.emitter.emit("rtc.error.connection", { user });
       }
-
-      this.emitter.emit("rtc.error.connection", { user });
     };
   }
 
@@ -178,24 +185,6 @@ export class WebRtcController {
     const pc = connection.pc;
 
     pc.restartIce();
-
-    try {
-      const { username: me } = this.appStore.getState().actions.getAuthUser();
-
-      await pc.setLocalDescription();
-      const description = pc.localDescription;
-
-      if (description) {
-        this.emitter.emit("rtc.description", {
-          from: me,
-          to: user,
-          data: description.toJSON(),
-        });
-      }
-    } catch (err) {
-      console.error("Failed to renegotiate after recoverable error", err);
-      // TODO: Handle recovery
-    }
   }
 
   private async handleDescriptionEvents({
