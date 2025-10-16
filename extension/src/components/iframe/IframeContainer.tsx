@@ -1,12 +1,13 @@
 import { URLS } from "@cb/constants";
-import { useHtml } from "@cb/store/htmlStore";
+import { useHtmlActions } from "@cb/hooks/store";
 import React from "react";
 
 export const IframeContainer: React.FC = () => {
-  const htmlElement = useHtml((state) => state.htmlElement);
+  const { setHtmlElement } = useHtmlActions();
+
   return (
     <iframe
-      ref={htmlElement}
+      ref={(node) => setHtmlElement(node)}
       src={URLS.PROBLEMSET}
       title="LeetCode Question"
       className="hidden"

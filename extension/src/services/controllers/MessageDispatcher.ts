@@ -61,7 +61,6 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
     this.unsubscribers.push(this.subscribeToRtcConnectionError());
-    this.unsubscribers.push(this.subscribeToUserDisconnected());
     this.subscribeToSubmission();
     this.subscribeToBackground();
   }
@@ -250,7 +249,7 @@ export class MessageDispatcher {
     return () => this.emitter.off("rtc.user.disconnected", onUserDisconnected);
   }
 
-  private async broadCastInformation(user?: User) {
+  private async requestProgress(url: string, user?: User) {
     this.emitter.emit("rtc.send.message", {
       to: user,
       message: await getCodePayload({}),

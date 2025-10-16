@@ -154,13 +154,13 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
       return Promise.resolve();
     },
 
-    getUser(roomId, username) {
+    getUserProgress(roomId, username) {
       return getDoc(getUserRef(roomId, username)).then((user) =>
         user.data(SNAPSHOT_OPTIONS)
       );
     },
 
-    setUser(roomId, username, progress) {
+    setUserProgress(roomId, username, progress) {
       return setDoc(getUserRef(roomId, username), progress, { merge: true });
     },
 

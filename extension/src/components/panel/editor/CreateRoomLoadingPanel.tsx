@@ -1,14 +1,15 @@
+import { Tooltip } from "@cb/components/tooltip";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyRoomId } from "@cb/hooks";
-import { useRoom } from "@cb/store";
+import { useRoomData } from "@cb/hooks/store";
 import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
-  const roomId = useRoom((state) => state.room?.id);
+  const { id: roomId } = useRoomData();
   const copyRoomId = useCopyRoomId();
-  const roomReady = roomId != null;
+  const roomReady = roomId != undefined;
 
   return (
     <div className="flex h-full w-full flex-col relative items-center p-4 bg-secondary">
@@ -38,17 +39,19 @@ const CreateRoomLoadingPanel = () => {
                 }
               )}
             >
-              <button
-                type="button"
-                aria-label="Copy room ID"
-                disabled={!roomReady}
-                className={cn(
-                  roomReady ? "cursor-pointer" : "cursor-not-allowed"
-                )}
-                onClick={copyRoomId}
-              >
-                <CopyIcon className="h-6 w-6" />
-              </button>
+              <Tooltip
+                trigger={{
+                  props: {
+                    "aria-label": "Copy room ID",
+                    className: cn(
+                      roomReady ? "cursor-pointer" : "cursor-not-allowed"
+                    ),
+                    onClick: copyRoomId,
+                  },
+                  node: <CopyIcon className="h-6 w-6" />,
+                }}
+                content="Copy room ID"
+              />
             </div>
           </div>
         </div>

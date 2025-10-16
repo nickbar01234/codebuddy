@@ -29,43 +29,43 @@ export const RoomInfo = () => {
   const { closeSidebarTab } = useRoomActions();
 
   return createPortal(
-    <div
-      className={cn(
-        "bg-secondary border-2 rounded-tl-lg rounded-bl-lg absolute right-0 top-[256px] translate-x-2 z-[1000] border-border-button shadow-lg",
-        {
-          hidden: roomStatus !== RoomStatus.IN_ROOM,
-        }
-      )}
-    >
-      <Sheet
-        open={activeSidebarTab != undefined}
-        onOpenChange={(open) => {
-          if (!open) {
-            closeSidebarTab();
+    <>
+      <div
+        className={cn(
+          "border-2 rounded-tl-lg rounded-bl-lg absolute top-[256px] translate-x-2 z-[1000] border-border-button shadow-lg transition-all pointer-events-auto",
+          {
+            "right-0 animate-out bg-secondary": activeSidebarTab == undefined,
+            "right-1/2 animate-in bg-primary": activeSidebarTab != undefined,
+            hidden: roomStatus !== RoomStatus.IN_ROOM,
           }
-        }}
+        )}
       >
-        <div className="flex flex-col gap-y-2 p-2">
-          {TRIGGERS.map(({ identifier, icon }) => (
-            <SidebarTabTrigger
-              key={identifier}
-              forTab={identifier}
-              trigger={icon}
-            />
-          ))}
-        </div>
-        <SheetContent
-          className={cn(
-            "bg-primary z-[2000] [&>button:first-of-type]:hidden w-5/12"
-          )}
-          forceMount
-        >
-          <GeneralRoomInfo />
-          <ProblemInfo />
-          <LeetCodeQuestions />
-        </SheetContent>
-      </Sheet>
-    </div>,
+        <Sheet open={activeSidebarTab != undefined}>
+          <div className="flex flex-col gap-y-2 p-2">
+            {TRIGGERS.map(({ identifier, icon }) => (
+              <SidebarTabTrigger
+                key={identifier}
+                forTab={identifier}
+                trigger={icon}
+              />
+            ))}
+          </div>
+          <SheetContent
+            className={cn(
+              "bg-primary z-[2000] [&>button:first-of-type]:hidden w-6/12"
+            )}
+            forceMount
+            overlay={{
+              onClick: () => closeSidebarTab(),
+            }}
+          >
+            <GeneralRoomInfo />
+            <ProblemInfo />
+            <LeetCodeQuestions />
+          </SheetContent>
+        </Sheet>
+      </div>
+    </>,
     document.body
   );
 };

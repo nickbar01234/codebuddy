@@ -7,6 +7,9 @@ import {
 import { defaultTo as d } from "@cb/utils";
 
 interface MenuProps {
+  content?: {
+    props: React.ComponentProps<typeof DropdownMenuContent>;
+  };
   children?: React.ReactNode;
   trigger?: {
     props?: React.ComponentProps<typeof DropdownMenuTrigger>;
@@ -15,7 +18,7 @@ interface MenuProps {
   };
 }
 
-export const Menu = ({ children, trigger }: MenuProps) => {
+export const Menu = ({ children, trigger, content }: MenuProps) => {
   return (
     <DropdownMenu>
       {trigger?.customTrigger ? (
@@ -26,7 +29,10 @@ export const Menu = ({ children, trigger }: MenuProps) => {
         </DropdownMenuTrigger>
       )}
       <DropdownMenuContent
-        className="shadow-level3 dark:shadow-dark-level3 border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 absolute right-0 top-2 flex w-max flex-col rounded-lg border"
+        className={cn(
+          "shadow-level3 dark:shadow-dark-level3 border-border-tertiary dark:border-border-tertiary bg-layer-02 dark:bg-layer-02 absolute right-0 top-2 flex w-max flex-col rounded-lg border",
+          content?.props.className
+        )}
         align="end"
       >
         {children}

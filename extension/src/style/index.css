@@ -8,6 +8,46 @@
   .hide-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  .user-1 {
+    color: var(--color-green);
+  }
+
+  .user-1-accent {
+    @apply rounded-full bg-[#28C24433] p-[1px];
+  }
+
+  .user-2 {
+    color: var(--color-pink);
+  }
+
+  .user-2-accent {
+    @apply rounded-full bg-[#DD547133] p-[1px];
+  }
+
+  .user-3 {
+    color: var(--color-blue);
+  }
+
+  .user-3-accent {
+    @apply rounded-full bg-[#007BFF33] p-[1px];
+  }
+
+  .user-4 {
+    color: var(--light-brand-orange);
+  }
+
+  .user-4-accent {
+    @apply rounded-full bg-[#FFA11633] p-[1px];
+  }
+
+  .codebuddy-row-odd {
+    @apply !bg-quaternary;
+  }
+
+  .codebuddy-row-even {
+    @apply !bg-primary;
+  }
 }
 
 /**
@@ -104,6 +144,7 @@
     --color-red: #ff3b30ff;
     --color-green: #02b128ff;
     --color-blue: #007bffff;
+    --color-orange: #ffa116;
   }
 
   .dark {
