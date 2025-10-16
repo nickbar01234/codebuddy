@@ -73,7 +73,6 @@ export class MessageDispatcher {
   private subscribeToUserDisconnected() {
     const onUserDisconnected = ({ user }: Events["rtc.user.disconnected"]) => {
       this.roomStore.getState().actions.peers.remove([user]);
-      toast.info(`${user} left the room`);
     };
     this.emitter.on("rtc.user.disconnected", onUserDisconnected);
     return () => this.emitter.off("rtc.user.disconnected", onUserDisconnected);
