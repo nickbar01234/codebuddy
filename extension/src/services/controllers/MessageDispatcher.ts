@@ -243,9 +243,7 @@ export class MessageDispatcher {
 
   private subscribeToUserDisconnected() {
     const onUserDisconnected = ({ user }: Events["rtc.user.disconnected"]) => {
-      // Remove the user from the room store peers (same as graceful leave)
       this.roomStore.getState().actions.peers.remove([user]);
-      // Show a notification that the user left
       toast.info(`${user} left the room`);
     };
     this.emitter.on("rtc.user.disconnected", onUserDisconnected);
