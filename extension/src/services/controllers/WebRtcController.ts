@@ -160,7 +160,7 @@ export class WebRtcController {
     channel.onerror = (errorEvent: RTCErrorEvent) => {
       if (
         errorEvent.error.errorDetail === "sctp-failure" &&
-        errorEvent.error.message.includes("User-Initiated")
+        errorEvent.error.sctpCauseCode === 12 // https://datatracker.ietf.org/doc/html/rfc4960#section-3.3.10
       ) {
         this.disconnect(user);
         this.emitter.emit("rtc.user.disconnected", { user });
@@ -170,9 +170,6 @@ export class WebRtcController {
       const isRecoverable = this.isErrorRecoverable(errorEvent.error);
 
       if (isRecoverable) {
-        const connection = this.pcs.get(user);
-        if (!connection) return;
-        const pc = connection.pc;
         pc.restartIce();
       } else {
         console.log("Initiate recovery");
