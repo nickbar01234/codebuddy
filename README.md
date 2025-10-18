@@ -10,7 +10,12 @@ We would like to acknowledge `binarysearch.com` (which unfortunately no longer e
 ## Features
 
 - Live streaming code and test cases
+
+![Stream code](docs/images/stream-code.png)
+
 - Integration with Leetcode problems
+
+![Select problem](docs/images/select-problem.png)
 
 ## Notes
 
