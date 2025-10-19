@@ -73,6 +73,7 @@ interface PeerQuestionProgress {
   code?: CodeWithChanges;
   tests: SelectableTestCase[];
   status: QuestionProgressStatus;
+  viewable: boolean;
 }
 
 interface SelfQuestionProgress {

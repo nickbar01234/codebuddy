@@ -97,6 +97,7 @@ interface RoomAction {
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
+    toggleCodeVisibility: () => void;
   };
   self: {
     update: (state: Partial<UpdateSelfArgs>) => void;
@@ -157,6 +158,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
           code: undefined,
           tests: [],
           status: QuestionProgressStatus.NOT_STARTED,
+          viewable: false,
         };
 
         if (code != undefined) {
@@ -444,6 +446,15 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     ...test,
                     selected: i === idx,
                   }));
+                }
+              }),
+            toggleCodeVisibility: () =>
+              set((state) => {
+                const active = getSelectedPeer(state.peers);
+                const url = getNormalizedUrl(window.location.href);
+                const questions = state.peers[active?.id ?? ""].questions ?? {};
+                if (questions[url] != undefined) {
+                  questions[url].viewable = !questions[url].viewable;
                 }
               }),
           },

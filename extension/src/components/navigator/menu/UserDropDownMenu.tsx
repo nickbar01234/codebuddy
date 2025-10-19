@@ -10,7 +10,6 @@ import {
   QuestionProgressStatus,
 } from "@cb/types";
 import { cn } from "@cb/utils/cn";
-import { codeViewable } from "@cb/utils/model";
 import { CircleCheckBig, CircleMinus, Code } from "lucide-react";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
@@ -53,7 +52,6 @@ const UserDropDownMenuTrigger = ({
                 "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary":
                   canDropdown,
                 "cursor-default": !canDropdown,
-                "pointer-events-none": !codeViewable(peer),
               }
             )}
           >
