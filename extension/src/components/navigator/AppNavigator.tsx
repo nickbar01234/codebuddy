@@ -11,7 +11,11 @@ export const AppNavigator = () => {
   const roomStatus = useRoomStatus();
   return (
     <div className="relative h-full w-full overflow-hidden bg-secondary">
-      <div className="p-2 h-full w-full">
+      <div
+        className={cn("p-2 h-full w-full", {
+          hidden: roomStatus === RoomStatus.IN_ROOM,
+        })}
+      >
         {roomStatus === RoomStatus.LOADING ? (
           <div className="absolute inset-0 flex h-full w-full items-center justify-center mx-2">
             <LoadingPanel numberOfUsers={0} />
