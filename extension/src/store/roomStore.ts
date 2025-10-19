@@ -39,6 +39,7 @@ export enum SidebarTabIdentifier {
 export enum RoomStatus {
   HOME,
   IN_ROOM,
+  BROWSING_ROOM,
   LOADING,
   REJOINING,
 }
@@ -83,6 +84,8 @@ interface RoomAction {
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;
     loading: () => void;
+    browse: () => void;
+    home: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
     setRoom: (
@@ -318,6 +321,14 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             loading: () =>
               set((state) => {
                 state.status = RoomStatus.LOADING;
+              }),
+            browse: () =>
+              set((state) => {
+                state.status = RoomStatus.BROWSING_ROOM;
+              }),
+            home: () =>
+              set((state) => {
+                state.status = RoomStatus.HOME;
               }),
             addQuestion: async (url) => debouncedAddQuestion(url),
             updateRoomStoreQuestion(question) {

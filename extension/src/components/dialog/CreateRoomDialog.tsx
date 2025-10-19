@@ -66,7 +66,7 @@ export const CreateRoomDialog = () => {
           value={isPublic ? "public" : "private"}
           onValueChange={(value) => setIsPublic(value === "public")}
           className={cn("space-y-1", {
-            hidden: FEATURE_FLAG.DISABLE_ROOM_VISIBILITY,
+            hidden: FEATURE_FLAG.DISABLE_BROWSE_ROOM,
           })}
         >
           <p className="font-medium ">Visibility</p>
