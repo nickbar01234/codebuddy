@@ -136,6 +136,7 @@ const EditorPanel = () => {
                         </div>
                       ),
                     }}
+                    content={hideCode ? "View code" : "Hide code"}
                   />
                   <Tooltip
                     trigger={{
