@@ -20,6 +20,12 @@ export class WebRtcController {
 
   private rtcConfiguration: RTCConfiguration;
 
+  private usersToReconnect: Set<User> = new Set();
+
+  // Test recovery mechanism - set to true to simulate a data channel error
+  private testRecoveryMechanism = true;
+  private hasTriggeredTestError = false;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -41,6 +47,14 @@ export class WebRtcController {
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
+    this.emitter.on(
+      "rtc.renegotiation.request",
+      this.handleRenegotiationRequest.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
+    );
   }
 
   private leave() {
@@ -56,17 +70,6 @@ export class WebRtcController {
       this.pcs.delete(user);
       connection.channel.close();
       connection.pc.close();
-    }
-  }
-
-  private isErrorRecoverable(error: RTCError): boolean {
-    switch (error.errorDetail) {
-      case "dtls-failure":
-      case "fingerprint-failure":
-      case "sdp-syntax-error":
-        return false;
-      default:
-        return true;
     }
   }
 
@@ -140,12 +143,43 @@ export class WebRtcController {
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
+
+      // TODO @dlinh31: Test purpose only, delete when done
+      if (
+        this.testRecoveryMechanism &&
+        !this.hasTriggeredTestError &&
+        me === "user1@gmail.com"
+      ) {
+        this.hasTriggeredTestError = true;
+        console.warn(
+          `⚠️ TEST MODE (${me}): Simulating data channel error in 3 seconds to test recovery mechanism...`
+        );
+        setTimeout(() => {
+          console.warn(
+            `⚠️ TEST MODE (${me}): Triggering simulated data channel error now!`
+          );
+          // Simulate what happens in channel.onerror
+          this.emitter.emit("rtc.renegotiation.request", {
+            from: me,
+            to: user,
+            data: undefined,
+          });
+          this.usersToReconnect.add(user);
+          this.disconnect(user);
+        }, 3000);
+      }
     };
 
     channel.onclose = () => {
       console.log("Channel closed", user);
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
+
+      // Reconnect on errored out channel cases
+      if (this.usersToReconnect.has(user)) {
+        this.usersToReconnect.delete(user);
+        this.connect(user);
+      }
     };
 
     channel.onmessage = (event: MessageEvent) => {
@@ -167,14 +201,14 @@ export class WebRtcController {
         return;
       }
       console.error("Error on RTC data channel", errorEvent);
-      const isRecoverable = this.isErrorRecoverable(errorEvent.error);
+      this.emitter.emit("rtc.renegotiation.request", {
+        from: me,
+        to: user,
+        data: undefined,
+      });
 
-      if (isRecoverable) {
-        pc.restartIce();
-      } else {
-        console.log("Initiate recovery");
-        this.emitter.emit("rtc.error.connection", { user });
-      }
+      this.usersToReconnect.add(user);
+      this.disconnect(user);
     };
   }
   private async handleDescriptionEvents({
@@ -224,6 +258,21 @@ export class WebRtcController {
       if (!connection.ignoreOffer) {
         console.error("Error when handling ICE candidate", from, err);
       }
+    }
+  }
+
+  private handleRenegotiationRequest({
+    from,
+  }: Events["rtc.renegotiation.request"]) {
+    console.log("Renegotiation request received from", from);
+
+    const hasConnection = this.pcs.has(from);
+
+    if (hasConnection) {
+      this.usersToReconnect.add(from);
+      this.disconnect(from);
+    } else {
+      this.connect(from);
     }
   }
 
