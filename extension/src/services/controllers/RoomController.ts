@@ -204,7 +204,7 @@ class RoomLifeCycle {
     this.database.addNegotiation(this.room.id, {
       from,
       to,
-      message: { action: "renegotiation", data: {} as Record<string, never> },
+      message: { action: "renegotiation", data: null },
       version: this.room.version,
     });
   }
