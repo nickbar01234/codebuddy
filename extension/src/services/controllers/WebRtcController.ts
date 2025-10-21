@@ -22,10 +22,6 @@ export class WebRtcController {
 
   private usersToReconnect: Set<User> = new Set();
 
-  // Test recovery mechanism - set to true to simulate a data channel error
-  private testRecoveryMechanism = true;
-  private hasTriggeredTestError = false;
-
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -143,31 +139,6 @@ export class WebRtcController {
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
-
-      // TODO @dlinh31: Test purpose only, delete when done
-      if (
-        this.testRecoveryMechanism &&
-        !this.hasTriggeredTestError &&
-        me === "user1@gmail.com"
-      ) {
-        this.hasTriggeredTestError = true;
-        console.warn(
-          `⚠️ TEST MODE (${me}): Simulating data channel error in 3 seconds to test recovery mechanism...`
-        );
-        setTimeout(() => {
-          console.warn(
-            `⚠️ TEST MODE (${me}): Triggering simulated data channel error now!`
-          );
-          // Simulate what happens in channel.onerror
-          this.emitter.emit("rtc.renegotiation.request", {
-            from: me,
-            to: user,
-            data: undefined,
-          });
-          this.usersToReconnect.add(user);
-          this.disconnect(user);
-        }, 3000);
-      }
     };
 
     channel.onclose = () => {
