@@ -24,20 +24,18 @@ import {
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { CodeXml, Copy, FlaskConical } from "lucide-react";
+import { CodeXml, Copy, Eye, EyeOff, FlaskConical } from "lucide-react";
 import React from "react";
 
 const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
   const { self } = useRoomData();
   const roomStatus = useRoomStatus();
-  const { selectTest } = usePeerActions();
+  const { selectTest, toggleCodeVisibility } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
 
-  // const canViewCode = codeViewable(activePeer);
   const url = self?.url ?? "";
-  const canViewCode = true;
   const activeTest = selectedPeer?.questions[url]?.tests.find(
     (test) => test.selected
   );
@@ -68,6 +66,8 @@ const EditorPanel = () => {
     ];
   }, [selectedPeer, activeTest, selectTest, getLanguageExtension, url]);
 
+  const hideCode = !selectedPeer?.questions[self?.url ?? ""]?.viewable;
+
   return (
     <div
       className={cn(
@@ -93,60 +93,58 @@ const EditorPanel = () => {
             maxSize={80}
             className="relative rounded-b-lg bg-secondary"
           >
-            {/* todo(nickbar01234): Fix styling */}
-            {!canViewCode && (
-              <button
-                className="hover:bg-fill-quaternary dark:hover:bg-fill-quaternary text-label-1 dark:text-dark-label-1 absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-lg px-4 py-2 font-bold"
-                // onClick={unblur}
-                type="button"
-              >
-                View
-              </button>
-            )}
-            <div
-              data-view-code={canViewCode}
-              className={cn("h-full w-full", {
-                blur: !canViewCode,
-              })}
+            <Tabs
+              defaultValue="code"
+              className="h-full w-full bg-inherit text-inherit"
             >
-              <Tabs
-                defaultValue="code"
-                className="h-full w-full bg-inherit text-inherit"
-              >
-                <div className="flex justify-between w-full border-border-quaternary dark:border-border-quaternary border-b rounded-none px-2 py-1 items-center">
-                  <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit">
-                    <UserDropDownMenu />
-                    <Separator
-                      orientation="vertical"
-                      className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                    />
-                    {upperTabConfigs.map((tab, index) => (
-                      <React.Fragment key={tab.value}>
-                        <TabsTrigger
-                          value={tab.value}
-                          className={cn(
-                            "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent",
-                            {
-                              "pointer-events-none": !canViewCode,
-                            }
-                          )}
-                        >
-                          <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
-                          {tab.label}
-                        </TabsTrigger>
-                        {index !== upperTabConfigs.length - 1 && (
-                          <Separator
-                            orientation="vertical"
-                            className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                          />
+              <div className="flex justify-between w-full border-border-quaternary dark:border-border-quaternary border-b rounded-none px-2 py-1 items-center">
+                <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit">
+                  <UserDropDownMenu />
+                  <Separator
+                    orientation="vertical"
+                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                  />
+                  {upperTabConfigs.map((tab, index) => (
+                    <React.Fragment key={tab.value}>
+                      <TabsTrigger
+                        value={tab.value}
+                        className={cn(
+                          "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
                         )}
-                      </React.Fragment>
-                    ))}
-                  </TabsList>
+                      >
+                        <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
+                        {tab.label}
+                      </TabsTrigger>
+                      {index !== upperTabConfigs.length - 1 && (
+                        <Separator
+                          orientation="vertical"
+                          className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </TabsList>
+                <div className="flex gap-2">
                   <Tooltip
                     trigger={{
                       node: (
-                        <div className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer">
+                        <div
+                          className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
+                          onClick={toggleCodeVisibility}
+                        >
+                          {hideCode ? <Eye size={16} /> : <EyeOff size={16} />}
+                        </div>
+                      ),
+                    }}
+                    content={hideCode ? "View code" : "Hide code"}
+                  />
+                  <Tooltip
+                    trigger={{
+                      node: (
+                        <div
+                          className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
+                          onClick={copyCode}
+                        >
                           <Copy size={16} />
                         </div>
                       ),
@@ -154,18 +152,23 @@ const EditorPanel = () => {
                     content="Copy code"
                   />
                 </div>
-                {upperTabConfigs.map(({ value, Content }) => (
-                  <TabsContent
-                    key={value}
-                    value={value}
-                    forceMount
-                    className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full oveflow-y-hidden w-full mt-0"
-                  >
-                    {Content}
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </div>
+              </div>
+              {upperTabConfigs.map(({ value, Content }) => (
+                <TabsContent
+                  key={value}
+                  value={value}
+                  forceMount
+                  className={cn(
+                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full oveflow-y-hidden w-full mt-0",
+                    {
+                      "blur pointer-events-none": hideCode,
+                    }
+                  )}
+                >
+                  {Content}
+                </TabsContent>
+              ))}
+            </Tabs>
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>

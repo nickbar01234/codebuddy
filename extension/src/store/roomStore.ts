@@ -39,6 +39,7 @@ export enum SidebarTabIdentifier {
 export enum RoomStatus {
   HOME,
   IN_ROOM,
+  BROWSING_ROOM,
   LOADING,
   REJOINING,
 }
@@ -83,6 +84,8 @@ interface RoomAction {
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;
     loading: () => void;
+    browse: () => void;
+    home: () => void;
     addQuestion: (url: string) => Promise<void>;
     updateRoomStoreQuestion: (question: Question) => void;
     setRoom: (
@@ -97,6 +100,7 @@ interface RoomAction {
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
+    toggleCodeVisibility: () => void;
   };
   self: {
     update: (state: Partial<UpdateSelfArgs>) => void;
@@ -133,6 +137,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         );
       }
       await instance.addQuestion(metadata.data);
+      getOrCreateControllers().message.dispatchAddQuestion(metadata.data.title);
       useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
       windowMessager.navigate({ url: getNormalizedUrl(url) });
     } catch (error) {
@@ -156,6 +161,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
           code: undefined,
           tests: [],
           status: QuestionProgressStatus.NOT_STARTED,
+          viewable: false,
         };
 
         if (code != undefined) {
@@ -316,6 +322,14 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
               set((state) => {
                 state.status = RoomStatus.LOADING;
               }),
+            browse: () =>
+              set((state) => {
+                state.status = RoomStatus.BROWSING_ROOM;
+              }),
+            home: () =>
+              set((state) => {
+                state.status = RoomStatus.HOME;
+              }),
             addQuestion: async (url) => debouncedAddQuestion(url),
             updateRoomStoreQuestion(question) {
               // todo(nickbar01234): We need a timestamp on question so the ordering is stable.
@@ -443,6 +457,15 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     ...test,
                     selected: i === idx,
                   }));
+                }
+              }),
+            toggleCodeVisibility: () =>
+              set((state) => {
+                const active = getSelectedPeer(state.peers);
+                const url = getNormalizedUrl(window.location.href);
+                const questions = state.peers[active?.id ?? ""].questions ?? {};
+                if (questions[url] != undefined) {
+                  questions[url].viewable = !questions[url].viewable;
                 }
               }),
           },

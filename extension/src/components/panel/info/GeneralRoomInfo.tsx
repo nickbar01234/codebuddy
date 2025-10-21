@@ -68,16 +68,19 @@ export const GeneralRoomInfo = () => {
         <DefaultTable loading={users.length === 0}>
           <DefaultTableHeader headers={["Rank", "User", "Problem solved"]} />
           <DefaultTableBody>
-            {users.map(({ user, solved, css }, idx) => (
-              <DefaultTableRow key={user}>
-                <TableCell>{idx}</TableCell>
-                <TableCell className="flex gap-2 items-center">
-                  <ColorAwareUserIcon css={css} />
-                  <span>{user}</span>
-                </TableCell>
-                <TableCell>{solved}</TableCell>
-              </DefaultTableRow>
-            ))}
+            {/* todo(nickbar01234): Add latest pass submission timestamp so that sort order is stable */}
+            {users
+              .sort((x, y) => y.solved - x.solved)
+              .map(({ user, solved, css }, idx) => (
+                <DefaultTableRow key={user}>
+                  <TableCell>{idx}</TableCell>
+                  <TableCell className="flex gap-2 items-center">
+                    <ColorAwareUserIcon css={css} />
+                    <span>{user}</span>
+                  </TableCell>
+                  <TableCell>{solved}</TableCell>
+                </DefaultTableRow>
+              ))}
           </DefaultTableBody>
         </DefaultTable>
       </div>

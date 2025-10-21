@@ -9,6 +9,7 @@ export const URLS = {
 export const DOM = {
   CODEBUDDY_EXTENSION_ID: "CodeBuddy",
   CODEBUDDY_EDITOR_ID: "CodeBuddyEditor",
+  CODEBUDDY_SIDEBAR_ID: "CodeBuddySidebar",
   IFRAME_CSS_ID: "codebuddy-css",
   LEETCODE_ROOT_ID: "#qd-content",
   LEETCODE_TEST_ID: ".cm-content",
@@ -67,7 +68,7 @@ export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
 };
 
 export const FEATURE_FLAG = {
-  DISABLE_ROOM_VISIBILITY: true,
+  DISABLE_BROWSE_ROOM: true,
 };
 
 export const CSS = {
