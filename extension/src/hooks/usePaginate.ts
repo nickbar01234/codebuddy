@@ -1,22 +1,22 @@
+import { Identifiable } from "@cb/types";
 import {
-  endBefore,
   getCountFromServer,
   getDocs,
   limit,
-  query,
   Query,
   QueryDocumentSnapshot,
-  QuerySnapshot,
   startAfter,
 } from "firebase/firestore";
 import { debounce } from "lodash";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React from "react";
 
 export const REFRESH_INTERVAL_MS = 120000;
 export const DEBOUNCE_DELAY_MS = 500;
 
+type Document<T> = Array<Identifiable<T>>;
+
 interface Data<T> {
-  docs: QueryDocumentSnapshot<T>[];
+  docs: Document<T>;
   collectionSize: number;
 }
 
@@ -25,7 +25,6 @@ interface HookReturnValue<T> {
   error?: Error;
   loading: boolean;
   getNext: () => void;
-  getPrevious: () => void;
   hasNext: boolean;
 }
 
@@ -34,110 +33,88 @@ interface HookProps<T> {
   hookLimit: number;
 }
 
+/**
+ * Adapted from {@link https://github.com/Chirag7096/react-firebase-pagination/tree/main}
+ *
+ * todo(nickbar01234): Consolidate into database interface
+ */
 const usePaginate = <T>({
   baseQuery,
   hookLimit,
 }: HookProps<T>): HookReturnValue<T> => {
-  const [docs, setDocs] = useState<QueryDocumentSnapshot<T>[]>([]);
-  const [collectionSize, setCollectionSize] = useState(0);
-  const [error, setError] = useState<Error>();
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = React.useState<Error>();
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [docs, setDocs] = React.useState<Data<T>["docs"]>([]);
+  const [query, setQuery] = React.useState(
+    decorateQuery(baseQuery, limit, hookLimit)
+  );
+  const [collectionSize, setCollectionSize] = React.useState(0);
 
-  const getFirstDoc = useCallback(() => docs[0], [docs]);
-  const getLastDoc = useCallback(() => docs[docs.length - 1], [docs]);
+  const lastSnap = React.useRef<QueryDocumentSnapshot<T> | undefined>(
+    undefined
+  );
 
-  const buildPaginatedQuery = useCallback(
-    (isNext: boolean, cursor?: QueryDocumentSnapshot<T>) => {
-      const cursorConstraint =
-        cursor != undefined
-          ? isNext
-            ? startAfter(cursor)
-            : endBefore(cursor)
-          : undefined;
-      return query(
-        baseQuery,
-        ...(cursorConstraint ? [cursorConstraint] : []),
-        limit(hookLimit)
-      );
-    },
+  const fetchDocs = React.useMemo(
+    () =>
+      debounce(() => {
+        return getDocs(query)
+          .then((response) => {
+            const data = response.docs.filter((doc) => doc.exists());
+            lastSnap.current =
+              data.length === 0 ? undefined : data[data.length - 1];
+            setDocs((prev) => [
+              ...prev,
+              ...data.map((data) => ({ id: data.id, ...data.data() })),
+            ]);
+          })
+          .catch((error) => {
+            console.error(error);
+            setError(error);
+          })
+          .finally(() => setLoading(false));
+      }, 500),
+    [query]
+  );
+
+  React.useEffect(() => {
+    setLoading(true);
+    fetchDocs();
+  }, [fetchDocs]);
+
+  React.useEffect(() => {
+    // Note this doesn't work since we don't order resources
+    const refresh = setInterval(() => {
+      getCountFromServer(baseQuery).then((res) => {
+        setCollectionSize(res.data().count);
+      });
+    }, REFRESH_INTERVAL_MS);
+    return () => clearInterval(refresh);
+  }, [baseQuery, hookLimit]);
+
+  const getNext = React.useMemo(
+    () =>
+      debounce(() => {
+        if (lastSnap.current) {
+          let q = decorateQuery(baseQuery, startAfter, lastSnap.current);
+          q = decorateQuery(q, limit, hookLimit);
+          setQuery(q);
+        }
+      }, 1000),
     [baseQuery, hookLimit]
   );
 
-  const handleSnapshot = useCallback(
-    (res: QuerySnapshot<T>, isNext: boolean) => {
-      if (res.empty) return;
-      const newDocs = res.docs;
-      setDocs((prev) =>
-        isNext ? [...prev, ...newDocs] : [...newDocs, ...prev]
-      );
-    },
-    []
-  );
-
-  const fetchDocs = useMemo(
-    () =>
-      debounce(
-        async (cursor?: QueryDocumentSnapshot<T>, isNext: boolean = true) => {
-          if (loading) return;
-          setLoading(true);
-          try {
-            const q = buildPaginatedQuery(isNext, cursor);
-            const res = await getDocs(q);
-            handleSnapshot(res, isNext);
-          } catch (err) {
-            setError(err as Error);
-          } finally {
-            setLoading(false);
-          }
-        },
-        DEBOUNCE_DELAY_MS
-      ),
-    [buildPaginatedQuery, handleSnapshot, loading]
-  );
-
-  useEffect(() => {
-    setDocs([]);
-    setCollectionSize(0);
-    setError(undefined);
-
-    fetchDocs();
-
-    const interval = setInterval(() => {
-      getCountFromServer(baseQuery)
-        .then((res) => setCollectionSize(res.data().count))
-        .catch(setError);
-    }, REFRESH_INTERVAL_MS);
-
-    return () => {
-      clearInterval(interval);
-      fetchDocs.cancel?.();
-    };
-  }, [fetchDocs, baseQuery]);
-
-  const getNext = useCallback(() => {
-    if (docs.length === collectionSize) return;
-    const lastDoc = getLastDoc();
-    if (lastDoc) fetchDocs(lastDoc, true);
-  }, [getLastDoc, fetchDocs, docs, collectionSize]);
-
-  const getPrevious = useCallback(() => {
-    const firstDoc = getFirstDoc();
-    if (firstDoc) fetchDocs(firstDoc, false);
-  }, [getFirstDoc, fetchDocs]);
-
-  return useMemo(
+  return React.useMemo(
     () => ({
       error,
       loading,
       getNext,
-      getPrevious,
       hasNext: docs.length < collectionSize,
       data: {
         docs,
         collectionSize,
       },
     }),
-    [docs, collectionSize, error, getNext, getPrevious, loading]
+    [docs, collectionSize, error, getNext, loading]
   );
 };
 
