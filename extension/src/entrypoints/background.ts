@@ -9,51 +9,41 @@ import {
 } from "@cb/types";
 
 export default defineBackground(() => {
-  // Auto-inject content script into existing tabs when extension is installed/updated
+  const injectContentScriptIntoLeetCodeTabs = async () => {
+    const tabs = await browser.tabs.query({ url: URLS.ALL_PROBLEMS });
+    console.log(`Found ${tabs.length} LeetCode tabs for injection`);
+
+    for (const tab of tabs) {
+      if (tab.id) {
+        try {
+          await browser.scripting.insertCSS({
+            target: { tabId: tab.id },
+            files: ["content-scripts/content.css"],
+          });
+          await browser.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ["content-scripts/content.js"],
+          });
+        } catch (error) {
+          console.log(`Failed to inject into tab ${tab.id}:`, error);
+        }
+      }
+    }
+  };
+
   browser.runtime.onInstalled.addListener(async (details) => {
     console.log(`Extension ${details.reason}:`, details);
 
     if (details.reason === "install" || details.reason === "update") {
-      const tabs = await browser.tabs.query({ url: URLS.ALL_PROBLEMS });
-      console.log(`Found ${tabs.length} LeetCode tabs`);
-
-      for (const tab of tabs) {
-        if (tab.id) {
-          try {
-            await browser.scripting.executeScript({
-              target: { tabId: tab.id },
-              files: ["content-scripts/content.js"],
-            });
-          } catch (error) {
-            console.log(`Failed to inject into tab ${tab.id}:`, error);
-          }
-        }
-      }
+      await injectContentScriptIntoLeetCodeTabs();
     }
   });
 
-  // Handle extension being re-enabled (requires "management" permission)
-  // Note: This won't work without adding "management" to permissions
-  // If you want this feature, add "management" to manifest permissions
-  if (browser.management) {
-    browser.management.onEnabled.addListener(async (info) => {
-      if (info.id === browser.runtime.id) {
-        const tabs = await browser.tabs.query({ url: URLS.ALL_PROBLEMS });
-        for (const tab of tabs) {
-          if (tab.id) {
-            try {
-              await browser.scripting.executeScript({
-                target: { tabId: tab.id },
-                files: ["content-scripts/content.js"],
-              });
-            } catch (error) {
-              console.log(`Failed to inject into tab ${tab.id}:`, error);
-            }
-          }
-        }
-      }
-    });
-  }
+  browser.management.onEnabled.addListener(async (info) => {
+    if (info.id === browser.runtime.id) {
+      await injectContentScriptIntoLeetCodeTabs();
+    }
+  });
 
   const servicePayload = <T extends ServiceRequest["action"]>(
     payload: ServiceResponse[T]
