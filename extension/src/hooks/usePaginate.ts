@@ -1,4 +1,5 @@
 import { Identifiable } from "@cb/types";
+import { decorateQuery } from "@cb/utils/firebase";
 import {
   getCountFromServer,
   getDocs,
