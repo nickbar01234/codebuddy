@@ -192,9 +192,19 @@ export class MessageDispatcher {
         } else {
           button.onclick = async function (event) {
             if (onclick) onclick.call(this, event);
-            waitForElement(DOM.LEETCODE_SUBMISSION_RESULT)
-              .then(sendSuccessSubmission.bind(this))
-              .catch(sendFailedSubmission.bind(this));
+            try {
+              const element = await waitForElement(
+                DOM.LEETCODE_SUBMISSION_RESULT
+              );
+              const text = element.textContent?.toLowerCase() ?? "";
+              if (text.includes("accepted")) {
+                sendSuccessSubmission();
+              } else {
+                sendFailedSubmission();
+              }
+            } catch (error) {
+              sendFailedSubmission();
+            }
           };
         }
       });
