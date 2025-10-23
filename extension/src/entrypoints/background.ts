@@ -9,6 +9,42 @@ import {
 } from "@cb/types";
 
 export default defineBackground(() => {
+  const injectContentScriptIntoLeetCodeTabs = async () => {
+    const tabs = await browser.tabs.query({ url: URLS.ALL_PROBLEMS });
+    console.log(`Found ${tabs.length} LeetCode tabs for injection`);
+
+    for (const tab of tabs) {
+      if (tab.id) {
+        try {
+          await browser.scripting.insertCSS({
+            target: { tabId: tab.id },
+            files: ["content-scripts/content.css"],
+          });
+          await browser.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ["content-scripts/content.js"],
+          });
+        } catch (error) {
+          console.log(`Failed to inject into tab ${tab.id}:`, error);
+        }
+      }
+    }
+  };
+
+  browser.runtime.onInstalled.addListener(async (details) => {
+    console.log(`Extension ${details.reason}:`, details);
+
+    if (details.reason === "install" || details.reason === "update") {
+      await injectContentScriptIntoLeetCodeTabs();
+    }
+  });
+
+  browser.management.onEnabled.addListener(async (info) => {
+    if (info.id === browser.runtime.id) {
+      await injectContentScriptIntoLeetCodeTabs();
+    }
+  });
+
   const servicePayload = <T extends ServiceRequest["action"]>(
     payload: ServiceResponse[T]
   ) => payload;
