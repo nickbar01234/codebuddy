@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 import { User } from "./db";
 
 export type IamPolite = (me: User, other: User) => boolean;
@@ -8,4 +9,5 @@ export interface PeerConnection {
   makingOffer: boolean;
   isSettingRemoteAnswerPending: boolean;
   ignoreOffer: boolean;
+  joinedAt: Timestamp;
 }

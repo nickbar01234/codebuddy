@@ -8,6 +8,7 @@ import {
   User,
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
+import { Timestamp } from "firebase/firestore";
 
 export class WebRtcController {
   private appStore: AppStore;
@@ -35,9 +36,13 @@ export class WebRtcController {
   }
 
   private init() {
-    this.emitter.on("room.changes", ({ left, joined }) => {
+    this.emitter.on("room.changes", ({ room: { users }, left }) => {
       left.forEach(this.disconnect.bind(this));
-      joined.forEach(this.connect.bind(this));
+      Object.entries(users).forEach(([user, metadata]) => {
+        if (user !== this.appStore.getState().actions.getAuthUser().username) {
+          this.connect(user, metadata.joinedAt);
+        }
+      });
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
@@ -59,9 +64,12 @@ export class WebRtcController {
     }
   }
 
-  private connect(user: User) {
-    console.log("Connecting user", user, this.pcs.has(user));
-    if (this.pcs.has(user)) {
+  private connect(user: User, joinedAt: Timestamp) {
+    const maybeJoinedAt = this.pcs.get(user)?.joinedAt;
+    console.log(
+      `Connecting user ${user}@${joinedAt}. Last attempted ${maybeJoinedAt}`
+    );
+    if (maybeJoinedAt && maybeJoinedAt > joinedAt) {
       return;
     }
 
@@ -75,6 +83,7 @@ export class WebRtcController {
       makingOffer: false,
       isSettingRemoteAnswerPending: false,
       ignoreOffer: false,
+      joinedAt,
     });
 
     pc.onicecandidate = (event) =>

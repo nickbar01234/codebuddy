@@ -245,13 +245,13 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   ...args,
                   questions: [metadata.data],
                 });
-                const { id, name, isPublic, usernames } = room.getRoom();
+                const { id, name, isPublic, users } = room.getRoom();
                 setRoom({
                   id,
                   name,
                   isPublic,
                   questions: [metadata.data],
-                  usernames,
+                  usernames: Object.keys(users),
                 });
                 setSelfProgressForCurrentUrl(metadata.data);
               } catch (error) {
@@ -267,9 +267,15 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 get().actions.room.loading();
                 const response = await getOrCreateControllers().room.join(id);
                 if (response.code === RoomJoinCode.SUCCESS) {
-                  const { name, isPublic, questions, usernames } =
+                  const { name, isPublic, questions, users } =
                     response.data.getRoom();
-                  setRoom({ id, name, isPublic, questions, usernames });
+                  setRoom({
+                    id,
+                    name,
+                    isPublic,
+                    questions,
+                    usernames: Object.keys(users),
+                  });
 
                   const question = questions.find(
                     (question) =>
