@@ -19,9 +19,6 @@ export class WebRtcController {
   private pcs: Map<User, PeerConnection>;
 
   private rtcConfiguration: RTCConfiguration;
-
-  private usersToReconnect: Set<User> = new Set();
-
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -145,12 +142,6 @@ export class WebRtcController {
       console.log("Channel closed", user);
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
-
-      // Reconnect on errored out channel cases
-      if (this.usersToReconnect.has(user)) {
-        this.usersToReconnect.delete(user);
-        this.connect(user);
-      }
     };
 
     channel.onmessage = (event: MessageEvent) => {
@@ -178,8 +169,8 @@ export class WebRtcController {
         data: undefined,
       });
 
-      this.usersToReconnect.add(user);
       this.disconnect(user);
+      this.connect(user);
     };
   }
   private async handleDescriptionEvents({
@@ -236,15 +227,12 @@ export class WebRtcController {
     from,
   }: Events["rtc.renegotiation.request"]) {
     console.log("Renegotiation request received from", from);
-
     const hasConnection = this.pcs.has(from);
 
     if (hasConnection) {
-      this.usersToReconnect.add(from);
       this.disconnect(from);
-    } else {
-      this.connect(from);
     }
+    this.connect(from);
   }
 
   private sendMessage({ to, message }: Events["rtc.send.message"]) {
