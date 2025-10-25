@@ -281,10 +281,6 @@ export class MessageDispatcher {
           break;
         }
 
-        case "test-run-result": {
-          break;
-        }
-
         default:
           assertUnreachable(action);
       }

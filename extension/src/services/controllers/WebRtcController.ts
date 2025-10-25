@@ -138,15 +138,8 @@ export class WebRtcController {
     };
 
     channel.onmessage = (event: MessageEvent) => {
-      console.log("RTC onmessage: raw received from", user);
       try {
         const message: PeerMessage = JSON.parse(event.data ?? {});
-        console.log(
-          "RTC onmessage: parsed action",
-          (message as any).action,
-          "from",
-          user
-        );
         this.emitter.emit("rtc.receive.message", { from: user, message });
       } catch (error) {
         console.error("Unable to parse rtc message", error);
@@ -212,16 +205,6 @@ export class WebRtcController {
   }
 
   private sendMessage({ to, message }: Events["rtc.send.message"]) {
-    console.log(
-      "RTC send.message action=",
-      (message as any).action,
-      "to=",
-      to ?? "<broadcast>",
-      "channels=",
-      Array.from(this.pcs.entries())
-        .map(([peer, conn]) => `${peer}:${conn.channel.readyState}`)
-        .join(",")
-    );
     this.pcs.forEach((connection, peer) => {
       const send =
         (to == undefined || peer === to) &&

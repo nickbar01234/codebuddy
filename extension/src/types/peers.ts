@@ -76,18 +76,11 @@ export type PeerMessage =
   | PeerEventMessage
   | RequestProgressMessage
   | SendProgressMessage
-  | RequestRunTestMessage
-  | TestRunResultMessage;
+  | RequestRunTestMessage;
 
 interface RequestRunTestMessage extends PeerGenericMessage {
   action: "request-run-test";
   testCaseIndex: number;
-}
-
-interface TestRunResultMessage extends PeerGenericMessage {
-  action: "test-run-result";
-  success: boolean;
-  result?: string;
 }
 
 interface PeerQuestionProgress {
