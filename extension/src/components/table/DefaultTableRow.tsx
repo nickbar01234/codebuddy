@@ -13,7 +13,7 @@ export const DefaultTableRow = ({
   return (
     <TableRow
       className={cn(
-        "odd:rounded-md [&>td:first-child]:odd:rounded-l-md [&>td:last-child]:odd:rounded-r-md border-none hover:bg-inherit",
+        "rounded-md [&>td:first-child]:rounded-l-md [&>td:last-child]:rounded-r-md border-none hover:bg-inherit",
         className
       )}
       {...rest}
