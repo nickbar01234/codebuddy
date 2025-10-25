@@ -1,4 +1,5 @@
 import { GenericMessage, Identifiable, Unsubscribe } from "@cb/types/utils";
+import { Timestamp } from "firebase/firestore";
 import { TestCases } from ".";
 import { ServiceResponse } from "./services";
 
@@ -66,8 +67,13 @@ export interface Question {
   variables: string[];
 }
 
+interface UserMetadata {
+  // todo(nickbar01234): Refactor type
+  joinedAt: Timestamp;
+}
+
 export interface Room {
-  usernames: User[];
+  users: Record<User, UserMetadata>;
   version: Version;
   isPublic: boolean;
   name: string;
