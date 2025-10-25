@@ -121,7 +121,7 @@ export const BrowsePanel = () => {
                       </span>
                     </TableCell>
                     <TableCell>
-                      {room.usernames.length} / {ROOM.CAPACITY}
+                      {Object.keys(room.users).length} / {ROOM.CAPACITY}
                     </TableCell>
                   </DefaultTableRow>
                 );
