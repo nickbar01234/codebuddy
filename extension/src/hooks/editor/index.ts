@@ -2,6 +2,8 @@ import { usePeers } from "@cb/hooks/store";
 import React from "react";
 import { toast } from "sonner";
 
+export * from "./useRunBuddyTest";
+
 export const useCopyCode = () => {
   const { selectedPeer } = usePeers();
   return React.useCallback(() => {

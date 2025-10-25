@@ -1,6 +1,9 @@
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { useRunBuddyTest } from "@cb/hooks/editor";
 import { useRoomData } from "@cb/hooks/store";
+import { Button } from "@cb/lib/components/ui/button";
 import { Identifiable, PeerState, SelectableTestCase } from "@cb/types";
+import { PlayCircle } from "lucide-react";
 import React from "react";
 
 interface TestTabProps {
@@ -15,6 +18,16 @@ export const TestTab: React.FC<TestTabProps> = ({
   selectTest,
 }) => {
   const { self } = useRoomData();
+  const { runBuddyTest } = useRunBuddyTest();
+
+  const handleRunTest = () => {
+    if (!activePeer?.id) return;
+    const tests = activePeer.questions[self?.url ?? ""]?.tests ?? [];
+    const selectedIndex = tests.findIndex((test) => test.selected);
+    if (selectedIndex !== -1) {
+      runBuddyTest(activePeer.id, selectedIndex);
+    }
+  };
   return (
     <SkeletonWrapper loading={false} className="relative">
       <div className="p-5 flex flex-col space-y-4 h-full w-full">
@@ -36,6 +49,15 @@ export const TestTab: React.FC<TestTabProps> = ({
               )
             )}
           </div>
+          <Button
+            onClick={handleRunTest}
+            disabled={!activePeer?.id || !activeTest}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+            size="sm"
+          >
+            <PlayCircle className="h-4 w-4" />
+            Run Test
+          </Button>
         </div>
         <div className="space-y-4">
           <div>

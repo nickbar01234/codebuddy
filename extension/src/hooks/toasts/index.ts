@@ -36,6 +36,11 @@ export const useToast = () => {
           break;
         }
 
+        case EventType.RUN_TEST_CASES: {
+          toast.info(`${user} is running test cases`);
+          break;
+        }
+
         default:
           assertUnreachable(event);
       }

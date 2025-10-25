@@ -43,6 +43,7 @@ export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
   ADD_QUESTION,
+  RUN_TEST_CASES,
 }
 
 interface PeerGenericEventMessage extends PeerGenericMessage {
@@ -60,14 +61,34 @@ interface PeerEventAddQuestionMessage extends PeerGenericEventMessage {
   question: string;
 }
 
-type PeerEventMessage = PeerEventSubmissionMesage | PeerEventAddQuestionMessage;
+interface PeerEventRunTestMessage extends PeerGenericEventMessage {
+  event: EventType.RUN_TEST_CASES;
+}
+
+type PeerEventMessage =
+  | PeerEventSubmissionMesage
+  | PeerEventAddQuestionMessage
+  | PeerEventRunTestMessage;
 
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
   | PeerEventMessage
   | RequestProgressMessage
-  | SendProgressMessage;
+  | SendProgressMessage
+  | RequestRunTestMessage
+  | TestRunResultMessage;
+
+interface RequestRunTestMessage extends PeerGenericMessage {
+  action: "request-run-test";
+  testCaseIndex: number;
+}
+
+interface TestRunResultMessage extends PeerGenericMessage {
+  action: "test-run-result";
+  success: boolean;
+  result?: string;
+}
 
 interface PeerQuestionProgress {
   code?: CodeWithChanges;

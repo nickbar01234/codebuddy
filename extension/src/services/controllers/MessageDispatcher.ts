@@ -276,6 +276,15 @@ export class MessageDispatcher {
           break;
         }
 
+        case "request-run-test": {
+          this.handleRunTestRequest(from, message.url, message.testCaseIndex);
+          break;
+        }
+
+        case "test-run-result": {
+          break;
+        }
+
         default:
           assertUnreachable(action);
       }
@@ -368,5 +377,55 @@ export class MessageDispatcher {
     return getTestsPayload(
       await this.leetcodeStore.getState().actions.getVariables()
     );
+  }
+
+  private async handleRunTestRequest(
+    from: User,
+    url: string,
+    testCaseIndex: number
+  ) {
+    console.log(
+      "Dispatcher: request-run-test received from",
+      from,
+      "url=",
+      url,
+      "index=",
+      testCaseIndex
+    );
+    // On the RECEIVER side, run OUR OWN (self) tests at the given index.
+    let testCase =
+      this.roomStore.getState().self?.questions[url]?.tests?.[testCaseIndex];
+
+    // Fallback: recompute tests from the DOM if self store hasn't populated yet
+    if (!testCase) {
+      console.log("Dispatcher: test case not in store, recomputing from DOM");
+      const payload = await this.getTestsPayload();
+      testCase = payload.tests?.[testCaseIndex];
+    }
+
+    if (!testCase) {
+      console.warn("Dispatcher: test case not found for index", testCaseIndex);
+      return;
+    }
+    console.log(
+      "Dispatcher: filling inputs and triggering run for index",
+      testCaseIndex
+    );
+    await this.triggerTestRun(from, url);
+  }
+
+  private async triggerTestRun(from: User, url: string) {
+    const runButton = document.querySelector(
+      '[data-e2e-locator="console-run-button"]'
+    ) as HTMLButtonElement | null;
+    if (runButton) {
+      console.log("Dispatcher: clicking Run button");
+      runButton.click();
+    }
+    setTimeout(() => {
+      const resultElement = document.querySelector(
+        '[data-e2e-locator="console-result"]'
+      );
+    }, 3000);
   }
 }
