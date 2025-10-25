@@ -1,6 +1,7 @@
 import { useOnMount } from "@cb/hooks";
 import { getOrCreateControllers } from "@cb/services";
-import { EventType } from "@cb/types";
+import { EventType, Events } from "@cb/types";
+import { assertUnreachable } from "@cb/utils/error";
 import { toast } from "sonner";
 
 const { emitter } = getOrCreateControllers();
@@ -12,6 +13,14 @@ export const useToast = () => {
       room.left.forEach((peer) => toast.info(`${peer} left room`));
     });
     return () => unsubscribe();
+  });
+
+  useOnMount(() => {
+    const onUserDisconnected = ({ user }: Events["rtc.user.disconnected"]) => {
+      toast.info(`${user} left the room`);
+    };
+    emitter.on("rtc.user.disconnected", onUserDisconnected);
+    return () => emitter.off("rtc.user.disconnected", onUserDisconnected);
   });
 
   useOnMount(() => {

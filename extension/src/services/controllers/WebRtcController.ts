@@ -20,7 +20,6 @@ export class WebRtcController {
   private pcs: Map<User, PeerConnection>;
 
   private rtcConfiguration: RTCConfiguration;
-
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -46,6 +45,14 @@ export class WebRtcController {
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
+    this.emitter.on(
+      "rtc.renegotiation.request",
+      this.handleRenegotiationRequest.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
+    );
   }
 
   private leave() {
@@ -155,14 +162,26 @@ export class WebRtcController {
       }
     };
 
-    channel.onerror = (error) => {
-      console.error("Error on RTC data channel", error);
-      // todo(nickbar01234): Need to recover when error is thrown. Easiest is to re-do the entire process.
+    channel.onerror = (errorEvent: RTCErrorEvent) => {
+      if (
+        errorEvent.error.errorDetail === "sctp-failure" &&
+        errorEvent.error.sctpCauseCode === 12 // https://datatracker.ietf.org/doc/html/rfc4960#section-3.3.10
+      ) {
+        this.disconnect(user);
+        this.emitter.emit("rtc.user.disconnected", { user });
+        return;
+      }
+      console.error("Error on RTC data channel", errorEvent);
+      this.emitter.emit("rtc.renegotiation.request", {
+        from: me,
+        to: user,
+        data: undefined,
+      });
+
       this.disconnect(user);
-      this.emitter.emit("rtc.error.connection", { user });
+      this.connect(user);
     };
   }
-
   private async handleDescriptionEvents({
     from,
     data,
@@ -211,6 +230,18 @@ export class WebRtcController {
         console.error("Error when handling ICE candidate", from, err);
       }
     }
+  }
+
+  private handleRenegotiationRequest({
+    from,
+  }: Events["rtc.renegotiation.request"]) {
+    console.log("Renegotiation request received from", from);
+    const hasConnection = this.pcs.has(from);
+
+    if (hasConnection) {
+      this.disconnect(from);
+    }
+    this.connect(from);
   }
 
   private sendMessage({ to, message }: Events["rtc.send.message"]) {

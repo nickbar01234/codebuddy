@@ -130,6 +130,14 @@ class RoomLifeCycle {
               });
               break;
             }
+            case "renegotiation": {
+              this.emitter.emit("rtc.renegotiation.request", {
+                from,
+                to,
+                data: undefined,
+              });
+              break;
+            }
             default: {
               assertUnreachable(action);
             }
@@ -152,10 +160,16 @@ class RoomLifeCycle {
       this.handleDescriptionEvents.bind(this),
       isEventFromMe(this.me)
     );
+    const unsubscribeFromRenegotiationEvents = this.emitter.on(
+      "rtc.renegotiation.request",
+      this.handleRenegotiationEvents.bind(this),
+      isEventFromMe(this.me)
+    );
 
     return () => {
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
+      unsubscribeFromRenegotiationEvents();
     };
   }
 
@@ -177,6 +191,18 @@ class RoomLifeCycle {
       from,
       to,
       message: { action: "description", data },
+      version: this.room.version,
+    });
+  }
+
+  private handleRenegotiationEvents({
+    from,
+    to,
+  }: Events["rtc.renegotiation.request"]) {
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "renegotiation", data: null },
       version: this.room.version,
     });
   }
