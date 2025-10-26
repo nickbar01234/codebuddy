@@ -22,7 +22,6 @@ export class WebRtcController {
   private rtcConfiguration: RTCConfiguration;
 
   private retryCounts: Map<User, number>;
-
   private retryTimers: Map<User, NodeJS.Timeout>;
 
   public constructor(
