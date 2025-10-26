@@ -5,6 +5,7 @@ import {
   ResizablePanelGroup,
 } from "@cb/lib/components/ui/resizable";
 import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE } from "@cb/store";
+import { cn } from "@cb/utils/cn";
 import { useRef } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { CollapsedPanel } from "./CollapsedPanel";
@@ -27,11 +28,8 @@ export const ResizableGroupLayoutPanel = ({
 
   return (
     <ResizablePanelGroup direction="horizontal">
-      <ResizablePanel>
-        <div
-          className="relative h-full w-full"
-          ref={(ref) => ref?.appendChild(leetCodeRoot)}
-        />
+      <ResizablePanel defaultSize={100 - width} minSize={30}>
+        <div className="h-full w-full" />
       </ResizablePanel>
 
       <ResizableHandle
