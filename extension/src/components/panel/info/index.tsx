@@ -3,6 +3,7 @@ import { useRoomActions, useRoomData, useRoomStatus } from "@cb/hooks/store";
 import { Sheet, SheetContent } from "@cb/lib/components/ui/sheet";
 import { RoomStatus, SidebarTabIdentifier } from "@cb/store";
 import { Info, List, ListPlus } from "lucide-react";
+import React from "react";
 import { createPortal } from "react-dom";
 import { GeneralRoomInfo } from "./GeneralRoomInfo";
 import { LeetCodeQuestions } from "./LeetCodeQuestions";
@@ -28,12 +29,22 @@ export const RoomInfo = () => {
   const roomStatus = useRoomStatus();
   const { activeSidebarTab } = useRoomData();
   const { closeSidebarTab } = useRoomActions();
+  const sidebarRef = React.useRef<Element | null>(null);
 
-  const sidebar = document.getElementById(DOM.CODEBUDDY_SIDEBAR_ID);
-  if (sidebar == null) {
-    console.log(
-      `DOM ${DOM.CODEBUDDY_SIDEBAR_ID} not found. This is most likely a bug`
-    );
+  useOnMount(() => {
+    waitForElement(`#${DOM.CODEBUDDY_SIDEBAR_ID}`)
+      .then((element) => {
+        sidebarRef.current = element;
+      })
+      .catch((error) => {
+        console.log(
+          `DOM ${DOM.CODEBUDDY_SIDEBAR_ID} not found. This is most likely a bug`,
+          error
+        );
+      });
+  });
+
+  if (sidebarRef.current == null) {
     return null;
   }
 
@@ -75,6 +86,6 @@ export const RoomInfo = () => {
         </Sheet>
       </div>
     </>,
-    sidebar
+    sidebarRef.current
   );
 };
