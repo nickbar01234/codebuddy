@@ -6,7 +6,7 @@ import {
 } from "@cb/lib/components/ui/resizable";
 import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
 import { CollapsedPanel } from "./CollapsedPanel";
 
@@ -21,10 +21,62 @@ export const ResizableGroupLayoutPanel = ({
 }: ResizableLayoutPanelProps) => {
   const { enabled, width, collapsed } = useAppPreference();
   const panelRef = useRef<ImperativePanelHandle>(null);
+
   const { collapseExtension, expandExtension, setAppWidth, handleDoubleClick } =
     useAppActions({
       panelRef,
     });
+
+  useEffect(() => {
+    const leetCodeElement = leetCodeRoot as HTMLElement;
+    const extensionRoot = document.getElementById("CodeBuddy");
+    const parentContainer = extensionRoot?.parentElement;
+
+    if (!leetCodeElement || !extensionRoot || !parentContainer) return;
+
+    if (enabled) {
+      parentContainer.style.display = "flex";
+      parentContainer.style.flexDirection = "row";
+      parentContainer.style.width = "100%";
+      parentContainer.style.height = "100%";
+
+      leetCodeElement.style.flex = "1";
+      leetCodeElement.style.minWidth = "0";
+      leetCodeElement.style.height = "100%";
+      leetCodeElement.style.overflow = "auto";
+
+      extensionRoot.style.flex = `0 0 ${width}%`;
+      extensionRoot.style.width = `${width}%`;
+      extensionRoot.style.height = "100%";
+      extensionRoot.style.display = "flex";
+    } else {
+      parentContainer.style.display = "";
+      parentContainer.style.flexDirection = "";
+      parentContainer.style.width = "";
+      parentContainer.style.height = "";
+
+      leetCodeElement.style.flex = "";
+      leetCodeElement.style.minWidth = "";
+      leetCodeElement.style.height = "";
+      leetCodeElement.style.overflow = "";
+
+      extensionRoot.style.flex = "";
+      extensionRoot.style.width = "";
+      extensionRoot.style.height = "";
+      extensionRoot.style.display = "none";
+    }
+
+    return () => {
+      if (parentContainer) {
+        parentContainer.style.display = "";
+        parentContainer.style.flexDirection = "";
+      }
+    };
+  }, [enabled, width, leetCodeRoot]);
+
+  if (!enabled) {
+    return null;
+  }
 
   return (
     <ResizablePanelGroup direction="horizontal">
@@ -34,9 +86,9 @@ export const ResizableGroupLayoutPanel = ({
 
       <ResizableHandle
         className={cn(
-          "flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize",
-          { hidden: !enabled }
+          "flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize"
         )}
+        withHandle
         onDoubleClick={() => handleDoubleClick(collapsed)}
       />
 
@@ -49,7 +101,6 @@ export const ResizableGroupLayoutPanel = ({
         onCollapse={collapseExtension}
         onExpand={expandExtension}
         onResize={setAppWidth}
-        className={cn({ hidden: !enabled })}
       >
         {collapsed && <CollapsedPanel />}
         <div
