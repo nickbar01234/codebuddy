@@ -1,3 +1,4 @@
+import { WEBRTC_RETRY } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
@@ -19,6 +20,11 @@ export class WebRtcController {
   private pcs: Map<User, PeerConnection>;
 
   private rtcConfiguration: RTCConfiguration;
+
+  private retryCounts: Map<User, number>;
+
+  private retryTimers: Map<User, NodeJS.Timeout>;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -29,6 +35,8 @@ export class WebRtcController {
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.retryCounts = new Map();
+    this.retryTimers = new Map();
     this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
@@ -60,6 +68,11 @@ export class WebRtcController {
   private disconnect(user: User) {
     const connection = this.pcs.get(user);
     if (connection != undefined) {
+      const retryTimer = this.retryTimers.get(user);
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        this.retryTimers.delete(user);
+      }
       this.pcs.delete(user);
       connection.channel.close();
       connection.pc.close();
@@ -133,6 +146,12 @@ export class WebRtcController {
 
     channel.onopen = () => {
       console.log("Channel open", user);
+      this.retryCounts.set(user, 0);
+      const retryTimer = this.retryTimers.get(user);
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        this.retryTimers.delete(user);
+      }
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
@@ -163,14 +182,38 @@ export class WebRtcController {
         return;
       }
       console.error("Error on RTC data channel", errorEvent);
+
+      const connection = this.pcs.get(user);
+      if (!connection) return;
+      const currentRetryCount = this.retryCounts.get(user) ?? 0;
+
+      if (currentRetryCount >= WEBRTC_RETRY.MAX_ATTEMPTS) {
+        this.disconnect(user);
+        this.retryCounts.delete(user);
+        this.emitter.emit("rtc.user.disconnected", { user });
+        return;
+      }
+
       this.emitter.emit("rtc.renegotiation.request", {
         from: me,
         to: user,
         data: undefined,
       });
 
+      const existingTimer = this.retryTimers.get(user);
+      if (existingTimer) {
+        clearTimeout(existingTimer);
+      }
+
       this.disconnect(user);
-      this.connect(user);
+
+      const newRetryCount = currentRetryCount + 1;
+      this.retryCounts.set(user, newRetryCount);
+      const retryTimer = setTimeout(
+        () => this.connect(user),
+        newRetryCount === 1 ? 0 : WEBRTC_RETRY.DELAY
+      );
+      this.retryTimers.set(user, retryTimer);
     };
   }
   private async handleDescriptionEvents({
@@ -227,11 +270,12 @@ export class WebRtcController {
     from,
   }: Events["rtc.renegotiation.request"]) {
     console.log("Renegotiation request received from", from);
-    const hasConnection = this.pcs.has(from);
-
-    if (hasConnection) {
-      this.disconnect(from);
+    const retryTimer = this.retryTimers.get(from);
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      this.retryTimers.delete(from);
     }
+    this.disconnect(from);
     this.connect(from);
   }
 

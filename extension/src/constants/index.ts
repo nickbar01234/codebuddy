@@ -32,6 +32,11 @@ export const ROOM = {
   CAPACITY: 4,
 };
 
+export const WEBRTC_RETRY = {
+  MAX_ATTEMPTS: 10,
+  DELAY: 2000,
+};
+
 export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
   STUN: [
     {
