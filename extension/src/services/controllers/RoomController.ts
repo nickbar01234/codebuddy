@@ -45,7 +45,7 @@ class RoomLifeCycle {
     this.emitter = emitter;
     this.room = {
       ...room,
-      usernames: [],
+      users: {},
     };
     this.me = me;
     this.unsubscribers = [];
@@ -77,9 +77,6 @@ class RoomLifeCycle {
   }
 
   private async init() {
-    // todo(nickbar01234): Can we collapse? Quite silly to remove to add. But this is to ensure that
-    // other users are notified when I join.
-    await this.database.removeUser(this.room.id, this.me);
     await this.database.addUser(this.room.id, this.me);
     this.unsubscribers.push(this.subscribeToRoom());
     this.unsubscribers.push(this.subscribeToNegotiations());
@@ -89,11 +86,12 @@ class RoomLifeCycle {
   private subscribeToRoom() {
     return this.database.observer.room(this.room.id, {
       onChange: (room) => {
-        const joined = room.usernames.filter(
-          (user) => !this.room.usernames.includes(user) && user !== this.me
+        const joined = Object.keys(room.users).filter(
+          (user) =>
+            !Object.keys(this.room.users).includes(user) && user !== this.me
         );
-        const left = this.room.usernames.filter(
-          (user) => !room.usernames.includes(user) && user !== this.me
+        const left = Object.keys(this.room.users).filter(
+          (user) => !Object.keys(room.users).includes(user) && user !== this.me
         );
         console.log("Observed participants", joined, left);
         this.emitter.emit("room.changes", { room, joined, left });
@@ -226,10 +224,8 @@ export class RoomController {
     if (room == undefined) {
       return { code: RoomJoinCode.NOT_EXISTS };
     }
-    if (
-      room.usernames.length === ROOM.CAPACITY &&
-      !room.usernames.includes(me)
-    ) {
+    const usernames = Object.keys(room.users);
+    if (usernames.length === ROOM.CAPACITY && !usernames.includes(me)) {
       return { code: RoomJoinCode.MAX_CAPACITY };
     }
     this.room = new RoomLifeCycle(
