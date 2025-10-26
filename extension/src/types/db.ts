@@ -78,6 +78,7 @@ export interface Room {
   isPublic: boolean;
   name: string;
   questions: Question[];
+  createdAt?: Timestamp;
 }
 
 export type ObserverDocumentCallback<T> = {
