@@ -9,19 +9,22 @@ import {
 } from "@cb/types";
 import {
   addDoc,
-  arrayRemove,
   arrayUnion,
   collection,
+  deleteField,
   doc,
   DocumentReference,
+  FieldPath,
   FirestoreDataConverter,
   getDoc,
   increment,
   onSnapshot,
   Query,
   query,
+  serverTimestamp,
   setDoc,
   SnapshotOptions,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import {
@@ -113,8 +116,15 @@ const getUserRef = (roomId: string, username: string) =>
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
     async create(room) {
-      const doc = { ...room, usernames: [], version: 0 };
-      const ref = await addDoc(getRoomRefs(), doc);
+      const doc = {
+        ...room,
+        users: {},
+        version: 0,
+      };
+      const ref = await addDoc(getRoomRefs(), {
+        ...doc,
+        createdAt: serverTimestamp(),
+      });
       return {
         id: ref.id,
         ...doc,
@@ -128,7 +138,10 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     addUser(id, user) {
       return setDoc(
         getRoomRef(id),
-        { usernames: arrayUnion(user), version: increment(1) },
+        {
+          users: { [user]: { joinedAt: serverTimestamp() } },
+          version: increment(1),
+        },
         { merge: true }
       );
     },
@@ -141,12 +154,15 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
       );
     },
 
-    removeUser(id, user) {
-      return setDoc(
+    async removeUser(id, user) {
+      await updateDoc(
         getRoomRef(id),
-        { usernames: arrayRemove(user), version: increment(1) },
-        { merge: true }
+        new FieldPath("users", user),
+        deleteField(),
+        "version",
+        increment(1)
       );
+      return Promise.resolve();
     },
 
     async addNegotiation(id, data) {
