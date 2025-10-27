@@ -6909,6 +6909,12 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.20
 
+  '@radix-ui/react-use-previous@1.1.1(@types/react@18.3.20)(react@19.1.1)':
+    dependencies:
+      react: 19.1.1
+    optionalDependencies:
+      '@types/react': 18.3.20
+
   '@radix-ui/react-use-rect@1.1.0(@types/react@18.3.20)(react@19.1.1)':
     dependencies:
       '@radix-ui/rect': 1.1.0
