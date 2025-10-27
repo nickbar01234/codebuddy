@@ -9,8 +9,6 @@ export const ExtensionSwitch = () => {
     (state) => state.actions.toggleEnabledApp
   );
 
-  // const [enabled, setEnabled] = React.useState(true);¡
-
   const toggleEnabledApp = React.useCallback(() => {
     toggleEnabledAppInternal();
     browser.tabs.query({ url: URLS.ALL_PROBLEMS }).then((tabs) =>
