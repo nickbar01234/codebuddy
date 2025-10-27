@@ -1,24 +1,21 @@
 import { useOnMount } from "@cb/hooks";
 import { getOrCreateControllers } from "@cb/services";
-import { Events, EventType } from "@cb/types";
+import { EventType } from "@cb/types";
 import { toast } from "sonner";
 
 const { emitter } = getOrCreateControllers();
 
 export const useToast = () => {
   useOnMount(() => {
-    const onRoomChange = (room: Events["room.changes"]) => {
+    const unsubscribe = emitter.on("room.changes", (room) => {
       room.joined.forEach((peer) => toast.info(`${peer} joined room`));
       room.left.forEach((peer) => toast.info(`${peer} left room`));
-    };
-    emitter.on("room.changes", onRoomChange);
-    return () => emitter.off("room.changes", onRoomChange);
+    });
+    return () => unsubscribe();
   });
 
   useOnMount(() => {
-    const onRtcMessageReceived = ({
-      message,
-    }: Events["rtc.receive.message"]) => {
+    const unsubscribe = emitter.on("rtc.receive.message", ({ message }) => {
       if (message.action !== "event") {
         return;
       }
@@ -34,15 +31,15 @@ export const useToast = () => {
           break;
         }
 
-        case EventType.SELECT_QUESTION: {
+        case EventType.ADD_QUESTION: {
+          toast.info(`${user} added ${message.question} to queue`);
           break;
         }
 
         default:
           assertUnreachable(event);
       }
-    };
-    emitter.on("rtc.receive.message", onRtcMessageReceived);
-    return () => emitter.off("rtc.receive.message", onRtcMessageReceived);
+    });
+    return () => unsubscribe();
   });
 };

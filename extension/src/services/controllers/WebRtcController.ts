@@ -8,15 +8,7 @@ import {
   User,
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
-
-const WEB_RTC_CONFIG = {
-  iceServers: [
-    {
-      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
-    },
-  ],
-  iceCandidatePoolSize: 10,
-};
+import { Timestamp } from "firebase/firestore";
 
 export class WebRtcController {
   private appStore: AppStore;
@@ -27,22 +19,30 @@ export class WebRtcController {
 
   private pcs: Map<User, PeerConnection>;
 
+  private rtcConfiguration: RTCConfiguration;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
-    iamPolite: IamPolite
+    iamPolite: IamPolite,
+    rtcConfiguration: RTCConfiguration
   ) {
     this.appStore = appStore;
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
 
   private init() {
-    this.emitter.on("room.changes", ({ left, joined }) => {
+    this.emitter.on("room.changes", ({ room: { users }, left }) => {
       left.forEach(this.disconnect.bind(this));
-      joined.forEach(this.connect.bind(this));
+      Object.entries(users).forEach(([user, metadata]) => {
+        if (user !== this.appStore.getState().actions.getAuthUser().username) {
+          this.connect(user, metadata.joinedAt);
+        }
+      });
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
@@ -64,13 +64,17 @@ export class WebRtcController {
     }
   }
 
-  private connect(user: User) {
-    if (this.pcs.has(user)) {
+  private connect(user: User, joinedAt: Timestamp) {
+    const maybeJoinedAt = this.pcs.get(user)?.joinedAt;
+    console.log(
+      `Connecting user ${user}@${joinedAt}. Last attempted ${maybeJoinedAt}`
+    );
+    if (maybeJoinedAt && maybeJoinedAt > joinedAt) {
       return;
     }
 
     const { username: me } = this.appStore.getState().actions.getAuthUser();
-    const pc = new RTCPeerConnection(WEB_RTC_CONFIG);
+    const pc = new RTCPeerConnection(this.rtcConfiguration);
     // See https://stackoverflow.com/a/43788873
     const channel = pc.createDataChannel(user, { negotiated: true, id: 0 });
     this.pcs.set(user, {
@@ -79,6 +83,7 @@ export class WebRtcController {
       makingOffer: false,
       isSettingRemoteAnswerPending: false,
       ignoreOffer: false,
+      joinedAt,
     });
 
     pc.onicecandidate = (event) =>
@@ -106,6 +111,14 @@ export class WebRtcController {
         console.error("Fail to create offer", err);
       } finally {
         connection.makingOffer = false;
+      }
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === "failed") {
+        console.log("Restarting ICE gathering");
+        // See https://github.com/w3c/webrtc-pc/issues/2167
+        pc.restartIce();
       }
     };
 
@@ -141,6 +154,13 @@ export class WebRtcController {
         console.error("Unable to parse rtc message", error);
       }
     };
+
+    channel.onerror = (error) => {
+      console.error("Error on RTC data channel", error);
+      // todo(nickbar01234): Need to recover when error is thrown. Easiest is to re-do the entire process.
+      this.disconnect(user);
+      this.emitter.emit("rtc.error.connection", { user });
+    };
   }
 
   private async handleDescriptionEvents({
@@ -152,7 +172,6 @@ export class WebRtcController {
 
     const { username: me } = this.appStore.getState().actions.getAuthUser();
 
-    // whether im polite or not
     const polite = this.iamPolite(me, from);
     const pc = connection.pc;
     const readyOffer =
@@ -165,12 +184,9 @@ export class WebRtcController {
     if (connection.ignoreOffer) return;
 
     try {
-      if (offerCollision && polite) {
-        await pc.setLocalDescription({ type: "rollback" });
-      }
-
       connection.isSettingRemoteAnswerPending = data.type === "answer";
       await pc.setRemoteDescription(data);
+      connection.isSettingRemoteAnswerPending = false;
       if (data.type === "offer") {
         await pc.setLocalDescription();
         this.emitter.emit("rtc.description", {

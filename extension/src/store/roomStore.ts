@@ -1,72 +1,259 @@
 import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
-import { BoundStore, Id, PeerMessage, PeerState } from "@cb/types";
-import { ExtractMessage, Identifiable, MessagePayload } from "@cb/types/utils";
+import { RoomJoinCode } from "@cb/services/controllers/RoomController";
+import {
+  getProblemMetaBySlugServer,
+  GetProblemMetadataBySlugServerCode,
+} from "@cb/services/graphql/metadata";
+import { windowMessager } from "@cb/services/window";
+import {
+  BoundStore,
+  CodeWithChanges,
+  Id,
+  PeerState,
+  Question,
+  QuestionProgressStatus,
+  SelfState,
+  Slug,
+  TestCases,
+  User,
+} from "@cb/types";
+import { Identifiable } from "@cb/types/utils";
+import { getNormalizedUrl } from "@cb/utils";
 import { getSelectedPeer } from "@cb/utils/peers";
-import { groupTestCases } from "@cb/utils/string";
+import _ from "lodash";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { shallow } from "zustand/shallow";
-import { LeetCodeStore, useLeetCode } from "./leetCodeStore";
+import { AppStore, useApp } from "./appStore";
+
+export enum SidebarTabIdentifier {
+  ROOM_INFO,
+  ROOM_QUESTIONS,
+  LEETCODE_QUESTIONS,
+}
 
 export enum RoomStatus {
   HOME,
   IN_ROOM,
+  BROWSING_ROOM,
   LOADING,
   REJOINING,
 }
 
-interface UpdatePeerArgs extends Omit<PeerState, "tests"> {
-  tests: MessagePayload<ExtractMessage<PeerMessage, "tests">>;
+interface UpdatePeerQuestionProgress {
+  code?: CodeWithChanges;
+  tests?: TestCases;
+  status?: QuestionProgressStatus;
+}
+
+interface UpdatePeerArgs extends Partial<Pick<PeerState, "url">> {
+  questions: Record<Slug, UpdatePeerQuestionProgress>;
+}
+
+interface UpdateSelfArgs extends Omit<SelfState, "questions"> {
+  questions: {
+    [K in keyof SelfState["questions"]]: Partial<SelfState["questions"][K]>;
+  };
 }
 
 interface RoomState {
   status: RoomStatus;
-  room?: Identifiable<{ name: string; isPublic: boolean }>;
+  room?: Identifiable<{
+    name: string;
+    isPublic: boolean;
+    questions: Question[];
+    activeSidebarTab?: SidebarTabIdentifier;
+    usernames: User[];
+  }>;
   peers: Record<Id, PeerState>;
+  self?: SelfState;
 }
 
 interface RoomAction {
   room: {
-    create: (args: Omit<NonNullable<RoomState["room"]>, "id">) => Promise<void>;
+    create: (
+      args: Omit<
+        NonNullable<RoomState["room"]>,
+        "id" | "questions" | "usernames"
+      >
+    ) => Promise<void>;
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;
     loading: () => void;
+    browse: () => void;
+    home: () => void;
+    addQuestion: (url: string) => Promise<void>;
+    updateRoomStoreQuestion: (question: Question) => void;
+    setRoom: (
+      room: Pick<NonNullable<RoomState["room"]>, "questions" | "usernames">
+    ) => void;
+    selectQuestion: (url: string) => void;
+    selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
+    closeSidebarTab: () => void;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
+    toggleCodeVisibility: () => void;
+  };
+  self: {
+    update: (state: Partial<UpdateSelfArgs>) => void;
+    complete: (url: string) => void;
   };
 }
 
-const createRoomStore = (
-  leetcodeStore: LeetCodeStore,
-  background: BackgroundProxy
-) => {
+const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
   const setRoom = (room: NonNullable<RoomState["room"]>) =>
     useRoom.setState((state) => {
       state.status = RoomStatus.IN_ROOM;
       state.room = room;
+      state.self = {
+        url: getNormalizedUrl(window.location.href),
+        questions: {},
+      };
     });
+
+  const debouncedAddQuestion = _.debounce(async (url: string) => {
+    useRoom.getState().actions.room.loading();
+    try {
+      const metadata = await getProblemMetaBySlugServer(
+        getQuestionIdFromUrl(url)
+      );
+      if (metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS) {
+        console.error("Failed to fetch graphql metadata", metadata);
+        toast.error("Failed to select next problem. Please try again");
+        return;
+      }
+      const instance = getOrCreateControllers().room.instance();
+      if (instance == undefined) {
+        throw new Error(
+          "Attempt to add question when not in room. This is most likely a bug"
+        );
+      }
+      await instance.addQuestion(metadata.data);
+      getOrCreateControllers().message.dispatchAddQuestion(metadata.data.title);
+      useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
+      windowMessager.navigate({ url: getNormalizedUrl(url) });
+    } catch (error) {
+      console.error("Error when adding question", error);
+      toast.error("Failed to add question. Please try again");
+    } finally {
+      useRoom.setState((state) => {
+        state.status = RoomStatus.IN_ROOM;
+      });
+    }
+  }, 500);
+
+  const derivePeerState = (state: PeerState, args: Partial<UpdatePeerArgs>) => {
+    const { questions, ...rest } = args;
+    const updatedQuestionProgress = Object.entries(questions ?? {}).reduce(
+      (acc, curr) => {
+        const [url, data] = curr;
+        const normalizedUrl = getNormalizedUrl(url);
+        const { code, tests: testsPayload, status } = data;
+        const questionProgressOrDefault = state.questions[normalizedUrl] ?? {
+          code: undefined,
+          tests: [],
+          status: QuestionProgressStatus.NOT_STARTED,
+          viewable: false,
+        };
+
+        if (code != undefined) {
+          questionProgressOrDefault.code = code;
+        }
+
+        if (testsPayload != undefined) {
+          const tests = testsPayload.map((test) => ({
+            ...test,
+            selected: false,
+          }));
+          const previousSelectedTest =
+            questionProgressOrDefault.tests.findIndex((test) => test.selected);
+          const selectedTestIndex =
+            previousSelectedTest >= tests.length
+              ? tests.length - 1
+              : Math.max(previousSelectedTest, 0);
+          if (tests[selectedTestIndex] != undefined) {
+            tests[selectedTestIndex].selected = true;
+          }
+          questionProgressOrDefault.tests = tests;
+        }
+
+        if (status != undefined) {
+          questionProgressOrDefault.status = status;
+        }
+
+        return {
+          ...acc,
+          [normalizedUrl]: questionProgressOrDefault,
+        };
+      },
+      {} as PeerState["questions"]
+    );
+    return {
+      ...state,
+      ...rest,
+      questions: {
+        ...state.questions,
+        ...updatedQuestionProgress,
+      },
+    };
+  };
+
+  const setSelfProgressForCurrentUrl = async (question: Question) => {
+    const code = await background.getCode({});
+    const { tests } = getTestsPayload(question.variables);
+    useRoom.getState().actions.self.update({
+      questions: {
+        [question.url]: {
+          code,
+          tests,
+        },
+      },
+    });
+  };
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
       immer((set, get) => ({
         status: RoomStatus.HOME,
         peers: {},
+        self: {
+          url: getNormalizedUrl(window.location.href),
+          questions: {},
+        },
         actions: {
           room: {
             create: async (args) => {
               try {
                 get().actions.room.loading();
-                const room = await getOrCreateControllers().room.create(args);
-                const { id, name, isPublic } = room.getRoom();
-                setRoom({ id, name, isPublic });
+                const metadata = await getProblemMetaBySlugServer(
+                  getQuestionIdFromUrl(window.location.href)
+                );
+                if (
+                  metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS
+                ) {
+                  throw new Error(`Graphql metadata errors ${metadata}`);
+                }
+                const room = await getOrCreateControllers().room.create({
+                  ...args,
+                  questions: [metadata.data],
+                });
+                const { id, name, isPublic, users } = room.getRoom();
+                setRoom({
+                  id,
+                  name,
+                  isPublic,
+                  questions: [metadata.data],
+                  usernames: Object.keys(users),
+                });
+                setSelfProgressForCurrentUrl(metadata.data);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -78,11 +265,46 @@ const createRoomStore = (
             join: async (id) => {
               try {
                 get().actions.room.loading();
-                const room = await getOrCreateControllers().room.join(id);
-                const { name, isPublic } = room.getRoom();
-                setRoom({ id, name, isPublic });
+                const response = await getOrCreateControllers().room.join(id);
+                if (response.code === RoomJoinCode.SUCCESS) {
+                  const { name, isPublic, questions, users } =
+                    response.data.getRoom();
+                  setRoom({
+                    id,
+                    name,
+                    isPublic,
+                    questions,
+                    usernames: Object.keys(users),
+                  });
+
+                  const question = questions.find(
+                    (question) =>
+                      question.url === getNormalizedUrl(window.location.href)
+                  );
+                  if (question != undefined) {
+                    setSelfProgressForCurrentUrl(question);
+                  }
+
+                  // todo(nickbar01234): There's a race between populating self-data and WebRTC connection succeeding
+                  // Perhaps some sort of backfilling mechanism
+                  const progress = await response.data.getUserProgress();
+                  if (progress != undefined) {
+                    get().actions.self.update(progress);
+                  }
+                } else {
+                  if (response.code === RoomJoinCode.NOT_EXISTS) {
+                    toast.error("Room ID is invalid. Please try again.");
+                    console.error(`Room with ID ${id} does not exist.`);
+                  } else if (response.code === RoomJoinCode.MAX_CAPACITY) {
+                    toast.error("Room is full. Please try another one.");
+                    console.error(`Room with ID ${id} is full.`);
+                  }
+                  set((state) => {
+                    state.status = RoomStatus.HOME;
+                  });
+                }
               } catch (error) {
-                toast.error("Room ID is invalid. Please try again.");
+                toast.error("Failed to join room. Please try again.");
                 console.error("Failed to join room", error);
                 set((state) => {
                   state.status = RoomStatus.HOME;
@@ -97,6 +319,8 @@ const createRoomStore = (
                 set((state) => {
                   state.status = RoomStatus.HOME;
                   state.peers = {};
+                  state.room = undefined;
+                  state.self = { url: state.self?.url, questions: {} };
                 });
               }
             },
@@ -104,42 +328,99 @@ const createRoomStore = (
               set((state) => {
                 state.status = RoomStatus.LOADING;
               }),
+            browse: () =>
+              set((state) => {
+                state.status = RoomStatus.BROWSING_ROOM;
+              }),
+            home: () =>
+              set((state) => {
+                state.status = RoomStatus.HOME;
+              }),
+            addQuestion: async (url) => debouncedAddQuestion(url),
+            updateRoomStoreQuestion(question) {
+              // todo(nickbar01234): We need a timestamp on question so the ordering is stable.
+              set((state) => {
+                if (
+                  state.room != undefined &&
+                  !state.room.questions.includes(question)
+                ) {
+                  state.room.questions.push(question);
+                }
+              });
+            },
+            setRoom: (room) =>
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.questions = room.questions;
+                  state.room.usernames = room.usernames;
+                  room.usernames
+                    .filter(
+                      (username) =>
+                        username !==
+                        appStore.getState().actions.getAuthUser().username
+                    )
+                    .forEach((username) => {
+                      const peerOrDefault: PeerState = state.peers[
+                        username
+                      ] ?? {
+                        questions: {},
+                        url: undefined,
+                        selected: getSelectedPeer(state.peers) === undefined,
+                      };
+                      const peerWithOverrides = room.questions.reduce(
+                        (acc, curr) => {
+                          if (!Object.keys(acc.questions).includes(curr.url)) {
+                            return derivePeerState(acc, {
+                              questions: {
+                                [curr.url]: {
+                                  code: {
+                                    value: curr.codeSnippets[0]?.code,
+                                    language: curr.codeSnippets[0]?.langSlug,
+                                    changes: "{}",
+                                  },
+                                  tests: groupTestCases(
+                                    curr.variables,
+                                    curr.testSnippets
+                                  ),
+                                },
+                              },
+                            });
+                          }
+                          return acc;
+                        },
+                        peerOrDefault
+                      );
+                      state.peers[username] = peerWithOverrides;
+                    });
+                }
+              }),
+            selectQuestion: (url) => {
+              windowMessager.navigate({ url: getNormalizedUrl(url) });
+              get().actions.room.closeSidebarTab();
+            },
+            selectSidebarTab: (identifier) =>
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.activeSidebarTab = identifier;
+                }
+              }),
+            closeSidebarTab: () => {
+              set((state) => {
+                if (state.room != undefined) {
+                  state.room.activeSidebarTab = undefined;
+                }
+              });
+            },
           },
           peers: {
             update: async (id, peer) => {
-              const variables = await leetcodeStore
-                .getState()
-                .actions.getVariables();
               set((state) => {
-                const peerOrDefault =
-                  state.peers[id] ??
-                  ({
-                    tests: [],
-                    latency: 0,
-                    finished: false,
-                    viewable: true,
-                    selected: getSelectedPeer(state.peers) == undefined,
-                  } as PeerState);
-                const { tests: payload, ...rest } = peer;
-                const tests =
-                  payload != undefined
-                    ? groupTestCases(variables, payload.tests)
-                    : peerOrDefault.tests;
-                if (tests.length > 0) {
-                  const previousSelectedTest = peerOrDefault.tests.findIndex(
-                    (test) => test.selected
-                  );
-                  const selectedTestIndex =
-                    previousSelectedTest >= tests.length
-                      ? tests.length - 1
-                      : Math.max(previousSelectedTest, 0);
-                  tests[selectedTestIndex].selected = true;
-                }
-                state.peers[id] = {
-                  ...peerOrDefault,
-                  ...rest,
-                  tests,
+                const peerOrDefault: PeerState = state.peers[id] ?? {
+                  questions: {},
+                  selected: getSelectedPeer(state.peers) == undefined,
+                  url: undefined,
                 };
+                state.peers[id] = derivePeerState(peerOrDefault, peer);
               });
             },
             remove: (ids) => {
@@ -173,15 +454,104 @@ const createRoomStore = (
             selectTest: (idx) =>
               set((state) => {
                 const active = getSelectedPeer(state.peers);
-                if (active != undefined) {
-                  state.peers[active.id].tests = state.peers[
-                    active.id
-                  ].tests.map((test, i) => ({
+                const progress =
+                  state.peers[active?.id ?? ""].questions[
+                    getNormalizedUrl(window.location.href)
+                  ];
+                if (progress != undefined) {
+                  progress.tests = progress.tests.map((test, i) => ({
                     ...test,
                     selected: i === idx,
                   }));
                 }
               }),
+            toggleCodeVisibility: () =>
+              set((state) => {
+                const active = getSelectedPeer(state.peers);
+                const url = getNormalizedUrl(window.location.href);
+                const questions = state.peers[active?.id ?? ""].questions ?? {};
+                if (questions[url] != undefined) {
+                  questions[url].viewable = !questions[url].viewable;
+                }
+              }),
+          },
+          self: {
+            update: (data) => {
+              set((state) => {
+                const selfOrDefault: SelfState = {
+                  url: getNormalizedUrl(window.location.href),
+                  questions: {},
+                  ...(state.self ?? {}),
+                };
+
+                if (data.url) {
+                  selfOrDefault.url = data.url;
+                }
+
+                const updatedQuestionProgress = Object.entries(
+                  data.questions ?? {}
+                ).reduce(
+                  (acc, curr) => {
+                    const [url, data] = curr;
+                    const normalizedUrl = getNormalizedUrl(url);
+                    const questionProgressOrDefault = selfOrDefault.questions[
+                      normalizedUrl
+                    ] ?? {
+                      code: undefined,
+                      tests: [],
+                      status: QuestionProgressStatus.IN_PROGRESS,
+                    };
+
+                    if (data.code != undefined) {
+                      questionProgressOrDefault.code = data.code;
+                    }
+
+                    if (data.tests != undefined) {
+                      questionProgressOrDefault.tests = data.tests;
+                    }
+
+                    if (data.status != undefined) {
+                      questionProgressOrDefault.status = data.status;
+                    }
+
+                    return {
+                      ...acc,
+                      [normalizedUrl]: questionProgressOrDefault,
+                    };
+                  },
+                  {} as SelfState["questions"]
+                );
+
+                selfOrDefault.questions = {
+                  ...selfOrDefault.questions,
+                  ...updatedQuestionProgress,
+                };
+                state.self = selfOrDefault;
+              });
+            },
+            complete: async (url) => {
+              const instance = getOrCreateControllers().room.instance();
+              if (instance != undefined) {
+                const normalizedUrl = getNormalizedUrl(url);
+                get().actions.self.update({
+                  questions: {
+                    [normalizedUrl]: {
+                      status: QuestionProgressStatus.COMPLETED,
+                    },
+                  },
+                });
+                const progress = get().self?.questions[normalizedUrl];
+                const code = progress?.code;
+                await instance.completeQuestion(normalizedUrl, {
+                  code: {
+                    value: code?.value ?? "",
+                    language: code?.language ?? "",
+                  },
+                  tests: progress?.tests ?? [],
+                  status: QuestionProgressStatus.COMPLETED,
+                });
+              }
+            },
           },
         },
       }))
@@ -189,27 +559,33 @@ const createRoomStore = (
   );
 
   useRoom.subscribe(
-    (state) => getSelectedPeer(state.peers),
+    (state) => {
+      const url = getNormalizedUrl(window.location.href);
+      const selected = getSelectedPeer(state.peers);
+      return {
+        peerCode: selected?.questions[url]?.code,
+        id: selected?.id,
+      };
+    },
     (current, prev) => {
-      if (current == undefined) {
+      if (current.id == undefined) {
         return;
-      } else {
+      } else if (current.peerCode != undefined) {
         background.applyCodeToEditor({
-          code: current.code?.value ?? "",
-          language: current.code?.language ?? "",
-          changes: JSON.parse(current.code?.changes ?? "{}"),
+          code: current.peerCode.value ?? "",
+          language: current.peerCode.language ?? "",
+          changes: JSON.parse(current.peerCode?.changes ?? "{}"),
           changeUser: current.id !== prev?.id,
           editorId: DOM.CODEBUDDY_EDITOR_ID,
         });
       }
     },
-    // todo(nickbar01234): We can be more efficient with equality function
     { equalityFn: shallow }
   );
 
   return useRoom;
 };
 
-export const useRoom = createRoomStore(useLeetCode, background);
+export const useRoom = createRoomStore(background, useApp);
 
 export type RoomStore = typeof useRoom;

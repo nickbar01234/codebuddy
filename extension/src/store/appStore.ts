@@ -40,6 +40,7 @@ interface AppState {
     enabled: boolean;
     width: number;
     collapsed: boolean;
+    displayBanner: boolean;
   };
   auth: AuthenticationStatus;
 }
@@ -48,11 +49,19 @@ interface AppAction {
   toggleEnabledApp: () => void;
   collapseExtension: () => void;
   expandExtension: () => void;
+  hideBanner: () => void;
   setAppWidth: (width: number) => void;
   authenticate: (user: AppUser) => void;
   unauthenticate: () => void;
   getAuthUser: () => AppUser;
+  getMaybeAuthUser: () => AppUser | undefined;
 }
+
+const debouncedSetWidth = _.debounce((width) => {
+  useApp.setState((state) => {
+    state.app.width = width;
+  });
+}, 1000);
 
 export const useApp = create<BoundStore<AppState, AppAction>>()(
   persist(
@@ -61,6 +70,7 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
         enabled: true,
         width: DEFAULT_PANEL_SIZE,
         collapsed: false,
+        displayBanner: true,
       },
       auth: {
         status: AppStatus.LOADING,
@@ -80,14 +90,11 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
             state.app.collapsed = false;
             state.app.width = DEFAULT_PANEL_SIZE;
           }),
-        setAppWidth: (width) =>
-          _.debounce(
-            () =>
-              set((state) => {
-                state.app.width = width;
-              }),
-            1000
-          ),
+        hideBanner: () =>
+          set((state) => {
+            state.app.displayBanner = false;
+          }),
+        setAppWidth: (width) => debouncedSetWidth(width),
         authenticate: (user: AppUser) =>
           set((state) => {
             state.auth = {
@@ -100,22 +107,26 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
             state.auth = { status: AppStatus.UNAUTHENTICATED };
           }),
         getAuthUser: () => {
-          const auth = get().auth;
-          if (auth.status != AppStatus.AUTHENTICATED) {
+          const user = get().actions.getMaybeAuthUser();
+          if (user == undefined) {
             throw new Error(
               "Get auth user when status is not authenticated. This is most likely a bug"
             );
           }
-          return auth.user;
+          return user;
+        },
+        getMaybeAuthUser: () => {
+          const auth = get().auth;
+          if (auth.status === AppStatus.AUTHENTICATED) {
+            return auth.user;
+          }
+          return undefined;
         },
       },
     })),
     {
       name: APP_STORAGE,
-      partialize: (state) => {
-        const { app } = state;
-        return { ...app };
-      },
+      partialize: (state) => ({ app: state.app }),
     }
   )
 );

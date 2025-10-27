@@ -5,7 +5,6 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface LeetCodeState {
-  variables: string[];
   languageExtensions: ServiceResponse["getLanguageExtension"];
 }
 
@@ -17,14 +16,10 @@ interface LeetCodeAction {
 const createLeetCodeStore = (background: BackgroundProxy) => {
   const leetCodeStore = create<BoundStore<LeetCodeState, LeetCodeAction>>()(
     immer((set, get) => ({
-      variables: [],
       languageExtensions: [],
 
       actions: {
         getVariables: async () => {
-          if (get().variables.length > 0) {
-            return get().variables;
-          }
           const variables = await waitForElement(DOM.PROBLEM_ID)
             .then((node) => node as HTMLElement)
             .then((node) => {
@@ -40,9 +35,6 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
               console.error(e);
               return [];
             });
-          set((state) => {
-            state.variables = variables;
-          });
           return variables;
         },
 

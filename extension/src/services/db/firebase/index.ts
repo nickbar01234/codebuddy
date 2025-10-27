@@ -5,31 +5,40 @@ import {
   ObserverCollectionCallback,
   ObserverDocumentCallback,
   Room,
+  UserProgress,
 } from "@cb/types";
 import {
   addDoc,
-  arrayRemove,
   arrayUnion,
   collection,
+  deleteField,
   doc,
   DocumentReference,
+  FieldPath,
   FirestoreDataConverter,
   getDoc,
   increment,
   onSnapshot,
   Query,
   query,
+  serverTimestamp,
   setDoc,
   SnapshotOptions,
+  updateDoc,
   where,
 } from "firebase/firestore";
-import { negotiationConverter, roomConverter } from "./converter";
+import {
+  negotiationConverter,
+  roomConverter,
+  userProgressConverter,
+} from "./converter";
 import { auth, firestore } from "./setup";
 export { auth };
 
 type FirebaseTypes = {
   [Models.ROOMS]: Room;
   [Models.NEGOTIATIONS]: Negotiation;
+  [Models.USER_PROGRESS]: UserProgress;
 };
 
 const SNAPSHOT_OPTIONS: SnapshotOptions = {
@@ -41,6 +50,7 @@ const firebaseConverters: {
 } = {
   [Models.ROOMS]: roomConverter,
   [Models.NEGOTIATIONS]: negotiationConverter,
+  [Models.USER_PROGRESS]: userProgressConverter,
 };
 
 const withDocumentSnapshot = <T>(
@@ -94,11 +104,27 @@ const getNegotiationRefs = (id: string) =>
     firebaseConverters[Models.NEGOTIATIONS]
   );
 
+const getUserRef = (roomId: string, username: string) =>
+  doc(
+    firestore,
+    Models.ROOMS,
+    roomId,
+    Models.USER_PROGRESS,
+    username
+  ).withConverter(firebaseConverters[Models.USER_PROGRESS]);
+
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
     async create(room) {
-      const doc = { ...room, usernames: [], version: 0 };
-      const ref = await addDoc(getRoomRefs(), doc);
+      const doc = {
+        ...room,
+        users: {},
+        version: 0,
+      };
+      const ref = await addDoc(getRoomRefs(), {
+        ...doc,
+        createdAt: serverTimestamp(),
+      });
       return {
         id: ref.id,
         ...doc,
@@ -112,22 +138,46 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     addUser(id, user) {
       return setDoc(
         getRoomRef(id),
-        { usernames: arrayUnion(user), version: increment(1) },
+        {
+          users: { [user]: { joinedAt: serverTimestamp() } },
+          version: increment(1),
+        },
         { merge: true }
       );
     },
 
-    removeUser(id, user) {
+    addQuestion(id, question) {
       return setDoc(
         getRoomRef(id),
-        { usernames: arrayRemove(user), version: increment(1) },
+        { questions: arrayUnion(question) },
         { merge: true }
       );
+    },
+
+    async removeUser(id, user) {
+      await updateDoc(
+        getRoomRef(id),
+        new FieldPath("users", user),
+        deleteField(),
+        "version",
+        increment(1)
+      );
+      return Promise.resolve();
     },
 
     async addNegotiation(id, data) {
       await addDoc(getNegotiationRefs(id), data);
       return Promise.resolve();
+    },
+
+    getUserProgress(roomId, username) {
+      return getDoc(getUserRef(roomId, username)).then((user) =>
+        user.data(SNAPSHOT_OPTIONS)
+      );
+    },
+
+    setUserProgress(roomId, username, progress) {
+      return setDoc(getUserRef(roomId, username), progress, { merge: true });
     },
 
     observer: {

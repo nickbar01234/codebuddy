@@ -35,7 +35,9 @@ export default {
         DEFAULT: "var(--background-primary)",
         primary: "var(--background-primary)",
         secondary: "var(--background-secondary)",
-        base: "hsl(var(--color-sd-background-gray))",
+        quaternary: "var(--fill-quaternary)",
+        base: "hsl(var(--sd-background-gray))",
+        tabbar: "var(--color-tabset-tabbar-background)",
       },
       colors: {
         background: "var(--background)",
@@ -71,7 +73,9 @@ export default {
         success: {
           DEFAULT: "var(--success)",
         },
-        border: "hsl(var(--border))",
+        border: {
+          DEFAULT: "hsl(var(--border))",
+        },
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         chart: {
@@ -81,19 +85,17 @@ export default {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
-        leetcode: {
-          hard: "var(--color-lc-hard)",
-          medium: "var(--color-lc-medium)",
-          easy: "var(--color-lc-easy)",
-          bg: "var(--color-lc-bg)",
-          nav: "var(--color-lc-nav)",
-        },
         codebuddy: {
           pink: "var(--color-pink)",
           red: "var(--color-red)",
           green: "var(--color-green)",
           blue: "var(--color-blue)",
           orange: "var(--color-orange)",
+        },
+        leetcode: {
+          "difficulty-easy": "var(--difficulty-easy)",
+          "difficulty-medium": "var(--difficulty-medium)",
+          "difficulty-hard": "var(--difficulty-hard)",
         },
       },
     },

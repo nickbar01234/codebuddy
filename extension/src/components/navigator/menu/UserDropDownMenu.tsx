@@ -1,70 +1,74 @@
 import { CaretDownIcon } from "@cb/components/icons";
+import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { HEARTBEAT } from "@cb/constants";
-import { usePeerActions, usePeers } from "@cb/hooks/store";
+import { usePeerActions, usePeers, useRoomData } from "@cb/hooks/store";
 import { DropdownMenuTrigger } from "@cb/lib/components/ui/dropdown-menu";
-import { Identifiable, PeerState } from "@cb/types";
+import {
+  Identifiable,
+  PeerState,
+  Question,
+  QuestionProgressStatus,
+} from "@cb/types";
 import { cn } from "@cb/utils/cn";
-import { codeViewable } from "@cb/utils/model";
+import { CircleCheckBig, CircleMinus, Code } from "lucide-react";
 import { DropdownMenuItem } from "./DropdownMenuItem";
 import { Menu } from "./Menu";
-
-const GREENTHRESHOLD = HEARTBEAT.INTERVAL + 10;
-const YELLOWTHRESHOLD = HEARTBEAT.INTERVAL * 1.25 + 10;
 
 interface UserDropDownMenuTriggerProps {
   peer?: Identifiable<PeerState>;
   canDropdown: boolean;
-  signalStrength: ReturnType<typeof getStatus>;
+  question?: Question;
 }
+
+const STATUS_ICON_MAP: Record<QuestionProgressStatus, React.ReactNode> = {
+  [QuestionProgressStatus.NOT_STARTED]: (
+    <CircleMinus className="text-codebuddy-orange text-sm" size={16} />
+  ),
+  [QuestionProgressStatus.IN_PROGRESS]: (
+    <Code className="text-codebuddy-blue text-sm" size={16} />
+  ),
+  [QuestionProgressStatus.COMPLETED]: (
+    <CircleCheckBig className="text-codebuddy-green" size={16} />
+  ),
+};
 
 const UserDropDownMenuTrigger = ({
   peer,
   canDropdown,
-  signalStrength,
+  question,
 }: UserDropDownMenuTriggerProps) => {
   return (
-    <div className="w-52">
+    <div className="w-48">
       <SkeletonWrapper
         loading={peer == undefined}
-        className="h-4 w-48 relative"
+        className="h-4 w-full relative"
       >
-        <div className="flex w-48 items-center">
+        <div className="flex w-full items-center">
           <DropdownMenuTrigger
             disabled={!canDropdown}
             className={cn(
-              "relative flex justify-between rounded-lg p-2 items-center",
+              "relative flex justify-between rounded-lg items-center p-2 gap-1",
               {
                 "hover:text-label-1 dark:hover:text-dark-label-1 hover:bg-fill-secondary":
                   canDropdown,
                 "cursor-default": !canDropdown,
-                "pointer-events-none": !codeViewable(peer),
               }
             )}
           >
-            <div className="max-w-44 overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm">
-              {peer?.id ?? ""}
+            <div className="max-w-32 overflow-hidden text-ellipsis whitespace-nowrap font-medium text-sm">
+              <Tooltip
+                trigger={{ node: <span>{peer?.id ?? ""}</span> }}
+                content={peer?.id}
+              />
             </div>
+            {
+              STATUS_ICON_MAP[
+                peer?.questions[question?.url ?? ""]?.status ??
+                  QuestionProgressStatus.NOT_STARTED
+              ]
+            }
             {canDropdown && <CaretDownIcon />}
           </DropdownMenuTrigger>
-          <div className="bar group relative flex h-full items-center justify-center">
-            <i
-              className={cn(
-                "bar group-hover has-tooltip icon__signal-strength z-50 inline-flex h-[24px] w-auto items-end justify-end p-1"
-              )}
-            >
-              {Array.from({ length: 3 }).map((_, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    `bar-${i + 1} ml-[2px] inline-block w-[6px] rounded-[2px]`,
-                    signalStrength.bg,
-                    i + 1 > signalStrength.level && "opacity-20"
-                  )}
-                />
-              ))}
-            </i>
-          </div>
         </div>
       </SkeletonWrapper>
     </div>
@@ -72,9 +76,9 @@ const UserDropDownMenuTrigger = ({
 };
 
 export const UserDropDownMenu = () => {
+  const { currentQuestion } = useRoomData();
   const { peers, selectedPeer } = usePeers();
   const { selectPeer } = usePeerActions();
-  const ping = peers[selectedPeer?.id ?? ""]?.latency * 1000;
   const canDropdown = Object.keys(peers).length >= 2;
 
   return (
@@ -86,35 +90,43 @@ export const UserDropDownMenu = () => {
           <UserDropDownMenuTrigger
             peer={selectedPeer}
             canDropdown={canDropdown}
-            signalStrength={getStatus(ping)}
+            question={currentQuestion}
           />
         ),
       }}
+      content={{
+        props: {
+          className: "py-1 px-2",
+        },
+      }}
     >
-      {Object.keys(peers).map((peer) => (
-        <DropdownMenuItem key={peer} onClick={() => selectPeer(peer)}>
-          {peer}
+      {currentQuestion && (
+        <div className="text-tertiary border-b border-b-[--color-button-primary-border] mb-2">
+          {currentQuestion.title}
+        </div>
+      )}
+      {Object.entries(peers).map(([peer, state]) => (
+        <DropdownMenuItem
+          key={peer}
+          onClick={() => selectPeer(peer)}
+          disabled={selectedPeer?.id === peer}
+          className="data-[disabled]:opacity-100"
+        >
+          <div
+            className={cn("flex justify-between gap-2 items-center w-full", {
+              "text-secondary": selectedPeer && selectedPeer.id !== peer,
+            })}
+          >
+            <span>{peer}</span>
+            {
+              STATUS_ICON_MAP[
+                state.questions[currentQuestion?.url ?? ""]?.status ??
+                  QuestionProgressStatus.NOT_STARTED
+              ]
+            }
+          </div>
         </DropdownMenuItem>
       ))}
     </Menu>
   );
 };
-
-function getStatus(ping: number) {
-  const status =
-    ping < GREENTHRESHOLD ? "green" : ping < YELLOWTHRESHOLD ? "yellow" : "red";
-  const statusMapping = {
-    red: { bg: "bg-red-500", text: "text-red-500", level: 1 },
-    green: {
-      bg: "bg-green-500",
-      text: "text-green-500",
-      level: 3,
-    },
-    yellow: {
-      bg: "bg-yellow-500",
-      text: "text-yellow-500",
-      level: 2,
-    },
-  };
-  return { status, ...statusMapping[status] };
-}

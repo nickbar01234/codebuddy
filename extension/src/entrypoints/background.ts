@@ -9,6 +9,42 @@ import {
 } from "@cb/types";
 
 export default defineBackground(() => {
+  const injectContentScriptIntoLeetCodeTabs = async () => {
+    const tabs = await browser.tabs.query({ url: URLS.ALL_PROBLEMS });
+    console.log(`Found ${tabs.length} LeetCode tabs for injection`);
+
+    for (const tab of tabs) {
+      if (tab.id) {
+        try {
+          await browser.scripting.insertCSS({
+            target: { tabId: tab.id },
+            files: ["content-scripts/content.css"],
+          });
+          await browser.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ["content-scripts/content.js"],
+          });
+        } catch (error) {
+          console.log(`Failed to inject into tab ${tab.id}:`, error);
+        }
+      }
+    }
+  };
+
+  browser.runtime.onInstalled.addListener(async (details) => {
+    console.log(`Extension ${details.reason}:`, details);
+
+    if (details.reason === "install" || details.reason === "update") {
+      await injectContentScriptIntoLeetCodeTabs();
+    }
+  });
+
+  browser.management.onEnabled.addListener(async (info) => {
+    if (info.id === browser.runtime.id) {
+      await injectContentScriptIntoLeetCodeTabs();
+    }
+  });
+
   const servicePayload = <T extends ServiceRequest["action"]>(
     payload: ServiceResponse[T]
   ) => payload;
@@ -22,30 +58,9 @@ export default defineBackground(() => {
       .map((editor) => editor.getModel())
       .find((model) => model?.getLanguageId() !== "plaintext");
     return {
-      value: model?.getValue(),
-      language: model?.getLanguageId(),
+      value: model?.getValue() ?? "",
+      language: model?.getLanguageId() ?? "",
     };
-  };
-
-  const pasteCode = async (value: string) => {
-    const editor = window.monaco?.editor
-      .getEditors()
-      .find(
-        (editor) =>
-          (editor as any).id !== "CodeBuddy" &&
-          editor.getModel()?.getLanguageId() !== "plaintext"
-      );
-    const model = editor?.getModel();
-
-    if (editor != undefined && model != undefined) {
-      editor.executeEdits(null, [
-        {
-          range: model.getFullModelRange(),
-          text: value,
-        },
-      ]);
-      editor.pushUndoStop();
-    }
   };
 
   const setupCodeBuddyModel = async (id: string) => {
@@ -68,6 +83,12 @@ export default defineBackground(() => {
         minimap: { enabled: false },
         padding: {
           top: 8,
+        },
+      });
+      editor.updateOptions({
+        padding: {
+          bottom:
+            editor.getOption(window.monaco.editor.EditorOption.lineHeight) * 8,
         },
       });
       (editor as any).id = "CodeBuddy";
@@ -178,6 +199,15 @@ export default defineBackground(() => {
     );
   });
 
+  browser.tabs.onUpdated.addListener((tab, change) => {
+    if (change.url) {
+      browser.tabs.sendMessage(
+        tab,
+        contentPayload({ action: "url", url: change.url })
+      );
+    }
+  });
+
   browser.runtime.onMessage.addListener(
     (request: ServiceRequest, sender, sendResponse) => {
       const { action } = request;
@@ -193,18 +223,6 @@ export default defineBackground(() => {
               sendResponse(result[0].result);
             });
 
-          break;
-        }
-
-        case "pasteCode": {
-          browser.scripting
-            .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
-              func: pasteCode,
-              args: [request.value],
-              world: "MAIN",
-            })
-            .then(sendResponse);
           break;
         }
 

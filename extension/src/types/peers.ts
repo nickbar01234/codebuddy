@@ -1,49 +1,94 @@
-import { Id, TestCase } from ".";
+import {
+  Id,
+  QuestionProgressStatus,
+  SelectableTestCase,
+  TestCase,
+  TestCases,
+} from ".";
 import type { ServiceResponse } from "./services";
-import { GenericMessage, MessagePayload, Selectable } from "./utils";
+import { GenericMessage, Selectable } from "./utils";
+
+export type Slug = string;
 
 interface PeerGenericMessage extends GenericMessage {
-  timestamp: number;
+  url: string;
 }
 
-type Code = ServiceResponse["getValue"];
+type MonacoCode = ServiceResponse["getValue"];
 
-interface PeerCodeMessage extends PeerGenericMessage, Code {
+export interface CodeWithChanges extends MonacoCode {
+  changes?: string;
+}
+
+interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
   action: "code";
-  changes: string;
 }
 
 interface PeerTestMessage extends PeerGenericMessage {
   action: "tests";
-  tests: string[];
+  tests: TestCases;
 }
 
-interface PeerHeartBeatMessage extends PeerGenericMessage {
-  action: "heartbeat";
+interface RequestProgressMessage extends PeerGenericMessage {
+  action: "request-progress";
+}
+
+interface SendProgressMessage extends PeerGenericMessage {
+  action: "sent-progress";
+  code?: MonacoCode;
+  tests?: TestCases;
 }
 
 export enum EventType {
   SUBMIT_SUCCESS,
   SUBMIT_FAILURE,
-  SELECT_QUESTION,
+  ADD_QUESTION,
 }
 
-interface PeerEventMessage extends PeerGenericMessage {
+interface PeerGenericEventMessage extends PeerGenericMessage {
   action: "event";
   event: EventType;
   user: Id;
 }
 
+interface PeerEventSubmissionMesage extends PeerGenericEventMessage {
+  event: EventType.SUBMIT_SUCCESS | EventType.SUBMIT_FAILURE;
+}
+
+interface PeerEventAddQuestionMessage extends PeerGenericEventMessage {
+  event: EventType.ADD_QUESTION;
+  question: string;
+}
+
+type PeerEventMessage = PeerEventSubmissionMesage | PeerEventAddQuestionMessage;
+
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
-  | PeerHeartBeatMessage
-  | PeerEventMessage;
+  | PeerEventMessage
+  | RequestProgressMessage
+  | SendProgressMessage;
+
+interface PeerQuestionProgress {
+  code?: CodeWithChanges;
+  tests: SelectableTestCase[];
+  status: QuestionProgressStatus;
+  viewable: boolean;
+}
+
+interface SelfQuestionProgress {
+  code?: MonacoCode;
+  tests: TestCase[];
+  status: QuestionProgressStatus;
+}
 
 export interface PeerState extends Selectable {
-  code?: MessagePayload<PeerCodeMessage>;
-  tests: TestCase[];
-  latency: number;
-  finished: boolean;
-  viewable: boolean;
+  questions: Record<Slug, PeerQuestionProgress | undefined>;
+  url?: string;
+}
+
+// todo(nickbar01234) - Better way to structure this code?
+export interface SelfState {
+  questions: Record<Slug, SelfQuestionProgress>;
+  url?: string;
 }

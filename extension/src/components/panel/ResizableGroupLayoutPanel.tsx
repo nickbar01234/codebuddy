@@ -5,7 +5,8 @@ import {
   ResizablePanelGroup,
 } from "@cb/lib/components/ui/resizable";
 import { COLLAPSED_SIZE, DEFAULT_PANEL_SIZE } from "@cb/store";
-import React from "react";
+import { useRef } from "react";
+import { ImperativePanelHandle } from "react-resizable-panels";
 import { CollapsedPanel } from "./CollapsedPanel";
 
 interface ResizableLayoutPanelProps {
@@ -18,7 +19,11 @@ export const ResizableGroupLayoutPanel = ({
   children,
 }: ResizableLayoutPanelProps) => {
   const { enabled, width, collapsed } = useAppPreference();
-  const { collapseExtension, expandExtension, setAppWidth } = useAppActions();
+  const panelRef = useRef<ImperativePanelHandle>(null);
+  const { collapseExtension, expandExtension, setAppWidth, handleDoubleClick } =
+    useAppActions({
+      panelRef,
+    });
 
   return (
     <ResizablePanelGroup direction="horizontal">
@@ -28,13 +33,17 @@ export const ResizableGroupLayoutPanel = ({
           ref={(ref) => ref?.appendChild(leetCodeRoot)}
         />
       </ResizablePanel>
+
       <ResizableHandle
         className={cn(
           "flexlayout__splitter flexlayout__splitter_vert w-2 h-full hover:after:h-full hover:after:bg-[--color-splitter-drag] after:h-[20px] after:bg-[--color-splitter] cursor-ew-resize",
           { hidden: !enabled }
         )}
+        onDoubleClick={() => handleDoubleClick(collapsed)}
       />
+
       <ResizablePanel
+        ref={panelRef}
         collapsible
         collapsedSize={COLLAPSED_SIZE}
         defaultSize={width}

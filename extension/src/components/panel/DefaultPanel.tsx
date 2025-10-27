@@ -10,8 +10,7 @@ export const DefaultPanel = ({ children }: DefaultPanelProps) => {
       <div className="flex min-w-max flex-col items-center justify-end gap-3">
         <ThemeAwaredLogo
           containerProps={{
-            className:
-              "aspect-square md:h-[140px] sm:h-[100px] md:w-[140px] sm:w-[100px]",
+            className: "aspect-square h-[100px] w-[100px]",
           }}
         />
         <h1 className="text-2xl">

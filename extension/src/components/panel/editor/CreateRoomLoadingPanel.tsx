@@ -1,30 +1,18 @@
-import { LeaveRoomDialog } from "@cb/components/dialog/LeaveRoomDialog";
-import { LeaveIcon } from "@cb/components/icons";
+import { Tooltip } from "@cb/components/tooltip";
 import { Ripple } from "@cb/components/ui/Ripple";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useCopyRoomId } from "@cb/hooks";
-import { useRoom } from "@cb/store";
+import { useRoomData } from "@cb/hooks/store";
 import { cn } from "@cb/utils/cn";
 import { CopyIcon } from "lucide-react";
 
 const CreateRoomLoadingPanel = () => {
-  const roomId = useRoom((state) => state.room?.id);
+  const { id: roomId } = useRoomData();
   const copyRoomId = useCopyRoomId();
-  const roomReady = roomId != null;
+  const roomReady = roomId != undefined;
 
   return (
-    <div className="flex h-full w-full flex-col relative items-center p-4">
-      <div className="left-7 top-5 absolute self-start z-30">
-        <LeaveRoomDialog
-          node={
-            <div className="relative z-10 flex w-40 items-center justify-center gap-3 rounded-lg border px-4 py-2">
-              <LeaveIcon />
-              <span className="text-base font-medium">Leave Room</span>
-            </div>
-          }
-        />
-      </div>
-
+    <div className="flex h-full w-full flex-col relative items-center p-4 bg-secondary">
       <div className="relative z-20 top-[15vh] justify-center flex flex-col gap-1 items-center">
         <span className="text-3xl font-bold text-[#1E1E1E] dark:text-white">
           Room created successfully!
@@ -51,17 +39,19 @@ const CreateRoomLoadingPanel = () => {
                 }
               )}
             >
-              <button
-                type="button"
-                aria-label="Copy room ID"
-                disabled={!roomReady}
-                className={cn(
-                  roomReady ? "cursor-pointer" : "cursor-not-allowed"
-                )}
-                onClick={copyRoomId}
-              >
-                <CopyIcon className="h-6 w-6" />
-              </button>
+              <Tooltip
+                trigger={{
+                  props: {
+                    "aria-label": "Copy room ID",
+                    className: cn(
+                      roomReady ? "cursor-pointer" : "cursor-not-allowed"
+                    ),
+                    onClick: copyRoomId,
+                  },
+                  node: <CopyIcon className="h-6 w-6" />,
+                }}
+                content="Copy room ID"
+              />
             </div>
           </div>
         </div>

@@ -1,4 +1,6 @@
 import { ContentScriptContext } from "#imports";
+import { IframeContainer } from "@cb/components/iframe/IframeContainer";
+import { SidebarPortal } from "@cb/components/portal/SidebarPortal";
 import { ContentScript } from "@cb/components/root/ContentScript";
 import { DOM, URLS } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
@@ -12,10 +14,23 @@ export default defineContentScript({
     // Initialize controllers on startup
     getOrCreateControllers();
     await injectScript("/proxy.js", { keepInDom: true });
-    const ui = createUi(ctx);
-    ui.mount();
+
+    ctx.addEventListener(window, "wxt:locationchange", () =>
+      mountExtensionIdempotent(ctx)
+    );
+
+    mountExtensionIdempotent(ctx);
   },
 });
+
+const mountExtensionIdempotent = (ctx: ContentScriptContext) => {
+  if (document.querySelector(`#${DOM.CODEBUDDY_EXTENSION_ID}`) == null) {
+    waitForElement(DOM.LEETCODE_ROOT_ID).then(() => {
+      const ui = createUi(ctx);
+      ui.mount();
+    });
+  }
+};
 
 const createUi = (ctx: ContentScriptContext) => {
   return createIntegratedUi(ctx, {
@@ -28,9 +43,14 @@ const createUi = (ctx: ContentScriptContext) => {
 
       const leetCodeRoot = document.createElement("div");
       leetCodeRoot.appendChild(leetCodeNode);
+      extensionRoot.id = DOM.CODEBUDDY_EXTENSION_ID;
 
       createRoot(extensionRoot).render(
-        <ContentScript leetCodeNode={leetCodeNode} />
+        <>
+          <SidebarPortal />
+          <IframeContainer />
+          <ContentScript leetCodeNode={leetCodeNode} />
+        </>
       );
     },
     onMount: () => {},

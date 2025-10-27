@@ -1,8 +1,9 @@
+import { FEATURE_FLAG } from "@cb/constants";
+import { useRoomActions } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import { Input } from "@cb/lib/components/ui/input";
 import { Label } from "@cb/lib/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@cb/lib/components/ui/radio-group";
-import { useRoom } from "@cb/store";
 import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { PlusIcon } from "lucide-react";
@@ -10,8 +11,8 @@ import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 export const CreateRoomDialog = () => {
-  const create = useRoom((state) => state.actions.room.create);
-  const [isPublic, setIsPublic] = React.useState(true);
+  const { create } = useRoomActions();
+  const [isPublic, setIsPublic] = React.useState(false);
   const [name, setName] = React.useState("");
 
   const createRoomThrottled = React.useMemo(() => {
@@ -59,11 +60,14 @@ export const CreateRoomDialog = () => {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full border border-[#787880] px-3 py-2 placeholder:text-gray-400 dark:border-[#4A4A4E] dark:bg-[#2A2A2A] focus:border-transparent"
+          autoComplete="off"
         />
         <RadioGroup
           value={isPublic ? "public" : "private"}
           onValueChange={(value) => setIsPublic(value === "public")}
-          className="space-y-1"
+          className={cn("space-y-1", {
+            hidden: FEATURE_FLAG.DISABLE_BROWSE_ROOM,
+          })}
         >
           <p className="font-medium ">Visibility</p>
 
