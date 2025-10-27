@@ -39,7 +39,6 @@ const createUi = (ctx: ContentScriptContext) => {
     append: (leetCodeNode, extensionRoot) => {
       leetCodeNode.insertAdjacentElement("afterend", extensionRoot);
       extensionRoot.classList.add("relative", "h-full", "w-full");
-      extensionRoot.id = DOM.CODE_BUDDY_ID;
 
       const leetCodeRoot = document.createElement("div");
       leetCodeRoot.appendChild(leetCodeNode);
