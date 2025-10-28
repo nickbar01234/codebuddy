@@ -1,34 +1,38 @@
-import { TestCase } from "@cb/types";
+import { Question, TestCase } from "@cb/types";
 
 export const capitalize = (str: string | undefined) =>
   str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 
 export const groupTestCases = (
-  variables: string[],
+  variables: Question["variables"] | undefined,
   tests: string[]
 ): TestCase[] => {
-  if (tests.length % variables.length !== 0) {
+  if (variables == undefined || tests.length % variables.count !== 0) {
+    console.error(
+      "Variables are undefined or tests do not match up",
+      variables,
+      tests
+    );
     return [];
   }
-  const chunks = tests.length / variables.length;
+
+  const chunks = tests.length / variables.count;
   const groups = Array.from({ length: chunks }, (_, idx) =>
-    tests.slice(idx * variables.length, (idx + 1) * variables.length)
+    tests.slice(idx * variables.count, (idx + 1) * variables.count)
   );
   return groups.map((group) => ({
     test: group.map((assignment, idx) => ({
-      variable: variables[idx],
+      variable: variables.names[idx],
       value: assignment,
     })),
   }));
 };
 
-export const inferVariablesFromGraphql = (content: string) => {
-  const pattern = /Input:\s*([^<\n\r]+?)\s*Output:/gs;
-  // Replace any html tag before matching
-  const match = content.replace(/<[^>]+>/g, "").match(pattern);
-  if (match != null) {
-    return Array.from(match[1].matchAll(/\b([a-zA-Z_]\w*)\s*=/g), (v) => v[1]);
+export const safeJsonParse = (content: string): object => {
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.error("Failed to parse json", content, error);
+    return {};
   }
-  console.error("Unable to infer variables from graphql", content);
-  return [];
 };
