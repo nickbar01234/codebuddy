@@ -9,6 +9,7 @@ import {
 } from "@cb/types";
 import {
   addDoc,
+  and,
   arrayUnion,
   collection,
   deleteField,
@@ -188,10 +189,13 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
         return withDocumentSnapshot(getRoomRef(id), cb);
       },
 
-      negotiations(id, version, cb) {
+      negotiations(id, version, user, cb) {
         console.log("Listening for version", version);
         return withCollectionSnapshot(
-          query(getNegotiationRefs(id), where("version", ">", version)),
+          query(
+            getNegotiationRefs(id),
+            and(where("version", ">", version), where("to", "==", user))
+          ),
           cb
         );
       },
