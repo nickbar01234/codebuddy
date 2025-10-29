@@ -1,4 +1,5 @@
 import { Question } from "@cb/types";
+import { safeJsonParse } from "@cb/utils/string";
 
 interface ProblemMetadata {
   params?: Array<{ name: string }>;
