@@ -131,11 +131,19 @@ class RoomLifeCycle {
               break;
             }
             case "renegotiation": {
-              this.emitter.emit("rtc.renegotiation.request", {
-                from,
-                to,
-                data: undefined,
-              });
+              if (message.data.kind === "start") {
+                this.emitter.emit("rtc.renegotiation.start", {
+                  from,
+                  to,
+                  data: undefined,
+                });
+              } else {
+                this.emitter.emit("rtc.renegotiation.request", {
+                  from,
+                  to,
+                  data: undefined,
+                });
+              }
               break;
             }
             default: {
@@ -165,11 +173,17 @@ class RoomLifeCycle {
       this.handleRenegotiationEvents.bind(this),
       isEventFromMe(this.me)
     );
+    const unsubscribeFromRenegotiationStartEvents = this.emitter.on(
+      "rtc.renegotiation.start",
+      this.handleRenegotiationStartEvents.bind(this),
+      isEventFromMe(this.me)
+    );
 
     return () => {
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       unsubscribeFromRenegotiationEvents();
+      unsubscribeFromRenegotiationStartEvents();
     };
   }
 
@@ -202,7 +216,19 @@ class RoomLifeCycle {
     this.database.addNegotiation(this.room.id, {
       from,
       to,
-      message: { action: "renegotiation", data: null },
+      message: { action: "renegotiation", data: { kind: "request" } },
+      version: this.room.version,
+    });
+  }
+
+  private handleRenegotiationStartEvents({
+    from,
+    to,
+  }: Events["rtc.renegotiation.start"]) {
+    this.database.addNegotiation(this.room.id, {
+      from,
+      to,
+      message: { action: "renegotiation", data: { kind: "start" } },
       version: this.room.version,
     });
   }

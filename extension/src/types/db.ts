@@ -26,7 +26,7 @@ interface DescriptionNegotiation extends GenericMessage {
 
 interface RenegotiationNegotiation extends GenericMessage {
   action: "renegotiation";
-  data: null;
+  data: { kind: "request" | "start" };
 }
 
 type NegotiationMessage =

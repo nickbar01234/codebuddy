@@ -1,4 +1,3 @@
-import { WEBRTC_RETRY } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
@@ -6,6 +5,7 @@ import {
   IamPolite,
   PeerConnection,
   PeerMessage,
+  RestartState,
   User,
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
@@ -22,9 +22,6 @@ export class WebRtcController {
 
   private rtcConfiguration: RTCConfiguration;
 
-  private retryCounts: Map<User, number>;
-  private retryTimers: Map<User, NodeJS.Timeout>;
-
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -35,8 +32,6 @@ export class WebRtcController {
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
-    this.retryCounts = new Map();
-    this.retryTimers = new Map();
     this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
@@ -60,6 +55,14 @@ export class WebRtcController {
         return isEventToMe(me)(event);
       }
     );
+    this.emitter.on(
+      "rtc.renegotiation.start",
+      this.handleRenegotiationStart.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
+    );
   }
 
   private leave() {
@@ -72,11 +75,6 @@ export class WebRtcController {
   private disconnect(user: User) {
     const connection = this.pcs.get(user);
     if (connection != undefined) {
-      const retryTimer = this.retryTimers.get(user);
-      if (retryTimer) {
-        clearTimeout(retryTimer);
-        this.retryTimers.delete(user);
-      }
       this.pcs.delete(user);
       connection.channel.close();
       connection.pc.close();
@@ -103,6 +101,7 @@ export class WebRtcController {
       isSettingRemoteAnswerPending: false,
       ignoreOffer: false,
       joinedAt,
+      restartState: RestartState.IDLE,
     });
 
     pc.onicecandidate = (event) =>
@@ -154,12 +153,6 @@ export class WebRtcController {
 
     channel.onopen = () => {
       console.log("Channel open", user);
-      this.retryCounts.set(user, 0);
-      const retryTimer = this.retryTimers.get(user);
-      if (retryTimer) {
-        clearTimeout(retryTimer);
-        this.retryTimers.delete(user);
-      }
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
@@ -193,37 +186,18 @@ export class WebRtcController {
 
       const connection = this.pcs.get(user);
       if (!connection) return;
-      const currentRetryCount = this.retryCounts.get(user) ?? 0;
 
-      if (currentRetryCount >= WEBRTC_RETRY.MAX_ATTEMPTS) {
-        this.disconnect(user);
-        this.retryCounts.delete(user);
-        this.emitter.emit("rtc.user.disconnected", { user });
-        return;
-      }
+      connection.restartState = RestartState.AWAITING_START;
+      this.disconnect(user);
 
       this.emitter.emit("rtc.renegotiation.request", {
         from: me,
         to: user,
         data: undefined,
       });
-
-      const existingTimer = this.retryTimers.get(user);
-      if (existingTimer) {
-        clearTimeout(existingTimer);
-      }
-
-      this.disconnect(user);
-
-      const newRetryCount = currentRetryCount + 1;
-      this.retryCounts.set(user, newRetryCount);
-      const retryTimer = setTimeout(
-        () => this.connect(user),
-        newRetryCount === 1 ? 0 : WEBRTC_RETRY.DELAY
-      );
-      this.retryTimers.set(user, retryTimer);
     };
   }
+
   private async handleDescriptionEvents({
     from,
     data,
@@ -278,13 +252,46 @@ export class WebRtcController {
     from,
   }: Events["rtc.renegotiation.request"]) {
     console.log("Renegotiation request received from", from);
-    const retryTimer = this.retryTimers.get(from);
-    if (retryTimer) {
-      clearTimeout(retryTimer);
-      this.retryTimers.delete(from);
+    const connection = this.pcs.get(from);
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
+    const polite = this.iamPolite(me, from);
+
+    if (connection?.restartState === RestartState.AWAITING_START && !polite) {
+      return;
     }
-    this.disconnect(from);
-    this.connect(from);
+    if (connection) {
+      this.disconnect(from);
+    }
+    const joinedAt = connection?.joinedAt ?? Timestamp.now();
+    this.connect(from, joinedAt);
+    const updated = this.pcs.get(from);
+    if (updated) {
+      updated.restartState = RestartState.RESTARTING;
+    }
+
+    this.emitter.emit("rtc.renegotiation.start", {
+      from: me,
+      to: from,
+      data: undefined,
+    });
+  }
+
+  private handleRenegotiationStart({
+    from,
+  }: Events["rtc.renegotiation.start"]) {
+    console.log("Renegotiation start received from", from);
+    const connection = this.pcs.get(from);
+    if (connection && connection.restartState !== RestartState.AWAITING_START)
+      return;
+    if (connection) {
+      this.disconnect(from);
+    }
+    const joinedAt = connection?.joinedAt ?? Timestamp.now();
+    this.connect(from, joinedAt);
+    const updated = this.pcs.get(from);
+    if (updated) {
+      updated.restartState = RestartState.IDLE;
+    }
   }
 
   private sendMessage({ to, message }: Events["rtc.send.message"]) {
