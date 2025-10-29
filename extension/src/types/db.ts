@@ -73,7 +73,7 @@ export interface Question {
   url: string;
   codeSnippets: CodeSnippet[];
   testSnippets: string[];
-  variables: string[];
+  variables: { count: number; names: string[] };
 }
 
 interface UserMetadata {
