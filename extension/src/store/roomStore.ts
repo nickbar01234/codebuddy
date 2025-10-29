@@ -94,6 +94,7 @@ interface RoomAction {
     selectQuestion: (url: string) => void;
     selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
     closeSidebarTab: () => void;
+    getVariables: (url: string) => Question["variables"] | undefined;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -410,6 +411,13 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   state.room.activeSidebarTab = undefined;
                 }
               });
+            },
+            getVariables: (url) => {
+              const questions = get().room?.questions ?? [];
+              const questionWithUrl = questions.find(
+                (question) => question.url === url
+              );
+              return questionWithUrl?.variables;
             },
           },
           peers: {

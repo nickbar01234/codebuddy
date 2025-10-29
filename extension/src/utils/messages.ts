@@ -1,20 +1,18 @@
 import { DOM } from "@cb/constants";
 import background from "@cb/services/background";
-import { ExtractMessage, PeerMessage } from "@cb/types";
+import { ExtractMessage, PeerMessage, Question } from "@cb/types";
 import monaco from "monaco-editor";
 import { getNormalizedUrl } from "./url";
 
 export const getTestsPayload = (
-  variables: string[]
+  variables: Question["variables"] | undefined
 ): ExtractMessage<PeerMessage, "tests"> => {
+  const testLines = [
+    ...(document.querySelector(DOM.LEETCODE_TEST_ID)?.children ?? []),
+  ].map((line) => (line as HTMLElement).innerText);
   return {
     action: "tests",
-    tests: groupTestCases(
-      variables,
-      (
-        document.querySelector(DOM.LEETCODE_TEST_ID) as HTMLElement
-      ).innerText.split("\n")
-    ),
+    tests: groupTestCases(variables, testLines),
     url: getNormalizedUrl(window.location.href),
   };
 };
