@@ -97,6 +97,7 @@ interface DatabaseRoomObserver {
   negotiations(
     id: Id,
     version: Version,
+    user: User,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
 }
