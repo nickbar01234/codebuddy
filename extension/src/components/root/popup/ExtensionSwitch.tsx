@@ -23,9 +23,12 @@ export const ExtensionSwitch = () => {
   return (
     <div className="flex justify-between px-5 py-3">
       <div>Enable extension</div>
-      <div>
-        <Switch checked={enabled} onCheckedChange={toggleEnabledApp} />
-      </div>
+      <Switch
+        checked={enabled}
+        onCheckedChange={toggleEnabledApp}
+        className="data-[state=checked]:bg-quaternary dark:data-[state=checked]:bg-quaternary data-[state=unchecked]:bg-quaternary dark:data-[state=unchecked]:bg-quaternary"
+        thumbClassName="dark:data-[state=unchecked]:bg-ternary dark:data-[state=checked]:bg-ternary data-[state=unchecked]:bg-ternary data-[state=checked]:bg-ternary"
+      />
     </div>
   );
 };
