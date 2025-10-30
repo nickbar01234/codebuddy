@@ -20,9 +20,9 @@ export const Popup = () => {
   });
 
   return (
-    <>
-      <Header className="w-[400px] h-fit overflow-hidden pt-2 pb-2 pl-3 pr-3 border-b" />
+    <div className="bg-secondary w-[400px]">
+      <Header className="py-2 px-3 bg-tabbar" />
       <ExtensionSwitch />
-    </>
+    </div>
   );
 };
