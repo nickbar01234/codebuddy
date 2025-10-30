@@ -41,13 +41,9 @@ export default defineConfig({
         matches: ["<all_urls>"],
       },
       {
-        resources: ["proxy.js"],
-        matches: ["https://leetcode.com/*"],
-      },
-      {
         // We want css to be accessible to iframe
-        resources: ["content-scripts/content.css"],
-        matches: ["<all_urls>"],
+        resources: ["proxy.js", "content-scripts/content.css"],
+        matches: ["https://leetcode.com/*"],
       },
       {
         resources: ["popup/popup.js"],
