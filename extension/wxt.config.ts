@@ -45,6 +45,10 @@ export default defineConfig({
         resources: ["proxy.js", "content-scripts/content.css"],
         matches: ["https://leetcode.com/*"],
       },
+      {
+        resources: ["popup/popup.js"],
+        matches: ["<all_urls>"],
+      },
     ],
   },
   vite: () => ({
