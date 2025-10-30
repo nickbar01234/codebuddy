@@ -1,7 +1,9 @@
+import { PANEL } from "@cb/constants";
 import { useAppActions, useAppPreference } from "@cb/hooks/store";
 import { Resizable } from "re-resizable";
 import { useRef } from "react";
 import { ImperativePanelHandle } from "react-resizable-panels";
+import { CollapsedPanel } from "./CollapsedPanel";
 
 interface ResizableLayoutPanelProps {
   leetCodeRoot: Element;
@@ -22,7 +24,7 @@ export const ResizableGroupLayoutPanel = ({
 
   return (
     <Resizable
-      defaultSize={{ width: 300, height: "100%" }}
+      defaultSize={{ width, height: "100%" }}
       className="ml-2"
       enable={{
         top: false,
@@ -34,10 +36,15 @@ export const ResizableGroupLayoutPanel = ({
         bottomLeft: false,
         topLeft: false,
       }}
+      minWidth={PANEL.MIN_PANEL_SIZE}
       handleStyles={{
         left: {
           cursor: "default",
         },
+      }}
+      onResizeStop={(_event, _direction, ref) => {
+        console.log("Stopping", ref.getBoundingClientRect().width);
+        setAppWidth(ref.getBoundingClientRect().width);
       }}
       handleComponent={{
         left: (
@@ -51,7 +58,15 @@ export const ResizableGroupLayoutPanel = ({
         ),
       }}
     >
-      {children}
+      <div className={cn("h-full", { hidden: !enabled })}>
+        {collapsed && <CollapsedPanel />}
+        <div
+          data-collapsed={collapsed}
+          className="h-full w-full data-[collapsed=true]:hidden"
+        >
+          {children}
+        </div>
+      </div>
     </Resizable>
     // <ResizablePanelGroup direction="horizontal">
     //   <ResizablePanel>
@@ -80,13 +95,6 @@ export const ResizableGroupLayoutPanel = ({
     //     onResize={setAppWidth}
     //     className={cn({ hidden: !enabled })}
     //   >
-    //     {collapsed && <CollapsedPanel />}
-    //     <div
-    //       data-collapsed={collapsed}
-    //       className="h-full w-full data-[collapsed=true]:hidden"
-    //     >
-    //       {children}
-    //     </div>
     //   </ResizablePanel>
     // </ResizablePanelGroup>
   );

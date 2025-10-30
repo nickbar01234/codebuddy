@@ -102,3 +102,8 @@ export const CSS = {
 export const EXTENSION = {
   CSS_PATH: "content-scripts/content.css",
 };
+
+export const PANEL = {
+  DEFAULT_PANEL_SIZE: 300,
+  MIN_PANEL_SIZE: 40,
+};

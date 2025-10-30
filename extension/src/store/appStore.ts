@@ -1,12 +1,9 @@
+import { PANEL } from "@cb/constants";
 import { BoundStore } from "@cb/types";
 import _ from "lodash";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-
-export const DEFAULT_PANEL_SIZE = 25;
-
-export const COLLAPSED_SIZE = 2;
 
 const APP_STORAGE = "CODEBUDDY_APP";
 
@@ -60,6 +57,7 @@ interface AppAction {
 const debouncedSetWidth = _.debounce((width) => {
   useApp.setState((state) => {
     state.app.width = width;
+    state.app.collapsed = width === PANEL.MIN_PANEL_SIZE;
   });
 }, 1000);
 
@@ -68,7 +66,7 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
     immer((set, get) => ({
       app: {
         enabled: true,
-        width: DEFAULT_PANEL_SIZE,
+        width: PANEL.DEFAULT_PANEL_SIZE,
         collapsed: false,
         displayBanner: true,
       },
@@ -83,12 +81,12 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
         collapseExtension: () =>
           set((state) => {
             state.app.collapsed = true;
-            state.app.width = COLLAPSED_SIZE;
+            state.app.width = PANEL.MIN_PANEL_SIZE;
           }),
         expandExtension: () =>
           set((state) => {
             state.app.collapsed = false;
-            state.app.width = DEFAULT_PANEL_SIZE;
+            state.app.width = PANEL.MIN_PANEL_SIZE;
           }),
         hideBanner: () =>
           set((state) => {
