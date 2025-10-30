@@ -1,4 +1,10 @@
 import { Question } from "@cb/types";
+import { safeJsonParse } from "@cb/utils/string";
+
+interface ProblemMetadata {
+  params?: Array<{ name: string }>;
+  systemdesign?: boolean;
+}
 
 export enum GetProblemMetadataBySlugServerCode {
   SUCCESS = "SUCCESS",
@@ -32,7 +38,7 @@ query question($titleSlug: String!) {
     topicTags { name slug }
     codeSnippets { langSlug code }
     exampleTestcases
-    content
+    metaData
   }
 }`;
 
@@ -66,6 +72,10 @@ export async function getProblemMetaBySlugServer(
     }
 
     // todo(nickbar01234): Should log if any keys we expect is undefined
+    const metadata = safeJsonParse(q.metaData) as ProblemMetadata;
+    const isSystemDesign = metadata["systemdesign"] ?? false;
+    const variables = (metadata["params"] ?? []).map((param) => param.name);
+
     return {
       code: GetProblemMetadataBySlugServerCode.SUCCESS,
       data: {
@@ -77,7 +87,10 @@ export async function getProblemMetaBySlugServer(
         url: constructUrlFromQuestionId(q.titleSlug),
         codeSnippets: q.codeSnippets ?? [],
         testSnippets: (q.exampleTestcases ?? "").split("\n"),
-        variables: inferVariablesFromGraphql(q.content ?? ""),
+        variables: {
+          count: isSystemDesign ? 2 : variables.length,
+          names: variables,
+        },
       },
     };
   } catch (e: any) {

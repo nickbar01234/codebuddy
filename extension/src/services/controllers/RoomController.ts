@@ -107,11 +107,9 @@ class RoomLifeCycle {
     return this.database.observer.negotiations(
       this.room.id,
       this.room.version,
+      this.me,
       {
         onAdded: ({ from, to, message }) => {
-          if (from === this.me) {
-            return;
-          }
           const { action } = message;
           switch (action) {
             case "description": {

@@ -64,7 +64,7 @@ export interface Question {
   url: string;
   codeSnippets: CodeSnippet[];
   testSnippets: string[];
-  variables: string[];
+  variables: { count: number; names: string[] };
 }
 
 interface UserMetadata {
@@ -97,6 +97,7 @@ interface DatabaseRoomObserver {
   negotiations(
     id: Id,
     version: Version,
+    user: User,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
 }
