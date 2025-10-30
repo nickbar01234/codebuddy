@@ -14,7 +14,6 @@ import {
   PeerState,
   Question,
   QuestionProgressStatus,
-  SelectableTestCase,
   SelfState,
   Slug,
   TestCases,
@@ -460,12 +459,10 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     getNormalizedUrl(window.location.href)
                   ];
                 if (progress != undefined) {
-                  progress.tests = progress.tests.map(
-                    (test: SelectableTestCase, i: number) => ({
-                      ...test,
-                      selected: i === idx,
-                    })
-                  );
+                  progress.tests = progress.tests.map((test, i) => ({
+                    ...test,
+                    selected: i === idx,
+                  }));
                 }
               }),
             toggleCodeVisibility: () =>
