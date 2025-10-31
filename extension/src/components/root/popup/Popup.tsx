@@ -20,7 +20,7 @@ export const Popup = () => {
   });
 
   return (
-    <div className="bg-secondary w-[400px]">
+    <div className="bg-secondary w-[300px]">
       <Header className="py-2 px-3 bg-tabbar" />
       <ExtensionSwitch />
     </div>
