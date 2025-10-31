@@ -272,7 +272,6 @@ export class WebRtcController {
     console.log("Renegotiation request received from", from);
     const connection = this.pcs.get(from);
     const { username: me } = this.appStore.getState().actions.getAuthUser();
-    // Idempotent: if already restarting, ignore
     if (connection?.restartState === RestartState.RESTARTING) return;
     if (connection) {
       this.disconnect(from);
