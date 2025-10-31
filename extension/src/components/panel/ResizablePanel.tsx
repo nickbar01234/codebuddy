@@ -32,6 +32,7 @@ export const ResizablePanel = ({ children }: ResizablePanelProps) => {
       <div
         className={cn("relative ml-2 h-full w-full", {
           "duration-100 ease-in-out transition-[width]": collapsed,
+          hidden: !enabled,
         })}
         style={{ width: `${width}px` }}
       >
