@@ -15,7 +15,7 @@ export const ContainerNavigator = ({
         <Header />
         {menu}
       </div>
-      <div className="overflow-y-hidden h-full w-full rounded-b-lg">
+      <div className="overflow-hidden h-full w-full rounded-b-lg">
         {children}
       </div>
     </div>
