@@ -1,3 +1,4 @@
+import { WEBRTC_RETRY } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
@@ -22,6 +23,8 @@ export class WebRtcController {
 
   private rtcConfiguration: RTCConfiguration;
 
+  private retryCounts: Map<User, number>;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -32,6 +35,7 @@ export class WebRtcController {
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.retryCounts = new Map();
     this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
@@ -70,6 +74,7 @@ export class WebRtcController {
     for (const user of users) {
       this.disconnect(user);
     }
+    this.retryCounts.clear();
   }
 
   private disconnect(user: User) {
@@ -153,6 +158,9 @@ export class WebRtcController {
 
     channel.onopen = () => {
       console.log("Channel open", user);
+      const cur = this.pcs.get(user);
+      if (cur) cur.restartState = RestartState.IDLE;
+      this.retryCounts.delete(user);
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
@@ -187,9 +195,22 @@ export class WebRtcController {
       const connection = this.pcs.get(user);
       if (!connection) return;
 
-      connection.restartState = RestartState.AWAITING_START;
-      this.disconnect(user);
+      if (connection.restartState === RestartState.RESTARTING) return;
 
+      const currentRetry = this.retryCounts.get(user) ?? 0;
+      if (currentRetry >= WEBRTC_RETRY.MAX_ATTEMPTS) {
+        this.disconnect(user);
+        this.retryCounts.delete(user);
+        this.emitter.emit("rtc.user.disconnected", { user });
+        return;
+      }
+
+      this.disconnect(user);
+      this.connect(user, connection.joinedAt);
+      const updated = this.pcs.get(user);
+      if (updated) updated.restartState = RestartState.RESTARTING;
+
+      this.retryCounts.set(user, currentRetry + 1);
       this.emitter.emit("rtc.renegotiation.request", {
         from: me,
         to: user,
@@ -201,6 +222,7 @@ export class WebRtcController {
   private async handleDescriptionEvents({
     from,
     data,
+    joinedAt,
   }: Events["rtc.description"]) {
     const connection = this.pcs.get(from);
     if (connection == undefined) return;
@@ -222,6 +244,9 @@ export class WebRtcController {
       connection.isSettingRemoteAnswerPending = data.type === "answer";
       await pc.setRemoteDescription(data);
       connection.isSettingRemoteAnswerPending = false;
+      if (joinedAt) {
+        connection.joinedAt = joinedAt;
+      }
       if (data.type === "offer") {
         await pc.setLocalDescription();
         this.emitter.emit("rtc.description", {
@@ -250,20 +275,19 @@ export class WebRtcController {
 
   private handleRenegotiationRequest({
     from,
+    joinedAt,
   }: Events["rtc.renegotiation.request"]) {
     console.log("Renegotiation request received from", from);
     const connection = this.pcs.get(from);
     const { username: me } = this.appStore.getState().actions.getAuthUser();
-    const polite = this.iamPolite(me, from);
-
-    if (connection?.restartState === RestartState.AWAITING_START && !polite) {
-      return;
-    }
+    // Idempotent: if already restarting, ignore
+    if (connection?.restartState === RestartState.RESTARTING) return;
     if (connection) {
       this.disconnect(from);
     }
-    const joinedAt = connection?.joinedAt ?? Timestamp.now();
-    this.connect(from, joinedAt);
+    const effectiveJoinedAt =
+      joinedAt ?? connection?.joinedAt ?? Timestamp.now();
+    this.connect(from, effectiveJoinedAt);
     const updated = this.pcs.get(from);
     if (updated) {
       updated.restartState = RestartState.RESTARTING;
@@ -278,19 +302,18 @@ export class WebRtcController {
 
   private handleRenegotiationStart({
     from,
+    joinedAt,
   }: Events["rtc.renegotiation.start"]) {
     console.log("Renegotiation start received from", from);
     const connection = this.pcs.get(from);
-    if (connection && connection.restartState !== RestartState.AWAITING_START)
-      return;
-    if (connection) {
-      this.disconnect(from);
-    }
-    const joinedAt = connection?.joinedAt ?? Timestamp.now();
-    this.connect(from, joinedAt);
+    if (connection?.restartState === RestartState.RESTARTING) return;
+    if (connection) this.disconnect(from);
+    const effectiveJoinedAt =
+      joinedAt ?? connection?.joinedAt ?? Timestamp.now();
+    this.connect(from, effectiveJoinedAt);
     const updated = this.pcs.get(from);
     if (updated) {
-      updated.restartState = RestartState.IDLE;
+      updated.restartState = RestartState.RESTARTING;
     }
   }
 

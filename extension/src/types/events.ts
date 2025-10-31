@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 import { Room, User } from "./db";
 import { PeerMessage } from "./peers";
 
@@ -35,11 +36,16 @@ interface UserDisconnectedEvent {
   user: User;
 }
 
+interface NegotiationEvent {
+  joinedAt?: Timestamp;
+}
+
 export type Events = {
   "rtc.ice": AddressableEvent<RTCIceCandidateInit | null>;
-  "rtc.description": AddressableEvent<RTCSessionDescriptionInit>;
-  "rtc.renegotiation.request": AddressableEvent<void>;
-  "rtc.renegotiation.start": AddressableEvent<void>;
+  "rtc.description": AddressableEvent<RTCSessionDescriptionInit> &
+    NegotiationEvent;
+  "rtc.renegotiation.request": AddressableEvent<void> & NegotiationEvent;
+  "rtc.renegotiation.start": AddressableEvent<void> & NegotiationEvent;
   "rtc.open": ChannelOpenEvent;
   "rtc.send.message": SendMessageEvent;
   "rtc.receive.message": ReceiveMessageEvent;

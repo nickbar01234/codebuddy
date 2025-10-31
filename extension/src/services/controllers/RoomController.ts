@@ -108,7 +108,7 @@ class RoomLifeCycle {
       this.room.id,
       this.room.version,
       {
-        onAdded: ({ from, to, message }) => {
+        onAdded: ({ from, to, message, createdAt }) => {
           if (from === this.me) {
             return;
           }
@@ -119,6 +119,7 @@ class RoomLifeCycle {
                 from,
                 to,
                 data: message.data,
+                joinedAt: createdAt,
               });
               break;
             }
@@ -136,12 +137,14 @@ class RoomLifeCycle {
                   from,
                   to,
                   data: undefined,
+                  joinedAt: createdAt,
                 });
               } else {
                 this.emitter.emit("rtc.renegotiation.request", {
                   from,
                   to,
                   data: undefined,
+                  joinedAt: createdAt,
                 });
               }
               break;

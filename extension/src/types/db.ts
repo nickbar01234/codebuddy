@@ -61,6 +61,7 @@ export interface Negotiation {
   to: User;
   version: Version;
   message: NegotiationMessage;
+  createdAt?: Timestamp;
 }
 
 export interface Question {

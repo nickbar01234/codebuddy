@@ -5,7 +5,6 @@ export type IamPolite = (me: User, other: User) => boolean;
 
 export enum RestartState {
   IDLE = "idle",
-  AWAITING_START = "awaiting-start",
   RESTARTING = "restarting",
 }
 

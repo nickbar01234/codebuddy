@@ -166,7 +166,10 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     },
 
     async addNegotiation(id, data) {
-      await addDoc(getNegotiationRefs(id), data);
+      await addDoc(getNegotiationRefs(id), {
+        ...data,
+        createdAt: serverTimestamp(),
+      });
       return Promise.resolve();
     },
 
