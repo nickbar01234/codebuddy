@@ -53,19 +53,11 @@ export class WebRtcController {
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
     this.emitter.on(
       "rtc.renegotiation.request",
-      this.handleRenegotiationRequest.bind(this),
-      (event) => {
-        const { username: me } = this.appStore.getState().actions.getAuthUser();
-        return isEventToMe(me)(event);
-      }
+      this.handleRenegotiationRequest.bind(this)
     );
     this.emitter.on(
       "rtc.renegotiation.start",
-      this.handleRenegotiationStart.bind(this),
-      (event) => {
-        const { username: me } = this.appStore.getState().actions.getAuthUser();
-        return isEventToMe(me)(event);
-      }
+      this.handleRenegotiationStart.bind(this)
     );
   }
 
