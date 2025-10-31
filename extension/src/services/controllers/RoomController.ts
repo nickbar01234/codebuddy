@@ -110,9 +110,6 @@ class RoomLifeCycle {
       this.me,
       {
         onAdded: ({ from, to, message, createdAt }) => {
-          if (from === this.me) {
-            return;
-          }
           const { action } = message;
           switch (action) {
             case "description": {
