@@ -1,12 +1,8 @@
+import { PANEL } from "@cb/constants";
 import { BoundStore } from "@cb/types";
-import _ from "lodash";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-
-export const DEFAULT_PANEL_SIZE = 25;
-
-export const COLLAPSED_SIZE = 2;
 
 const APP_STORAGE = "CODEBUDDY_APP";
 
@@ -47,8 +43,7 @@ interface AppState {
 
 interface AppAction {
   toggleEnabledApp: () => void;
-  collapseExtension: () => void;
-  expandExtension: () => void;
+  collapseOrExpand: () => void;
   hideBanner: () => void;
   setAppWidth: (width: number) => void;
   authenticate: (user: AppUser) => void;
@@ -57,18 +52,12 @@ interface AppAction {
   getMaybeAuthUser: () => AppUser | undefined;
 }
 
-const debouncedSetWidth = _.debounce((width) => {
-  useApp.setState((state) => {
-    state.app.width = width;
-  });
-}, 1000);
-
 export const useApp = create<BoundStore<AppState, AppAction>>()(
   persist(
     immer((set, get) => ({
       app: {
         enabled: true,
-        width: DEFAULT_PANEL_SIZE,
+        width: PANEL.DEFAULT_WIDTH,
         collapsed: false,
         displayBanner: true,
       },
@@ -80,21 +69,32 @@ export const useApp = create<BoundStore<AppState, AppAction>>()(
           set((state) => {
             state.app.enabled = !state.app.enabled;
           }),
-        collapseExtension: () =>
+        collapseOrExpand: () =>
           set((state) => {
-            state.app.collapsed = true;
-            state.app.width = COLLAPSED_SIZE;
-          }),
-        expandExtension: () =>
-          set((state) => {
-            state.app.collapsed = false;
-            state.app.width = DEFAULT_PANEL_SIZE;
+            if (state.app.collapsed) {
+              state.app.collapsed = false;
+              state.app.width = PANEL.DEFAULT_WIDTH;
+            } else {
+              state.app.collapsed = true;
+              state.app.width = PANEL.COLLAPSED_WIDTH;
+            }
           }),
         hideBanner: () =>
           set((state) => {
             state.app.displayBanner = false;
           }),
-        setAppWidth: (width) => debouncedSetWidth(width),
+        setAppWidth: (width) =>
+          set((state) => {
+            if (state.app.collapsed && width > PANEL.COLLAPSED_WIDTH) {
+              state.app.collapsed = false;
+              state.app.width = PANEL.DEFAULT_WIDTH;
+            } else {
+              state.app.collapsed = width < PANEL.DEFAULT_WIDTH;
+              state.app.width = state.app.collapsed
+                ? PANEL.COLLAPSED_WIDTH
+                : width;
+            }
+          }),
         authenticate: (user: AppUser) =>
           set((state) => {
             state.auth = {
