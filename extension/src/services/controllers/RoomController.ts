@@ -117,7 +117,7 @@ class RoomLifeCycle {
                 from,
                 to,
                 data: message.data,
-                joinedAt: createdAt,
+                timestamp: createdAt,
               });
               break;
             }
@@ -135,14 +135,14 @@ class RoomLifeCycle {
                   from,
                   to,
                   data: undefined,
-                  joinedAt: createdAt,
+                  timestamp: createdAt,
                 });
               } else {
                 this.emitter.emit("rtc.renegotiation.request", {
                   from,
                   to,
                   data: undefined,
-                  joinedAt: createdAt,
+                  timestamp: createdAt,
                 });
               }
               break;
