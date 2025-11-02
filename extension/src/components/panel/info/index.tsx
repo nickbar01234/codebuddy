@@ -2,11 +2,10 @@ import { DOM } from "@cb/constants";
 import { useRoomActions, useRoomData, useRoomStatus } from "@cb/hooks/store";
 import { Sheet, SheetContent } from "@cb/lib/components/ui/sheet";
 import { RoomStatus, SidebarTabIdentifier } from "@cb/store";
-import { Info, List, ListPlus } from "lucide-react";
+import { Info, List } from "lucide-react";
 import React from "react";
 import { createPortal } from "react-dom";
 import { GeneralRoomInfo } from "./GeneralRoomInfo";
-import { LeetCodeQuestions } from "./LeetCodeQuestions";
 import { ProblemInfo } from "./ProblemInfo";
 import { SidebarTabTrigger } from "./SidebarTabTrigger";
 
@@ -18,10 +17,6 @@ const TRIGGERS = [
   {
     identifier: SidebarTabIdentifier.ROOM_QUESTIONS,
     icon: <List />,
-  },
-  {
-    identifier: SidebarTabIdentifier.LEETCODE_QUESTIONS,
-    icon: <ListPlus />,
   },
 ];
 
@@ -81,7 +76,6 @@ export const RoomInfo = () => {
           >
             <GeneralRoomInfo />
             <ProblemInfo />
-            <LeetCodeQuestions />
           </SheetContent>
         </Sheet>
       </div>
