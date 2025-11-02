@@ -53,11 +53,19 @@ export class WebRtcController {
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
     this.emitter.on(
       "rtc.renegotiation.request",
-      this.handleRenegotiationRequest.bind(this)
+      this.handleRenegotiationRequest.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
     );
     this.emitter.on(
       "rtc.renegotiation.start",
-      this.handleRenegotiationStart.bind(this)
+      this.handleRenegotiationStart.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
     );
   }
 
@@ -198,10 +206,6 @@ export class WebRtcController {
       }
 
       this.disconnect(user);
-      this.connect(user, connection.joinedAt);
-      const updated = this.pcs.get(user);
-      if (updated) updated.restartState = RestartState.RESTARTING;
-
       this.retryCounts.set(user, currentRetry + 1);
       this.emitter.emit("rtc.renegotiation.request", {
         from: me,
@@ -214,7 +218,7 @@ export class WebRtcController {
   private async handleDescriptionEvents({
     from,
     data,
-    joinedAt,
+    timestamp,
   }: Events["rtc.description"]) {
     const connection = this.pcs.get(from);
     if (connection == undefined) return;
@@ -236,8 +240,8 @@ export class WebRtcController {
       connection.isSettingRemoteAnswerPending = data.type === "answer";
       await pc.setRemoteDescription(data);
       connection.isSettingRemoteAnswerPending = false;
-      if (joinedAt) {
-        connection.joinedAt = joinedAt;
+      if (timestamp) {
+        connection.joinedAt = timestamp;
       }
       if (data.type === "offer") {
         await pc.setLocalDescription();
@@ -267,7 +271,7 @@ export class WebRtcController {
 
   private handleRenegotiationRequest({
     from,
-    joinedAt,
+    timestamp,
   }: Events["rtc.renegotiation.request"]) {
     console.log("Renegotiation request received from", from);
     const connection = this.pcs.get(from);
@@ -277,7 +281,7 @@ export class WebRtcController {
       this.disconnect(from);
     }
     const effectiveJoinedAt =
-      joinedAt ?? connection?.joinedAt ?? Timestamp.now();
+      timestamp ?? connection?.joinedAt ?? Timestamp.now();
     this.connect(from, effectiveJoinedAt);
     const updated = this.pcs.get(from);
     if (updated) {
@@ -293,14 +297,14 @@ export class WebRtcController {
 
   private handleRenegotiationStart({
     from,
-    joinedAt,
+    timestamp,
   }: Events["rtc.renegotiation.start"]) {
     console.log("Renegotiation start received from", from);
     const connection = this.pcs.get(from);
     if (connection?.restartState === RestartState.RESTARTING) return;
     if (connection) this.disconnect(from);
     const effectiveJoinedAt =
-      joinedAt ?? connection?.joinedAt ?? Timestamp.now();
+      timestamp ?? connection?.joinedAt ?? Timestamp.now();
     this.connect(from, effectiveJoinedAt);
     const updated = this.pcs.get(from);
     if (updated) {

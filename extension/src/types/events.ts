@@ -6,6 +6,7 @@ export interface AddressableEvent<T> {
   from: User;
   to: User;
   data: T;
+  timestamp?: Timestamp;
 }
 
 interface RoomEvent {
@@ -36,16 +37,11 @@ interface UserDisconnectedEvent {
   user: User;
 }
 
-interface NegotiationEvent {
-  joinedAt?: Timestamp;
-}
-
 export type Events = {
   "rtc.ice": AddressableEvent<RTCIceCandidateInit | null>;
-  "rtc.description": AddressableEvent<RTCSessionDescriptionInit> &
-    NegotiationEvent;
-  "rtc.renegotiation.request": AddressableEvent<void> & NegotiationEvent;
-  "rtc.renegotiation.start": AddressableEvent<void> & NegotiationEvent;
+  "rtc.description": AddressableEvent<RTCSessionDescriptionInit>;
+  "rtc.renegotiation.request": AddressableEvent<void>;
+  "rtc.renegotiation.start": AddressableEvent<void>;
   "rtc.open": ChannelOpenEvent;
   "rtc.send.message": SendMessageEvent;
   "rtc.receive.message": ReceiveMessageEvent;
