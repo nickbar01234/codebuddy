@@ -16,8 +16,17 @@ export const useToast = () => {
   });
 
   useOnMount(() => {
-    const onUserDisconnected = ({ user }: Events["rtc.user.disconnected"]) => {
-      toast.info(`${user} left the room`);
+    const onUserDisconnected = ({
+      user,
+      unrecoverable,
+    }: Events["rtc.user.disconnected"]) => {
+      if (unrecoverable) {
+        toast.error(
+          `Unable to connect with ${user}. Please refresh the browser and try again.`
+        );
+      } else {
+        toast.info(`${user} left room`);
+      }
     };
     emitter.on("rtc.user.disconnected", onUserDisconnected);
     return () => emitter.off("rtc.user.disconnected", onUserDisconnected);

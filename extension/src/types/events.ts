@@ -35,6 +35,7 @@ interface RtcConnectionError {
 
 interface UserDisconnectedEvent {
   user: User;
+  unrecoverable: boolean;
 }
 
 export type Events = {

@@ -187,7 +187,10 @@ export class WebRtcController {
         errorEvent.error.sctpCauseCode === 12 // https://datatracker.ietf.org/doc/html/rfc4960#section-3.3.10
       ) {
         this.disconnect(user);
-        this.emitter.emit("rtc.user.disconnected", { user });
+        this.emitter.emit("rtc.user.disconnected", {
+          user,
+          unrecoverable: false,
+        });
         return;
       }
       console.error("Error on RTC data channel", errorEvent);
@@ -201,7 +204,10 @@ export class WebRtcController {
       if (currentRetry >= WEBRTC_RETRY.MAX_ATTEMPTS) {
         this.disconnect(user);
         this.retryCounts.delete(user);
-        this.emitter.emit("rtc.user.disconnected", { user });
+        this.emitter.emit("rtc.user.disconnected", {
+          user,
+          unrecoverable: true,
+        });
         return;
       }
 
