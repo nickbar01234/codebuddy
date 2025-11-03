@@ -277,11 +277,11 @@ export class WebRtcController {
     const connection = this.pcs.get(from);
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     if (connection?.restartState === RestartState.RESTARTING) return;
-    if (connection) {
-      this.disconnect(from);
+    this.disconnect(from);
+    const effectiveJoinedAt = timestamp ?? connection?.joinedAt;
+    if (!effectiveJoinedAt) {
+      return;
     }
-    const effectiveJoinedAt =
-      timestamp ?? connection?.joinedAt ?? Timestamp.now();
     this.connect(from, effectiveJoinedAt);
     const updated = this.pcs.get(from);
     if (updated) {
@@ -303,8 +303,10 @@ export class WebRtcController {
     const connection = this.pcs.get(from);
     if (connection?.restartState === RestartState.RESTARTING) return;
     if (connection) this.disconnect(from);
-    const effectiveJoinedAt =
-      timestamp ?? connection?.joinedAt ?? Timestamp.now();
+    const effectiveJoinedAt = timestamp ?? connection?.joinedAt;
+    if (!effectiveJoinedAt) {
+      return;
+    }
     this.connect(from, effectiveJoinedAt);
     const updated = this.pcs.get(from);
     if (updated) {
