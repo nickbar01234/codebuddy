@@ -284,11 +284,10 @@ export class WebRtcController {
     const { username: me } = this.appStore.getState().actions.getAuthUser();
     if (connection?.restartState === RestartState.RESTARTING) return;
     this.disconnect(from);
-    const effectiveJoinedAt = timestamp ?? connection?.joinedAt;
-    if (!effectiveJoinedAt) {
+    if (!timestamp) {
       return;
     }
-    this.connect(from, effectiveJoinedAt);
+    this.connect(from, timestamp!);
     const updated = this.pcs.get(from);
     if (updated) {
       updated.restartState = RestartState.RESTARTING;
