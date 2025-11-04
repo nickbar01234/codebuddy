@@ -24,7 +24,15 @@ interface DescriptionNegotiation extends GenericMessage {
   data: RTCSessionDescriptionInit;
 }
 
-type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
+interface RenegotiationNegotiation extends GenericMessage {
+  action: "renegotiation";
+  data: { kind: "request" | "start" };
+}
+
+type NegotiationMessage =
+  | IceCandidateNegotiation
+  | DescriptionNegotiation
+  | RenegotiationNegotiation;
 
 export enum QuestionProgressStatus {
   NOT_STARTED = "not-started",
@@ -53,6 +61,7 @@ export interface Negotiation {
   to: User;
   version: Version;
   message: NegotiationMessage;
+  createdAt?: Timestamp;
 }
 
 export interface Question {

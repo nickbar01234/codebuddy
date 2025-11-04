@@ -73,8 +73,18 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
     this.unsubscribers.push(this.subscribeToRtcConnectionError());
+    this.unsubscribers.push(this.subscribeToUserDisconnected());
+
     this.subscribeToSubmission();
     this.subscribeToBackground();
+  }
+
+  private subscribeToUserDisconnected() {
+    const onUserDisconnected = ({ user }: Events["rtc.user.disconnected"]) => {
+      this.roomStore.getState().actions.peers.remove([user]);
+    };
+    this.emitter.on("rtc.user.disconnected", onUserDisconnected);
+    return () => this.emitter.off("rtc.user.disconnected", onUserDisconnected);
   }
 
   private subscribeToCodeEditor() {

@@ -1,6 +1,7 @@
 import { useOnMount } from "@cb/hooks";
 import { getOrCreateControllers } from "@cb/services";
-import { EventType } from "@cb/types";
+import { EventType, Events } from "@cb/types";
+import { assertUnreachable } from "@cb/utils/error";
 import { toast } from "sonner";
 
 const { emitter } = getOrCreateControllers();
@@ -12,6 +13,23 @@ export const useToast = () => {
       room.left.forEach((peer) => toast.info(`${peer} left room`));
     });
     return () => unsubscribe();
+  });
+
+  useOnMount(() => {
+    const onUserDisconnected = ({
+      user,
+      unrecoverable,
+    }: Events["rtc.user.disconnected"]) => {
+      if (unrecoverable) {
+        toast.error(
+          `Unable to connect with ${user}. Please refresh the browser and try again.`
+        );
+      } else {
+        toast.info(`${user} left room`);
+      }
+    };
+    emitter.on("rtc.user.disconnected", onUserDisconnected);
+    return () => emitter.off("rtc.user.disconnected", onUserDisconnected);
   });
 
   useOnMount(() => {
