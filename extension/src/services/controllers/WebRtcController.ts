@@ -262,12 +262,15 @@ export class WebRtcController {
     }
   }
 
-  private async handleIceEvents({ from, data }: Events["rtc.ice"]) {
+  private async handleIceEvents({ from, data, timestamp }: Events["rtc.ice"]) {
     const connection = this.pcs.get(from);
     if (connection == undefined) return;
 
     try {
       await connection.pc.addIceCandidate(data);
+      if (timestamp) {
+        connection.joinedAt = timestamp;
+      }
     } catch (err) {
       if (!connection.ignoreOffer) {
         console.error("Error when handling ICE candidate", from, err);
@@ -287,7 +290,7 @@ export class WebRtcController {
     if (!timestamp) {
       return;
     }
-    this.connect(from, timestamp!);
+    this.connect(from, timestamp);
     const updated = this.pcs.get(from);
     if (updated) {
       updated.restartState = RestartState.RESTARTING;
@@ -308,11 +311,10 @@ export class WebRtcController {
     const connection = this.pcs.get(from);
     if (connection?.restartState === RestartState.RESTARTING) return;
     if (connection) this.disconnect(from);
-    const effectiveJoinedAt = timestamp ?? connection?.joinedAt;
-    if (!effectiveJoinedAt) {
+    if (!timestamp) {
       return;
     }
-    this.connect(from, effectiveJoinedAt);
+    this.connect(from, timestamp);
     const updated = this.pcs.get(from);
     if (updated) {
       updated.restartState = RestartState.RESTARTING;
