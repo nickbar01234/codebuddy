@@ -67,7 +67,10 @@ export const ProblemInfo = () => {
 
   return (
     <SidebarTabLayout forTab={SidebarTabIdentifier.ROOM_QUESTIONS}>
-      <Tabs className="h-full w-full bg-inherit flex flex-col gap-4">
+      <Tabs
+        className="h-full w-full bg-inherit flex flex-col gap-4"
+        defaultValue={ProblemInfoTab.CHOSEN_QUESTIONS}
+      >
         <SidebarTabHeader>
           <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit bg-inherit">
             {tabs.map((tab, idx) => (
