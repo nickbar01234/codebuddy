@@ -17,7 +17,7 @@ export const TestTab: React.FC<TestTabProps> = ({
   const { self } = useRoomData();
   return (
     <SkeletonWrapper loading={false} className="relative">
-      <div className="p-5 flex flex-col space-y-4 h-full w-full">
+      <div className="p-5 flex flex-col space-y-4 h-full w-full overflow-scroll hide-scrollbar">
         <div className="flex w-full flex-row items-start justify-between gap-4">
           <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
             {(activePeer?.questions[self?.url ?? ""]?.tests ?? []).map(
@@ -37,7 +37,7 @@ export const TestTab: React.FC<TestTabProps> = ({
             )}
           </div>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4 pb-12">
           <div>
             <div className="flex h-full w-full flex-col space-y-2">
               {activeTest?.test.map((assignment, idx) => (
