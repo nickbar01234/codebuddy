@@ -102,7 +102,6 @@ export const BrowsePanel = () => {
               {data.docs.map((room) => {
                 const question = room.questions[room.questions.length - 1];
                 return (
-                  // todo(nickbar01234): How to make rounded?
                   <DefaultTableRow
                     key={room.id}
                     className="cursor-pointer hover:!bg-[--color-button-hover-background]"

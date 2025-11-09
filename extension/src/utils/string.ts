@@ -1,4 +1,5 @@
 import { Question, TestCase } from "@cb/types";
+import { Timestamp } from "firebase/firestore";
 
 export const capitalize = (str: string | undefined) =>
   str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
@@ -35,4 +36,13 @@ export const safeJsonParse = (content: string): object => {
     console.error("Failed to parse json", content, error);
     return {};
   }
+};
+
+export const formatTime = (timestamp?: Timestamp) => {
+  if (!timestamp) return "";
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(timestamp.toDate());
 };

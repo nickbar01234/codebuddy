@@ -1,5 +1,5 @@
 import { Negotiation, Room } from "@cb/types";
-import { UserProgress } from "@cb/types/db";
+import { Message, UserProgress } from "@cb/types/db";
 import {
   FirestoreDataConverter,
   QueryDocumentSnapshot,
@@ -27,5 +27,11 @@ export const userProgressConverter: FirestoreDataConverter<
 > = {
   toFirestore: identity,
   fromFirestore: (snapshot: QueryDocumentSnapshot<UserProgress>, options) =>
+    snapshot.data(options),
+};
+
+export const messageConverter: FirestoreDataConverter<Message, Message> = {
+  toFirestore: identity,
+  fromFirestore: (snapshot: QueryDocumentSnapshot<Message>, options) =>
     snapshot.data(options),
 };
