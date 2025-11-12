@@ -81,6 +81,28 @@ export const QuestionSelectorPanel = React.memo(
               link.href = chrome.runtime.getURL(EXTENSION.CSS_PATH);
               link.id = DOM.IFRAME_CSS_ID;
               iframeDoc.head.appendChild(link);
+
+              // Inject rules to hide scrollbars inside the iframe while keeping scrolling
+              if (
+                iframeDoc.head.querySelector(
+                  `#${DOM.IFRAME_CSS_ID}-hide-scrollbar`
+                ) == null
+              ) {
+                const hideScrollbarStyle = iframeDoc.createElement("style");
+                hideScrollbarStyle.id = `${DOM.IFRAME_CSS_ID}-hide-scrollbar`;
+                hideScrollbarStyle.innerHTML = `
+                  html, body, * {
+                    scrollbar-width: none; /* Firefox */
+                    -ms-overflow-style: none; /* IE 10+ */
+                  }
+                  ::-webkit-scrollbar {
+                    width: 0;
+                    height: 0;
+                    display: none;
+                  }
+                `;
+                iframeDoc.head.appendChild(hideScrollbarStyle);
+              }
             }
 
             waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
