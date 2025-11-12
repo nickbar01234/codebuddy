@@ -111,7 +111,6 @@ export const QuestionSelectorPanel = React.memo(
                 .parentNode as Element;
               hideToRoot(rowContainer.parentElement?.parentElement);
 
-              // make sure the question list container also has the class
               appendClassIdempotent(rowContainer, [
                 "space-y-1",
                 "mt-4",
@@ -124,7 +123,6 @@ export const QuestionSelectorPanel = React.memo(
                   "codebuddy-row-even",
                 ];
                 const rowList = rowContainer.querySelectorAll("a");
-                // keep idempotent appends inside the loop safe (we already added hide-scrollbar above)
                 for (const anchorContainer of rowList) {
                   anchorContainer.classList.remove(...zebraStripes);
                   try {
