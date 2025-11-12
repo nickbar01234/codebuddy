@@ -83,9 +83,6 @@ export const QuestionSelectorPanel = React.memo(
               iframeDoc.head.appendChild(link);
 
               try {
-                appendClassIdempotent(iframeDoc.documentElement as Element, [
-                  "hide-scrollbar",
-                ]);
                 if (iframeDoc.body) {
                   appendClassIdempotent(iframeDoc.body as Element, [
                     "hide-scrollbar",
