@@ -1,8 +1,9 @@
+import { ChatPanel } from "@cb/components/panel/chat/ChatPanel";
 import { DOM } from "@cb/constants";
 import { useRoomActions, useRoomData, useRoomStatus } from "@cb/hooks/store";
 import { Sheet, SheetContent } from "@cb/lib/components/ui/sheet";
 import { RoomStatus, SidebarTabIdentifier } from "@cb/store";
-import { Info, List } from "lucide-react";
+import { Info, List, MessageCircle } from "lucide-react";
 import React from "react";
 import { createPortal } from "react-dom";
 import { GeneralRoomInfo } from "./GeneralRoomInfo";
@@ -18,11 +19,15 @@ const TRIGGERS = [
     identifier: SidebarTabIdentifier.ROOM_QUESTIONS,
     icon: <List />,
   },
+  {
+    identifier: SidebarTabIdentifier.ROOM_CHAT,
+    icon: <MessageCircle />,
+  },
 ];
 
 export const RoomInfo = () => {
   const roomStatus = useRoomStatus();
-  const { activeSidebarTab } = useRoomData();
+  const { activeSidebarTab, id: roomId } = useRoomData();
   const { closeSidebarTab } = useRoomActions();
   const sidebarRef = React.useRef<Element | null>(null);
 
@@ -76,6 +81,7 @@ export const RoomInfo = () => {
           >
             <GeneralRoomInfo />
             <ProblemInfo />
+            {roomId && <ChatPanel roomId={roomId} />}
           </SheetContent>
         </Sheet>
       </div>

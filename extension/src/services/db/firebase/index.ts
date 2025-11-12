@@ -7,6 +7,7 @@ import {
   Room,
   UserProgress,
 } from "@cb/types";
+import { Message } from "@cb/types/db";
 import {
   addDoc,
   and,
@@ -20,15 +21,18 @@ import {
   getDoc,
   increment,
   onSnapshot,
+  orderBy,
   Query,
   query,
   serverTimestamp,
   setDoc,
   SnapshotOptions,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
 import {
+  messageConverter,
   negotiationConverter,
   roomConverter,
   userProgressConverter,
@@ -40,6 +44,7 @@ type FirebaseTypes = {
   [Models.ROOMS]: Room;
   [Models.NEGOTIATIONS]: Negotiation;
   [Models.USER_PROGRESS]: UserProgress;
+  [Models.MESSAGES]: Message;
 };
 
 const SNAPSHOT_OPTIONS: SnapshotOptions = {
@@ -52,6 +57,7 @@ const firebaseConverters: {
   [Models.ROOMS]: roomConverter,
   [Models.NEGOTIATIONS]: negotiationConverter,
   [Models.USER_PROGRESS]: userProgressConverter,
+  [Models.MESSAGES]: messageConverter,
 };
 
 const withDocumentSnapshot = <T>(
@@ -103,6 +109,11 @@ const getRoomRefs = () =>
 const getNegotiationRefs = (id: string) =>
   collection(getRoomRef(id), Models.NEGOTIATIONS).withConverter(
     firebaseConverters[Models.NEGOTIATIONS]
+  );
+
+export const getMessageRefs = (id: string) =>
+  collection(getRoomRef(id), Models.MESSAGES).withConverter(
+    firebaseConverters[Models.MESSAGES]
   );
 
 const getUserRef = (roomId: string, username: string) =>
@@ -199,6 +210,23 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
           cb
         );
       },
+    },
+
+    async addMessage(id, message) {
+      await addDoc(getMessageRefs(id), {
+        ...message,
+        createdAt: serverTimestamp(),
+      });
+    },
+
+    observeMessages(id, cb, afterTimestamp?: Timestamp) {
+      let q = query(getMessageRefs(id), orderBy("createdAt", "asc"));
+
+      if (afterTimestamp) {
+        q = query(q, where("createdAt", ">", afterTimestamp));
+      }
+
+      return withCollectionSnapshot(q, cb);
     },
   },
 };

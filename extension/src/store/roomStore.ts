@@ -34,6 +34,7 @@ export enum SidebarTabIdentifier {
   ROOM_INFO,
   ROOM_QUESTIONS,
   LEETCODE_QUESTIONS,
+  ROOM_CHAT,
 }
 
 export enum RoomStatus {

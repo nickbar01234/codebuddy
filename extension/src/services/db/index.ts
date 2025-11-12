@@ -1,6 +1,15 @@
 import { Models } from "@cb/types";
-import { and, collection, orderBy, query, where } from "firebase/firestore";
-import { auth, firebaseDatabaseServiceImpl } from "./firebase";
+import { Message } from "@cb/types/db";
+import { decorateQuery } from "@cb/utils/firebase";
+import {
+  and,
+  collection,
+  orderBy,
+  query,
+  Query,
+  where,
+} from "firebase/firestore";
+import { auth, firebaseDatabaseServiceImpl, getMessageRefs } from "./firebase";
 import { roomConverter } from "./firebase/converter";
 import { firestore } from "./firebase/setup";
 
@@ -16,6 +25,9 @@ export const roomQuery = decorateQuery(
   orderBy,
   "createdAt"
 );
+
+export const messageQuery = (roomId: string): Query<Message> =>
+  query(getMessageRefs(roomId), orderBy("createdAt", "desc"));
 
 export default db;
 export { auth };

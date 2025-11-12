@@ -54,6 +54,7 @@ export enum Models {
   ROOMS = "rooms",
   NEGOTIATIONS = "negotiations",
   USER_PROGRESS = "user_progress",
+  MESSAGES = "messages",
 }
 
 export interface Negotiation {
@@ -88,6 +89,19 @@ export interface Room {
   name: string;
   questions: Question[];
   createdAt?: Timestamp;
+}
+
+export enum MessageType {
+  USER = "user",
+  USER_JOINED = "user-joined",
+  USER_LEFT = "user-left",
+}
+
+export interface Message {
+  from: User;
+  text: string;
+  type: MessageType;
+  createdAt: Timestamp;
 }
 
 export type ObserverDocumentCallback<T> = {
@@ -132,6 +146,13 @@ interface DatabaseRoomService {
   ): Promise<void>;
 
   observer: DatabaseRoomObserver;
+
+  addMessage(id: Id, message: Omit<Message, "createdAt">): Promise<void>;
+  observeMessages(
+    id: Id,
+    cb: ObserverCollectionCallback<Message>,
+    afterTimestamp?: Timestamp
+  ): Unsubscribe;
 }
 
 export interface DatabaseService {
