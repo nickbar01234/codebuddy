@@ -82,26 +82,20 @@ export const QuestionSelectorPanel = React.memo(
               link.id = DOM.IFRAME_CSS_ID;
               iframeDoc.head.appendChild(link);
 
-              // Inject rules to hide scrollbars inside the iframe while keeping scrolling
-              if (
-                iframeDoc.head.querySelector(
-                  `#${DOM.IFRAME_CSS_ID}-hide-scrollbar`
-                ) == null
-              ) {
-                const hideScrollbarStyle = iframeDoc.createElement("style");
-                hideScrollbarStyle.id = `${DOM.IFRAME_CSS_ID}-hide-scrollbar`;
-                hideScrollbarStyle.innerHTML = `
-                  html, body, * {
-                    scrollbar-width: none; /* Firefox */
-                    -ms-overflow-style: none; /* IE 10+ */
-                  }
-                  ::-webkit-scrollbar {
-                    width: 0;
-                    height: 0;
-                    display: none;
-                  }
-                `;
-                iframeDoc.head.appendChild(hideScrollbarStyle);
+              try {
+                appendClassIdempotent(iframeDoc.documentElement as Element, [
+                  "hide-scrollbar",
+                ]);
+                if (iframeDoc.body) {
+                  appendClassIdempotent(iframeDoc.body as Element, [
+                    "hide-scrollbar",
+                  ]);
+                }
+              } catch (e) {
+                console.warn(
+                  "Could not apply hide-scrollbar to iframe root/body",
+                  e
+                );
               }
             }
 
@@ -117,13 +111,20 @@ export const QuestionSelectorPanel = React.memo(
                 .parentNode as Element;
               hideToRoot(rowContainer.parentElement?.parentElement);
 
+              // make sure the question list container also has the class
+              appendClassIdempotent(rowContainer, [
+                "space-y-1",
+                "mt-4",
+                "hide-scrollbar",
+              ]);
+
               const processQuestionLinks = async () => {
                 const zebraStripes = [
                   "codebuddy-row-odd",
                   "codebuddy-row-even",
                 ];
                 const rowList = rowContainer.querySelectorAll("a");
-                appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
+                // keep idempotent appends inside the loop safe (we already added hide-scrollbar above)
                 for (const anchorContainer of rowList) {
                   anchorContainer.classList.remove(...zebraStripes);
                   try {
