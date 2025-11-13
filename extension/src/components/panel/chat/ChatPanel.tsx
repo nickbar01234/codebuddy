@@ -10,8 +10,9 @@ import { Input } from "@cb/lib/components/ui/input";
 import { Spinner } from "@cb/lib/components/ui/spinner";
 import db, { messageQuery } from "@cb/services/db";
 import { SidebarTabIdentifier } from "@cb/store";
-import { MessageType, type Message } from "@cb/types/db";
+import { ChatMessageType, type ChatMessage } from "@cb/types/db";
 import { cn } from "@cb/utils/cn";
+import { formatTime } from "@cb/utils/string";
 import { Timestamp } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
@@ -28,7 +29,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
     React.useState<HTMLDivElement | null>(null);
   const shouldAutoScrollRef = React.useRef<boolean>(true);
   const previousScrollHeightRef = React.useRef<number>(0);
-  const [newMessages, setNewMessages] = React.useState<Message[]>([]);
+  const [newMessages, setNewMessages] = React.useState<ChatMessage[]>([]);
   const [newestTimestamp, setNewestTimestamp] =
     React.useState<Timestamp | null>(null);
 
@@ -37,7 +38,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
     setScrollContainer(node);
   };
 
-  const { data, loading, getNext, hasNext } = usePaginate<Message>({
+  const { data, loading, getNext, hasNext } = usePaginate<ChatMessage>({
     baseQuery: messageQuery(roomId),
     hookLimit: HOOK_LIMIT,
     reverse: true,
@@ -89,7 +90,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
     return () => unsubscribe();
   }, [roomId, newestTimestamp, loading, data.docs.length]);
 
-  const allMessages = React.useMemo<Message[]>(() => {
+  const allMessages = React.useMemo<ChatMessage[]>(() => {
     return [...data.docs, ...newMessages];
   }, [data.docs, newMessages]);
 
@@ -107,7 +108,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
       await db.room.addMessage(roomId, {
         from: username,
         text: text.trim(),
-        type: MessageType.USER,
+        type: ChatMessageType.USER,
       });
       setText("");
       shouldAutoScrollRef.current = true;
@@ -161,13 +162,12 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
             root={scrollContainer}
           >
             {allMessages.map((m, idx) => {
-              const isSystemMessage =
-                m.type === MessageType.USER_JOINED ||
-                m.type === MessageType.USER_LEFT;
-
-              if (isSystemMessage) {
+              if (
+                m.type === ChatMessageType.USER_JOINED ||
+                m.type === ChatMessageType.USER_LEFT
+              ) {
                 const actionText =
-                  m.type === MessageType.USER_JOINED
+                  m.type === ChatMessageType.USER_JOINED
                     ? " just joined the room"
                     : " just left the room";
 
@@ -182,23 +182,27 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
                 );
               }
 
-              return (
-                <div key={idx} className="flex flex-col gap-1">
-                  <div className="text-medium">
-                    <span
-                      className={cn("font-bold", getUserColorClass(m.from))}
-                    >
-                      {m.from}
-                    </span>
-                    <span className="text-[#9E9E9E] ml-2">
-                      {formatTime(m.createdAt)}
-                    </span>
+              if (m.type === ChatMessageType.USER) {
+                return (
+                  <div key={idx} className="flex flex-col gap-1">
+                    <div className="text-medium">
+                      <span
+                        className={cn("font-bold", getUserColorClass(m.from))}
+                      >
+                        {m.from}
+                      </span>
+                      <span className="text-[#9E9E9E] ml-2">
+                        {formatTime(m.createdAt)}
+                      </span>
+                    </div>
+                    <div className="whitespace-pre-wrap break-words">
+                      {m.text}
+                    </div>
                   </div>
-                  <div className="whitespace-pre-wrap break-words">
-                    {m.text}
-                  </div>
-                </div>
-              );
+                );
+              }
+
+              return null;
             })}
           </InfiniteScroll>
         </div>

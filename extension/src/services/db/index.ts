@@ -1,5 +1,5 @@
 import { Models } from "@cb/types";
-import { Message } from "@cb/types/db";
+import { ChatMessage } from "@cb/types/db";
 import { decorateQuery } from "@cb/utils/firebase";
 import {
   and,
@@ -26,7 +26,7 @@ export const roomQuery = decorateQuery(
   "createdAt"
 );
 
-export const messageQuery = (roomId: string): Query<Message> =>
+export const messageQuery = (roomId: string): Query<ChatMessage> =>
   query(getMessageRefs(roomId), orderBy("createdAt", "desc"));
 
 export default db;

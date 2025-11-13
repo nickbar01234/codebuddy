@@ -12,7 +12,7 @@ import {
   User,
   WindowMessage,
 } from "@cb/types";
-import { MessageType } from "@cb/types/db";
+import { ChatMessageType } from "@cb/types/db";
 import { Unsubscribe } from "@cb/types/utils";
 import { getNormalizedUrl } from "@cb/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
@@ -308,8 +308,7 @@ export class MessageDispatcher {
           try {
             await db.room.addMessage(roomId, {
               from: user,
-              text: "",
-              type: MessageType.USER_JOINED,
+              type: ChatMessageType.USER_JOINED,
             });
           } catch (err) {
             console.error(`Failed to create join message for ${user}`, err);
@@ -320,8 +319,7 @@ export class MessageDispatcher {
           try {
             await db.room.addMessage(roomId, {
               from: user,
-              text: "",
-              type: MessageType.USER_LEFT,
+              type: ChatMessageType.USER_LEFT,
             });
           } catch (err) {
             console.error(`Failed to create leave message for ${user}`, err);

@@ -54,7 +54,7 @@ export enum Models {
   ROOMS = "rooms",
   NEGOTIATIONS = "negotiations",
   USER_PROGRESS = "user_progress",
-  MESSAGES = "messages",
+  CHAT_MESSAGES = "chat_messages",
 }
 
 export interface Negotiation {
@@ -91,18 +91,27 @@ export interface Room {
   createdAt?: Timestamp;
 }
 
-export enum MessageType {
+export enum ChatMessageType {
   USER = "user",
   USER_JOINED = "user-joined",
   USER_LEFT = "user-left",
 }
 
-export interface Message {
-  from: User;
-  text: string;
-  type: MessageType;
+interface GenericChatMessage {
   createdAt: Timestamp;
+  from: User;
 }
+
+interface EventBasedChatMessage extends GenericChatMessage {
+  type: ChatMessageType.USER_JOINED | ChatMessageType.USER_LEFT;
+}
+
+interface UserInitiatedChatMessage extends GenericChatMessage {
+  type: ChatMessageType.USER;
+  text: string;
+}
+
+export type ChatMessage = EventBasedChatMessage | UserInitiatedChatMessage;
 
 export type ObserverDocumentCallback<T> = {
   onChange: (data: T) => void;
@@ -147,10 +156,15 @@ interface DatabaseRoomService {
 
   observer: DatabaseRoomObserver;
 
-  addMessage(id: Id, message: Omit<Message, "createdAt">): Promise<void>;
+  addMessage(
+    id: Id,
+    message:
+      | Omit<EventBasedChatMessage, "createdAt">
+      | Omit<UserInitiatedChatMessage, "createdAt">
+  ): Promise<void>;
   observeMessages(
     id: Id,
-    cb: ObserverCollectionCallback<Message>,
+    cb: ObserverCollectionCallback<ChatMessage>,
     afterTimestamp?: Timestamp
   ): Unsubscribe;
 }

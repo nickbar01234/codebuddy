@@ -7,7 +7,7 @@ import {
   Room,
   UserProgress,
 } from "@cb/types";
-import { Message } from "@cb/types/db";
+import { ChatMessage } from "@cb/types/db";
 import {
   addDoc,
   and,
@@ -32,7 +32,7 @@ import {
   where,
 } from "firebase/firestore";
 import {
-  messageConverter,
+  chatMessageConverter,
   negotiationConverter,
   roomConverter,
   userProgressConverter,
@@ -44,7 +44,7 @@ type FirebaseTypes = {
   [Models.ROOMS]: Room;
   [Models.NEGOTIATIONS]: Negotiation;
   [Models.USER_PROGRESS]: UserProgress;
-  [Models.MESSAGES]: Message;
+  [Models.CHAT_MESSAGES]: ChatMessage;
 };
 
 const SNAPSHOT_OPTIONS: SnapshotOptions = {
@@ -57,7 +57,7 @@ const firebaseConverters: {
   [Models.ROOMS]: roomConverter,
   [Models.NEGOTIATIONS]: negotiationConverter,
   [Models.USER_PROGRESS]: userProgressConverter,
-  [Models.MESSAGES]: messageConverter,
+  [Models.CHAT_MESSAGES]: chatMessageConverter,
 };
 
 const withDocumentSnapshot = <T>(
@@ -112,8 +112,8 @@ const getNegotiationRefs = (id: string) =>
   );
 
 export const getMessageRefs = (id: string) =>
-  collection(getRoomRef(id), Models.MESSAGES).withConverter(
-    firebaseConverters[Models.MESSAGES]
+  collection(getRoomRef(id), Models.CHAT_MESSAGES).withConverter(
+    firebaseConverters[Models.CHAT_MESSAGES]
   );
 
 const getUserRef = (roomId: string, username: string) =>
