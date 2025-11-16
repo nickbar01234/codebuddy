@@ -17,6 +17,7 @@ import {
   SelfState,
   Slug,
   TestCases,
+  TestResults,
   User,
 } from "@cb/types";
 import { Identifiable } from "@cb/types/utils";
@@ -47,6 +48,7 @@ export enum RoomStatus {
 interface UpdatePeerQuestionProgress {
   code?: CodeWithChanges;
   tests?: TestCases;
+  testResults?: TestResults;
   status?: QuestionProgressStatus;
 }
 
@@ -101,6 +103,7 @@ interface RoomAction {
     remove: (ids: Id[]) => void;
     selectPeer: (id: string) => void;
     selectTest: (idx: number) => void;
+    selectTestResult: (idx: number) => void;
     toggleCodeVisibility: () => void;
   };
   self: {
@@ -157,10 +160,16 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
       (acc, curr) => {
         const [url, data] = curr;
         const normalizedUrl = getNormalizedUrl(url);
-        const { code, tests: testsPayload, status } = data;
+        const {
+          code,
+          tests: testsPayload,
+          testResults: testResultsPayload,
+          status,
+        } = data;
         const questionProgressOrDefault = state.questions[normalizedUrl] ?? {
           code: undefined,
           tests: [],
+          testResults: [],
           status: QuestionProgressStatus.NOT_STARTED,
           viewable: false,
         };
@@ -186,6 +195,25 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
           questionProgressOrDefault.tests = tests;
         }
 
+        if (testResultsPayload != undefined) {
+          const testResults = testResultsPayload.map((testResult) => ({
+            ...testResult,
+            selected: false,
+          }));
+          const previousSelectedTest =
+            questionProgressOrDefault.testResults.findIndex(
+              (testResult) => testResult.selected
+            );
+          const selectedTestIndex =
+            previousSelectedTest >= testResults.length
+              ? testResults.length - 1
+              : Math.max(previousSelectedTest, 0);
+          if (testResults[selectedTestIndex] != undefined) {
+            testResults[selectedTestIndex].selected = true;
+          }
+          questionProgressOrDefault.testResults = testResults;
+        }
+
         if (status != undefined) {
           questionProgressOrDefault.status = status;
         }
@@ -207,9 +235,20 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
     };
   };
 
+  //define a dummy function getTestResultsPayload with this type const getTestsPayload: (variables: {
+  //     count: number;
+  //     names: string[];
+  // } | undefined) => PeerTestMessage
+  const getTestResultsPayload = (variables: Variable[]) => {
+    return {
+      testResults: [],
+    };
+  };
+
   const setSelfProgressForCurrentUrl = async (question: Question) => {
     const code = await background.getCode({});
     const { tests } = getTestsPayload(question.variables);
+    const { testResults } = getTestResultsPayload(question.variables);
     useRoom.getState().actions.self.update({
       questions: {
         [question.url]: {

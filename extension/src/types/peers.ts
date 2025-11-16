@@ -2,6 +2,7 @@ import {
   Id,
   QuestionProgressStatus,
   SelectableTestCase,
+  SelectableTestResult,
   TestCase,
   TestCases,
 } from ".";
@@ -72,6 +73,7 @@ export type PeerMessage =
 interface PeerQuestionProgress {
   code?: CodeWithChanges;
   tests: SelectableTestCase[];
+  testResults: SelectableTestResult[];
   status: QuestionProgressStatus;
   viewable: boolean;
 }

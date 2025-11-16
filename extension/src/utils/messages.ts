@@ -17,6 +17,15 @@ export const getTestsPayload = (
   };
 };
 
+export const getTestResultsPayload = (
+  variables: { count: number; names: string[] } | undefined
+) => {
+  return {
+    testResults: [],
+    status: "ok",
+  };
+};
+
 export const getCodePayload = async (
   changes: Partial<monaco.editor.IModelContentChange>
 ): Promise<ExtractMessage<PeerMessage, "code">> => {
