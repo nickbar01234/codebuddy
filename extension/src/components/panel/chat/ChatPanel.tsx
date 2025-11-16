@@ -3,57 +3,45 @@ import {
   SidebarTabHeader,
   SidebarTabLayout,
 } from "@cb/components/panel/info/SidebarTabLayout";
-import { useAuthUser, useRoomData } from "@cb/hooks/store";
-import usePaginate from "@cb/hooks/usePaginate";
+import { useAuthUser, useMessages, useRoomData } from "@cb/hooks/store";
 import InfiniteScroll from "@cb/lib/components/ui/InfiniteScroll";
 import { Input } from "@cb/lib/components/ui/input";
 import { Spinner } from "@cb/lib/components/ui/spinner";
-import db, { messageQuery } from "@cb/services/db";
+import db from "@cb/services/db";
 import { SidebarTabIdentifier } from "@cb/store";
-import { ChatMessageType, type ChatMessage } from "@cb/types/db";
+import { ChatMessageType } from "@cb/types/db";
 import { cn } from "@cb/utils/cn";
 import { formatTime } from "@cb/utils/string";
-import { Timestamp } from "firebase/firestore";
 import React from "react";
 import { toast } from "sonner";
-
-const HOOK_LIMIT = 20;
 
 export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { users } = useRoomData();
   const { username } = useAuthUser();
+  const { messages, loading, hasNext, loadMore } = useMessages();
 
   const [text, setText] = React.useState("");
   const listRef = React.useRef<HTMLDivElement | null>(null);
-  const [scrollContainer, setScrollContainer] =
-    React.useState<HTMLDivElement | null>(null);
+  const [scrollRoot, setScrollRoot] = React.useState<HTMLDivElement | null>(
+    null
+  );
   const shouldAutoScrollRef = React.useRef<boolean>(true);
   const previousScrollHeightRef = React.useRef<number>(0);
-  const [newMessages, setNewMessages] = React.useState<ChatMessage[]>([]);
-  const [newestTimestamp, setNewestTimestamp] =
-    React.useState<Timestamp | null>(null);
+  const previousMessageCountRef = React.useRef<number>(0);
 
-  const setListRef = (node: HTMLDivElement | null) => {
+  const handleRefChange = React.useCallback((node: HTMLDivElement | null) => {
     listRef.current = node;
-    setScrollContainer(node);
-  };
-
-  const { data, loading, getNext, hasNext } = usePaginate<ChatMessage>({
-    baseQuery: messageQuery(roomId),
-    hookLimit: HOOK_LIMIT,
-    reverse: true,
-  });
+    setScrollRoot((prev) => (prev === node ? prev : node));
+  }, []);
 
   React.useEffect(() => {
-    if (data.docs.length > 0) {
-      const newest = data.docs[data.docs.length - 1];
-      if (newest?.createdAt) {
-        setNewestTimestamp(newest.createdAt);
-      }
-    } else {
-      setNewestTimestamp(null);
+    if (messages.length > previousMessageCountRef.current) {
+      shouldAutoScrollRef.current = true;
     }
+    previousMessageCountRef.current = messages.length;
+  }, [messages.length]);
 
+  React.useEffect(() => {
     if (!listRef.current) return;
 
     const element = listRef.current;
@@ -69,30 +57,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
     }
 
     previousScrollHeightRef.current = currentScrollHeight;
-  }, [data.docs]);
-
-  React.useEffect(() => {
-    if (loading && data.docs.length === 0) {
-      return;
-    }
-    const unsubscribe = db.room.observeMessages(
-      roomId,
-      {
-        onAdded: (msg) => {
-          setNewMessages((prev) => [...prev, msg]);
-          shouldAutoScrollRef.current = true;
-        },
-        onModified: () => {},
-        onDeleted: () => {},
-      },
-      newestTimestamp || undefined
-    );
-    return () => unsubscribe();
-  }, [roomId, newestTimestamp, loading, data.docs.length]);
-
-  const allMessages = React.useMemo<ChatMessage[]>(() => {
-    return [...data.docs, ...newMessages];
-  }, [data.docs, newMessages]);
+  }, [messages]);
 
   React.useEffect(() => {
     if (!listRef.current || !shouldAutoScrollRef.current) return;
@@ -100,7 +65,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
     const element = listRef.current;
     element.scrollTop = element.scrollHeight;
     shouldAutoScrollRef.current = false;
-  }, [newMessages]);
+  }, [messages]);
 
   const sendMessage = React.useCallback(async () => {
     if (text.trim().length === 0) return;
@@ -145,10 +110,10 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
           </div>
         </SidebarTabHeader>
         <div
-          ref={setListRef}
+          ref={handleRefChange}
           className="flex-1 overflow-y-auto hide-scrollbar flex flex-col gap-5 pr-2 mt-4"
         >
-          {loading && data.docs.length > 0 && (
+          {loading && messages.length > 0 && (
             <div className="flex justify-center py-2">
               <Spinner className="size-6" />
             </div>
@@ -156,12 +121,12 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
           <InfiniteScroll
             isLoading={loading}
             hasMore={hasNext}
-            next={getNext}
+            next={loadMore}
             threshold={1}
             reverse={true}
-            root={scrollContainer}
+            root={scrollRoot}
           >
-            {allMessages.map((m, idx) => {
+            {messages.map((m, idx) => {
               if (
                 m.type === ChatMessageType.USER_JOINED ||
                 m.type === ChatMessageType.USER_LEFT

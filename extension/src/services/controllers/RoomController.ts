@@ -10,6 +10,7 @@ import {
   Room,
   User,
 } from "@cb/types";
+import { ChatMessageType } from "@cb/types/db";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { isEventFromMe } from "@cb/utils";
 
@@ -62,6 +63,10 @@ class RoomLifeCycle {
 
   public async leave() {
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
+    await this.database.addMessage(this.room.id, {
+      from: this.me,
+      type: ChatMessageType.USER_LEFT,
+    });
     await this.database.removeUser(this.room.id, this.me);
     this.emitter.emit("room.left");
   }
@@ -78,6 +83,10 @@ class RoomLifeCycle {
 
   private async init() {
     await this.database.addUser(this.room.id, this.me);
+    await this.database.addMessage(this.room.id, {
+      from: this.me,
+      type: ChatMessageType.USER_JOINED,
+    });
     this.unsubscribers.push(this.subscribeToRoom());
     this.unsubscribers.push(this.subscribeToNegotiations());
     this.unsubscribers.push(this.subscribeToEventsEmitter());

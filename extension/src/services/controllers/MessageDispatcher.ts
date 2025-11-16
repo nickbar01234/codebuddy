@@ -1,6 +1,5 @@
 import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
-import db from "@cb/services/db";
 import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
 import {
@@ -12,7 +11,6 @@ import {
   User,
   WindowMessage,
 } from "@cb/types";
-import { ChatMessageType } from "@cb/types/db";
 import { Unsubscribe } from "@cb/types/utils";
 import { getNormalizedUrl } from "@cb/utils";
 import { getCodePayload, getTestsPayload } from "@cb/utils/messages";
@@ -292,40 +290,14 @@ export class MessageDispatcher {
   }
 
   private subscribeToRoomChanges() {
-    const onRoomChange = async ({
+    const onRoomChange = ({
       left,
-      joined,
       room: { questions, users },
     }: Events["room.changes"]) => {
       this.roomStore.getState().actions.peers.remove(left);
       this.roomStore
         .getState()
         .actions.room.setRoom({ questions, usernames: Object.keys(users) });
-
-      const roomId = this.roomStore.getState().room?.id;
-      if (roomId) {
-        for (const user of joined) {
-          try {
-            await db.room.addMessage(roomId, {
-              from: user,
-              type: ChatMessageType.USER_JOINED,
-            });
-          } catch (err) {
-            console.error(`Failed to create join message for ${user}`, err);
-          }
-        }
-
-        for (const user of left) {
-          try {
-            await db.room.addMessage(roomId, {
-              from: user,
-              type: ChatMessageType.USER_LEFT,
-            });
-          } catch (err) {
-            console.error(`Failed to create leave message for ${user}`, err);
-          }
-        }
-      }
     };
     this.emitter.on("room.changes", onRoomChange);
     return () => this.emitter.off("room.changes", onRoomChange);

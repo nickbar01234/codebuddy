@@ -79,9 +79,13 @@ export const RoomInfo = () => {
               onClick: () => closeSidebarTab(),
             }}
           >
-            <GeneralRoomInfo />
-            <ProblemInfo />
-            {roomId && <ChatPanel roomId={roomId} />}
+            {roomId && (
+              <>
+                <GeneralRoomInfo />
+                <ProblemInfo />
+                <ChatPanel roomId={roomId} />
+              </>
+            )}
           </SheetContent>
         </Sheet>
       </div>

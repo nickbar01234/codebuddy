@@ -132,6 +132,11 @@ interface DatabaseRoomObserver {
     user: User,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
+  observeMessages(
+    id: Id,
+    cb: ObserverCollectionCallback<ChatMessage>,
+    afterTimestamp?: Timestamp
+  ): Unsubscribe;
 }
 
 interface DatabaseRoomService {
@@ -162,11 +167,6 @@ interface DatabaseRoomService {
       | Omit<EventBasedChatMessage, "createdAt">
       | Omit<UserInitiatedChatMessage, "createdAt">
   ): Promise<void>;
-  observeMessages(
-    id: Id,
-    cb: ObserverCollectionCallback<ChatMessage>,
-    afterTimestamp?: Timestamp
-  ): Unsubscribe;
 }
 
 export interface DatabaseService {

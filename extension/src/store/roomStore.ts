@@ -1,7 +1,8 @@
-import { DOM } from "@cb/constants";
+import { DOM, ROOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { RoomJoinCode } from "@cb/services/controllers/RoomController";
+import db, { messageQuery } from "@cb/services/db";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
@@ -19,9 +20,20 @@ import {
   TestCases,
   User,
 } from "@cb/types";
-import { Identifiable } from "@cb/types/utils";
-import { getNormalizedUrl } from "@cb/utils";
+import { ChatMessage } from "@cb/types/db";
+import { Identifiable, Unsubscribe } from "@cb/types/utils";
+import { getNormalizedUrl, getQuestionIdFromUrl } from "@cb/utils";
+import { getTestsPayload } from "@cb/utils/messages";
 import { getSelectedPeer } from "@cb/utils/peers";
+import { groupTestCases } from "@cb/utils/string";
+import {
+  getDocs,
+  limit,
+  query,
+  QueryDocumentSnapshot,
+  startAfter,
+  Timestamp,
+} from "firebase/firestore";
 import _ from "lodash";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -72,6 +84,15 @@ interface RoomState {
   }>;
   peers: Record<Id, PeerState>;
   self?: SelfState;
+  messages?: {
+    paginated: ChatMessage[];
+    live: ChatMessage[];
+    newestTimestamp: Timestamp | null;
+    loading: boolean;
+    hasNext: boolean;
+    lastSnapRef?: QueryDocumentSnapshot<ChatMessage>;
+    unsubscribe?: Unsubscribe;
+  };
 }
 
 interface RoomAction {
@@ -107,6 +128,12 @@ interface RoomAction {
   self: {
     update: (state: Partial<UpdateSelfArgs>) => void;
     complete: (url: string) => void;
+  };
+  messages: {
+    initialize: (roomId: Id) => Promise<void>;
+    loadMore: (roomId: Id) => Promise<void>;
+    cleanup: () => void;
+    handleNewMessage: (msg: ChatMessage) => void;
   };
 }
 
@@ -256,6 +283,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   usernames: Object.keys(users),
                 });
                 setSelfProgressForCurrentUrl(metadata.data);
+                await get().actions.messages.initialize(id);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -293,6 +321,8 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   if (progress != undefined) {
                     get().actions.self.update(progress);
                   }
+
+                  await get().actions.messages.initialize(id);
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -316,6 +346,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             leave: async () => {
               try {
                 get().actions.room.loading();
+                get().actions.messages.cleanup();
                 await getOrCreateControllers().room.leave();
               } finally {
                 set((state) => {
@@ -560,6 +591,149 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   status: QuestionProgressStatus.COMPLETED,
                 });
               }
+            },
+          },
+          messages: {
+            initialize: async (roomId: Id) => {
+              try {
+                set((state) => {
+                  state.messages = {
+                    paginated: [],
+                    live: [],
+                    newestTimestamp: null,
+                    loading: true,
+                    hasNext: false,
+                    lastSnapRef: undefined,
+                    unsubscribe: undefined,
+                  };
+                });
+
+                const baseQuery = messageQuery(roomId);
+                const q = query(baseQuery, limit(ROOM.MESSAGES_PAGE_SIZE));
+                const snapshot = await getDocs(q);
+
+                const docs = snapshot.docs.filter((doc) => doc.exists());
+                const messages = docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                }));
+
+                const reversedMessages = [...messages].reverse();
+
+                const newestTimestamp = Timestamp.now();
+
+                const lastSnapRef =
+                  docs.length > 0 ? docs[docs.length - 1] : undefined;
+
+                const unsubscribe = db.room.observer.observeMessages(
+                  roomId,
+                  {
+                    onAdded: (msg) => {
+                      get().actions.messages.handleNewMessage(msg);
+                    },
+                    onModified: () => {},
+                    onDeleted: () => {},
+                  },
+                  newestTimestamp
+                );
+
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.paginated = reversedMessages;
+                    state.messages.newestTimestamp = newestTimestamp;
+                    state.messages.lastSnapRef = lastSnapRef;
+                    state.messages.loading = false;
+                    state.messages.hasNext =
+                      docs.length >= ROOM.MESSAGES_PAGE_SIZE;
+                    state.messages.unsubscribe = unsubscribe;
+                  }
+                });
+              } catch (error) {
+                console.error("Failed to initialize messages", error);
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.loading = false;
+                  }
+                });
+              }
+            },
+            loadMore: async (roomId: Id) => {
+              const currentState = get();
+              const messagesState = currentState.messages;
+
+              if (
+                !messagesState ||
+                messagesState.loading ||
+                !messagesState.hasNext ||
+                !messagesState.lastSnapRef
+              ) {
+                return;
+              }
+
+              try {
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.loading = true;
+                  }
+                });
+
+                const baseQuery = messageQuery(roomId);
+                const q = query(
+                  baseQuery,
+                  startAfter(messagesState.lastSnapRef),
+                  limit(ROOM.MESSAGES_PAGE_SIZE)
+                );
+                const snapshot = await getDocs(q);
+
+                const docs = snapshot.docs.filter((doc) => doc.exists());
+                const newMessages = docs.map((doc) => ({
+                  id: doc.id,
+                  ...doc.data(),
+                }));
+
+                const reversedNewMessages = [...newMessages].reverse();
+
+                const lastSnapRef =
+                  docs.length > 0
+                    ? docs[docs.length - 1]
+                    : messagesState.lastSnapRef;
+
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.paginated = [
+                      ...reversedNewMessages,
+                      ...state.messages.paginated,
+                    ];
+                    state.messages.lastSnapRef = lastSnapRef;
+                    state.messages.loading = false;
+                    state.messages.hasNext =
+                      docs.length >= ROOM.MESSAGES_PAGE_SIZE;
+                  }
+                });
+              } catch (error) {
+                console.error("Failed to load more messages", error);
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.loading = false;
+                  }
+                });
+              }
+            },
+            cleanup: () => {
+              const messagesState = get().messages;
+              if (messagesState?.unsubscribe) {
+                messagesState.unsubscribe();
+              }
+              set((state) => {
+                state.messages = undefined;
+              });
+            },
+            handleNewMessage: (msg: ChatMessage) => {
+              set((state) => {
+                if (state.messages) {
+                  state.messages.live.push(msg);
+                }
+              });
             },
           },
         },

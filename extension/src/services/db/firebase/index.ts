@@ -210,6 +210,16 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
           cb
         );
       },
+
+      observeMessages(id, cb, afterTimestamp?: Timestamp) {
+        let q = query(getMessageRefs(id), orderBy("createdAt", "asc"));
+
+        if (afterTimestamp) {
+          q = query(q, where("createdAt", ">", afterTimestamp));
+        }
+
+        return withCollectionSnapshot(q, cb);
+      },
     },
 
     async addMessage(id, message) {
@@ -217,16 +227,6 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
         ...message,
         createdAt: serverTimestamp(),
       });
-    },
-
-    observeMessages(id, cb, afterTimestamp?: Timestamp) {
-      let q = query(getMessageRefs(id), orderBy("createdAt", "asc"));
-
-      if (afterTimestamp) {
-        q = query(q, where("createdAt", ">", afterTimestamp));
-      }
-
-      return withCollectionSnapshot(q, cb);
     },
   },
 };
