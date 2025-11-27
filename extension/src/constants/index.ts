@@ -30,7 +30,7 @@ export const HEARTBEAT = {
 
 export const ROOM = {
   CAPACITY: 4,
-  MESSAGES_PAGE_SIZE: 20,
+  MESSAGES_PAGE_SIZE: 40,
 };
 
 export const WEBRTC_RETRY = {

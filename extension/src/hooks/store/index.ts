@@ -6,6 +6,8 @@ import { ChatMessage, QuestionProgressStatus, User } from "@cb/types";
 import React from "react";
 import { useShallow } from "zustand/shallow";
 
+export { usePaginatedMessages } from "../usePaginatedMessages";
+
 export const useAuthUser = () => useApp((state) => state.actions.getAuthUser());
 
 export const useAppPreference = () => useApp((state) => state.app);
@@ -138,3 +140,6 @@ export const useMessages = () => {
     [messages, messagesData.loading, messagesData.hasNext, handleLoadMore]
   );
 };
+
+export const useMessagesActions = () =>
+  useRoom((state) => state.actions.messages);

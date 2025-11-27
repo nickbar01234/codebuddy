@@ -3,11 +3,11 @@ import {
   SidebarTabHeader,
   SidebarTabLayout,
 } from "@cb/components/panel/info/SidebarTabLayout";
-import { useAuthUser, useMessages, useRoomData } from "@cb/hooks/store";
+import { useAuthUser, useMessagesActions, useRoomData } from "@cb/hooks/store";
+import { usePaginatedMessages } from "@cb/hooks/usePaginatedMessages";
 import InfiniteScroll from "@cb/lib/components/ui/InfiniteScroll";
 import { Input } from "@cb/lib/components/ui/input";
 import { Spinner } from "@cb/lib/components/ui/spinner";
-import db from "@cb/services/db";
 import { SidebarTabIdentifier } from "@cb/store";
 import { ChatMessageType } from "@cb/types/db";
 import { cn } from "@cb/utils/cn";
@@ -18,7 +18,8 @@ import { toast } from "sonner";
 export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
   const { users } = useRoomData();
   const { username } = useAuthUser();
-  const { messages, loading, hasNext, loadMore } = useMessages();
+  const { messages, loading, hasNext, loadMore } = usePaginatedMessages();
+  const { sendMessage: sendMessageAction } = useMessagesActions();
 
   const [text, setText] = React.useState("");
   const listRef = React.useRef<HTMLDivElement | null>(null);
@@ -70,7 +71,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
   const sendMessage = React.useCallback(async () => {
     if (text.trim().length === 0) return;
     try {
-      await db.room.addMessage(roomId, {
+      await sendMessageAction(roomId, {
         from: username,
         text: text.trim(),
         type: ChatMessageType.USER,
@@ -81,7 +82,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
       console.error("Failed to send message", err);
       toast.error("Failed to send message. Please try again.");
     }
-  }, [roomId, text, username]);
+  }, [roomId, text, username, sendMessageAction]);
 
   const onKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {

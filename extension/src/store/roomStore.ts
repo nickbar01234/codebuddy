@@ -1,12 +1,13 @@
-import { DOM, ROOM } from "@cb/constants";
+import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { RoomJoinCode } from "@cb/services/controllers/RoomController";
-import db, { messageQuery } from "@cb/services/db";
+import db from "@cb/services/db";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
 } from "@cb/services/graphql/metadata";
+import { messagePaginationService } from "@cb/services/messages";
 import { windowMessager } from "@cb/services/window";
 import {
   BoundStore,
@@ -20,20 +21,13 @@ import {
   TestCases,
   User,
 } from "@cb/types";
-import { ChatMessage } from "@cb/types/db";
+import { ChatMessage, DatabaseService } from "@cb/types/db";
 import { Identifiable, Unsubscribe } from "@cb/types/utils";
 import { getNormalizedUrl, getQuestionIdFromUrl } from "@cb/utils";
 import { getTestsPayload } from "@cb/utils/messages";
 import { getSelectedPeer } from "@cb/utils/peers";
 import { groupTestCases } from "@cb/utils/string";
-import {
-  getDocs,
-  limit,
-  query,
-  QueryDocumentSnapshot,
-  startAfter,
-  Timestamp,
-} from "firebase/firestore";
+import { QueryDocumentSnapshot, Timestamp } from "firebase/firestore";
 import _ from "lodash";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -134,6 +128,10 @@ interface RoomAction {
     loadMore: (roomId: Id) => Promise<void>;
     cleanup: () => void;
     handleNewMessage: (msg: ChatMessage) => void;
+    sendMessage: (
+      roomId: Id,
+      message: Parameters<DatabaseService["room"]["addMessage"]>[1]
+    ) => Promise<void>;
   };
 }
 
@@ -608,22 +606,10 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   };
                 });
 
-                const baseQuery = messageQuery(roomId);
-                const q = query(baseQuery, limit(ROOM.MESSAGES_PAGE_SIZE));
-                const snapshot = await getDocs(q);
-
-                const docs = snapshot.docs.filter((doc) => doc.exists());
-                const messages = docs.map((doc) => ({
-                  id: doc.id,
-                  ...doc.data(),
-                }));
-
-                const reversedMessages = [...messages].reverse();
+                const page =
+                  await messagePaginationService.fetchInitialPage(roomId);
 
                 const newestTimestamp = Timestamp.now();
-
-                const lastSnapRef =
-                  docs.length > 0 ? docs[docs.length - 1] : undefined;
 
                 const unsubscribe = db.room.observer.observeMessages(
                   roomId,
@@ -639,12 +625,11 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
 
                 set((state) => {
                   if (state.messages) {
-                    state.messages.paginated = reversedMessages;
+                    state.messages.paginated = page.messages;
                     state.messages.newestTimestamp = newestTimestamp;
-                    state.messages.lastSnapRef = lastSnapRef;
+                    state.messages.lastSnapRef = page.lastDoc;
                     state.messages.loading = false;
-                    state.messages.hasNext =
-                      docs.length >= ROOM.MESSAGES_PAGE_SIZE;
+                    state.messages.hasNext = page.hasMore;
                     state.messages.unsubscribe = unsubscribe;
                   }
                 });
@@ -677,37 +662,21 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   }
                 });
 
-                const baseQuery = messageQuery(roomId);
-                const q = query(
-                  baseQuery,
-                  startAfter(messagesState.lastSnapRef),
-                  limit(ROOM.MESSAGES_PAGE_SIZE)
+                const page = await messagePaginationService.fetchOlderMessages(
+                  roomId,
+                  messagesState.lastSnapRef
                 );
-                const snapshot = await getDocs(q);
-
-                const docs = snapshot.docs.filter((doc) => doc.exists());
-                const newMessages = docs.map((doc) => ({
-                  id: doc.id,
-                  ...doc.data(),
-                }));
-
-                const reversedNewMessages = [...newMessages].reverse();
-
-                const lastSnapRef =
-                  docs.length > 0
-                    ? docs[docs.length - 1]
-                    : messagesState.lastSnapRef;
 
                 set((state) => {
                   if (state.messages) {
                     state.messages.paginated = [
-                      ...reversedNewMessages,
+                      ...page.messages,
                       ...state.messages.paginated,
                     ];
-                    state.messages.lastSnapRef = lastSnapRef;
+                    state.messages.lastSnapRef =
+                      page.lastDoc || messagesState.lastSnapRef;
                     state.messages.loading = false;
-                    state.messages.hasNext =
-                      docs.length >= ROOM.MESSAGES_PAGE_SIZE;
+                    state.messages.hasNext = page.hasMore;
                   }
                 });
               } catch (error) {
@@ -734,6 +703,14 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   state.messages.live.push(msg);
                 }
               });
+            },
+            sendMessage: async (roomId: Id, message) => {
+              try {
+                await db.room.addMessage(roomId, message);
+              } catch (error) {
+                console.error("Failed to send message", error);
+                throw error;
+              }
             },
           },
         },
