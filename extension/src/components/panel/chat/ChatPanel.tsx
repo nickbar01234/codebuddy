@@ -37,7 +37,15 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
 
   React.useEffect(() => {
     if (messages.length > previousMessageCountRef.current) {
-      shouldAutoScrollRef.current = true;
+      const element = listRef.current;
+      if (element) {
+        const isNearBottom =
+          element.scrollHeight - element.scrollTop - element.clientHeight < 150;
+
+        if (isNearBottom) {
+          shouldAutoScrollRef.current = true;
+        }
+      }
     }
     previousMessageCountRef.current = messages.length;
   }, [messages.length]);
