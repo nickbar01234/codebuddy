@@ -79,7 +79,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
   const sendMessage = React.useCallback(async () => {
     if (text.trim().length === 0) return;
     try {
-      await sendMessageAction(roomId, {
+      await sendMessageAction({
         from: username,
         text: text.trim(),
         type: ChatMessageType.USER,
@@ -90,7 +90,7 @@ export const ChatPanel: React.FC<{ roomId: string }> = ({ roomId }) => {
       console.error("Failed to send message", err);
       toast.error("Failed to send message. Please try again.");
     }
-  }, [roomId, text, username, sendMessageAction]);
+  }, [text, username, sendMessageAction]);
 
   const onKeyDown = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {

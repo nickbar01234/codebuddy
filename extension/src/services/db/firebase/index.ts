@@ -1,5 +1,6 @@
 import {
   DatabaseService,
+  Identifiable,
   Models,
   Negotiation,
   ObserverCollectionCallback,
@@ -80,7 +81,10 @@ const withCollectionSnapshot = <T>(
 ) => {
   return onSnapshot(ref, (snap) => {
     snap.docChanges().forEach((change) => {
-      const data = change.doc.data(SNAPSHOT_OPTIONS);
+      const data = {
+        id: change.doc.id,
+        ...change.doc.data(SNAPSHOT_OPTIONS),
+      } as T;
       switch (change.type) {
         case "added":
           cb.onAdded(data);
@@ -211,14 +215,17 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
         );
       },
 
-      observeMessages(id, cb, afterTimestamp?: Timestamp) {
+      observeMessages(id, messages, afterTimestamp?: Timestamp) {
         let q = query(getMessageRefs(id), orderBy("createdAt", "asc"));
 
         if (afterTimestamp) {
-          q = query(q, where("createdAt", ">", afterTimestamp));
+          q = query(q, where("createdAt", ">=", afterTimestamp));
         }
 
-        return withCollectionSnapshot(q, cb);
+        return withCollectionSnapshot(
+          q as Query<Identifiable<ChatMessage>>,
+          messages
+        );
       },
     },
 

@@ -79,9 +79,9 @@ interface RoomState {
   peers: Record<Id, PeerState>;
   self?: SelfState;
   messages?: {
-    paginated: ChatMessage[];
-    live: ChatMessage[];
-    newestTimestamp: Timestamp | null;
+    paginated: Array<Identifiable<ChatMessage>>;
+    live: Array<Identifiable<ChatMessage>>;
+    newestTimestamp: Timestamp | undefined;
     loading: boolean;
     hasNext: boolean;
     lastSnapRef?: QueryDocumentSnapshot<ChatMessage>;
@@ -124,12 +124,9 @@ interface RoomAction {
     complete: (url: string) => void;
   };
   messages: {
-    initialize: (roomId: Id) => Promise<void>;
     loadMore: (roomId: Id) => Promise<void>;
-    cleanup: () => void;
-    handleNewMessage: (msg: ChatMessage) => void;
+    handleNewMessage: (msg: Identifiable<ChatMessage>) => void;
     sendMessage: (
-      roomId: Id,
       message: Parameters<DatabaseService["room"]["addMessage"]>[1]
     ) => Promise<void>;
   };
@@ -246,6 +243,72 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
     });
   };
 
+  const initializeChatMessages = async (roomId: Id) => {
+    try {
+      useRoom.setState((state) => {
+        state.messages = {
+          paginated: [],
+          live: [],
+          newestTimestamp: undefined,
+          loading: true,
+          hasNext: false,
+          lastSnapRef: undefined,
+          unsubscribe: undefined,
+        };
+      });
+
+      const page = await messagePaginationService.fetchMessages(roomId);
+
+      let newestTimestamp: Timestamp | undefined;
+      if (page.messages.length > 0) {
+        newestTimestamp = page.messages[page.messages.length - 1].createdAt;
+      } else {
+        const room = await db.room.get(roomId);
+        newestTimestamp = room?.createdAt;
+      }
+
+      const unsubscribe = db.room.observer.observeMessages(
+        roomId,
+        {
+          onAdded: (msg) => {
+            useRoom.getState().actions.messages.handleNewMessage(msg);
+          },
+          onModified: () => {},
+          onDeleted: () => {},
+        },
+        newestTimestamp
+      );
+
+      useRoom.setState((state) => {
+        if (state.messages) {
+          state.messages.paginated = page.messages;
+          state.messages.newestTimestamp = newestTimestamp;
+          state.messages.lastSnapRef = page.lastDoc;
+          state.messages.loading = false;
+          state.messages.hasNext = page.hasMore;
+          state.messages.unsubscribe = unsubscribe;
+        }
+      });
+    } catch (error) {
+      console.error("Failed to initialize messages", error);
+      useRoom.setState((state) => {
+        if (state.messages) {
+          state.messages.loading = false;
+        }
+      });
+    }
+  };
+
+  const cleanupChatMessages = () => {
+    const messagesState = useRoom.getState().messages;
+    if (messagesState?.unsubscribe) {
+      messagesState.unsubscribe();
+    }
+    useRoom.setState((state) => {
+      state.messages = undefined;
+    });
+  };
+
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
       immer((set, get) => ({
@@ -281,7 +344,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   usernames: Object.keys(users),
                 });
                 setSelfProgressForCurrentUrl(metadata.data);
-                await get().actions.messages.initialize(id);
+                await initializeChatMessages(id);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -320,7 +383,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     get().actions.self.update(progress);
                   }
 
-                  await get().actions.messages.initialize(id);
+                  await initializeChatMessages(id);
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -344,7 +407,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             leave: async () => {
               try {
                 get().actions.room.loading();
-                get().actions.messages.cleanup();
+                cleanupChatMessages();
                 await getOrCreateControllers().room.leave();
               } finally {
                 set((state) => {
@@ -592,56 +655,6 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             },
           },
           messages: {
-            initialize: async (roomId: Id) => {
-              try {
-                set((state) => {
-                  state.messages = {
-                    paginated: [],
-                    live: [],
-                    newestTimestamp: null,
-                    loading: true,
-                    hasNext: false,
-                    lastSnapRef: undefined,
-                    unsubscribe: undefined,
-                  };
-                });
-
-                const page =
-                  await messagePaginationService.fetchInitialPage(roomId);
-
-                const newestTimestamp = Timestamp.now();
-
-                const unsubscribe = db.room.observer.observeMessages(
-                  roomId,
-                  {
-                    onAdded: (msg) => {
-                      get().actions.messages.handleNewMessage(msg);
-                    },
-                    onModified: () => {},
-                    onDeleted: () => {},
-                  },
-                  newestTimestamp
-                );
-
-                set((state) => {
-                  if (state.messages) {
-                    state.messages.paginated = page.messages;
-                    state.messages.newestTimestamp = newestTimestamp;
-                    state.messages.lastSnapRef = page.lastDoc;
-                    state.messages.loading = false;
-                    state.messages.hasNext = page.hasMore;
-                    state.messages.unsubscribe = unsubscribe;
-                  }
-                });
-              } catch (error) {
-                console.error("Failed to initialize messages", error);
-                set((state) => {
-                  if (state.messages) {
-                    state.messages.loading = false;
-                  }
-                });
-              }
-            },
             loadMore: async (roomId: Id) => {
               const currentState = get();
               const messagesState = currentState.messages;
@@ -662,7 +675,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   }
                 });
 
-                const page = await messagePaginationService.fetchOlderMessages(
+                const page = await messagePaginationService.fetchMessages(
                   roomId,
                   messagesState.lastSnapRef
                 );
@@ -688,23 +701,27 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 });
               }
             },
-            cleanup: () => {
-              const messagesState = get().messages;
-              if (messagesState?.unsubscribe) {
-                messagesState.unsubscribe();
-              }
-              set((state) => {
-                state.messages = undefined;
-              });
-            },
-            handleNewMessage: (msg: ChatMessage) => {
+            handleNewMessage: (msg: Identifiable<ChatMessage>) => {
               set((state) => {
                 if (state.messages) {
-                  state.messages.live.push(msg);
+                  const lastPaginated =
+                    state.messages.paginated[
+                      state.messages.paginated.length - 1
+                    ];
+                  const isDuplicate =
+                    lastPaginated?.id === msg.id ||
+                    state.messages.live.some((m) => m.id === msg.id);
+                  if (!isDuplicate) {
+                    state.messages.live.push(msg);
+                  }
                 }
               });
             },
-            sendMessage: async (roomId: Id, message) => {
+            sendMessage: async (message) => {
+              const roomId = get().room?.id;
+              if (!roomId) {
+                throw new Error("Cannot send message: not in a room");
+              }
               try {
                 await db.room.addMessage(roomId, message);
               } catch (error) {

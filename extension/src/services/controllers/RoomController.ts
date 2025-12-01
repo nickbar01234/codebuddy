@@ -63,12 +63,16 @@ class RoomLifeCycle {
 
   public async leave() {
     this.unsubscribers.forEach((unsubscribe) => unsubscribe());
-    await this.database.addMessage(this.room.id, {
-      from: this.me,
-      type: ChatMessageType.USER_LEFT,
-    });
     await this.database.removeUser(this.room.id, this.me);
     this.emitter.emit("room.left");
+    try {
+      await this.database.addMessage(this.room.id, {
+        from: this.me,
+        type: ChatMessageType.USER_LEFT,
+      });
+    } catch (error) {
+      console.error("Failed to add message on user left", error);
+    }
   }
 
   public async addQuestion(question: Question) {
