@@ -215,7 +215,7 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
         );
       },
 
-      observeMessages(id, messages, afterTimestamp?: Timestamp) {
+      messages(id, cb, afterTimestamp?: Timestamp) {
         let q = query(getMessageRefs(id), orderBy("createdAt", "asc"));
 
         if (afterTimestamp) {
@@ -224,7 +224,7 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
 
         return withCollectionSnapshot(
           q as Query<Identifiable<ChatMessage>>,
-          messages
+          cb
         );
       },
     },

@@ -132,9 +132,9 @@ interface DatabaseRoomObserver {
     user: User,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
-  observeMessages(
+  messages(
     id: Id,
-    messages: ObserverCollectionCallback<Identifiable<ChatMessage>>,
+    cb: ObserverCollectionCallback<Identifiable<ChatMessage>>,
     afterTimestamp?: Timestamp
   ): Unsubscribe;
 }

@@ -267,12 +267,10 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         newestTimestamp = room?.createdAt;
       }
 
-      const unsubscribe = db.room.observer.observeMessages(
+      const unsubscribe = db.room.observer.messages(
         roomId,
         {
-          onAdded: (msg) => {
-            useRoom.getState().actions.messages.handleNewMessage(msg);
-          },
+          onAdded: handleMessageAdded,
           onModified: () => {},
           onDeleted: () => {},
         },
@@ -307,6 +305,10 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
     useRoom.setState((state) => {
       state.messages = undefined;
     });
+  };
+
+  const handleMessageAdded = (msg: Identifiable<ChatMessage>) => {
+    useRoom.getState().actions.messages.handleNewMessage(msg);
   };
 
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
