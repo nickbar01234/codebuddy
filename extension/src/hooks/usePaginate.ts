@@ -32,6 +32,7 @@ interface HookReturnValue<T> {
 interface HookProps<T> {
   baseQuery: Query<T>;
   hookLimit: number;
+  reverse?: boolean;
 }
 
 /**
@@ -42,6 +43,7 @@ interface HookProps<T> {
 const usePaginate = <T>({
   baseQuery,
   hookLimit,
+  reverse = false,
 }: HookProps<T>): HookReturnValue<T> => {
   const [error, setError] = React.useState<Error>();
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -83,7 +85,10 @@ const usePaginate = <T>({
   }, [fetchDocs]);
 
   React.useEffect(() => {
-    // Note this doesn't work since we don't order resources
+    getCountFromServer(baseQuery).then((res) => {
+      setCollectionSize(res.data().count);
+    });
+
     const refresh = setInterval(() => {
       getCountFromServer(baseQuery).then((res) => {
         setCollectionSize(res.data().count);
@@ -104,18 +109,22 @@ const usePaginate = <T>({
     [baseQuery, hookLimit]
   );
 
+  const docsWithOrder = React.useMemo(() => {
+    return reverse ? [...docs].reverse() : docs;
+  }, [docs, reverse]);
+
   return React.useMemo(
     () => ({
       error,
       loading,
       getNext,
-      hasNext: docs.length < collectionSize,
+      hasNext: docsWithOrder.length < collectionSize,
       data: {
-        docs,
+        docs: docsWithOrder,
         collectionSize,
       },
     }),
-    [docs, collectionSize, error, getNext, loading]
+    [docsWithOrder, collectionSize, error, getNext, loading]
   );
 };
 
