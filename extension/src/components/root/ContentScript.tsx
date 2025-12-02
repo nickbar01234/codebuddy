@@ -52,6 +52,7 @@ export const ContentScript = () => {
         toastOptions={{
           duration: 5 * 1000,
         }}
+        className="pointer-events-auto"
       />
       <ResizablePanel>{root}</ResizablePanel>
     </React.StrictMode>
