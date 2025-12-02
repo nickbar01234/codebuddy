@@ -24,7 +24,15 @@ interface DescriptionNegotiation extends GenericMessage {
   data: RTCSessionDescriptionInit;
 }
 
-type NegotiationMessage = IceCandidateNegotiation | DescriptionNegotiation;
+interface RenegotiationNegotiation extends GenericMessage {
+  action: "renegotiation";
+  data: { kind: "request" | "start" };
+}
+
+type NegotiationMessage =
+  | IceCandidateNegotiation
+  | DescriptionNegotiation
+  | RenegotiationNegotiation;
 
 export enum QuestionProgressStatus {
   NOT_STARTED = "not-started",
@@ -53,6 +61,7 @@ export interface Negotiation {
   to: User;
   version: Version;
   message: NegotiationMessage;
+  createdAt?: Timestamp;
 }
 
 export interface Question {
@@ -64,7 +73,7 @@ export interface Question {
   url: string;
   codeSnippets: CodeSnippet[];
   testSnippets: string[];
-  variables: string[];
+  variables: { count: number; names: string[] };
 }
 
 interface UserMetadata {
@@ -78,6 +87,7 @@ export interface Room {
   isPublic: boolean;
   name: string;
   questions: Question[];
+  createdAt?: Timestamp;
 }
 
 export type ObserverDocumentCallback<T> = {
@@ -96,6 +106,7 @@ interface DatabaseRoomObserver {
   negotiations(
     id: Id,
     version: Version,
+    user: User,
     cb: ObserverCollectionCallback<Negotiation>
   ): Unsubscribe;
 }

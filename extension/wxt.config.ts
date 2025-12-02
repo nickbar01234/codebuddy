@@ -22,7 +22,7 @@ export default defineConfig({
   manifest: {
     name: "CodeBuddy",
     description: "Leetcode together",
-    version: "3.1.0",
+    version: "3.6.4",
     action: {},
     icons: {
       "16": "icons/16.png",
@@ -44,6 +44,10 @@ export default defineConfig({
         // We want css to be accessible to iframe
         resources: ["proxy.js", "content-scripts/content.css"],
         matches: ["https://leetcode.com/*"],
+      },
+      {
+        resources: ["popup/popup.js"],
+        matches: ["<all_urls>"],
       },
     ],
   },

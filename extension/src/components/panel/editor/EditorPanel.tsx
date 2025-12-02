@@ -11,10 +11,6 @@ import {
   useRoomData,
   useRoomStatus,
 } from "@cb/hooks/store";
-import {
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@cb/lib/components/ui/resizable";
 import { Separator } from "@cb/lib/components/ui/separator";
 import {
   Tabs,
@@ -83,94 +79,82 @@ const EditorPanel = () => {
         </SkeletonWrapper>
       )}
       <div className={cn("h-full w-full", { hidden: emptyRoom })}>
-        <ResizablePanelGroup
-          direction="vertical"
-          className="relative h-full w-full"
+        <Tabs
+          defaultValue="code"
+          className="h-full w-full bg-secondary text-inherit rounded-b-lg"
         >
-          <ResizablePanel
-            defaultSize={60}
-            minSize={30}
-            maxSize={80}
-            className="relative rounded-b-lg bg-secondary"
-          >
-            <Tabs
-              defaultValue="code"
-              className="h-full w-full bg-inherit text-inherit"
-            >
-              <div className="flex justify-between w-full border-border-quaternary dark:border-border-quaternary border-b rounded-none px-2 py-1 items-center">
-                <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit">
-                  <UserDropDownMenu />
-                  <Separator
-                    orientation="vertical"
-                    className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                  />
-                  {upperTabConfigs.map((tab, index) => (
-                    <React.Fragment key={tab.value}>
-                      <TabsTrigger
-                        value={tab.value}
-                        className={cn(
-                          "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
-                        )}
-                      >
-                        <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
-                        {tab.label}
-                      </TabsTrigger>
-                      {index !== upperTabConfigs.length - 1 && (
-                        <Separator
-                          orientation="vertical"
-                          className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
-                        />
-                      )}
-                    </React.Fragment>
-                  ))}
-                </TabsList>
-                <div className="flex gap-2">
-                  <Tooltip
-                    trigger={{
-                      node: (
-                        <div
-                          className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
-                          onClick={toggleCodeVisibility}
-                        >
-                          {hideCode ? <Eye size={16} /> : <EyeOff size={16} />}
-                        </div>
-                      ),
-                    }}
-                    content={hideCode ? "View code" : "Hide code"}
-                  />
-                  <Tooltip
-                    trigger={{
-                      node: (
-                        <div
-                          className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
-                          onClick={copyCode}
-                        >
-                          <Copy size={16} />
-                        </div>
-                      ),
-                    }}
-                    content="Copy code"
-                  />
-                </div>
-              </div>
-              {upperTabConfigs.map(({ value, Content }) => (
-                <TabsContent
-                  key={value}
-                  value={value}
-                  forceMount
-                  className={cn(
-                    "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full oveflow-y-hidden w-full mt-0",
-                    {
-                      "blur pointer-events-none": hideCode,
-                    }
+          <div className="flex justify-between w-full border-border-quaternary dark:border-border-quaternary border-b rounded-none px-2 py-1 items-center">
+            <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit">
+              <UserDropDownMenu />
+              <Separator
+                orientation="vertical"
+                className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+              />
+              {upperTabConfigs.map((tab, index) => (
+                <React.Fragment key={tab.value}>
+                  <TabsTrigger
+                    value={tab.value}
+                    className={cn(
+                      "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent"
+                    )}
+                  >
+                    <tab.Icon className="mr-2 h-4 w-4 text-[#34C759]" />
+                    {tab.label}
+                  </TabsTrigger>
+                  {index !== upperTabConfigs.length - 1 && (
+                    <Separator
+                      orientation="vertical"
+                      className="flexlayout__tabset_tab_divider h-[1rem] bg-[--color-tabset-tabbar-background]"
+                    />
                   )}
-                >
-                  {Content}
-                </TabsContent>
+                </React.Fragment>
               ))}
-            </Tabs>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+            </TabsList>
+            <div className="flex gap-2">
+              <Tooltip
+                trigger={{
+                  node: (
+                    <div
+                      className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
+                      onClick={toggleCodeVisibility}
+                    >
+                      {hideCode ? <Eye size={16} /> : <EyeOff size={16} />}
+                    </div>
+                  ),
+                }}
+                content={hideCode ? "View code" : "Hide code"}
+              />
+              <Tooltip
+                trigger={{
+                  node: (
+                    <div
+                      className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
+                      onClick={copyCode}
+                    >
+                      <Copy size={16} />
+                    </div>
+                  ),
+                }}
+                content="Copy code"
+              />
+            </div>
+          </div>
+          {upperTabConfigs.map(({ value, Content }) => (
+            <TabsContent
+              key={value}
+              value={value}
+              forceMount
+              className={cn(
+                "data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full oveflow-y-hidden w-full mt-0",
+                {
+                  "blur pointer-events-none": hideCode,
+                }
+              )}
+            >
+              {Content}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );

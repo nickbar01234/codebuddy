@@ -101,6 +101,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.1.2
         version: 1.1.2(@types/react@18.3.20)(react@19.1.1)
+      '@radix-ui/react-switch':
+        specifier: ^1.2.6
+        version: 1.2.6(@types/react-dom@18.3.5(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@radix-ui/react-tabs':
         specifier: ^1.1.3
         version: 1.1.3(@types/react-dom@18.3.5(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -153,8 +156,8 @@ importers:
         specifier: ^3.0.5
         version: 3.0.5(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       react-resizable-panels:
-        specifier: ^3.0.3
-        version: 3.0.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^3.0.6
+        version: 3.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       sonner:
         specifier: ^1.5.0
         version: 1.7.4(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -186,6 +189,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.22
         version: 18.3.5(@types/react@18.3.20)
+      '@types/react-resizable':
+        specifier: ^3.0.8
+        version: 3.0.8
       '@vitejs/plugin-react':
         specifier: ^4.2.1
         version: 4.3.4(vite@6.3.5(@types/node@20.17.28)(jiti@2.4.2)(tsx@4.19.4)(yaml@2.7.1))
@@ -1369,6 +1375,19 @@ packages:
       '@types/react':
         optional: true
 
+  '@radix-ui/react-switch@1.2.6':
+    resolution: {integrity: sha512-bByzr1+ep1zk4VubeEVViV592vu2lHE2BZY5OnzehZqOOgogN80+mNtCqPkhn2gklJqOpxWgPoYTSnhBCqpOXQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+
   '@radix-ui/react-tabs@1.1.3':
     resolution: {integrity: sha512-9mFyI30cuRDImbmFF6O2KUJdgEOsGh9Vmx9x/Dh9tOhL7BngmQPQfwW4aejKm5OHpfWIdmeV6ySyuxoOGjtNng==}
     peerDependencies:
@@ -1478,6 +1497,15 @@ packages:
 
   '@radix-ui/react-use-previous@1.1.0':
     resolution: {integrity: sha512-Z/e78qg2YFnnXcW88A4JmTtm4ADckLno6F7OXotmkQfeuCVaKuYzqAATPhVzl3delXE7CxIV8shofPn3jPc5Og==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@radix-ui/react-use-previous@1.1.1':
+    resolution: {integrity: sha512-2dHfToCj/pzca2Ck724OZ5L0EVrr3eHRNsG/b3xQJLA2hZpVCS99bLAX+hm1IHXDEnzU6by5z/5MIY794/a8NQ==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
@@ -1887,6 +1915,9 @@ packages:
     resolution: {integrity: sha512-P4t6saawp+b/dFrUr2cvkVsfvPguwsxtH6dNIYRllMsefqFzkZk5UIjzyDOv5g1dXIPdG4Sp1yCR4Z6RCUsG/Q==}
     peerDependencies:
       '@types/react': ^18.0.0
+
+  '@types/react-resizable@3.0.8':
+    resolution: {integrity: sha512-Pcvt2eGA7KNXldt1hkhVhAgZ8hK41m0mp89mFgQi7LAAEZiaLgm4fHJ5zbJZ/4m2LVaAyYrrRRv1LHDcrGQanA==}
 
   '@types/react@18.3.20':
     resolution: {integrity: sha512-IPaCZN7PShZK/3t6Q87pfTkRm6oLTd4vztyoj+cbHUF1g3FfVb2tFIL79uCRKEfv16AhqDMBywP2VW3KIZUvcg==}
@@ -4446,8 +4477,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-resizable-panels@3.0.3:
-    resolution: {integrity: sha512-7HA8THVBHTzhDK4ON0tvlGXyMAJN1zBeRpuyyremSikgYh2ku6ltD7tsGQOcXx4NKPrZtYCm/5CBr+dkruTGQw==}
+  react-resizable-panels@3.0.6:
+    resolution: {integrity: sha512-b3qKHQ3MLqOgSS+FRYKapNkJZf5EQzuf6+RLiq1/IlTHw99YrZ2NJZLk4hQIzTnnIkRg2LUqyVinu6YWWpUYew==}
     peerDependencies:
       react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
@@ -6761,6 +6792,21 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.20
 
+  '@radix-ui/react-switch@1.2.6(@types/react-dom@18.3.5(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
+    dependencies:
+      '@radix-ui/primitive': 1.1.3
+      '@radix-ui/react-compose-refs': 1.1.2(@types/react@18.3.20)(react@19.1.1)
+      '@radix-ui/react-context': 1.1.2(@types/react@18.3.20)(react@19.1.1)
+      '@radix-ui/react-primitive': 2.1.3(@types/react-dom@18.3.5(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      '@radix-ui/react-use-controllable-state': 1.2.2(@types/react@18.3.20)(react@19.1.1)
+      '@radix-ui/react-use-previous': 1.1.1(@types/react@18.3.20)(react@19.1.1)
+      '@radix-ui/react-use-size': 1.1.1(@types/react@18.3.20)(react@19.1.1)
+      react: 19.1.1
+      react-dom: 19.1.1(react@19.1.1)
+    optionalDependencies:
+      '@types/react': 18.3.20
+      '@types/react-dom': 18.3.5(@types/react@18.3.20)
+
   '@radix-ui/react-tabs@1.1.3(@types/react-dom@18.3.5(@types/react@18.3.20))(@types/react@18.3.20)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)':
     dependencies:
       '@radix-ui/primitive': 1.1.1
@@ -6858,6 +6904,12 @@ snapshots:
       '@types/react': 18.3.20
 
   '@radix-ui/react-use-previous@1.1.0(@types/react@18.3.20)(react@19.1.1)':
+    dependencies:
+      react: 19.1.1
+    optionalDependencies:
+      '@types/react': 18.3.20
+
+  '@radix-ui/react-use-previous@1.1.1(@types/react@18.3.20)(react@19.1.1)':
     dependencies:
       react: 19.1.1
     optionalDependencies:
@@ -7293,6 +7345,10 @@ snapshots:
   '@types/range-parser@1.2.7': {}
 
   '@types/react-dom@18.3.5(@types/react@18.3.20)':
+    dependencies:
+      '@types/react': 18.3.20
+
+  '@types/react-resizable@3.0.8':
     dependencies:
       '@types/react': 18.3.20
 
@@ -10183,7 +10239,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.20
 
-  react-resizable-panels@3.0.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  react-resizable-panels@3.0.6(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)

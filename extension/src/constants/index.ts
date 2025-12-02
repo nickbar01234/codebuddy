@@ -32,6 +32,10 @@ export const ROOM = {
   CAPACITY: 4,
 };
 
+export const WEBRTC_RETRY = {
+  MAX_ATTEMPTS: 10,
+};
+
 export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
   STUN: [
     {
@@ -101,4 +105,9 @@ export const CSS = {
 
 export const EXTENSION = {
   CSS_PATH: "content-scripts/content.css",
+};
+
+export const PANEL = {
+  DEFAULT_WIDTH: 350, // px
+  COLLAPSED_WIDTH: 40, // px
 };

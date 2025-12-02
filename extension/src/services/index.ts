@@ -1,6 +1,5 @@
 import { WEB_RTC_ICE_SERVERS } from "@cb/constants";
 import { AppStore, RoomStore, useApp, useRoom } from "@cb/store";
-import { useLeetCode } from "@cb/store/leetCodeStore";
 import { DatabaseService, LocalStorage } from "@cb/types";
 import background, { BackgroundProxy } from "./background";
 import { MessageDispatcher } from "./controllers/MessageDispatcher";
@@ -63,7 +62,6 @@ const createControllersFactory = (
     emitter,
     appStore,
     roomStore,
-    useLeetCode,
     background
   );
   return {

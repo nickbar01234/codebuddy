@@ -3,7 +3,7 @@ import { ContainerNavigator } from "@cb/components/navigator/ContainerNavigator"
 import { AppControlMenu, RoomControlMenu } from "@cb/components/navigator/menu";
 import { BottomBannerPanel } from "@cb/components/panel/BottomBannerPanel";
 import { LoadingPanel } from "@cb/components/panel/LoadingPanel";
-import { ResizableGroupLayoutPanel } from "@cb/components/panel/ResizableGroupLayoutPanel";
+import { ResizablePanel } from "@cb/components/panel/ResizablePanel";
 import SignInPanel from "@cb/components/panel/SignInPanel";
 import { useAuthenticate } from "@cb/hooks/auth";
 import { useToast } from "@cb/hooks/toasts";
@@ -11,11 +11,7 @@ import { AppStatus, useApp } from "@cb/store";
 import React from "react";
 import { Toaster } from "sonner";
 
-interface ContentProps {
-  leetCodeNode: Element;
-}
-
-export const ContentScript = ({ leetCodeNode }: ContentProps) => {
+export const ContentScript = () => {
   const auth = useApp((state) => state.auth);
 
   useAuthenticate({});
@@ -56,10 +52,9 @@ export const ContentScript = ({ leetCodeNode }: ContentProps) => {
         toastOptions={{
           duration: 5 * 1000,
         }}
+        className="pointer-events-auto"
       />
-      <ResizableGroupLayoutPanel leetCodeRoot={leetCodeNode}>
-        {root}
-      </ResizableGroupLayoutPanel>
+      <ResizablePanel>{root}</ResizablePanel>
     </React.StrictMode>
   );
 };

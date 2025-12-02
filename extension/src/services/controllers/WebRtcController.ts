@@ -1,3 +1,4 @@
+import { WEBRTC_RETRY } from "@cb/constants";
 import { EventEmitter } from "@cb/services/events";
 import { AppStore } from "@cb/store";
 import {
@@ -5,6 +6,7 @@ import {
   IamPolite,
   PeerConnection,
   PeerMessage,
+  RestartState,
   User,
 } from "@cb/types";
 import { isEventToMe } from "@cb/utils";
@@ -21,6 +23,8 @@ export class WebRtcController {
 
   private rtcConfiguration: RTCConfiguration;
 
+  private retryCounts: Map<User, number>;
+
   public constructor(
     appStore: AppStore,
     emitter: EventEmitter,
@@ -31,6 +35,7 @@ export class WebRtcController {
     this.emitter = emitter;
     this.iamPolite = iamPolite;
     this.pcs = new Map();
+    this.retryCounts = new Map();
     this.rtcConfiguration = rtcConfiguration;
     this.init();
   }
@@ -46,6 +51,22 @@ export class WebRtcController {
     });
     this.emitter.on("room.left", this.leave.bind(this));
     this.emitter.on("rtc.send.message", this.sendMessage.bind(this));
+    this.emitter.on(
+      "rtc.renegotiation.request",
+      this.handleRenegotiationRequest.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
+    );
+    this.emitter.on(
+      "rtc.renegotiation.start",
+      this.handleRenegotiationStart.bind(this),
+      (event) => {
+        const { username: me } = this.appStore.getState().actions.getAuthUser();
+        return isEventToMe(me)(event);
+      }
+    );
   }
 
   private leave() {
@@ -53,6 +74,7 @@ export class WebRtcController {
     for (const user of users) {
       this.disconnect(user);
     }
+    this.retryCounts.clear();
   }
 
   private disconnect(user: User) {
@@ -84,6 +106,7 @@ export class WebRtcController {
       isSettingRemoteAnswerPending: false,
       ignoreOffer: false,
       joinedAt,
+      restartState: RestartState.IDLE,
     });
 
     pc.onicecandidate = (event) =>
@@ -135,6 +158,9 @@ export class WebRtcController {
 
     channel.onopen = () => {
       console.log("Channel open", user);
+      const cur = this.pcs.get(user);
+      if (cur) cur.restartState = RestartState.IDLE;
+      this.retryCounts.delete(user);
       unsubscribeFromIceEvents();
       unsubscribeFromDescriptionEvents();
       this.emitter.emit("rtc.open", { user });
@@ -155,17 +181,50 @@ export class WebRtcController {
       }
     };
 
-    channel.onerror = (error) => {
-      console.error("Error on RTC data channel", error);
-      // todo(nickbar01234): Need to recover when error is thrown. Easiest is to re-do the entire process.
+    channel.onerror = (errorEvent: RTCErrorEvent) => {
+      if (
+        errorEvent.error.errorDetail === "sctp-failure" &&
+        errorEvent.error.sctpCauseCode === 12 // https://datatracker.ietf.org/doc/html/rfc4960#section-3.3.10
+      ) {
+        this.disconnect(user);
+        this.emitter.emit("rtc.user.disconnected", {
+          user,
+          unrecoverable: false,
+        });
+        return;
+      }
+      console.error("Error on RTC data channel", errorEvent);
+
+      const connection = this.pcs.get(user);
+      if (!connection) return;
+
+      if (connection.restartState === RestartState.RESTARTING) return;
+
+      const currentRetry = this.retryCounts.get(user) ?? 0;
+      if (currentRetry >= WEBRTC_RETRY.MAX_ATTEMPTS) {
+        this.disconnect(user);
+        this.retryCounts.delete(user);
+        this.emitter.emit("rtc.user.disconnected", {
+          user,
+          unrecoverable: true,
+        });
+        return;
+      }
+
       this.disconnect(user);
-      this.emitter.emit("rtc.error.connection", { user });
+      this.retryCounts.set(user, currentRetry + 1);
+      this.emitter.emit("rtc.renegotiation.request", {
+        from: me,
+        to: user,
+        data: undefined,
+      });
     };
   }
 
   private async handleDescriptionEvents({
     from,
     data,
+    timestamp,
   }: Events["rtc.description"]) {
     const connection = this.pcs.get(from);
     if (connection == undefined) return;
@@ -187,6 +246,9 @@ export class WebRtcController {
       connection.isSettingRemoteAnswerPending = data.type === "answer";
       await pc.setRemoteDescription(data);
       connection.isSettingRemoteAnswerPending = false;
+      if (timestamp) {
+        connection.joinedAt = timestamp;
+      }
       if (data.type === "offer") {
         await pc.setLocalDescription();
         this.emitter.emit("rtc.description", {
@@ -200,16 +262,62 @@ export class WebRtcController {
     }
   }
 
-  private async handleIceEvents({ from, data }: Events["rtc.ice"]) {
+  private async handleIceEvents({ from, data, timestamp }: Events["rtc.ice"]) {
     const connection = this.pcs.get(from);
     if (connection == undefined) return;
 
     try {
       await connection.pc.addIceCandidate(data);
+      if (timestamp) {
+        connection.joinedAt = timestamp;
+      }
     } catch (err) {
       if (!connection.ignoreOffer) {
         console.error("Error when handling ICE candidate", from, err);
       }
+    }
+  }
+
+  private handleRenegotiationRequest({
+    from,
+    timestamp,
+  }: Events["rtc.renegotiation.request"]) {
+    console.log("Renegotiation request received from", from);
+    const connection = this.pcs.get(from);
+    const { username: me } = this.appStore.getState().actions.getAuthUser();
+    if (connection?.restartState === RestartState.RESTARTING) return;
+    this.disconnect(from);
+    if (!timestamp) {
+      return;
+    }
+    this.connect(from, timestamp);
+    const updated = this.pcs.get(from);
+    if (updated) {
+      updated.restartState = RestartState.RESTARTING;
+    }
+
+    this.emitter.emit("rtc.renegotiation.start", {
+      from: me,
+      to: from,
+      data: undefined,
+    });
+  }
+
+  private handleRenegotiationStart({
+    from,
+    timestamp,
+  }: Events["rtc.renegotiation.start"]) {
+    console.log("Renegotiation start received from", from);
+    const connection = this.pcs.get(from);
+    if (connection?.restartState === RestartState.RESTARTING) return;
+    if (connection) this.disconnect(from);
+    if (!timestamp) {
+      return;
+    }
+    this.connect(from, timestamp);
+    const updated = this.pcs.get(from);
+    if (updated) {
+      updated.restartState = RestartState.RESTARTING;
     }
   }
 

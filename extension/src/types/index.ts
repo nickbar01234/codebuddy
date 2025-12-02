@@ -11,7 +11,7 @@ export * from "./webrtc";
 export * from "./window";
 
 interface Assignment {
-  variable: string;
+  variable?: string;
   value: string;
 }
 

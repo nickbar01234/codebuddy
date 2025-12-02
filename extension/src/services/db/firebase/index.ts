@@ -9,6 +9,7 @@ import {
 } from "@cb/types";
 import {
   addDoc,
+  and,
   arrayUnion,
   collection,
   deleteField,
@@ -116,8 +117,15 @@ const getUserRef = (roomId: string, username: string) =>
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
     async create(room) {
-      const doc = { ...room, users: {}, version: 0 };
-      const ref = await addDoc(getRoomRefs(), doc);
+      const doc = {
+        ...room,
+        users: {},
+        version: 0,
+      };
+      const ref = await addDoc(getRoomRefs(), {
+        ...doc,
+        createdAt: serverTimestamp(),
+      });
       return {
         id: ref.id,
         ...doc,
@@ -159,7 +167,10 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
     },
 
     async addNegotiation(id, data) {
-      await addDoc(getNegotiationRefs(id), data);
+      await addDoc(getNegotiationRefs(id), {
+        ...data,
+        createdAt: serverTimestamp(),
+      });
       return Promise.resolve();
     },
 
@@ -178,10 +189,13 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
         return withDocumentSnapshot(getRoomRef(id), cb);
       },
 
-      negotiations(id, version, cb) {
+      negotiations(id, version, user, cb) {
         console.log("Listening for version", version);
         return withCollectionSnapshot(
-          query(getNegotiationRefs(id), where("version", ">", version)),
+          query(
+            getNegotiationRefs(id),
+            and(where("version", ">", version), where("to", "==", user))
+          ),
           cb
         );
       },

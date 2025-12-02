@@ -2,7 +2,6 @@ import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
 import { AppStatus, AppStore, RoomStore } from "@cb/store";
-import { LeetCodeStore } from "@cb/store/leetCodeStore";
 import {
   ContentRequest,
   Events,
@@ -24,8 +23,6 @@ export class MessageDispatcher {
 
   private roomStore: RoomStore;
 
-  private leetcodeStore: LeetCodeStore;
-
   private background: BackgroundProxy;
 
   private unsubscribers: Unsubscribe[];
@@ -34,13 +31,11 @@ export class MessageDispatcher {
     emitter: EventEmitter,
     appStore: AppStore,
     roomStore: RoomStore,
-    leetCodeStore: LeetCodeStore,
     background: BackgroundProxy
   ) {
     this.emitter = emitter;
     this.appStore = appStore;
     this.roomStore = roomStore;
-    this.leetcodeStore = leetCodeStore;
     this.unsubscribers = [];
     this.background = background;
     this.init();
@@ -78,8 +73,18 @@ export class MessageDispatcher {
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
     this.unsubscribers.push(this.subscribeToRtcConnectionError());
+    this.unsubscribers.push(this.subscribeToUserDisconnected());
+
     this.subscribeToSubmission();
     this.subscribeToBackground();
+  }
+
+  private subscribeToUserDisconnected() {
+    const onUserDisconnected = ({ user }: Events["rtc.user.disconnected"]) => {
+      this.roomStore.getState().actions.peers.remove([user]);
+    };
+    this.emitter.on("rtc.user.disconnected", onUserDisconnected);
+    return () => this.emitter.off("rtc.user.disconnected", onUserDisconnected);
   }
 
   private subscribeToCodeEditor() {
@@ -376,9 +381,11 @@ export class MessageDispatcher {
     }
   }
 
-  private async getTestsPayload() {
+  private getTestsPayload() {
     return getTestsPayload(
-      await this.leetcodeStore.getState().actions.getVariables()
+      this.roomStore
+        .getState()
+        .actions.room.getVariables(getNormalizedUrl(window.location.href))
     );
   }
 }

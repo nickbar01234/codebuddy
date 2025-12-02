@@ -1,4 +1,3 @@
-import { DOM } from "@cb/constants";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { BoundStore, ServiceResponse } from "@cb/types";
 import { create } from "zustand";
@@ -9,7 +8,6 @@ interface LeetCodeState {
 }
 
 interface LeetCodeAction {
-  getVariables: () => Promise<string[]>;
   getLanguageExtension: (id?: string) => string | undefined;
 }
 
@@ -19,25 +17,6 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
       languageExtensions: [],
 
       actions: {
-        getVariables: async () => {
-          const variables = await waitForElement(DOM.PROBLEM_ID)
-            .then((node) => node as HTMLElement)
-            .then((node) => {
-              const input = node.innerText.match(/.*Input:(.*)\n/);
-              if (input != null) {
-                return Array.from(input[1].matchAll(/(\w+)\s=/g)).map(
-                  (matched) => matched[1]
-                );
-              }
-              throw new Error("Unable to determine test variables");
-            })
-            .catch((e) => {
-              console.error(e);
-              return [];
-            });
-          return variables;
-        },
-
         getLanguageExtension: (id?: string) => {
           const extensions =
             get().languageExtensions.find((language) => language.id === id)
@@ -49,7 +28,6 @@ const createLeetCodeStore = (background: BackgroundProxy) => {
   );
 
   // Immediately initialize
-  leetCodeStore.getState().actions.getVariables();
   poll({
     fn: () => background.getAllLanguageExtensions({}),
     until: (response) => response instanceof Array && response.length > 0,

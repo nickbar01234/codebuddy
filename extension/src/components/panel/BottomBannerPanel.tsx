@@ -12,7 +12,7 @@ interface BottomBannerPanelProps {
 
 export const BottomBannerPanel = ({ children }: BottomBannerPanelProps) => {
   const { displayBanner } = useAppPreference();
-  const { hideBanner } = useAppActions({});
+  const { hideBanner } = useAppActions();
 
   return (
     <div className="relative h-full w-full">

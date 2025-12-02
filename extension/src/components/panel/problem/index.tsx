@@ -89,6 +89,11 @@ export const QuestionSelectorPanel = React.memo(
             waitForElement('svg[data-icon="magnifying-glass"]', iframeDoc)
               .then((element) => element.remove())
               .catch(() => {});
+            waitForElement('a[href^="/progress"', iframeDoc)
+              .then((element) => element.parentElement?.parentElement?.remove())
+              .catch(() => {
+                console.error("Failed to remove shuffle and progress bar");
+              });
 
             try {
               const rowContainer = (await waitForElement("a#\\31 ", iframeDoc))
