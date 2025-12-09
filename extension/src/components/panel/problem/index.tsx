@@ -81,21 +81,9 @@ export const QuestionSelectorPanel = React.memo(
               link.href = chrome.runtime.getURL(EXTENSION.CSS_PATH);
               link.id = DOM.IFRAME_CSS_ID;
               iframeDoc.head.appendChild(link);
-
-              try {
-                if (iframeDoc.body) {
-                  appendClassIdempotent(iframeDoc.body as Element, [
-                    "hide-scrollbar",
-                  ]);
-                }
-              } catch (e) {
-                console.warn(
-                  "Could not apply hide-scrollbar to iframe root/body",
-                  e
-                );
-              }
             }
 
+            appendClassIdempotent(iframeDoc.body, ["hide-scrollbar"]);
             waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
               .then((el) => el.closest("button")?.remove())
               .catch(() => {});
@@ -108,11 +96,7 @@ export const QuestionSelectorPanel = React.memo(
                 .parentNode as Element;
               hideToRoot(rowContainer.parentElement?.parentElement);
 
-              appendClassIdempotent(rowContainer, [
-                "space-y-1",
-                "mt-4",
-                "hide-scrollbar",
-              ]);
+              appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
 
               const processQuestionLinks = async () => {
                 const zebraStripes = [
