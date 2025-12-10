@@ -138,18 +138,40 @@ export class MessageDispatcher {
         message: tests,
       });
     });
-    waitForElement(DOM.LEETCODE_TEST_ID)
-      .then((editor) =>
+
+    let observerAttached = false;
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+
+    const tryAttachObserver = () => {
+      const editor = document.querySelector(DOM.LEETCODE_TEST_ID);
+      if (editor && !observerAttached) {
         observer.observe(editor, {
           attributes: true,
           childList: true,
           subtree: true,
-        })
-      )
-      .catch(() =>
-        console.error("Unable to find test editor", DOM.LEETCODE_TEST_ID)
-      );
-    return () => observer.disconnect();
+        });
+        observerAttached = true;
+        if (pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+      }
+    };
+
+    tryAttachObserver();
+
+    if (!observerAttached) {
+      pollInterval = setInterval(() => {
+        tryAttachObserver();
+      }, 1000);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
   }
 
   private subscribeToSubmission() {
@@ -197,9 +219,20 @@ export class MessageDispatcher {
         } else {
           button.onclick = async function (event) {
             if (onclick) onclick.call(this, event);
-            waitForElement(DOM.LEETCODE_SUBMISSION_RESULT)
-              .then(sendSuccessSubmission.bind(this))
-              .catch(sendFailedSubmission.bind(this));
+            try {
+              const element = await waitForElement(
+                DOM.LEETCODE_SUBMISSION_RESULT
+              );
+              const text = element.textContent?.toLowerCase() ?? "";
+              if (text.includes("accepted")) {
+                sendSuccessSubmission();
+              } else {
+                sendFailedSubmission();
+              }
+            } catch (error) {
+              console.error("Failed to determine submission result:", error);
+              sendFailedSubmission();
+            }
           };
         }
       });
