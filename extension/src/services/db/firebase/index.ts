@@ -1,5 +1,6 @@
 import {
   DatabaseService,
+  Identifiable,
   Models,
   Negotiation,
   ObserverCollectionCallback,
@@ -7,6 +8,7 @@ import {
   Room,
   UserProgress,
 } from "@cb/types";
+import { ChatMessage } from "@cb/types/db";
 import {
   addDoc,
   and,
@@ -20,15 +22,18 @@ import {
   getDoc,
   increment,
   onSnapshot,
+  orderBy,
   Query,
   query,
   serverTimestamp,
   setDoc,
   SnapshotOptions,
+  Timestamp,
   updateDoc,
   where,
 } from "firebase/firestore";
 import {
+  chatMessageConverter,
   negotiationConverter,
   roomConverter,
   userProgressConverter,
@@ -40,6 +45,7 @@ type FirebaseTypes = {
   [Models.ROOMS]: Room;
   [Models.NEGOTIATIONS]: Negotiation;
   [Models.USER_PROGRESS]: UserProgress;
+  [Models.CHAT_MESSAGES]: ChatMessage;
 };
 
 const SNAPSHOT_OPTIONS: SnapshotOptions = {
@@ -52,6 +58,7 @@ const firebaseConverters: {
   [Models.ROOMS]: roomConverter,
   [Models.NEGOTIATIONS]: negotiationConverter,
   [Models.USER_PROGRESS]: userProgressConverter,
+  [Models.CHAT_MESSAGES]: chatMessageConverter,
 };
 
 const withDocumentSnapshot = <T>(
@@ -74,7 +81,10 @@ const withCollectionSnapshot = <T>(
 ) => {
   return onSnapshot(ref, (snap) => {
     snap.docChanges().forEach((change) => {
-      const data = change.doc.data(SNAPSHOT_OPTIONS);
+      const data = {
+        id: change.doc.id,
+        ...change.doc.data(SNAPSHOT_OPTIONS),
+      } as T;
       switch (change.type) {
         case "added":
           cb.onAdded(data);
@@ -103,6 +113,11 @@ const getRoomRefs = () =>
 const getNegotiationRefs = (id: string) =>
   collection(getRoomRef(id), Models.NEGOTIATIONS).withConverter(
     firebaseConverters[Models.NEGOTIATIONS]
+  );
+
+export const getMessageRefs = (id: string) =>
+  collection(getRoomRef(id), Models.CHAT_MESSAGES).withConverter(
+    firebaseConverters[Models.CHAT_MESSAGES]
   );
 
 const getUserRef = (roomId: string, username: string) =>
@@ -199,6 +214,26 @@ export const firebaseDatabaseServiceImpl: DatabaseService = {
           cb
         );
       },
+
+      messages(id, cb, afterTimestamp?: Timestamp) {
+        let q = query(getMessageRefs(id), orderBy("createdAt", "asc"));
+
+        if (afterTimestamp) {
+          q = query(q, where("createdAt", ">=", afterTimestamp));
+        }
+
+        return withCollectionSnapshot(
+          q as Query<Identifiable<ChatMessage>>,
+          cb
+        );
+      },
+    },
+
+    async addMessage(id, message) {
+      await addDoc(getMessageRefs(id), {
+        ...message,
+        createdAt: serverTimestamp(),
+      });
     },
   },
 };

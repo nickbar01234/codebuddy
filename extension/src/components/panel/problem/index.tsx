@@ -83,6 +83,7 @@ export const QuestionSelectorPanel = React.memo(
               iframeDoc.head.appendChild(link);
             }
 
+            appendClassIdempotent(iframeDoc.body, ["hide-scrollbar"]);
             waitForElement('button svg[data-icon="sidebar"]', iframeDoc)
               .then((el) => el.closest("button")?.remove())
               .catch(() => {});
@@ -100,13 +101,14 @@ export const QuestionSelectorPanel = React.memo(
                 .parentNode as Element;
               hideToRoot(rowContainer.parentElement?.parentElement);
 
+              appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
+
               const processQuestionLinks = async () => {
                 const zebraStripes = [
                   "codebuddy-row-odd",
                   "codebuddy-row-even",
                 ];
                 const rowList = rowContainer.querySelectorAll("a");
-                appendClassIdempotent(rowContainer, ["space-y-1", "mt-4"]);
                 for (const anchorContainer of rowList) {
                   anchorContainer.classList.remove(...zebraStripes);
                   try {

@@ -90,3 +90,6 @@ export const useAuthActions = () => {
 export const useAppActions = () => useApp((state) => state.actions);
 
 export const useHtmlActions = () => useHtml((state) => state.actions);
+
+export const useMessagesActions = () =>
+  useRoom((state) => state.actions.messages);

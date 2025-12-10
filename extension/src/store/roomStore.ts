@@ -2,10 +2,12 @@ import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { RoomJoinCode } from "@cb/services/controllers/RoomController";
+import db from "@cb/services/db";
 import {
   getProblemMetaBySlugServer,
   GetProblemMetadataBySlugServerCode,
 } from "@cb/services/graphql/metadata";
+import { messagePaginationService } from "@cb/services/messages";
 import { windowMessager } from "@cb/services/window";
 import {
   BoundStore,
@@ -19,9 +21,13 @@ import {
   TestCases,
   User,
 } from "@cb/types";
-import { Identifiable } from "@cb/types/utils";
-import { getNormalizedUrl } from "@cb/utils";
+import { ChatMessage, DatabaseService } from "@cb/types/db";
+import { Identifiable, Unsubscribe } from "@cb/types/utils";
+import { getNormalizedUrl, getQuestionIdFromUrl } from "@cb/utils";
+import { getTestsPayload } from "@cb/utils/messages";
 import { getSelectedPeer } from "@cb/utils/peers";
+import { groupTestCases } from "@cb/utils/string";
+import { QueryDocumentSnapshot, Timestamp } from "firebase/firestore";
 import _ from "lodash";
 import { toast } from "sonner";
 import { create } from "zustand";
@@ -34,6 +40,7 @@ export enum SidebarTabIdentifier {
   ROOM_INFO,
   ROOM_QUESTIONS,
   LEETCODE_QUESTIONS,
+  ROOM_CHAT,
 }
 
 export enum RoomStatus {
@@ -71,6 +78,15 @@ interface RoomState {
   }>;
   peers: Record<Id, PeerState>;
   self?: SelfState;
+  messages?: {
+    paginated: Array<Identifiable<ChatMessage>>;
+    live: Array<Identifiable<ChatMessage>>;
+    newestTimestamp: Timestamp | undefined;
+    loading: boolean;
+    hasNext: boolean;
+    lastSnapRef?: QueryDocumentSnapshot<ChatMessage>;
+    unsubscribe?: Unsubscribe;
+  };
 }
 
 interface RoomAction {
@@ -106,6 +122,13 @@ interface RoomAction {
   self: {
     update: (state: Partial<UpdateSelfArgs>) => void;
     complete: (url: string) => void;
+  };
+  messages: {
+    loadMore: (roomId: Id) => Promise<void>;
+    handleNewMessage: (msg: Identifiable<ChatMessage>) => void;
+    sendMessage: (
+      message: Parameters<DatabaseService["room"]["addMessage"]>[1]
+    ) => Promise<void>;
   };
 }
 
@@ -220,6 +243,74 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
     });
   };
 
+  const initializeChatMessages = async (roomId: Id) => {
+    try {
+      useRoom.setState((state) => {
+        state.messages = {
+          paginated: [],
+          live: [],
+          newestTimestamp: undefined,
+          loading: true,
+          hasNext: false,
+          lastSnapRef: undefined,
+          unsubscribe: undefined,
+        };
+      });
+
+      const page = await messagePaginationService.fetchMessages(roomId);
+
+      let newestTimestamp: Timestamp | undefined;
+      if (page.messages.length > 0) {
+        newestTimestamp = page.messages[page.messages.length - 1].createdAt;
+      } else {
+        const room = await db.room.get(roomId);
+        newestTimestamp = room?.createdAt;
+      }
+
+      const unsubscribe = db.room.observer.messages(
+        roomId,
+        {
+          onAdded: handleMessageAdded,
+          onModified: () => {},
+          onDeleted: () => {},
+        },
+        newestTimestamp
+      );
+
+      useRoom.setState((state) => {
+        if (state.messages) {
+          state.messages.paginated = page.messages;
+          state.messages.newestTimestamp = newestTimestamp;
+          state.messages.lastSnapRef = page.lastDoc;
+          state.messages.loading = false;
+          state.messages.hasNext = page.hasMore;
+          state.messages.unsubscribe = unsubscribe;
+        }
+      });
+    } catch (error) {
+      console.error("Failed to initialize messages", error);
+      useRoom.setState((state) => {
+        if (state.messages) {
+          state.messages.loading = false;
+        }
+      });
+    }
+  };
+
+  const cleanupChatMessages = () => {
+    const messagesState = useRoom.getState().messages;
+    if (messagesState?.unsubscribe) {
+      messagesState.unsubscribe();
+    }
+    useRoom.setState((state) => {
+      state.messages = undefined;
+    });
+  };
+
+  const handleMessageAdded = (msg: Identifiable<ChatMessage>) => {
+    useRoom.getState().actions.messages.handleNewMessage(msg);
+  };
+
   const useRoom = create<BoundStore<RoomState, RoomAction>>()(
     subscribeWithSelector(
       immer((set, get) => ({
@@ -255,6 +346,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   usernames: Object.keys(users),
                 });
                 setSelfProgressForCurrentUrl(metadata.data);
+                await initializeChatMessages(id);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);
@@ -292,6 +384,8 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   if (progress != undefined) {
                     get().actions.self.update(progress);
                   }
+
+                  await initializeChatMessages(id);
                 } else {
                   if (response.code === RoomJoinCode.NOT_EXISTS) {
                     toast.error("Room ID is invalid. Please try again.");
@@ -315,6 +409,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             leave: async () => {
               try {
                 get().actions.room.loading();
+                cleanupChatMessages();
                 await getOrCreateControllers().room.leave();
               } finally {
                 set((state) => {
@@ -558,6 +653,82 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                   tests: progress?.tests ?? [],
                   status: QuestionProgressStatus.COMPLETED,
                 });
+              }
+            },
+          },
+          messages: {
+            loadMore: async (roomId: Id) => {
+              const currentState = get();
+              const messagesState = currentState.messages;
+
+              if (
+                !messagesState ||
+                messagesState.loading ||
+                !messagesState.hasNext ||
+                !messagesState.lastSnapRef
+              ) {
+                return;
+              }
+
+              try {
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.loading = true;
+                  }
+                });
+
+                const page = await messagePaginationService.fetchMessages(
+                  roomId,
+                  messagesState.lastSnapRef
+                );
+
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.paginated = [
+                      ...page.messages,
+                      ...state.messages.paginated,
+                    ];
+                    state.messages.lastSnapRef =
+                      page.lastDoc || messagesState.lastSnapRef;
+                    state.messages.loading = false;
+                    state.messages.hasNext = page.hasMore;
+                  }
+                });
+              } catch (error) {
+                console.error("Failed to load more messages", error);
+                set((state) => {
+                  if (state.messages) {
+                    state.messages.loading = false;
+                  }
+                });
+              }
+            },
+            handleNewMessage: (msg: Identifiable<ChatMessage>) => {
+              set((state) => {
+                if (state.messages) {
+                  const lastPaginated =
+                    state.messages.paginated[
+                      state.messages.paginated.length - 1
+                    ];
+                  const isDuplicate =
+                    lastPaginated?.id === msg.id ||
+                    state.messages.live.some((m) => m.id === msg.id);
+                  if (!isDuplicate) {
+                    state.messages.live.push(msg);
+                  }
+                }
+              });
+            },
+            sendMessage: async (message) => {
+              const roomId = get().room?.id;
+              if (!roomId) {
+                throw new Error("Cannot send message: not in a room");
+              }
+              try {
+                await db.room.addMessage(roomId, message);
+              } catch (error) {
+                console.error("Failed to send message", error);
+                throw error;
               }
             },
           },
