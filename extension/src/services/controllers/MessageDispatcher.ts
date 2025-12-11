@@ -139,38 +139,22 @@ export class MessageDispatcher {
       });
     });
 
-    let observerAttached = false;
-    let pollInterval: ReturnType<typeof setInterval> | null = null;
-
-    const tryAttachObserver = () => {
+    const interval = setInterval(() => {
       const editor = document.querySelector(DOM.LEETCODE_TEST_ID);
-      if (editor && !observerAttached) {
+      if (editor) {
         observer.observe(editor, {
           attributes: true,
           childList: true,
           subtree: true,
         });
-        observerAttached = true;
-        if (pollInterval) {
-          clearInterval(pollInterval);
-          pollInterval = null;
-        }
+        console.log("Test editor observer attached");
+        clearInterval(interval);
       }
-    };
-
-    tryAttachObserver();
-
-    if (!observerAttached) {
-      pollInterval = setInterval(() => {
-        tryAttachObserver();
-      }, 1000);
-    }
+    }, 1000);
 
     return () => {
       observer.disconnect();
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
+      clearInterval(interval);
     };
   }
 
