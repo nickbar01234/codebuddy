@@ -125,7 +125,7 @@ export class MessageDispatcher {
   }
 
   private subscribeToTestEditor() {
-    const observer = new MutationObserver(async () => {
+    const sendTests = async () => {
       const tests = await this.getTestsPayload();
       this.roomStore.getState().actions.self.update({
         questions: {
@@ -137,7 +137,9 @@ export class MessageDispatcher {
       this.emitter.emit("rtc.send.message", {
         message: tests,
       });
-    });
+    };
+
+    const observer = new MutationObserver(sendTests);
 
     const interval = setInterval(() => {
       const editor = document.querySelector(DOM.LEETCODE_TEST_ID);
@@ -148,6 +150,7 @@ export class MessageDispatcher {
           subtree: true,
         });
         console.log("Test editor observer attached");
+        sendTests();
         clearInterval(interval);
       }
     }, 1000);
