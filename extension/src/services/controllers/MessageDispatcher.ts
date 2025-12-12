@@ -125,7 +125,7 @@ export class MessageDispatcher {
   }
 
   private subscribeToTestEditor() {
-    const observer = new MutationObserver(async () => {
+    const sendTests = async () => {
       const tests = await this.getTestsPayload();
       this.roomStore.getState().actions.self.update({
         questions: {
@@ -137,19 +137,28 @@ export class MessageDispatcher {
       this.emitter.emit("rtc.send.message", {
         message: tests,
       });
-    });
-    waitForElement(DOM.LEETCODE_TEST_ID)
-      .then((editor) =>
+    };
+
+    const observer = new MutationObserver(sendTests);
+
+    const interval = setInterval(() => {
+      const editor = document.querySelector(DOM.LEETCODE_TEST_ID);
+      if (editor) {
         observer.observe(editor, {
           attributes: true,
           childList: true,
           subtree: true,
-        })
-      )
-      .catch(() =>
-        console.error("Unable to find test editor", DOM.LEETCODE_TEST_ID)
-      );
-    return () => observer.disconnect();
+        });
+        console.log("Test editor observer attached");
+        sendTests();
+        clearInterval(interval);
+      }
+    }, 1000);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
   }
 
   private subscribeToSubmission() {
@@ -208,6 +217,7 @@ export class MessageDispatcher {
                 sendFailedSubmission();
               }
             } catch (error) {
+              console.error("Failed to determine submission result:", error);
               sendFailedSubmission();
             }
           };
