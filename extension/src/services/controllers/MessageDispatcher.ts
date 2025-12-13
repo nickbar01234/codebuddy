@@ -335,14 +335,17 @@ export class MessageDispatcher {
         case "url": {
           const user = this.appStore.getState().actions.getMaybeAuthUser();
           const url = getNormalizedUrl(window.location.href);
-          const questions = this.roomStore.getState().room?.questions ?? [];
           if (user == undefined) {
             return;
           }
           this.roomStore.getState().actions.self.update({
             url: getNormalizedUrl(window.location.href),
           });
-          if (questions.some((question) => question.url === url)) {
+          if (
+            hasQuestionIdInUrl(url) &&
+            this.roomStore.getState().room != undefined
+          ) {
+            this.roomStore.getState().actions.room.addQuestion(url);
             this.requestProgress(url);
           }
           break;
