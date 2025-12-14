@@ -73,7 +73,7 @@ export const WEB_RTC_ICE_SERVERS: Record<"STUN" | "TURN", RTCIceServer[]> = {
 };
 
 export const FEATURE_FLAG = {
-  DISABLE_BROWSE_ROOM: true,
+  DISABLE_BROWSE_ROOM: false,
 };
 
 export const CSS = {
