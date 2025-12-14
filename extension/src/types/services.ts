@@ -37,6 +37,11 @@ interface GetLanguageExtensionRequest extends GenericMessage {
   action: "getLanguageExtension";
 }
 
+interface AppendTestCaseToLeetCodeRequest extends GenericMessage {
+  action: "appendTestCaseToLeetCode";
+  testValues: string[];
+}
+
 export type ServiceRequest =
   | GetValueRequest
   | SetupCodeBuddyModel
@@ -44,7 +49,8 @@ export type ServiceRequest =
   | SetupLeetCodeModel
   | GetActiveTabIdRequest
   | CloseSignInTabRequest
-  | GetLanguageExtensionRequest;
+  | GetLanguageExtensionRequest
+  | AppendTestCaseToLeetCodeRequest;
 
 export enum ResponseStatus {
   SUCCESS,
@@ -53,6 +59,7 @@ export enum ResponseStatus {
 
 interface ServiceGenericResponse {
   status: ResponseStatus;
+  message?: string;
 }
 
 export type ServiceResponse = GenericResponse<
@@ -69,5 +76,6 @@ export type ServiceResponse = GenericResponse<
     getActiveTabId: number;
     closeSignInTab: ServiceGenericResponse;
     getLanguageExtension: Array<monaco.languages.ILanguageExtensionPoint>;
+    appendTestCaseToLeetCode: ServiceGenericResponse;
   }
 >;

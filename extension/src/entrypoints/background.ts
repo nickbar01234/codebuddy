@@ -186,6 +186,71 @@ export default defineBackground(() => {
     return getLanguages() as any[];
   };
 
+  const addAndFillTestCase = async (testValues: string[]) => {
+    const SUCCESS = 0;
+    const FAIL = 1;
+
+    try {
+      const addButton = Array.from(
+        document.querySelectorAll('button[data-state="closed"]')
+      ).find((button) => {
+        const svg = button.querySelector('svg[viewBox="0 0 24 24"]');
+        if (!svg) return false;
+        const path = svg.querySelector('path[d*="M13 11h7"]');
+        return path !== null;
+      }) as HTMLButtonElement | undefined;
+
+      if (!addButton) {
+        throw new Error("Add test case button not found");
+      }
+
+      addButton.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      const testCaseButtons = document.querySelectorAll(
+        'button[data-e2e-locator="console-testcase-tag"]'
+      );
+      if (testCaseButtons.length === 0) {
+        throw new Error("No test case buttons found");
+      }
+
+      const lastButton = testCaseButtons[
+        testCaseButtons.length - 1
+      ] as HTMLButtonElement;
+      lastButton.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const inputs = document.querySelectorAll(
+        'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
+      );
+
+      if (inputs.length !== testValues.length) {
+        throw new Error(
+          `Expected ${testValues.length} inputs, found ${inputs.length}`
+        );
+      }
+
+      inputs.forEach((input, index) => {
+        const inputDiv = input as HTMLDivElement;
+        inputDiv.textContent = testValues[index];
+
+        inputDiv.dispatchEvent(new Event("input", { bubbles: true }));
+        inputDiv.dispatchEvent(new Event("change", { bubbles: true }));
+        inputDiv.dispatchEvent(new Event("blur", { bubbles: true }));
+      });
+
+      return { status: SUCCESS };
+    } catch (error: any) {
+      console.error("Failed to add test case:", error);
+      return {
+        status: FAIL,
+        message: error?.message ?? "Unknown error",
+      };
+    }
+  };
+
   browser.action.onClicked.addListener(() => {
     browser.tabs.query({ url: URLS.ALL_PROBLEMS }).then((tabs) =>
       tabs.forEach((tab) => {
@@ -313,6 +378,44 @@ export default defineBackground(() => {
                 servicePayload<"getLanguageExtension">(response[0].result ?? [])
               )
             );
+          break;
+        }
+
+        case "appendTestCaseToLeetCode": {
+          browser.scripting
+            .executeScript({
+              target: { tabId: sender.tab?.id ?? 0 },
+              func: addAndFillTestCase,
+              args: [request.testValues],
+              world: "MAIN",
+            })
+            .then((results) => {
+              console.log("appendTestCaseToLeetCode results:", results);
+              const result = results?.[0]?.result;
+              console.log("appendTestCaseToLeetCode result:", result);
+              if (result && typeof result === "object" && "status" in result) {
+                const response =
+                  servicePayload<"appendTestCaseToLeetCode">(result);
+                console.log("Sending response:", response);
+                sendResponse(response);
+              } else {
+                const response = servicePayload<"appendTestCaseToLeetCode">({
+                  status: ResponseStatus.FAIL,
+                  message: "No result returned",
+                });
+                console.log("Sending error response:", response);
+                sendResponse(response);
+              }
+            })
+            .catch((error) => {
+              console.error("Failed to append test case:", error);
+              const response = servicePayload<"appendTestCaseToLeetCode">({
+                status: ResponseStatus.FAIL,
+                message: error?.message ?? "Unknown error",
+              });
+              console.log("Sending catch error response:", response);
+              sendResponse(response);
+            });
           break;
         }
 
