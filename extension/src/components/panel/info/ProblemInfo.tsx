@@ -74,9 +74,9 @@ export const ProblemInfo = () => {
         <SidebarTabHeader>
           <TabsList className="hide-scrollbar flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit bg-inherit">
             {tabs.map((tab, idx) => (
-              <React.Fragment key={tab.value}>
+              <React.Fragment key={tab.label}>
                 <TabsTrigger
-                  value={tab.value}
+                  value={tab.label}
                   className={cn(
                     "rounded-none border-transparent bg-transparent hover:rounded-sm hover:bg-[--color-tabset-tabbar-background] data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:bg-transparent p-2"
                   )}
@@ -93,10 +93,10 @@ export const ProblemInfo = () => {
             ))}
           </TabsList>
         </SidebarTabHeader>
-        {tabs.map(({ value, content }) => (
+        {tabs.map(({ content, label }) => (
           <TabsContent
-            key={value}
-            value={value}
+            key={label}
+            value={label}
             forceMount
             className="data-[state=inactive]:hidden hide-scrollbar overflow-auto h-full oveflow-y-hidden w-full mt-0"
           >
