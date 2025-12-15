@@ -281,7 +281,7 @@ export class RoomController {
     return this.room;
   }
 
-  public async join(id: Id): Promise<RoomJoinResponse> {
+  public async join(id: Id, question: Question): Promise<RoomJoinResponse> {
     if (this.room != null) {
       return { code: RoomJoinCode.SUCCESS, data: this.room };
     }
@@ -300,6 +300,7 @@ export class RoomController {
       { id, ...room },
       me
     );
+    await this.room.addQuestion(question);
     return { code: RoomJoinCode.SUCCESS, data: this.room };
   }
 

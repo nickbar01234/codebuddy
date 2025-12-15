@@ -163,7 +163,9 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
       await instance.addQuestion(metadata.data);
       getOrCreateControllers().message.dispatchAddQuestion(metadata.data.title);
       useRoom.getState().actions.room.updateRoomStoreQuestion(metadata.data);
-      windowMessager.navigate({ url: getNormalizedUrl(url) });
+      if (getNormalizedUrl(url) !== getNormalizedUrl(window.location.href)) {
+        windowMessager.navigate({ url: getNormalizedUrl(url) });
+      }
     } catch (error) {
       console.error("Error when adding question", error);
       toast.error("Failed to add question. Please try again");
@@ -358,7 +360,18 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
             join: async (id) => {
               try {
                 get().actions.room.loading();
-                const response = await getOrCreateControllers().room.join(id);
+                const metadata = await getProblemMetaBySlugServer(
+                  getQuestionIdFromUrl(window.location.href)
+                );
+                if (
+                  metadata.code !== GetProblemMetadataBySlugServerCode.SUCCESS
+                ) {
+                  throw new Error(`Graphql metadata errors ${metadata}`);
+                }
+                const response = await getOrCreateControllers().room.join(
+                  id,
+                  metadata.data
+                );
                 if (response.code === RoomJoinCode.SUCCESS) {
                   const { name, isPublic, questions, users } =
                     response.data.getRoom();
@@ -369,14 +382,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                     questions,
                     usernames: Object.keys(users),
                   });
-
-                  const question = questions.find(
-                    (question) =>
-                      question.url === getNormalizedUrl(window.location.href)
-                  );
-                  if (question != undefined) {
-                    setSelfProgressForCurrentUrl(question);
-                  }
+                  setSelfProgressForCurrentUrl(metadata.data);
 
                   // todo(nickbar01234): There's a race between populating self-data and WebRTC connection succeeding
                   // Perhaps some sort of backfilling mechanism
@@ -438,7 +444,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
               set((state) => {
                 if (
                   state.room != undefined &&
-                  !state.room.questions.includes(question)
+                  !state.room.questions.some((q) => q.id === question.id)
                 ) {
                   state.room.questions.push(question);
                 }

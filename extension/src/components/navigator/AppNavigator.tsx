@@ -1,4 +1,3 @@
-import { RejoinPromptDialog } from "@cb/components/dialog/RejoinPromptDialog";
 import { BrowsePanel } from "@cb/components/panel/BrowsePanel";
 import EditorPanel from "@cb/components/panel/editor";
 import HomePanel from "@cb/components/panel/HomePanel";
@@ -27,7 +26,6 @@ export const AppNavigator = () => {
         ) : null}
       </div>
       <EditorPanel />
-      <RejoinPromptDialog />
       <RoomInfo />
     </div>
   );
