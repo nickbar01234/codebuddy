@@ -1,7 +1,20 @@
-import config from "./vite.config";
+import { join, resolve } from "path";
+import { defineConfig } from "vitest/config";
 
-// Delete to vite.config.ts, since we have a different build configuration
-// for extension/ and background/
-process.env.TYPE = "content_script";
-
-export default config;
+export default defineConfig(() => {
+  return {
+    publicDir: "public",
+    base: "./",
+    resolve: {
+      alias: [
+        { find: /@cb(.*)/, replacement: join(resolve(__dirname, "src"), "$1") },
+      ],
+    },
+    build: {
+      outDir: "dist",
+    },
+    test: {
+      environment: "jsdom",
+    },
+  };
+});
