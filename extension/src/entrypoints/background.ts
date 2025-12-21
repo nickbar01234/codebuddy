@@ -362,6 +362,8 @@ export default defineBackground(() => {
         );
 
         inputDiv.blur();
+
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
 
       const verifyInputs = activeTestCasePanel
