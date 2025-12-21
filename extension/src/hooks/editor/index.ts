@@ -5,6 +5,7 @@ import { useRoom } from "@cb/store";
 import { ResponseStatus, SelectableTestCase } from "@cb/types";
 import { getNormalizedUrl } from "@cb/utils";
 import { testCaseToValues } from "@cb/utils/string";
+import { debounce } from "lodash";
 import React from "react";
 import { toast } from "sonner";
 
@@ -26,7 +27,7 @@ export const useCopyTestCaseToLeetCode = () => {
   const { self } = useRoomData();
   const getVariables = useRoom((state) => state.actions.room.getVariables);
 
-  return React.useCallback(
+  const copyFunction = React.useCallback(
     (activeTestParam: SelectableTestCase | undefined) => {
       const url = self?.url ?? "";
       const normalizedUrl = getNormalizedUrl(url);
@@ -83,24 +84,40 @@ export const useCopyTestCaseToLeetCode = () => {
         if (!freshActiveTest) {
           if (elapsed >= maxWaitTime) {
             const testValues = testCaseToValues(activeTest);
+
             background
               .appendTestCaseToLeetCode({ testValues })
               .then((response) => {
                 console.log("appendTestCaseToLeetCode response:", response);
-                if (!response || typeof response !== "object") {
-                  console.error("Invalid response:", response);
+
+                if (response === undefined || response === null) {
+                  console.error("Response is undefined or null");
                   toast.error(
-                    "Failed to add test case to LeetCode: No response"
+                    "Failed to add test case to LeetCode: No response received"
                   );
                   return;
                 }
+
+                if (typeof response !== "object") {
+                  console.error(
+                    "Invalid response type:",
+                    typeof response,
+                    response
+                  );
+                  toast.error(
+                    `Failed to add test case to LeetCode: Invalid response type (${typeof response})`
+                  );
+                  return;
+                }
+
                 if (!("status" in response)) {
                   console.error("Response missing status property:", response);
                   toast.error(
-                    "Failed to add test case to LeetCode: Invalid response"
+                    "Failed to add test case to LeetCode: Invalid response format"
                   );
                   return;
                 }
+
                 if (response.status === ResponseStatus.SUCCESS) {
                   toast.success("Test case added to LeetCode!");
                 } else {
@@ -112,7 +129,9 @@ export const useCopyTestCaseToLeetCode = () => {
               })
               .catch((error) => {
                 console.error("Failed to add test case:", error);
-                toast.error("Failed to add test case to LeetCode");
+                toast.error(
+                  `Failed to add test case to LeetCode: ${error?.message ?? "Unknown error"}`
+                );
               });
             return;
           }
@@ -131,18 +150,35 @@ export const useCopyTestCaseToLeetCode = () => {
             .appendTestCaseToLeetCode({ testValues })
             .then((response) => {
               console.log("appendTestCaseToLeetCode response:", response);
-              if (!response || typeof response !== "object") {
-                console.error("Invalid response:", response);
-                toast.error("Failed to add test case to LeetCode: No response");
-                return;
-              }
-              if (!("status" in response)) {
-                console.error("Response missing status property:", response);
+
+              if (response === undefined || response === null) {
+                console.error("Response is undefined or null");
                 toast.error(
-                  "Failed to add test case to LeetCode: Invalid response"
+                  "Failed to add test case to LeetCode: No response received"
                 );
                 return;
               }
+
+              if (typeof response !== "object") {
+                console.error(
+                  "Invalid response type:",
+                  typeof response,
+                  response
+                );
+                toast.error(
+                  `Failed to add test case to LeetCode: Invalid response type (${typeof response})`
+                );
+                return;
+              }
+
+              if (!("status" in response)) {
+                console.error("Response missing status property:", response);
+                toast.error(
+                  "Failed to add test case to LeetCode: Invalid response format"
+                );
+                return;
+              }
+
               if (response.status === ResponseStatus.SUCCESS) {
                 toast.success("Test case added to LeetCode!");
               } else {
@@ -154,7 +190,9 @@ export const useCopyTestCaseToLeetCode = () => {
             })
             .catch((error) => {
               console.error("Failed to add test case:", error);
-              toast.error("Failed to add test case to LeetCode");
+              toast.error(
+                `Failed to add test case to LeetCode: ${error?.message ?? "Unknown error"}`
+              );
             });
         } else {
           setTimeout(checkForUpdate, pollInterval);
@@ -165,4 +203,5 @@ export const useCopyTestCaseToLeetCode = () => {
     },
     [selectedPeer, self, getVariables]
   );
+  return React.useMemo(() => debounce(copyFunction, 500), [copyFunction]);
 };

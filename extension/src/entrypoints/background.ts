@@ -204,42 +204,194 @@ export default defineBackground(() => {
         throw new Error("Add test case button not found");
       }
 
-      addButton.click();
-
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      const testCaseButtons = document.querySelectorAll(
+      const initialButtons = document.querySelectorAll(
         'button[data-e2e-locator="console-testcase-tag"]'
       );
-      if (testCaseButtons.length === 0) {
-        throw new Error("No test case buttons found");
+      const initialCount = initialButtons.length;
+
+      addButton.click();
+
+      let newButton: HTMLButtonElement | null = null;
+      let attempts = 0;
+      const maxAttempts = 30;
+
+      while (attempts < maxAttempts) {
+        const currentButtons = document.querySelectorAll(
+          'button[data-e2e-locator="console-testcase-tag"]'
+        );
+
+        if (currentButtons.length > initialCount) {
+          newButton = currentButtons[
+            currentButtons.length - 1
+          ] as HTMLButtonElement;
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        attempts++;
       }
 
-      const lastButton = testCaseButtons[
-        testCaseButtons.length - 1
-      ] as HTMLButtonElement;
-      lastButton.click();
+      if (!newButton) {
+        throw new Error("New test case button did not appear after waiting");
+      }
 
-      await new Promise((resolve) => setTimeout(resolve, 200));
+      newButton.click();
 
-      const inputs = document.querySelectorAll(
-        'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
-      );
+      const isSelected =
+        newButton.getAttribute("data-state") === "open" ||
+        newButton.classList.contains("active") ||
+        newButton.classList.contains("selected") ||
+        newButton.getAttribute("aria-selected") === "true" ||
+        newButton.getAttribute("aria-pressed") === "true";
 
-      if (inputs.length !== testValues.length) {
+      if (!isSelected) {
+        newButton.click();
+      }
+
+      const activeTestCasePanel =
+        document.querySelector(
+          '[data-e2e-locator="console-testcase-panel"]:not([hidden])'
+        ) ||
+        document.querySelector(
+          '.testcase-panel:not([hidden]), [class*="testcase"][class*="active"]'
+        ) ||
+        newButton.closest('[class*="testcase"], [class*="console"]');
+
+      let inputs: NodeListOf<Element> | null = null;
+      let retries = 0;
+      const maxRetries = 10;
+
+      while (retries < maxRetries) {
+        if (activeTestCasePanel) {
+          inputs = activeTestCasePanel.querySelectorAll(
+            'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
+          );
+        } else {
+          inputs = document.querySelectorAll(
+            'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
+          );
+        }
+
+        if (inputs.length === testValues.length) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        retries++;
+      }
+
+      if (!inputs || inputs.length !== testValues.length) {
         throw new Error(
-          `Expected ${testValues.length} inputs, found ${inputs.length}`
+          `Expected ${testValues.length} inputs, found ${inputs?.length ?? 0} after ${maxRetries} retries`
         );
       }
 
-      inputs.forEach((input, index) => {
+      const visibleInputs = Array.from(inputs).filter((input) => {
+        const element = input as HTMLElement;
+        const style = window.getComputedStyle(element);
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          element.offsetParent !== null
+        );
+      });
+
+      const finalInputs =
+        visibleInputs.length === testValues.length
+          ? visibleInputs
+          : Array.from(inputs);
+
+      if (finalInputs.length !== testValues.length) {
+        throw new Error(
+          `Expected ${testValues.length} inputs, found ${finalInputs.length} visible inputs`
+        );
+      }
+
+      finalInputs.forEach((input) => {
         const inputDiv = input as HTMLDivElement;
-        inputDiv.textContent = testValues[index];
+
+        inputDiv.focus();
+
+        const selection = window.getSelection();
+        if (selection) {
+          const range = document.createRange();
+          range.selectNodeContents(inputDiv);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+
+        inputDiv.textContent = "";
+        inputDiv.innerText = "";
+
+        const deleteEvent = new KeyboardEvent("keydown", {
+          bubbles: true,
+          cancelable: true,
+          key: "Backspace",
+          code: "Backspace",
+        });
+        inputDiv.dispatchEvent(deleteEvent);
 
         inputDiv.dispatchEvent(new Event("input", { bubbles: true }));
         inputDiv.dispatchEvent(new Event("change", { bubbles: true }));
-        inputDiv.dispatchEvent(new Event("blur", { bubbles: true }));
+        inputDiv.blur();
       });
+
+      for (let index = 0; index < finalInputs.length; index++) {
+        const input = finalInputs[index];
+        const inputDiv = input as HTMLDivElement;
+        const value = testValues[index];
+
+        inputDiv.focus();
+
+        inputDiv.textContent = value;
+        inputDiv.innerText = value;
+
+        const inputEvent = new InputEvent("input", {
+          bubbles: true,
+          cancelable: true,
+          inputType: "insertText",
+          data: value,
+        });
+        inputDiv.dispatchEvent(inputEvent);
+
+        inputDiv.dispatchEvent(
+          new Event("input", { bubbles: true, cancelable: true })
+        );
+        inputDiv.dispatchEvent(
+          new Event("change", { bubbles: true, cancelable: true })
+        );
+
+        inputDiv.blur();
+      }
+
+      const verifyInputs = activeTestCasePanel
+        ? activeTestCasePanel.querySelectorAll(
+            'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
+          )
+        : document.querySelectorAll(
+            'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
+          );
+
+      let allCorrect = true;
+      verifyInputs.forEach((input: Element, index: number) => {
+        const inputDiv = input as HTMLDivElement;
+        const actualValue =
+          inputDiv.textContent?.trim() || inputDiv.innerText?.trim() || "";
+        const expectedValue = testValues[index]?.trim() || "";
+
+        if (actualValue !== expectedValue) {
+          console.warn(
+            `Input ${index} mismatch: expected "${expectedValue}", got "${actualValue}"`
+          );
+          allCorrect = false;
+        }
+      });
+
+      if (!allCorrect) {
+        console.warn(
+          "Some input values don't match expected values, but continuing..."
+        );
+      }
 
       return { status: SUCCESS };
     } catch (error: any) {
@@ -382,26 +534,56 @@ export default defineBackground(() => {
         }
 
         case "appendTestCaseToLeetCode": {
+          const tabId = sender.tab?.id;
+          if (!tabId) {
+            sendResponse(
+              servicePayload<"appendTestCaseToLeetCode">({
+                status: ResponseStatus.FAIL,
+                message: "No tab ID available",
+              })
+            );
+            break;
+          }
+
           browser.scripting
             .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
+              target: { tabId },
               func: addAndFillTestCase,
               args: [request.testValues],
               world: "MAIN",
             })
             .then((results) => {
               console.log("appendTestCaseToLeetCode results:", results);
-              const result = results?.[0]?.result;
+
+              if (!results || results.length === 0) {
+                sendResponse(
+                  servicePayload<"appendTestCaseToLeetCode">({
+                    status: ResponseStatus.FAIL,
+                    message: "Script execution returned no results",
+                  })
+                );
+                return;
+              }
+
+              const result = results[0]?.result;
               console.log("appendTestCaseToLeetCode result:", result);
+
               if (result && typeof result === "object" && "status" in result) {
-                const response =
-                  servicePayload<"appendTestCaseToLeetCode">(result);
+                const response = servicePayload<"appendTestCaseToLeetCode">({
+                  status:
+                    result.status === 0
+                      ? ResponseStatus.SUCCESS
+                      : ResponseStatus.FAIL,
+                  message: (result as any).message,
+                });
                 console.log("Sending response:", response);
                 sendResponse(response);
               } else {
                 const response = servicePayload<"appendTestCaseToLeetCode">({
                   status: ResponseStatus.FAIL,
-                  message: "No result returned",
+                  message: result
+                    ? `Invalid result format: ${JSON.stringify(result)}`
+                    : "No result returned from script",
                 });
                 console.log("Sending error response:", response);
                 sendResponse(response);
@@ -411,7 +593,7 @@ export default defineBackground(() => {
               console.error("Failed to append test case:", error);
               const response = servicePayload<"appendTestCaseToLeetCode">({
                 status: ResponseStatus.FAIL,
-                message: error?.message ?? "Unknown error",
+                message: error?.message || String(error) || "Unknown error",
               });
               console.log("Sending catch error response:", response);
               sendResponse(response);
