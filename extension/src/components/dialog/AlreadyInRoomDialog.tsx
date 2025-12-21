@@ -1,24 +1,17 @@
-import { useRoomActions, useRoomData } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
+import { DialogClose } from "@cb/lib/components/ui/dialog";
 import { cn } from "@cb/utils/cn";
 import { DialogOverlay } from "@radix-ui/react-dialog";
-import { throttle } from "lodash";
-import React from "react";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
-export const AlreadyInRoomDialog = () => {
-  const { join } = useRoomActions();
-  const { id } = useRoomData();
-
-  const onJoinRoom = React.useMemo(() => {
-    return throttle(async (reactEvent: React.MouseEvent<Element>) => {
-      reactEvent.stopPropagation();
-      if (id) {
-        await join(id);
-      }
-    }, 1000);
-  }, [join, id]);
-
+interface AlreadyInRoomDialogProps {
+  onConfirm: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  onCancel: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
+export const AlreadyInRoomDialog = ({
+  onConfirm,
+  onCancel,
+}: AlreadyInRoomDialogProps) => {
   return (
     <RoomDialog
       title={{ node: "This account is already in the room" }}
@@ -33,22 +26,21 @@ export const AlreadyInRoomDialog = () => {
         <DialogOverlay className="fixed inset-0 z-[9999] dark:bg-black/30 bg-white/30 backdrop-blur-sm" />
       }
     >
-      <div className="flex flex-col gap-4">
-        <p>
-          We found this account already associated with this room. Joining again
-          (for example, from another tab or window) may cause the session to
-          break.
-        </p>
-        <div className="flex w-full items-center justify-end gap-2 self-end">
+      <div className="flex w-full items-center justify-end gap-2">
+        <DialogClose asChild>
           <Button
-            className={cn(baseButtonClassName, "w-full")}
-            onClick={(e) => e.stopPropagation()}
+            className={cn(baseButtonClassName, "flex-1")}
+            onClick={onCancel}
           >
             Cancel
           </Button>
-
-          <Button onClick={onJoinRoom}>Join anyway</Button>
-        </div>
+        </DialogClose>
+        <Button
+          className={cn(baseButtonClassName, "flex-1 bg-orange-500")}
+          onClick={onConfirm}
+        >
+          Join anyway
+        </Button>
       </div>
     </RoomDialog>
   );

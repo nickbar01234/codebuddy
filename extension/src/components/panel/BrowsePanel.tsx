@@ -5,22 +5,26 @@ import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
 import { Tooltip } from "@cb/components/tooltip";
 import { CSS, ROOM } from "@cb/constants";
-import { useRoomActions } from "@cb/hooks/store";
+import { useRoomActions, useRoomData } from "@cb/hooks/store";
 import { Button } from "@cb/lib/components/ui/button";
 import InfiniteScroll from "@cb/lib/components/ui/InfiniteScroll";
 import { Input } from "@cb/lib/components/ui/input";
 import { Spinner } from "@cb/lib/components/ui/spinner";
 import { TableCell, TableRow } from "@cb/lib/components/ui/table";
 import { roomQuery } from "@cb/services/db";
+import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CornerUpLeft } from "lucide-react";
 import React from "react";
+import { AlreadyInRoomDialog } from "@cb/components/dialog/AlreadyInRoomDialog";
 
 const HOOK_LIMIT = 100;
 
 export const BrowsePanel = () => {
   const { home } = useRoomActions();
   const { join } = useRoomActions();
+  const { id } = useRoomData();
+  const [showDialog, setShowDialog] = React.useState(false);
   const [inputRoomId, setInputRoomId] = React.useState("");
   const { data, loading, getNext, hasNext } = usePaginate({
     baseQuery: roomQuery,
@@ -34,11 +38,31 @@ export const BrowsePanel = () => {
         roomId: string
       ) => {
         reactEvent.stopPropagation();
+        if (roomId === id) {
+          setShowDialog(true);
+          return;
+        }
         await join(roomId);
       },
       1000
     );
-  }, [join]);
+  }, [join, id]);
+
+  const onJoinAnyway = React.useMemo(() => {
+    return throttle(
+      async (
+        reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
+      ) => {
+        reactEvent.stopPropagation();
+        await join(inputRoomId);
+      },
+      1000
+    );
+  }, [join, inputRoomId]);
+
+  const onCancel = () => {
+    setShowDialog(false);
+  };
 
   const onChangeRoomIdInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -47,6 +71,9 @@ export const BrowsePanel = () => {
 
   return (
     <div className="h-full w-full flex flex-col">
+      {showDialog && (
+        <AlreadyInRoomDialog onConfirm={onJoinAnyway} onCancel={onCancel} />
+      )}
       <div className="w-full flex flex-row-reverse">
         <Tooltip
           trigger={{
