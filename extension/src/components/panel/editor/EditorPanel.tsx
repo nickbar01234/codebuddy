@@ -3,7 +3,7 @@ import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadin
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { useCopyCode } from "@cb/hooks/editor";
+import { useCopyCode, useCopyTestCaseToLeetCode } from "@cb/hooks/editor";
 import {
   useLeetCodeActions,
   usePeerActions,
@@ -30,12 +30,24 @@ const EditorPanel = () => {
   const { selectTest, toggleCodeVisibility } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
+  const copyTestCaseToLeetCode = useCopyTestCaseToLeetCode();
+  const [activeTab, setActiveTab] = React.useState("code");
 
   const url = self?.url ?? "";
   const activeTest = selectedPeer?.questions[url]?.tests.find(
     (test) => test.selected
   );
   const emptyRoom = Object.keys(peers).length === 0;
+
+  const handleCopy = React.useCallback(() => {
+    if (activeTab === "test") {
+      copyTestCaseToLeetCode(activeTest);
+    } else {
+      copyCode();
+    }
+  }, [activeTab, activeTest, copyCode, copyTestCaseToLeetCode]);
+
+  const copyTooltipText = activeTab === "test" ? "Copy test" : "Copy code";
 
   const upperTabConfigs = React.useMemo(() => {
     const extension =
@@ -80,7 +92,8 @@ const EditorPanel = () => {
       )}
       <div className={cn("h-full w-full", { hidden: emptyRoom })}>
         <Tabs
-          defaultValue="code"
+          value={activeTab}
+          onValueChange={setActiveTab}
           className="h-full w-full bg-secondary text-inherit rounded-b-lg"
         >
           <div className="flex justify-between w-full border-border-quaternary dark:border-border-quaternary border-b rounded-none px-2 py-1 items-center">
@@ -129,13 +142,13 @@ const EditorPanel = () => {
                   node: (
                     <div
                       className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
-                      onClick={copyCode}
+                      onClick={handleCopy}
                     >
                       <Copy size={16} />
                     </div>
                   ),
                 }}
-                content="Copy code"
+                content={copyTooltipText}
               />
             </div>
           </div>

@@ -191,14 +191,29 @@ export default defineBackground(() => {
     const FAIL = 1;
 
     try {
-      const addButton = Array.from(
-        document.querySelectorAll('button[data-state="closed"]')
-      ).find((button) => {
-        const svg = button.querySelector('svg[viewBox="0 0 24 24"]');
-        if (!svg) return false;
-        const path = svg.querySelector('path[d*="M13 11h7"]');
-        return path !== null;
-      }) as HTMLButtonElement | undefined;
+      const testCaseButtons = document.querySelectorAll(
+        'button[data-e2e-locator="console-testcase-tag"]'
+      );
+
+      if (testCaseButtons.length === 0) {
+        throw new Error("No test case buttons found");
+      }
+
+      const lastTestCaseButton = testCaseButtons[
+        testCaseButtons.length - 1
+      ] as HTMLElement;
+      const container = lastTestCaseButton.closest("div")?.parentElement;
+
+      let addButton: HTMLButtonElement | undefined;
+
+      if (container) {
+        const closedButtons = container.querySelectorAll(
+          'button[data-state="closed"]'
+        );
+        addButton = Array.from(closedButtons)[0] as
+          | HTMLButtonElement
+          | undefined;
+      }
 
       if (!addButton) {
         throw new Error("Add test case button not found");
@@ -536,20 +551,9 @@ export default defineBackground(() => {
         }
 
         case "appendTestCaseToLeetCode": {
-          const tabId = sender.tab?.id;
-          if (!tabId) {
-            sendResponse(
-              servicePayload<"appendTestCaseToLeetCode">({
-                status: ResponseStatus.FAIL,
-                message: "No tab ID available",
-              })
-            );
-            break;
-          }
-
           browser.scripting
             .executeScript({
-              target: { tabId },
+              target: { tabId: sender.tab?.id ?? 0 },
               func: addAndFillTestCase,
               args: [request.testValues],
               world: "MAIN",

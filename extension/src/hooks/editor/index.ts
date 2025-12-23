@@ -32,45 +32,16 @@ export const useCopyTestCaseToLeetCode = () => {
       background
         .appendTestCaseToLeetCode({ testValues })
         .then((response) => {
-          console.log("appendTestCaseToLeetCode response:", response);
-
-          if (response === undefined || response === null) {
-            console.error("Response is undefined or null");
-            toast.error(
-              "Failed to add test case to LeetCode: No response received"
-            );
-            return;
-          }
-
-          if (typeof response !== "object") {
-            console.error("Invalid response type:", typeof response, response);
-            toast.error(
-              `Failed to add test case to LeetCode: Invalid response type (${typeof response})`
-            );
-            return;
-          }
-
-          if (!("status" in response)) {
-            console.error("Response missing status property:", response);
-            toast.error(
-              "Failed to add test case to LeetCode: Invalid response format"
-            );
-            return;
-          }
-
-          if (response.status === ResponseStatus.SUCCESS) {
-            toast.success("Test case added to LeetCode!");
+          if (response?.status === ResponseStatus.SUCCESS) {
+            toast.success("Copied test case!");
           } else {
-            toast.error(
-              (response as any).message ?? "Failed to add test case to LeetCode"
-            );
+            console.error("Failed to copy test case:", response);
+            toast.error("Failed to copy test case");
           }
         })
         .catch((error) => {
-          console.error("Failed to add test case:", error);
-          toast.error(
-            `Failed to add test case to LeetCode: ${error?.message ?? "Unknown error"}`
-          );
+          console.error("Failed to copy test case:", error);
+          toast.error("Failed to copy test case");
         });
     },
     []
