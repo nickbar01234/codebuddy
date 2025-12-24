@@ -2,17 +2,12 @@ import monaco from "monaco-editor";
 import { LocalStorage } from ".";
 import type { GenericMessage, GenericResponse } from "./utils";
 
-interface GetValueRequest extends GenericMessage {
-  action: "getValue";
+interface GetUserCodeRequest extends GenericMessage {
+  action: "getUserCode";
 }
 
-interface SetupCodeBuddyModel extends GenericMessage {
-  action: "setupCodeBuddyModel";
-  id: string;
-}
-
-interface SetupLeetCodeModel extends GenericMessage {
-  action: "setupLeetCodeModel";
+interface SetupEditorsRequest extends GenericMessage {
+  action: "setupEditors";
 }
 
 interface SetOtherEditorRequest extends GenericMessage {
@@ -38,10 +33,9 @@ interface GetLanguageExtensionRequest extends GenericMessage {
 }
 
 export type ServiceRequest =
-  | GetValueRequest
-  | SetupCodeBuddyModel
+  | GetUserCodeRequest
   | SetOtherEditorRequest
-  | SetupLeetCodeModel
+  | SetupEditorsRequest
   | GetActiveTabIdRequest
   | CloseSignInTabRequest
   | GetLanguageExtensionRequest;
@@ -58,12 +52,11 @@ interface ServiceGenericResponse {
 export type ServiceResponse = GenericResponse<
   ServiceRequest,
   {
-    getValue: {
+    getUserCode: {
       value: string;
       language: string;
     };
-    setupCodeBuddyModel: ServiceGenericResponse;
-    setupLeetCodeModel: ServiceGenericResponse;
+    setupEditors: ServiceGenericResponse;
     setValueOtherEditor: void;
     reloadExtension: void;
     getActiveTabId: number;

@@ -57,13 +57,7 @@ export class MessageDispatcher {
 
   private init() {
     poll({
-      fn: () =>
-        this.background.setupCodeBuddyEditor({ id: DOM.CODEBUDDY_EDITOR_ID }),
-      until: (response) => response?.status === ResponseStatus.SUCCESS,
-    });
-
-    poll({
-      fn: () => this.background.setupLeetCodeEditor({}),
+      fn: () => this.background.setupEditors({}),
       until: (response) => response?.status === ResponseStatus.SUCCESS,
     });
 

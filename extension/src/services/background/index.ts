@@ -11,19 +11,21 @@ const sendServiceRequest = <T extends ServiceRequest>(
   browser.runtime.sendMessage(request);
 
 const background = {
-  getCode: (args: MessagePayload<ExtractMessage<ServiceRequest, "getValue">>) =>
+  getUserCode: (
+    args: MessagePayload<ExtractMessage<ServiceRequest, "getUserCode">>
+  ) =>
     sendServiceRequest({
-      action: "getValue",
+      action: "getUserCode",
       ...args,
     }),
 
-  setupCodeBuddyEditor: (
-    args: MessagePayload<ExtractMessage<ServiceRequest, "setupCodeBuddyModel">>
-  ) => sendServiceRequest({ action: "setupCodeBuddyModel", ...args }),
-
-  setupLeetCodeEditor: (
-    args: MessagePayload<ExtractMessage<ServiceRequest, "setupLeetCodeModel">>
-  ) => sendServiceRequest({ action: "setupLeetCodeModel", ...args }),
+  setupEditors: (
+    args: MessagePayload<ExtractMessage<ServiceRequest, "setupEditors">>
+  ) =>
+    sendServiceRequest({
+      action: "setupEditors",
+      ...args,
+    }),
 
   applyCodeToEditor: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "setValueOtherEditor">>

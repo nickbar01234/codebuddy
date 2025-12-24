@@ -233,7 +233,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
   };
 
   const setSelfProgressForCurrentUrl = async (question: Question) => {
-    const code = await background.getCode({});
+    const code = await background.getUserCode({});
     const { tests } = getTestsPayload(question.variables);
     useRoom.getState().actions.self.update({
       questions: {
