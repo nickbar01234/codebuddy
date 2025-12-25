@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useRoomData } from "./store";
 import { useOnMount } from "./useOnMount";
 
-export { useFirebaseListener, useOnMount };
+export { useOnMount };
 
 export const useCopyRoomId = () => {
   const { id } = useRoomData();

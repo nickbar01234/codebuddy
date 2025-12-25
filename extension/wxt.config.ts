@@ -10,6 +10,17 @@ const USER_PROFILE = process.env.USER_PROFILE;
 export default defineConfig({
   srcDir: SRC_DIR,
   outDir: "dist",
+  imports: {
+    warn: () => {},
+  },
+  hooks: {
+    "server:started": async (_wxt, server) => {
+      setTimeout(() => {
+        console.log("[WXT] Reloading extension after startup...");
+        server.reloadExtension();
+      }, 10000);
+    },
+  },
   webExt: {
     startUrls: ["https://leetcode.com/problems/two-sum/"],
     chromiumArgs: [
