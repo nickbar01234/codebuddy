@@ -106,9 +106,9 @@ export class MessageDispatcher {
           break;
         }
 
-        case "navigate": {
+        case "navigate":
+        case "setCodeBuddyCode":
           break;
-        }
 
         default:
           assertUnreachable(action);

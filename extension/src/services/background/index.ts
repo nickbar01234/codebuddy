@@ -27,10 +27,6 @@ const background = {
       ...args,
     }),
 
-  applyCodeToEditor: (
-    args: MessagePayload<ExtractMessage<ServiceRequest, "setValueOtherEditor">>
-  ) => sendServiceRequest({ action: "setValueOtherEditor", ...args }),
-
   getActiveTab: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "getActiveTabId">>
   ) => sendServiceRequest({ action: "getActiveTabId", ...args }),

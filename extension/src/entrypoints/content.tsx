@@ -13,7 +13,8 @@ export default defineContentScript({
   async main(ctx) {
     // Initialize controllers on startup
     getOrCreateControllers();
-    await injectScript("/proxy.js", { keepInDom: true });
+    await injectScript("/router.js", { keepInDom: true });
+    await injectScript("/set-codebuddy-code.js", { keepInDom: true });
 
     ctx.addEventListener(window, "wxt:locationchange", () =>
       mountExtensionIdempotent(ctx)

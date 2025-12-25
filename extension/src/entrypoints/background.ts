@@ -1,7 +1,6 @@
 import { URLS } from "@cb/constants";
 import {
   ContentRequest,
-  ExtractMessage,
   ResponseStatus,
   ServiceRequest,
   ServiceResponse,
@@ -49,55 +48,6 @@ export default defineBackground(() => {
   ) => payload;
 
   const contentPayload = <T extends ContentRequest>(payload: T) => payload;
-
-  const setValueModel = async (
-    args: Pick<
-      ExtractMessage<ServiceRequest, "setValueOtherEditor">,
-      "code" | "language" | "changes" | "changeUser" | "editorId"
-    >
-  ) => {
-    const { code, language, changes, changeUser } = args;
-    const editor = window.monaco?.editor
-      .getEditors()
-      .find((editor) => editor.getContainerDomNode().id === "CodeBuddyEditor");
-    const model = editor?.getModel();
-
-    if (
-      editor == undefined ||
-      model == undefined ||
-      window.monaco == undefined
-    ) {
-      return;
-    }
-
-    if (
-      model.getLanguageId() != language ||
-      changeUser ||
-      Object.keys(changes).length === 0
-    ) {
-      window.monaco.editor.setModelLanguage(model, language);
-      editor.setValue(code);
-      return;
-    }
-
-    const editOperations = {
-      identifier: { major: 1, minor: 1 },
-      range: new window.monaco.Range(
-        changes.range.startLineNumber,
-        changes.range.startColumn,
-        changes.range.endLineNumber,
-        changes.range.endColumn
-      ),
-      text: changes.text,
-      forceMoveMarkers: false,
-    };
-    editor.updateOptions({ readOnly: false });
-    editor.executeEdits("apply changes", [editOperations]);
-    if (editor.getValue() !== code) {
-      editor.setValue(code);
-    }
-    editor.updateOptions({ readOnly: true });
-  };
 
   browser.action.onClicked.addListener(() => {
     browser.tabs.query({ url: URLS.ALL_PROBLEMS }).then((tabs) =>
@@ -147,26 +97,6 @@ export default defineBackground(() => {
               world: "MAIN",
             })
             .then((result) => sendResponse(result[0].result));
-          break;
-        }
-
-        case "setValueOtherEditor": {
-          browser.scripting
-            .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
-              func: setValueModel,
-              args: [
-                {
-                  code: request.code,
-                  language: request.language,
-                  changes: request.changes,
-                  changeUser: request.changeUser,
-                  editorId: request.editorId,
-                },
-              ],
-              world: "MAIN",
-            })
-            .then(() => sendResponse());
           break;
         }
 

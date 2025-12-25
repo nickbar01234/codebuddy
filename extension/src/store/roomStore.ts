@@ -1,4 +1,3 @@
-import { DOM } from "@cb/constants";
 import { getOrCreateControllers } from "@cb/services";
 import background, { BackgroundProxy } from "@cb/services/background";
 import { RoomJoinCode } from "@cb/services/controllers/RoomController";
@@ -756,12 +755,11 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
       if (current.id == undefined) {
         return;
       } else if (current.peerCode != undefined) {
-        background.applyCodeToEditor({
+        windowMessager.setCodeBuddyCode({
           code: current.peerCode.value ?? "",
           language: current.peerCode.language ?? "",
           changes: JSON.parse(current.peerCode?.changes ?? "{}"),
           changeUser: current.id !== prev?.id,
-          editorId: DOM.CODEBUDDY_EDITOR_ID,
         });
       }
     },

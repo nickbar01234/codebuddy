@@ -10,15 +10,6 @@ interface SetupEditorsRequest extends GenericMessage {
   action: "setupEditors";
 }
 
-interface SetOtherEditorRequest extends GenericMessage {
-  action: "setValueOtherEditor";
-  code: string;
-  language: string;
-  changes: monaco.editor.IModelContentChange;
-  changeUser: boolean;
-  editorId: string;
-}
-
 interface GetActiveTabIdRequest extends GenericMessage {
   action: "getActiveTabId";
 }
@@ -34,7 +25,6 @@ interface GetLanguageExtensionRequest extends GenericMessage {
 
 export type ServiceRequest =
   | GetUserCodeRequest
-  | SetOtherEditorRequest
   | SetupEditorsRequest
   | GetActiveTabIdRequest
   | CloseSignInTabRequest
@@ -57,7 +47,6 @@ export type ServiceResponse = GenericResponse<
       language: string;
     };
     setupEditors: ServiceGenericResponse;
-    setValueOtherEditor: void;
     reloadExtension: void;
     getActiveTabId: number;
     closeSignInTab: ServiceGenericResponse;

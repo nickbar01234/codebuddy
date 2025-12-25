@@ -42,7 +42,11 @@ export default defineConfig({
       },
       {
         // We want css to be accessible to iframe
-        resources: ["proxy.js", "content-scripts/content.css"],
+        resources: [
+          "router.js",
+          "content-scripts/content.css",
+          "set-codebuddy-code.js",
+        ],
         matches: ["https://leetcode.com/*"],
       },
       {
