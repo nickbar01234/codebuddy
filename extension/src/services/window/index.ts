@@ -9,4 +9,10 @@ export const windowMessager = {
     const problem = new URL(url);
     postMessage({ action: "navigate", url: problem.pathname });
   },
+
+  setCodeBuddyCode: (
+    args: MessagePayload<ExtractMessage<WindowMessage, "setCodeBuddyCode">>
+  ) => {
+    postMessage({ action: "setCodeBuddyCode", ...args });
+  },
 };

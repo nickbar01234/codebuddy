@@ -1,7 +1,7 @@
 import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
-import { AppStatus, AppStore, RoomStore } from "@cb/store";
+import { AppStatus, AppStore, RoomStatus, RoomStore } from "@cb/store";
 import {
   ContentRequest,
   Events,
@@ -57,13 +57,7 @@ export class MessageDispatcher {
 
   private init() {
     poll({
-      fn: () =>
-        this.background.setupCodeBuddyEditor({ id: DOM.CODEBUDDY_EDITOR_ID }),
-      until: (response) => response?.status === ResponseStatus.SUCCESS,
-    });
-
-    poll({
-      fn: () => this.background.setupLeetCodeEditor({}),
+      fn: () => this.background.setupEditors({}),
       until: (response) => response?.status === ResponseStatus.SUCCESS,
     });
 
@@ -95,6 +89,9 @@ export class MessageDispatcher {
       const action = message.data.action;
       switch (action) {
         case "leetCodeOnChange": {
+          if (this.roomStore.getState().status !== RoomStatus.IN_ROOM) {
+            return;
+          }
           const code = await getCodePayload(message.data.changes);
           this.roomStore.getState().actions.self.update({
             questions: {
@@ -112,9 +109,9 @@ export class MessageDispatcher {
           break;
         }
 
-        case "navigate": {
+        case "navigate":
+        case "setCodeBuddyCode":
           break;
-        }
 
         default:
           assertUnreachable(action);
@@ -126,6 +123,9 @@ export class MessageDispatcher {
 
   private subscribeToTestEditor() {
     const sendTests = async () => {
+      if (this.roomStore.getState().status !== RoomStatus.IN_ROOM) {
+        return;
+      }
       const tests = await this.getTestsPayload();
       this.roomStore.getState().actions.self.update({
         questions: {
@@ -335,14 +335,17 @@ export class MessageDispatcher {
         case "url": {
           const user = this.appStore.getState().actions.getMaybeAuthUser();
           const url = getNormalizedUrl(window.location.href);
-          const questions = this.roomStore.getState().room?.questions ?? [];
           if (user == undefined) {
             return;
           }
           this.roomStore.getState().actions.self.update({
             url: getNormalizedUrl(window.location.href),
           });
-          if (questions.some((question) => question.url === url)) {
+          if (
+            hasQuestionIdInUrl(url) &&
+            this.roomStore.getState().room != undefined
+          ) {
+            this.roomStore.getState().actions.room.addQuestion(url);
             this.requestProgress(url);
           }
           break;

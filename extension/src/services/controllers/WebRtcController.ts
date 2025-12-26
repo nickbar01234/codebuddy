@@ -91,7 +91,10 @@ export class WebRtcController {
     console.log(
       `Connecting user ${user}@${joinedAt}. Last attempted ${maybeJoinedAt}`
     );
-    if (maybeJoinedAt && maybeJoinedAt > joinedAt) {
+    if (maybeJoinedAt && maybeJoinedAt >= joinedAt) {
+      console.log(
+        `Received a stale connect timestamp from ${user}. Aborting WebRtcConnection`
+      );
       return;
     }
 
