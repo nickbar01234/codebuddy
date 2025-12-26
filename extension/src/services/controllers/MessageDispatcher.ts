@@ -1,7 +1,7 @@
 import { DOM } from "@cb/constants";
 import { BackgroundProxy } from "@cb/services/background";
 import { EventEmitter } from "@cb/services/events";
-import { AppStatus, AppStore, RoomStore } from "@cb/store";
+import { AppStatus, AppStore, RoomStatus, RoomStore } from "@cb/store";
 import {
   ContentRequest,
   Events,
@@ -95,6 +95,9 @@ export class MessageDispatcher {
       const action = message.data.action;
       switch (action) {
         case "leetCodeOnChange": {
+          if (this.roomStore.getState().status !== RoomStatus.IN_ROOM) {
+            return;
+          }
           const code = await getCodePayload(message.data.changes);
           this.roomStore.getState().actions.self.update({
             questions: {
@@ -126,6 +129,9 @@ export class MessageDispatcher {
 
   private subscribeToTestEditor() {
     const sendTests = async () => {
+      if (this.roomStore.getState().status !== RoomStatus.IN_ROOM) {
+        return;
+      }
       const tests = await this.getTestsPayload();
       this.roomStore.getState().actions.self.update({
         questions: {
