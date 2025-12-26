@@ -20,6 +20,11 @@ export default defineConfig({
         server.reloadExtension();
       }, 10000);
     },
+    "build:manifestGenerated": (wxt, manifest) => {
+      if (wxt.config.mode === "development") {
+        manifest.name = `[DEV] ${manifest.name}`;
+      }
+    },
   },
   webExt: {
     startUrls: ["https://leetcode.com/problems/two-sum/"],
