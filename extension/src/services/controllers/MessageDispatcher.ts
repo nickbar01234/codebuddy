@@ -95,6 +95,9 @@ export class MessageDispatcher {
       const action = message.data.action;
       switch (action) {
         case "leetCodeOnChange": {
+          if (this.roomStore.getState().status !== RoomStatus.IN_ROOM) {
+            return;
+          }
           const code = await getCodePayload(message.data.changes);
           this.roomStore.getState().actions.self.update({
             questions: {
