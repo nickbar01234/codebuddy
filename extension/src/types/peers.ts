@@ -14,7 +14,7 @@ interface PeerGenericMessage extends GenericMessage {
   url: string;
 }
 
-type MonacoCode = ServiceResponse["getValue"];
+type MonacoCode = ServiceResponse["getUserCode"];
 
 export interface CodeWithChanges extends MonacoCode {
   changes?: string;

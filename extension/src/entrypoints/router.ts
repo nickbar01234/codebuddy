@@ -2,7 +2,7 @@ import { WindowMessage } from "@cb/types";
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script";
 
 export default defineUnlistedScript(() => {
-  console.log("Inject proxy");
+  console.log("Inject router");
   window.addEventListener("message", (message: MessageEvent<WindowMessage>) => {
     if (message.data.action == undefined) {
       return;
@@ -15,9 +15,9 @@ export default defineUnlistedScript(() => {
         break;
       }
 
-      case "leetCodeOnChange": {
+      case "leetCodeOnChange":
+      case "setCodeBuddyCode":
         break;
-      }
 
       default:
         assertUnreachable(action);
