@@ -271,12 +271,15 @@ export class RoomController {
     this.appStore = appStore;
   }
 
-  public async create(room: Pick<Room, "name" | "isPublic" | "questions">) {
+  public async create(
+    room: Pick<Room, "name" | "isPublic" | "questions">,
+    id?: Id
+  ) {
     if (this.room != null) {
       return this.room;
     }
     const { username: me } = this.appStore.getState().actions.getAuthUser();
-    const doc = await this.database.create(room);
+    const doc = await this.database.create(room, id);
     this.room = new RoomLifeCycle(this.database, this.emitter, doc, me);
     return this.room;
   }

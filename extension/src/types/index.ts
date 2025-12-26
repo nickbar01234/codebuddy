@@ -31,3 +31,7 @@ export interface LocalStorage {
     tabId: number;
   };
 }
+
+export interface SessionStorage {
+  devAutoJoinAttempted: boolean;
+}

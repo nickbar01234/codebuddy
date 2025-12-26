@@ -112,3 +112,10 @@ export const PANEL = {
   DEFAULT_WIDTH: 350, // px
   COLLAPSED_WIDTH: 40, // px
 };
+
+export const DEV_ROOM = {
+  ID: "dev-room-codebuddy",
+  NAME: "Dev Room",
+};
+
+export const STORAGE_PREFIX = "codebuddy";

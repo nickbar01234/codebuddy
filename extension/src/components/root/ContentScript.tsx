@@ -7,6 +7,7 @@ import { ResizablePanel } from "@cb/components/panel/ResizablePanel";
 import SignInPanel from "@cb/components/panel/SignInPanel";
 import { useAuthenticate } from "@cb/hooks/auth";
 import { useToast } from "@cb/hooks/toasts";
+import { useDevAutoJoin } from "@cb/hooks/useDevAutoJoin";
 import { AppStatus, useApp } from "@cb/store";
 import React from "react";
 import { Toaster } from "sonner";
@@ -16,6 +17,7 @@ export const ContentScript = () => {
 
   useAuthenticate({});
   useToast();
+  useDevAutoJoin();
 
   const root = React.useMemo(() => {
     switch (auth.status) {
