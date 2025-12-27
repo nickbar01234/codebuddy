@@ -62,7 +62,6 @@ const appendTestCaseToLeetCode = async (
           '.testcase-panel:not([hidden]), [class*="testcase"][class*="active"]'
         );
     }
-    await new Promise((resolve) => setTimeout(resolve, 100));
 
     const inputs = await waitForElementsWithCondition(
       'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]',
