@@ -59,42 +59,6 @@ export const waitForElementAtIndex = (
 };
 
 /**
- * Wait for element attribute to match value
- */
-export const waitForAttribute = (
-  element: Element,
-  attribute: string,
-  value: string,
-  timeout: number = DOM.TIMEOUT
-): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    if (element.getAttribute(attribute) === value) {
-      return resolve();
-    }
-
-    const observer = new MutationObserver(() => {
-      if (element.getAttribute(attribute) === value) {
-        observer.disconnect();
-        clearTimeout(timeoutId);
-        resolve();
-      }
-    });
-
-    observer.observe(element, {
-      attributes: true,
-      attributeFilter: [attribute],
-    });
-
-    const timeoutId = setTimeout(() => {
-      observer.disconnect();
-      reject(
-        `Attribute ${attribute} did not become ${value} within ${timeout}ms`
-      );
-    }, timeout);
-  });
-};
-
-/**
  * Wait for elements matching selector with condition
  */
 export const waitForElementsWithCondition = (
