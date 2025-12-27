@@ -1,6 +1,6 @@
 import { DOM } from "@cb/constants";
 import { ResponseStatus, WindowMessage } from "@cb/types";
-import { getCodeBuddyEditor } from "@cb/utils/monaco";
+import { getCodeBuddyEditor, getLeetCodeEditor } from "@cb/utils/monaco";
 
 export default defineUnlistedScript(() => {
   if (window.monaco == undefined) {
