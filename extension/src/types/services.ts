@@ -37,7 +37,6 @@ export enum ResponseStatus {
 
 interface ServiceGenericResponse {
   status: ResponseStatus;
-  message?: string;
 }
 
 export type ServiceResponse = GenericResponse<
