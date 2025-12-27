@@ -15,6 +15,7 @@ export default defineContentScript({
     getOrCreateControllers();
     await injectScript("/router.js", { keepInDom: true });
     await injectScript("/set-codebuddy-code.js", { keepInDom: true });
+    await injectScript("/append-test-case.js", { keepInDom: true });
 
     ctx.addEventListener(window, "wxt:locationchange", () =>
       mountExtensionIdempotent(ctx)

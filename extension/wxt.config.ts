@@ -62,6 +62,7 @@ export default defineConfig({
           "router.js",
           "content-scripts/content.css",
           "set-codebuddy-code.js",
+          "append-test-case.js",
         ],
         matches: ["https://leetcode.com/*"],
       },

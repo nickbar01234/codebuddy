@@ -1,6 +1,6 @@
 import { usePeers } from "@cb/hooks/store";
-import background from "@cb/services/background";
-import { ResponseStatus, SelectableTestCase } from "@cb/types";
+import { windowMessager } from "@cb/services/window";
+import { SelectableTestCase } from "@cb/types";
 import { testCaseToValues } from "@cb/utils/string";
 import { debounce } from "lodash";
 import React from "react";
@@ -29,20 +29,8 @@ export const useCopyTestCaseToLeetCode = () => {
 
       const testValues = testCaseToValues(activeTestParam);
 
-      background
-        .appendTestCaseToLeetCode({ testValues })
-        .then((response) => {
-          if (response?.status === ResponseStatus.SUCCESS) {
-            toast.success("Copied test case!");
-          } else {
-            console.error("Failed to copy test case:", response);
-            toast.error("Failed to copy test case");
-          }
-        })
-        .catch((error) => {
-          console.error("Failed to copy test case:", error);
-          toast.error("Failed to copy test case");
-        });
+      windowMessager.appendTestCaseToLeetCode({ testValues });
+      toast.success("Copied test case!");
     },
     []
   );

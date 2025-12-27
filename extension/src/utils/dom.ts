@@ -32,6 +32,127 @@ export const waitForElement = (
     }, timeout);
   });
 };
+/**
+ * Wait for element at specific index in NodeList
+ */
+export const waitForElementAtIndex = (
+  selector: string,
+  index: number,
+  context: Document | ShadowRoot | Element = document,
+  timeout: number = DOM.TIMEOUT
+): Promise<Element> => {
+  return new Promise((resolve, reject) => {
+    const checkElement = () => {
+      const elements = context.querySelectorAll(selector);
+      if (elements.length > index && elements[index]) {
+        return elements[index];
+      }
+      return null;
+    };
+
+    const element = checkElement();
+    if (element) return resolve(element);
+
+    const observer = new MutationObserver(() => {
+      const element = checkElement();
+      if (element) {
+        observer.disconnect();
+        clearTimeout(timeoutId);
+        resolve(element);
+      }
+    });
+
+    observer.observe(context, {
+      childList: true,
+      subtree: true,
+    });
+
+    const timeoutId = setTimeout(() => {
+      observer.disconnect();
+      reject(
+        `Unable to locate element at index ${index} for selector ${selector} within ${timeout}ms`
+      );
+    }, timeout);
+  });
+};
+
+/**
+ * Wait for element attribute to match value
+ */
+export const waitForAttribute = (
+  element: Element,
+  attribute: string,
+  value: string,
+  timeout: number = DOM.TIMEOUT
+): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (element.getAttribute(attribute) === value) {
+      return resolve();
+    }
+
+    const observer = new MutationObserver(() => {
+      if (element.getAttribute(attribute) === value) {
+        observer.disconnect();
+        clearTimeout(timeoutId);
+        resolve();
+      }
+    });
+
+    observer.observe(element, {
+      attributes: true,
+      attributeFilter: [attribute],
+    });
+
+    const timeoutId = setTimeout(() => {
+      observer.disconnect();
+      reject(
+        `Attribute ${attribute} did not become ${value} within ${timeout}ms`
+      );
+    }, timeout);
+  });
+};
+
+/**
+ * Wait for elements matching selector with condition
+ */
+export const waitForElementsWithCondition = (
+  selector: string,
+  condition: (elements: NodeListOf<Element>) => boolean,
+  context: Document | ShadowRoot | Element = document,
+  timeout: number = DOM.TIMEOUT
+): Promise<NodeListOf<Element>> => {
+  return new Promise((resolve, reject) => {
+    const checkElements = () => {
+      const elements = context.querySelectorAll(selector);
+      if (condition(elements)) {
+        return elements;
+      }
+      return null;
+    };
+
+    const elements = checkElements();
+    if (elements) return resolve(elements);
+
+    const observer = new MutationObserver(() => {
+      const elements = checkElements();
+      if (elements) {
+        observer.disconnect();
+        clearTimeout(timeoutId);
+        resolve(elements);
+      }
+    });
+
+    observer.observe(context, {
+      childList: true,
+      subtree: true,
+    });
+
+    const timeoutId = setTimeout(() => {
+      observer.disconnect();
+      reject(`Condition not met for selector ${selector} within ${timeout}ms`);
+    }, timeout);
+  });
+};
 
 /**
  * Hide all dom elements that does not contain {@param element} in its subtree up to root

@@ -145,63 +145,6 @@ export default defineBackground(() => {
           break;
         }
 
-        case "appendTestCaseToLeetCode": {
-          browser.scripting
-            .executeScript({
-              target: { tabId: sender.tab?.id ?? 0 },
-              func: addAndFillTestCase,
-              args: [request.testValues],
-              world: "MAIN",
-            })
-            .then((results) => {
-              console.log("appendTestCaseToLeetCode results:", results);
-
-              if (!results || results.length === 0) {
-                sendResponse(
-                  servicePayload<"appendTestCaseToLeetCode">({
-                    status: ResponseStatus.FAIL,
-                    message: "Script execution returned no results",
-                  })
-                );
-                return;
-              }
-
-              const result = results[0]?.result;
-              console.log("appendTestCaseToLeetCode result:", result);
-
-              if (result && typeof result === "object" && "status" in result) {
-                const response = servicePayload<"appendTestCaseToLeetCode">({
-                  status:
-                    result.status === 0
-                      ? ResponseStatus.SUCCESS
-                      : ResponseStatus.FAIL,
-                  message: (result as any).message,
-                });
-                console.log("Sending response:", response);
-                sendResponse(response);
-              } else {
-                const response = servicePayload<"appendTestCaseToLeetCode">({
-                  status: ResponseStatus.FAIL,
-                  message: result
-                    ? `Invalid result format: ${JSON.stringify(result)}`
-                    : "No result returned from script",
-                });
-                console.log("Sending error response:", response);
-                sendResponse(response);
-              }
-            })
-            .catch((error) => {
-              console.error("Failed to append test case:", error);
-              const response = servicePayload<"appendTestCaseToLeetCode">({
-                status: ResponseStatus.FAIL,
-                message: error?.message || String(error) || "Unknown error",
-              });
-              console.log("Sending catch error response:", response);
-              sendResponse(response);
-            });
-          break;
-        }
-
         default:
           console.error(`Unhandled request ${request}`);
           assertUnreachable(action);

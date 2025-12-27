@@ -38,12 +38,6 @@ const background = {
   getAllLanguageExtensions: (
     args: MessagePayload<ExtractMessage<ServiceRequest, "getLanguageExtension">>
   ) => sendServiceRequest({ action: "getLanguageExtension", ...args }),
-
-  appendTestCaseToLeetCode: (
-    args: MessagePayload<
-      ExtractMessage<ServiceRequest, "appendTestCaseToLeetCode">
-    >
-  ) => sendServiceRequest({ action: "appendTestCaseToLeetCode", ...args }),
 };
 
 export default background;
