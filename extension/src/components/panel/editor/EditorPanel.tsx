@@ -40,12 +40,8 @@ const EditorPanel = () => {
   const emptyRoom = Object.keys(peers).length === 0;
 
   const handleCopy = React.useCallback(() => {
-    if (activeTab === "test") {
-      copyTestCaseToLeetCode(activeTest);
-    } else {
-      copyCode();
-    }
-  }, [activeTab, activeTest, copyCode, copyTestCaseToLeetCode]);
+    copyCode();
+  }, [copyCode]);
 
   const copyTooltipText = activeTab === "test" ? "Copy test" : "Copy code";
 
@@ -68,11 +64,19 @@ const EditorPanel = () => {
             activePeer={selectedPeer}
             activeTest={activeTest}
             selectTest={selectTest}
+            copyTestCaseToLeetCode={copyTestCaseToLeetCode}
           />
         ),
       },
     ];
-  }, [selectedPeer, activeTest, selectTest, getLanguageExtension, url]);
+  }, [
+    selectedPeer,
+    activeTest,
+    selectTest,
+    getLanguageExtension,
+    url,
+    copyTestCaseToLeetCode,
+  ]);
 
   const hideCode = !selectedPeer?.questions[self?.url ?? ""]?.viewable;
 
@@ -148,7 +152,7 @@ const EditorPanel = () => {
                     </div>
                   ),
                 }}
-                content={copyTooltipText}
+                content="Copy code"
               />
             </div>
           </div>
