@@ -3,18 +3,29 @@ import { DOM } from "@cb/constants";
 export const waitForElement = (
   selector: string,
   context: Document | ShadowRoot | Element = document,
-  timeout: number = DOM.TIMEOUT
+  timeout: number = DOM.TIMEOUT,
+  stopCondition?: (elements: NodeListOf<Element>) => Element | null
 ): Promise<Element> => {
   return new Promise((resolve, reject) => {
-    const node = context.querySelector(selector);
+    const checkElement = (): Element | null => {
+      if (stopCondition) {
+        const elements = context.querySelectorAll(selector);
+        return stopCondition(elements);
+      } else {
+        return context.querySelector(selector);
+      }
+    };
+
+    const node = checkElement();
     if (node != null) {
       return resolve(node);
     }
 
     const observer = new MutationObserver(() => {
-      const node = context.querySelector(selector);
+      const node = checkElement();
       if (node != null) {
         observer.disconnect();
+        clearTimeout(timeoutId);
         resolve(node);
       }
     });
@@ -24,8 +35,9 @@ export const waitForElement = (
       subtree: true,
     });
 
-    setTimeout(() => {
-      if (context.querySelector(selector) == null) {
+    const timeoutId = setTimeout(() => {
+      const node = checkElement();
+      if (node == null) {
         observer.disconnect();
         reject(`Unable to locate ${selector} within ${timeout}ms`);
       }
@@ -41,39 +53,9 @@ export const waitForElementAtIndex = (
   context: Document | ShadowRoot | Element = document,
   timeout: number = DOM.TIMEOUT
 ): Promise<Element> => {
-  return new Promise((resolve, reject) => {
-    const checkElement = () => {
-      const elements = context.querySelectorAll(selector);
-      if (elements.length > index && elements[index]) {
-        return elements[index];
-      }
-      return null;
-    };
-
-    const element = checkElement();
-    if (element) return resolve(element);
-
-    const observer = new MutationObserver(() => {
-      const element = checkElement();
-      if (element) {
-        observer.disconnect();
-        clearTimeout(timeoutId);
-        resolve(element);
-      }
-    });
-
-    observer.observe(context, {
-      childList: true,
-      subtree: true,
-    });
-
-    const timeoutId = setTimeout(() => {
-      observer.disconnect();
-      reject(
-        `Unable to locate element at index ${index} for selector ${selector} within ${timeout}ms`
-      );
-    }, timeout);
-  });
+  return waitForElement(selector, context, timeout, (elements) =>
+    elements.length > index && elements[index] ? elements[index] : null
+  );
 };
 
 /**
