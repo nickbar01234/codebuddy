@@ -1,3 +1,5 @@
+import { getLeetCodeEditor } from "@cb/utils/monaco";
+
 export default defineUnlistedScript(() => {
   const model = getLeetCodeEditor()?.getModel();
   return {
