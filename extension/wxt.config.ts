@@ -10,6 +10,22 @@ const USER_PROFILE = process.env.USER_PROFILE;
 export default defineConfig({
   srcDir: SRC_DIR,
   outDir: "dist",
+  imports: {
+    warn: () => {},
+  },
+  hooks: {
+    "server:started": async (_wxt, server) => {
+      setTimeout(() => {
+        console.log("[WXT] Reloading extension after startup...");
+        server.reloadExtension();
+      }, 10000);
+    },
+    "build:manifestGenerated": (wxt, manifest) => {
+      if (wxt.config.mode === "development") {
+        manifest.name = `[DEV] ${manifest.name}`;
+      }
+    },
+  },
   webExt: {
     startUrls: ["https://leetcode.com/problems/two-sum/"],
     chromiumArgs: [
@@ -42,7 +58,11 @@ export default defineConfig({
       },
       {
         // We want css to be accessible to iframe
-        resources: ["proxy.js", "content-scripts/content.css"],
+        resources: [
+          "router.js",
+          "content-scripts/content.css",
+          "set-codebuddy-code.js",
+        ],
         matches: ["https://leetcode.com/*"],
       },
       {

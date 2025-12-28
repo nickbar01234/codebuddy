@@ -20,7 +20,7 @@ export const getTestsPayload = (
 export const getCodePayload = async (
   changes: Partial<monaco.editor.IModelContentChange>
 ): Promise<ExtractMessage<PeerMessage, "code">> => {
-  const { value, language } = await background.getCode({});
+  const { value, language } = await background.getUserCode({});
   return {
     action: "code",
     value,
