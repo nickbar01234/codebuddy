@@ -23,9 +23,9 @@ jobs:
       - name: Install dependencies
         run: pnpm i
       - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
+        run: pnpm --filter extension exec playwright install --with-deps
       - name: Run Playwright tests
-        run: xvfb-run -a pnpm exec playwright test
+        run: xvfb-run -a pnpm --filter extension exec playwright test
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
