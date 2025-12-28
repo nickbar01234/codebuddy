@@ -29,7 +29,7 @@
   },
   "type": "module",
   "lint-staged": {
-    "*.{ts,tsx,md,html,css}": [
+    "**/*.{ts,tsx,md,html,css}": [
       "prettier --write --config .prettierrc",
       "eslint --fix --config eslint.config.mjs"
     ]
