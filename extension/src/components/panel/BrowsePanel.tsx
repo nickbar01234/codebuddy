@@ -54,7 +54,9 @@ export const BrowsePanel = () => {
         reactEvent: React.MouseEvent<Element> | React.KeyboardEvent<Element>
       ) => {
         reactEvent.stopPropagation();
+        setShowDialog(false);
         await join(inputRoomId);
+        console.log("Joining anyway");
       },
       1000
     );
@@ -74,6 +76,9 @@ export const BrowsePanel = () => {
       {showDialog && (
         <AlreadyInRoomDialog onConfirm={onJoinAnyway} onCancel={onCancel} />
       )}
+
+      {/* <AlreadyInRoomDialog onConfirm={onJoinAnyway} onCancel={onCancel} /> */}
+
       <div className="w-full flex flex-row-reverse">
         <Tooltip
           trigger={{
