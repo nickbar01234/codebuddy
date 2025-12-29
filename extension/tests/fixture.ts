@@ -1,6 +1,6 @@
+import { DOM } from "@cb/constants";
 import { test as base, chromium, type BrowserContext } from "@playwright/test";
 import fs from "node:fs";
-import path from "node:path";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
@@ -9,18 +9,8 @@ const extension = resolve(
   "../dist/chrome-mv3"
 );
 
-console.log("import.meta.url:", import.meta.url);
-console.log("cwd:", process.cwd());
-console.log("extension path:", extension);
-
 if (!fs.existsSync(extension)) {
-  console.log("Extension folder does not exist. Listing parent dir:");
-  console.log(
-    fs
-      .readdirSync(path.dirname(extension), { withFileTypes: true })
-      .map((d) => d.name)
-  );
-  throw new Error(`Extension path missing on CI: ${extension}`);
+  throw new Error(`Invalid path ${extension}`);
 }
 
 export const test = base.extend<{
@@ -31,6 +21,7 @@ export const test = base.extend<{
   context: async ({}, use) => {
     const context = await chromium.launchPersistentContext("", {
       headless: false,
+      channel: "chromium",
       args: [
         `--disable-extensions-except=${extension}`,
         `--load-extension=${extension}`,
@@ -51,7 +42,11 @@ export const test = base.extend<{
     await page.goto("https://leetcode.com/problems/two-sum", {
       waitUntil: "domcontentloaded",
     });
-    use(page);
+    await page.waitForSelector(DOM.LEETCODE_ROOT_ID, {
+      state: "visible",
+      timeout: 30_000,
+    });
+    await use(page);
   },
 });
 
