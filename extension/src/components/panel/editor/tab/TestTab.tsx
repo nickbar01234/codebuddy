@@ -1,5 +1,6 @@
 import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { useCopyTestCaseToLeetCode } from "@cb/hooks/editor";
 import { useRoomData } from "@cb/hooks/store";
 import { Identifiable, PeerState, SelectableTestCase } from "@cb/types";
 import { Copy } from "lucide-react";
@@ -9,15 +10,14 @@ interface TestTabProps {
   activePeer: Identifiable<PeerState> | undefined;
   activeTest: SelectableTestCase | undefined;
   selectTest: (index: number) => void;
-  copyTestCaseToLeetCode: (test: SelectableTestCase | undefined) => void;
 }
 
 export const TestTab: React.FC<TestTabProps> = ({
   activePeer,
   activeTest,
   selectTest,
-  copyTestCaseToLeetCode,
 }) => {
+  const copyTestCaseToLeetCode = useCopyTestCaseToLeetCode();
   const { self } = useRoomData();
   return (
     <SkeletonWrapper loading={false} className="relative">

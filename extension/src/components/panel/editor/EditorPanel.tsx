@@ -3,7 +3,7 @@ import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadin
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { useCopyCode, useCopyTestCaseToLeetCode } from "@cb/hooks/editor";
+import { useCopyCode } from "@cb/hooks/editor";
 import {
   useLeetCodeActions,
   usePeerActions,
@@ -30,7 +30,6 @@ const EditorPanel = () => {
   const { selectTest, toggleCodeVisibility } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
-  const copyTestCaseToLeetCode = useCopyTestCaseToLeetCode();
   const [activeTab, setActiveTab] = React.useState("code");
 
   const url = self?.url ?? "";
@@ -42,8 +41,6 @@ const EditorPanel = () => {
   const handleCopy = React.useCallback(() => {
     copyCode();
   }, [copyCode]);
-
-  const copyTooltipText = activeTab === "test" ? "Copy test" : "Copy code";
 
   const upperTabConfigs = React.useMemo(() => {
     const extension =
@@ -64,19 +61,11 @@ const EditorPanel = () => {
             activePeer={selectedPeer}
             activeTest={activeTest}
             selectTest={selectTest}
-            copyTestCaseToLeetCode={copyTestCaseToLeetCode}
           />
         ),
       },
     ];
-  }, [
-    selectedPeer,
-    activeTest,
-    selectTest,
-    getLanguageExtension,
-    url,
-    copyTestCaseToLeetCode,
-  ]);
+  }, [selectedPeer, activeTest, selectTest, getLanguageExtension, url]);
 
   const hideCode = !selectedPeer?.questions[self?.url ?? ""]?.viewable;
 
