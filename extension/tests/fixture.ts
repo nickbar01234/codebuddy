@@ -39,8 +39,9 @@ export const test = base.extend<{
     await use(extensionId);
   },
   page: async ({ page }, use) => {
-    await page.goto("chrome://extensions");
-    await page.screenshot({ fullPage: true, path: "extension.png" });
+    page.on("console", (msg) => {
+      console.log("Received message from page", msg.text(), msg.type());
+    });
     await page.goto("https://leetcode.com/problems/two-sum", {
       waitUntil: "domcontentloaded",
     });

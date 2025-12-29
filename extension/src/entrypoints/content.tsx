@@ -26,6 +26,7 @@ export default defineContentScript({
 
 const mountExtensionIdempotent = (ctx: ContentScriptContext) => {
   if (document.querySelector(`#${DOM.CODEBUDDY_EXTENSION_ID}`) == null) {
+    console.log("Have not mounted CodeBuddy panel");
     waitForElement(DOM.LEETCODE_ROOT_ID).then(() => {
       const ui = createUi(ctx);
       ui.mount();
