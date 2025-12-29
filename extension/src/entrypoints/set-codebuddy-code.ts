@@ -1,4 +1,5 @@
 import { ExtractMessage, MessagePayload, WindowMessage } from "@cb/types";
+import { getCodeBuddyEditor } from "@cb/utils/monaco";
 
 const setCodeBuddyCode = (
   args: MessagePayload<ExtractMessage<WindowMessage, "setCodeBuddyCode">>
