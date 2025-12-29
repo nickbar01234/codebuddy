@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@tests/*": ["./*"],
+      "@cb/*": ["../src/*"]
+    }
+  },
+  "extends": ["../tsconfig.json"],
+  "exclude": []
+}

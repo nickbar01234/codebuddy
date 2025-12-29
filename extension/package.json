@@ -8,6 +8,7 @@
     "dev:2": "USER_PROFILE=buddy wxt",
     "dev:3": "USER_PROFILE=anotherbuddy wxt",
     "build": "tsc && wxt build",
+    "build:dev": "tsc && wxt build --mode=development",
     "zip": "wxt zip",
     "postinstall": "wxt prepare"
   },
@@ -45,6 +46,7 @@
     "zustand": "^5.0.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "@testing-library/react": "^16.2.0",
     "@types/chrome": "^0.0.268",
     "@types/lodash": "^4.17.14",
