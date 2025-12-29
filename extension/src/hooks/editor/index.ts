@@ -30,7 +30,6 @@ export const useCopyTestCaseToLeetCode = () => {
       const testValues = testCaseToValues(activeTestParam);
 
       windowMessager.appendTestCaseToLeetCode({ testValues });
-      toast.success("Copied test case!");
     },
     []
   );

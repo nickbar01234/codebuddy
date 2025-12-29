@@ -39,6 +39,7 @@ const appendTestCaseToLeetCode = async (
       testCaseButtons.length
     )) as HTMLButtonElement;
 
+    await new Promise((resolve) => setTimeout(resolve, 50));
     newButton.click();
 
     const inputs = await waitForElementsWithCondition(

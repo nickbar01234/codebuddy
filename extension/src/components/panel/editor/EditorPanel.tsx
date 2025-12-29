@@ -38,10 +38,6 @@ const EditorPanel = () => {
   );
   const emptyRoom = Object.keys(peers).length === 0;
 
-  const handleCopy = React.useCallback(() => {
-    copyCode();
-  }, [copyCode]);
-
   const upperTabConfigs = React.useMemo(() => {
     const extension =
       getLanguageExtension(selectedPeer?.questions[url]?.code?.language) ?? "";
@@ -135,7 +131,7 @@ const EditorPanel = () => {
                   node: (
                     <div
                       className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
-                      onClick={handleCopy}
+                      onClick={copyCode}
                     >
                       <Copy size={16} />
                     </div>
