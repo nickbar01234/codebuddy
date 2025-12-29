@@ -30,8 +30,6 @@ const EditorPanel = () => {
   const { selectTest, toggleCodeVisibility } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
   const copyCode = useCopyCode();
-  const [activeTab, setActiveTab] = React.useState("code");
-
   const url = self?.url ?? "";
   const activeTest = selectedPeer?.questions[url]?.tests.find(
     (test) => test.selected
@@ -80,11 +78,7 @@ const EditorPanel = () => {
         </SkeletonWrapper>
       )}
       <div className={cn("h-full w-full", { hidden: emptyRoom })}>
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="h-full w-full bg-secondary text-inherit rounded-b-lg"
-        >
+        <Tabs className="h-full w-full bg-secondary text-inherit rounded-b-lg">
           <div className="flex justify-between w-full border-border-quaternary dark:border-border-quaternary border-b rounded-none px-2 py-1 items-center">
             <TabsList className="hide-scrollbar bg-secondary flex h-fit w-full justify-start gap-2 overflow-x-auto text-inherit">
               <UserDropDownMenu />
