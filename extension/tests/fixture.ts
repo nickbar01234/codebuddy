@@ -40,6 +40,7 @@ export const test = base.extend<{
   },
   page: async ({ page }, use) => {
     await page.goto("chrome://extensions");
+    await page.screenshot({ fullPage: true, path: "extension.png" });
     await page.goto("https://leetcode.com/problems/two-sum", {
       waitUntil: "domcontentloaded",
     });
