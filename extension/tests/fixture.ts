@@ -6,7 +6,8 @@ import { fileURLToPath } from "url";
 
 const extension = resolve(
   dirname(fileURLToPath(import.meta.url)),
-  "../dist/chrome-mv3"
+  // todo(nickbar01234): Should switch to chrome-mv3 for production build or setup CI to point to docker firebase
+  "../dist/chrome-mv3-dev"
 );
 
 if (!fs.existsSync(extension)) {
