@@ -39,6 +39,7 @@ export const test = base.extend<{
     await use(extensionId);
   },
   page: async ({ page }, use) => {
+    await page.goto("chrome://extensions");
     await page.goto("https://leetcode.com/problems/two-sum", {
       waitUntil: "domcontentloaded",
     });
