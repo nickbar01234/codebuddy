@@ -4,13 +4,13 @@ export const waitForElement = (
   selector: string,
   context: Document | ShadowRoot | Element = document,
   timeout: number = DOM.TIMEOUT,
-  stopCondition?: (elements: NodeListOf<Element>) => Element | null
+  until?: (elements: NodeListOf<Element>) => Element | null
 ): Promise<Element> => {
   return new Promise((resolve, reject) => {
     const checkElement = (): Element | null => {
-      if (stopCondition) {
+      if (until) {
         const elements = context.querySelectorAll(selector);
-        return stopCondition(elements);
+        return until(elements);
       } else {
         return context.querySelector(selector);
       }
@@ -20,6 +20,7 @@ export const waitForElement = (
     if (node != null) {
       return resolve(node);
     }
+    let timeoutId: ReturnType<typeof setTimeout> = undefined!;
 
     const observer = new MutationObserver(() => {
       const node = checkElement();
@@ -35,7 +36,7 @@ export const waitForElement = (
       subtree: true,
     });
 
-    const timeoutId = setTimeout(() => {
+    timeoutId = setTimeout(() => {
       const node = checkElement();
       if (node == null) {
         observer.disconnect();
@@ -68,35 +69,25 @@ export const waitForElementsWithCondition = (
   timeout: number = DOM.TIMEOUT
 ): Promise<NodeListOf<Element>> => {
   return new Promise((resolve, reject) => {
-    const checkElements = () => {
-      const elements = context.querySelectorAll(selector);
+    let elementsCache: NodeListOf<Element> | null = null;
+
+    waitForElement(selector, context, timeout, (elements) => {
       if (condition(elements)) {
-        return elements;
+        elementsCache = elements;
+        return elements[0] ?? null;
       }
       return null;
-    };
-
-    const elements = checkElements();
-    if (elements) return resolve(elements);
-
-    const observer = new MutationObserver(() => {
-      const elements = checkElements();
-      if (elements) {
-        observer.disconnect();
-        clearTimeout(timeoutId);
-        resolve(elements);
-      }
-    });
-
-    observer.observe(context, {
-      childList: true,
-      subtree: true,
-    });
-
-    const timeoutId = setTimeout(() => {
-      observer.disconnect();
-      reject(`Condition not met for selector ${selector} within ${timeout}ms`);
-    }, timeout);
+    })
+      .then(() => {
+        if (elementsCache) {
+          resolve(elementsCache);
+        } else {
+          reject(
+            `Condition not met for selector ${selector} within ${timeout}ms`
+          );
+        }
+      })
+      .catch(reject);
   });
 };
 

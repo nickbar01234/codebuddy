@@ -3,6 +3,7 @@ import {
   waitForElementAtIndex,
   waitForElementsWithCondition,
 } from "@cb/utils/dom";
+import { assertUnreachable } from "@cb/utils/error";
 
 const appendTestCaseToLeetCode = async (
   args: MessagePayload<
@@ -61,12 +62,18 @@ const appendTestCaseToLeetCode = async (
       inputDiv.blur();
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to append test case:", error);
+    window.postMessage(
+      {
+        action: "appendTestCaseError",
+        error: "Failed to append test case",
+      },
+      "*"
+    );
   }
 };
 export default defineUnlistedScript(() => {
-  console.log("Inject append test case handler");
   window.addEventListener(
     "message",
     async (message: MessageEvent<WindowMessage>) => {
