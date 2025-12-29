@@ -25,7 +25,8 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm --filter extension exec playwright install --with-deps
       - name: Build extension
-        run: pnpm --filter extension build
+        # todo(nickbar01234): Should switch to chrome-mv3 for production build or setup CI to point to docker firebase
+        run: pnpm --filter extension build:dev
       - name: Run Playwright tests
         run: xvfb-run -a pnpm --filter extension exec playwright test
       - uses: actions/upload-artifact@v4
