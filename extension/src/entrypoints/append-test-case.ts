@@ -34,13 +34,13 @@ const appendTestCaseToLeetCode = async (
       return;
     }
     addButton.click();
+    await new Promise((resolve) => setTimeout(resolve, 50));
 
     const newButton = (await waitForElementAtIndex(
       'button[data-e2e-locator="console-testcase-tag"]',
       testCaseButtons.length
     )) as HTMLButtonElement;
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
     newButton.click();
 
     const inputs = await waitForElementsWithCondition(
