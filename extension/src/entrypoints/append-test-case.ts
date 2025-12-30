@@ -4,6 +4,7 @@ import {
   waitForElementsWithCondition,
 } from "@cb/utils/dom";
 import { assertUnreachable } from "@cb/utils/error";
+import { defineUnlistedScript } from "wxt/utils/define-unlisted-script";
 
 const appendTestCaseToLeetCode = async (
   args: MessagePayload<
