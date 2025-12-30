@@ -1,0 +1,73 @@
+name: CI
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install
+        uses: ./.github/actions/install
+      - name: Lint
+        run: pnpm lint
+      - name: Build
+        run: pnpm build
+
+  tests:
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install
+        uses: ./.github/actions/install
+      - name: Start Firebase emulator
+        run: docker compose up -d
+      - name: Wait for firebase emulator
+        run: |
+          echo "Waiting to check firebase to be healthy"
+          until [ "$(docker inspect --format='{{.State.Health.Status}}' firebase)" = "healthy" ]; do
+            echo "Waiting..."
+            sleep 2
+          done
+          echo "Firebase is healthy"
+      - name: Run tests
+        run: pnpm test
+
+  playwright:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: extension
+    needs:
+      - lint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install
+        uses: ./.github/actions/install
+        # todo(nickbar01234): Cache playwright?
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+      # todo(nickbar01234): Should switch to chrome-mv3 for production build or setup CI to point to docker firebase
+      - name: Build extension in dev mode
+        run: pnpm build:dev
+      - name: Run Playwright tests
+        run: xvfb-run -a pnpm exec playwright test
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: extension/playwright-report/
+          retention-days: 7
