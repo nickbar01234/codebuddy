@@ -4,10 +4,7 @@ import { expect, test } from "@tests/fixture";
 test("Copy test", async ({ page }) => {
   const testValues = ["[3,2,4]", "9"];
 
-  await page.waitForSelector(
-    'button[data-e2e-locator="console-testcase-tag"]',
-    { timeout: 10000 }
-  );
+  await page.waitForSelector('button[data-e2e-locator="console-testcase-tag"]');
 
   const initialCount = await page.$$eval(
     'button[data-e2e-locator="console-testcase-tag"]',
@@ -25,7 +22,7 @@ test("Copy test", async ({ page }) => {
       'button[data-e2e-locator="console-testcase-tag"]'
     );
     expect(buttons.length).toBe(initialCount + 1);
-  }).toPass({ timeout: 10_000 });
+  }).toPass();
 
   const buttons = page
     .locator('button[data-e2e-locator="console-testcase-tag"]')
@@ -42,5 +39,5 @@ test("Copy test", async ({ page }) => {
       const text = await inputs[i].textContent();
       expect(text?.trim()).toBe(testValues[i]);
     }
-  }).toPass({ timeout: 10_000 });
+  }).toPass();
 });

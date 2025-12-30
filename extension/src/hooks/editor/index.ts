@@ -23,7 +23,7 @@ export const useCopyTestCaseToLeetCode = () => {
   const copyFunction = React.useCallback(
     (activeTestParam: SelectableTestCase | undefined) => {
       if (!activeTestParam) {
-        toast.error("No test case selected");
+        console.error("No test case selected");
         return;
       }
 

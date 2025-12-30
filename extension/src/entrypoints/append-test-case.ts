@@ -22,20 +22,17 @@ const appendTestCaseToLeetCode = async (
       throw new Error("No test case buttons found");
     }
 
-    const lastTestCaseButton = testCaseButtons[
+    const addButton = testCaseButtons[
       testCaseButtons.length - 1
-    ] as HTMLElement;
-
-    const addButton = lastTestCaseButton.parentElement?.querySelector(
-      'button[data-state="closed"]'
-    ) as HTMLButtonElement | undefined;
+    ].parentElement?.querySelector('button[data-state="closed"]') as
+      | HTMLButtonElement
+      | undefined;
 
     if (!addButton) {
       console.error("Add test case button not found");
       return;
     }
     addButton.click();
-    await new Promise((resolve) => setTimeout(resolve, 50));
 
     const newButton = (await waitForElementAtIndex(
       'button[data-e2e-locator="console-testcase-tag"]',
@@ -49,29 +46,20 @@ const appendTestCaseToLeetCode = async (
       (elements) => elements.length === testValues.length,
       document
     );
-    const finalInputs = Array.from(inputs);
 
-    for (let index = 0; index < finalInputs.length; index++) {
-      const input = finalInputs[index];
+    for (let index = 0; index < inputs.length; index++) {
+      const input = inputs[index];
       const inputDiv = input as HTMLDivElement;
       const value = testValues[index];
 
       inputDiv.focus();
       inputDiv.textContent = value;
       inputDiv.dispatchEvent(new Event("input", { bubbles: true }));
-
       inputDiv.blur();
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
   } catch (error) {
     console.error("Failed to append test case:", error);
-    window.postMessage(
-      {
-        action: "appendTestCaseError",
-        error: "Failed to append test case",
-      },
-      "*"
-    );
   }
 };
 export default defineUnlistedScript(() => {

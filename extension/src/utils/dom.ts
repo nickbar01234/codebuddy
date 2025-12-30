@@ -1,33 +1,32 @@
 import { DOM } from "@cb/constants";
 
-export const waitForElement = (
+export const waitForElements = (
   selector: string,
   context: Document | ShadowRoot | Element = document,
   timeout: number = DOM.TIMEOUT,
-  until?: (elements: NodeListOf<Element>) => Element | null
-): Promise<Element> => {
+  condition?: (elements: NodeListOf<Element>) => boolean
+): Promise<NodeListOf<Element>> => {
   return new Promise((resolve, reject) => {
-    const checkElement = (): Element | null => {
-      if (until) {
-        const elements = context.querySelectorAll(selector);
-        return until(elements);
-      } else {
-        return context.querySelector(selector);
+    const checkElements = (): NodeListOf<Element> | null => {
+      const elements = context.querySelectorAll(selector);
+      if (condition) {
+        return condition(elements) ? elements : null;
       }
+      return elements.length > 0 ? elements : null;
     };
 
-    const node = checkElement();
-    if (node != null) {
-      return resolve(node);
+    const elements = checkElements();
+    if (elements != null) {
+      return resolve(elements);
     }
     let timeoutId: ReturnType<typeof setTimeout> = undefined!;
 
     const observer = new MutationObserver(() => {
-      const node = checkElement();
-      if (node != null) {
+      const elements = checkElements();
+      if (elements != null) {
         observer.disconnect();
         clearTimeout(timeoutId);
-        resolve(node);
+        resolve(elements);
       }
     });
 
@@ -37,58 +36,52 @@ export const waitForElement = (
     });
 
     timeoutId = setTimeout(() => {
-      const node = checkElement();
-      if (node == null) {
+      const elements = checkElements();
+      if (elements == null) {
         observer.disconnect();
         reject(`Unable to locate ${selector} within ${timeout}ms`);
+      } else {
+        observer.disconnect();
+        resolve(elements);
       }
     }, timeout);
   });
 };
-/**
- * Wait for element at specific index in NodeList
- */
+
+// Wait for a single element (first match)
+export const waitForElement = (
+  selector: string,
+  context: Document | ShadowRoot | Element = document,
+  timeout: number = DOM.TIMEOUT
+): Promise<Element> => {
+  return waitForElements(selector, context, timeout).then(
+    (elements) => elements[0]
+  );
+};
+
+// Wait for element at specific index
 export const waitForElementAtIndex = (
   selector: string,
   index: number,
   context: Document | ShadowRoot | Element = document,
   timeout: number = DOM.TIMEOUT
 ): Promise<Element> => {
-  return waitForElement(selector, context, timeout, (elements) =>
-    elements.length > index && elements[index] ? elements[index] : null
-  );
+  return waitForElements(
+    selector,
+    context,
+    timeout,
+    (elements) => elements.length > index && elements[index] != null
+  ).then((elements) => elements[index]);
 };
 
-/**
- * Wait for elements matching selector with condition
- */
+// Wait for elements matching selector with condition
 export const waitForElementsWithCondition = (
   selector: string,
   condition: (elements: NodeListOf<Element>) => boolean,
   context: Document | ShadowRoot | Element = document,
   timeout: number = DOM.TIMEOUT
 ): Promise<NodeListOf<Element>> => {
-  return new Promise((resolve, reject) => {
-    let elementsCache: NodeListOf<Element> | null = null;
-
-    waitForElement(selector, context, timeout, (elements) => {
-      if (condition(elements)) {
-        elementsCache = elements;
-        return elements[0] ?? null;
-      }
-      return null;
-    })
-      .then(() => {
-        if (elementsCache) {
-          resolve(elementsCache);
-        } else {
-          reject(
-            `Condition not met for selector ${selector} within ${timeout}ms`
-          );
-        }
-      })
-      .catch(reject);
-  });
+  return waitForElements(selector, context, timeout, condition);
 };
 
 /**
