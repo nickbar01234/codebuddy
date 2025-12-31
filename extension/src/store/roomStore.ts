@@ -110,6 +110,7 @@ interface RoomAction {
     selectSidebarTab: (identifier: SidebarTabIdentifier) => void;
     closeSidebarTab: () => void;
     getVariables: (url: string) => Question["variables"] | undefined;
+    checkAlreadyInRoom: (id: Id) => Promise<boolean>;
   };
   peers: {
     update: (id: Id, peer: Partial<UpdatePeerArgs>) => Promise<void>;
@@ -409,6 +410,26 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 set((state) => {
                   state.status = RoomStatus.HOME;
                 });
+              }
+            },
+            checkAlreadyInRoom: async (id: string) => {
+              try {
+                const username = appStore
+                  .getState()
+                  .actions.getAuthUser().username;
+                const room = await db.room.get(id);
+                if (room && Object.keys(room.users).includes(username)) {
+                  console.log(`User ${username} is already in room ${id}`);
+                  set((state) => {
+                    state.status = RoomStatus.IN_ROOM;
+                  });
+
+                  return true;
+                }
+                return false;
+              } catch (error) {
+                console.error("Failed to check already in room", error);
+                return false;
               }
             },
             leave: async () => {

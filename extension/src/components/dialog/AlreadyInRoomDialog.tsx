@@ -5,15 +5,21 @@ import { DialogOverlay } from "@radix-ui/react-dialog";
 import { RoomDialog, baseButtonClassName } from "./RoomDialog";
 
 interface AlreadyInRoomDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   onConfirm: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onCancel: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
+
 export const AlreadyInRoomDialog = ({
+  open,
+  onOpenChange,
   onConfirm,
   onCancel,
 }: AlreadyInRoomDialogProps) => {
   return (
     <RoomDialog
+      dialog={{ props: { open, onOpenChange } }}
       title={{ node: "This account is already in the room" }}
       content={{
         props: {

@@ -1,3 +1,4 @@
+import { AlreadyInRoomDialog } from "@cb/components/dialog/AlreadyInRoomDialog";
 import { baseButtonClassName } from "@cb/components/dialog/RoomDialog";
 import { DefaultTable } from "@cb/components/table/DefaultTable";
 import { DefaultTableBody } from "@cb/components/table/DefaultTableBody";
@@ -5,7 +6,8 @@ import { DefaultTableHeader } from "@cb/components/table/DefaultTableHeader";
 import { DefaultTableRow } from "@cb/components/table/DefaultTableRow";
 import { Tooltip } from "@cb/components/tooltip";
 import { CSS, ROOM } from "@cb/constants";
-import { useRoomActions, useRoomData } from "@cb/hooks/store";
+import { useRoomActions } from "@cb/hooks/store";
+import usePaginate from "@cb/hooks/usePaginate";
 import { Button } from "@cb/lib/components/ui/button";
 import InfiniteScroll from "@cb/lib/components/ui/InfiniteScroll";
 import { Input } from "@cb/lib/components/ui/input";
@@ -16,20 +18,22 @@ import { cn } from "@cb/utils/cn";
 import { throttle } from "lodash";
 import { CornerUpLeft } from "lucide-react";
 import React from "react";
-import { AlreadyInRoomDialog } from "@cb/components/dialog/AlreadyInRoomDialog";
 
 const HOOK_LIMIT = 100;
 
 export const BrowsePanel = () => {
   const { home } = useRoomActions();
   const { join } = useRoomActions();
-  const { id } = useRoomData();
+  const { checkAlreadyInRoom } = useRoomActions();
   const [showDialog, setShowDialog] = React.useState(false);
   const [inputRoomId, setInputRoomId] = React.useState("");
   const { data, loading, getNext, hasNext } = usePaginate({
     baseQuery: roomQuery,
     hookLimit: HOOK_LIMIT,
   });
+  React.useEffect(() => {
+    console.log("showDialog changed to:", showDialog);
+  }, [showDialog]);
 
   const onJoinRoom = React.useMemo(() => {
     return throttle(
@@ -38,15 +42,18 @@ export const BrowsePanel = () => {
         roomId: string
       ) => {
         reactEvent.stopPropagation();
-        if (roomId === id) {
+        const alreadyInRoom = await checkAlreadyInRoom(roomId);
+        if (alreadyInRoom) {
+          console.log("Already in the room - opening dialog");
           setShowDialog(true);
           return;
         }
+        console.log("Joining room:", roomId);
         await join(roomId);
       },
       1000
     );
-  }, [join, id]);
+  }, [join, checkAlreadyInRoom]);
 
   const onJoinAnyway = React.useMemo(() => {
     return throttle(
@@ -73,12 +80,12 @@ export const BrowsePanel = () => {
 
   return (
     <div className="h-full w-full flex flex-col">
-      {showDialog && (
-        <AlreadyInRoomDialog onConfirm={onJoinAnyway} onCancel={onCancel} />
-      )}
-
-      {/* <AlreadyInRoomDialog onConfirm={onJoinAnyway} onCancel={onCancel} /> */}
-
+      <AlreadyInRoomDialog
+        open={showDialog}
+        onOpenChange={setShowDialog}
+        onConfirm={onJoinAnyway}
+        onCancel={onCancel}
+      />
       <div className="w-full flex flex-row-reverse">
         <Tooltip
           trigger={{
