@@ -18,10 +18,6 @@ const appendTestCaseToLeetCode = async (
       'button[data-e2e-locator="console-testcase-tag"]'
     );
 
-    if (testCaseButtons.length === 0) {
-      throw new Error("No test case buttons found");
-    }
-
     const addButton = testCaseButtons[
       testCaseButtons.length - 1
     ].parentElement?.querySelector('button[data-state="closed"]') as
