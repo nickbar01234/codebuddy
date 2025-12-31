@@ -75,6 +75,7 @@ export const waitForElementAtIndex = (
 };
 
 // Wait for elements matching selector with condition
+// TODO (Tam):  Why not just use waitForElements directly instead of flipping args?
 export const waitForElementsWithCondition = (
   selector: string,
   condition: (elements: NodeListOf<Element>) => boolean,
