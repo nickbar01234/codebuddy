@@ -10,14 +10,15 @@ test("Copy test", async ({ page }) => {
     'button[data-e2e-locator="console-testcase-tag"]',
     (buttons) => buttons.length
   );
-  await page.evaluate((values) => {
-    const message: WindowMessage = {
-      action: "appendTestCaseToLeetCode",
-      testValues: values,
-    };
-    window.postMessage(message, "*");
-  }, testValues);
+
   await expect(async () => {
+    await page.evaluate((values) => {
+      const message: WindowMessage = {
+        action: "appendTestCaseToLeetCode",
+        testValues: values,
+      };
+      window.postMessage(message, "*");
+    }, testValues);
     const buttons = await page.$$(
       'button[data-e2e-locator="console-testcase-tag"]'
     );
