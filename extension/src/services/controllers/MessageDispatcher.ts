@@ -111,6 +111,7 @@ export class MessageDispatcher {
 
         case "navigate":
         case "setCodeBuddyCode":
+        case "appendTestCaseToLeetCode":
           break;
 
         default:

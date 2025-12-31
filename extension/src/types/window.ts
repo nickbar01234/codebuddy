@@ -19,7 +19,13 @@ interface SetCodeBuddyCodeMessage extends GenericMessage {
   changeUser: boolean;
 }
 
+interface AppendTestCaseToLeetCodeMessage extends GenericMessage {
+  action: "appendTestCaseToLeetCode";
+  testValues: string[];
+}
+
 export type WindowMessage =
   | LeetCodeOnChangeMessage
   | NavigateMessage
-  | SetCodeBuddyCodeMessage;
+  | SetCodeBuddyCodeMessage
+  | AppendTestCaseToLeetCodeMessage;

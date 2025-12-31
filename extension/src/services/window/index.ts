@@ -15,4 +15,11 @@ export const windowMessager = {
   ) => {
     postMessage({ action: "setCodeBuddyCode", ...args });
   },
+  appendTestCaseToLeetCode: (
+    args: MessagePayload<
+      ExtractMessage<WindowMessage, "appendTestCaseToLeetCode">
+    >
+  ) => {
+    postMessage({ action: "appendTestCaseToLeetCode", ...args });
+  },
 };

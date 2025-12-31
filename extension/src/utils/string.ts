@@ -46,3 +46,7 @@ export const formatTime = (timestamp?: Timestamp) => {
     hour12: true,
   }).format(timestamp.toDate());
 };
+
+export const testCaseToValues = (testCase: TestCase): string[] => {
+  return testCase.test.map((assignment) => assignment.value);
+};

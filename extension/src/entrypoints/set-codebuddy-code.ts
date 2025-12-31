@@ -65,6 +65,7 @@ export default defineUnlistedScript(() => {
 
       case "leetCodeOnChange":
       case "navigate":
+      case "appendTestCaseToLeetCode":
         break;
 
       default:
