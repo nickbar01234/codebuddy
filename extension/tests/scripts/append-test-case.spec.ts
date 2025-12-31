@@ -26,8 +26,8 @@ test("Copy test", async ({ page }) => {
 
   const buttons = page
     .locator('button[data-e2e-locator="console-testcase-tag"]')
-    .last();
-  await buttons.click({ force: true });
+    .last()
+    .click({ force: true });
 
   await expect(async () => {
     const inputs = await page.$$(
