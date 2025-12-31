@@ -3,7 +3,6 @@ import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadin
 import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
 import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
-import { useCopyCode } from "@cb/hooks/editor";
 import {
   useLeetCodeActions,
   usePeerActions,
@@ -20,7 +19,7 @@ import {
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { CodeXml, Copy, Eye, EyeOff, FlaskConical } from "lucide-react";
+import { CodeXml, Eye, EyeOff, FlaskConical } from "lucide-react";
 import React from "react";
 
 const EditorPanel = () => {
@@ -29,7 +28,6 @@ const EditorPanel = () => {
   const roomStatus = useRoomStatus();
   const { selectTest, toggleCodeVisibility } = usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
-  const copyCode = useCopyCode();
 
   const url = self?.url ?? "";
   const activeTest = selectedPeer?.questions[url]?.tests.find(
@@ -123,19 +121,6 @@ const EditorPanel = () => {
                   ),
                 }}
                 content={hideCode ? "View code" : "Hide code"}
-              />
-              <Tooltip
-                trigger={{
-                  node: (
-                    <div
-                      className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
-                      onClick={copyCode}
-                    >
-                      <Copy size={16} />
-                    </div>
-                  ),
-                }}
-                content="Copy code"
               />
             </div>
           </div>
