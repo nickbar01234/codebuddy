@@ -1,8 +1,6 @@
+import { DOM } from "@cb/constants";
 import { ExtractMessage, MessagePayload, WindowMessage } from "@cb/types";
-import {
-  waitForElementAtIndex,
-  waitForElementsWithCondition,
-} from "@cb/utils/dom";
+import { waitForElementAtIndex, waitForElements } from "@cb/utils/dom";
 import { assertUnreachable } from "@cb/utils/error";
 import { defineUnlistedScript } from "wxt/utils/define-unlisted-script";
 
@@ -37,10 +35,11 @@ const appendTestCaseToLeetCode = async (
 
     newButton.click();
 
-    const inputs = await waitForElementsWithCondition(
+    const inputs = await waitForElements(
       'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]',
-      (elements) => elements.length === testValues.length,
-      document
+      document,
+      DOM.TIMEOUT,
+      (elements) => elements.length === testValues.length
     );
 
     for (let index = 0; index < inputs.length; index++) {
