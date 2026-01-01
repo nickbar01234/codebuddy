@@ -74,17 +74,6 @@ export const waitForElementAtIndex = (
   ).then((elements) => elements[index]);
 };
 
-// Wait for elements matching selector with condition
-// TODO (Tam):  Why not just use waitForElements directly instead of flipping args?
-export const waitForElementsWithCondition = (
-  selector: string,
-  condition: (elements: NodeListOf<Element>) => boolean,
-  context: Document | ShadowRoot | Element = document,
-  timeout: number = DOM.TIMEOUT
-): Promise<NodeListOf<Element>> => {
-  return waitForElements(selector, context, timeout, condition);
-};
-
 /**
  * Hide all dom elements that does not contain {@param element} in its subtree up to root
  */
