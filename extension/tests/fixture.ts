@@ -1,9 +1,7 @@
 import { DOM } from "@cb/constants";
 import { test as base, chromium, type BrowserContext } from "@playwright/test";
-import { mkdtemp } from "fs/promises";
 import fs from "node:fs";
-import { tmpdir } from "os";
-import { dirname, join, resolve } from "path";
+import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const extension = resolve(
@@ -16,14 +14,12 @@ if (!fs.existsSync(extension)) {
 }
 
 async function createExtensionContext(): Promise<BrowserContext> {
-  const userDataDir = await mkdtemp(join(tmpdir(), "playwright-chrome-"));
-  const context = await chromium.launchPersistentContext(userDataDir, {
+  const context = await chromium.launchPersistentContext("", {
     headless: false,
     channel: "chromium",
     args: [
       `--disable-extensions-except=${extension}`,
       `--load-extension=${extension}`,
-      `--disable-web-security`,
     ],
   });
   return context;
@@ -36,9 +32,12 @@ export const test = base.extend<{
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
     const context = await createExtensionContext();
-    await context.grantPermissions(["clipboard-read", "clipboard-write"], {
-      origin: "https://leetcode.com",
-    });
+    await context.grantPermissions(
+      ["clipboard-read", "clipboard-write", "local-network-access"],
+      {
+        origin: "https://leetcode.com",
+      }
+    );
     await use(context);
     await context.close();
   },
