@@ -15,7 +15,7 @@ if (!fs.existsSync(extension)) {
 
 async function createExtensionContext(): Promise<BrowserContext> {
   const context = await chromium.launchPersistentContext("", {
-    headless: false,
+    headless: process.env.CI === "true",
     channel: "chromium",
     args: [
       `--disable-extensions-except=${extension}`,
