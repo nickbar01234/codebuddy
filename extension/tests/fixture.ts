@@ -22,6 +22,12 @@ async function createExtensionContext(): Promise<BrowserContext> {
       `--load-extension=${extension}`,
     ],
   });
+  await context.grantPermissions(
+    ["clipboard-read", "clipboard-write", "local-network-access"],
+    {
+      origin: "https://leetcode.com",
+    }
+  );
   return context;
 }
 
@@ -32,12 +38,6 @@ export const test = base.extend<{
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
     const context = await createExtensionContext();
-    await context.grantPermissions(
-      ["clipboard-read", "clipboard-write", "local-network-access"],
-      {
-        origin: "https://leetcode.com",
-      }
-    );
     await use(context);
     await context.close();
   },
