@@ -1,7 +1,9 @@
 import { DOM } from "@cb/constants";
 import { test as base, chromium, type BrowserContext } from "@playwright/test";
+import { mkdtemp } from "fs/promises";
 import fs from "node:fs";
-import { dirname, resolve } from "path";
+import { tmpdir } from "os";
+import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 
 const extension = resolve(
@@ -14,14 +16,14 @@ if (!fs.existsSync(extension)) {
 }
 
 async function createExtensionContext(): Promise<BrowserContext> {
-  const context = await chromium.launchPersistentContext("", {
+  const userDataDir = await mkdtemp(join(tmpdir(), "playwright-chrome-"));
+  const context = await chromium.launchPersistentContext(userDataDir, {
     headless: false,
     channel: "chromium",
     args: [
       `--disable-extensions-except=${extension}`,
       `--load-extension=${extension}`,
-
-      "--disable-web-security",
+      `--disable-web-security`,
     ],
   });
   return context;
