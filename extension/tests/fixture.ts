@@ -13,19 +13,29 @@ if (!fs.existsSync(extension)) {
   throw new Error(`Invalid path ${extension}`);
 }
 
+async function createExtensionContext(): Promise<BrowserContext> {
+  const context = await chromium.launchPersistentContext("", {
+    headless: false,
+    channel: "chromium",
+    args: [
+      `--disable-extensions-except=${extension}`,
+      `--load-extension=${extension}`,
+
+      "--disable-web-security",
+    ],
+  });
+  return context;
+}
+
 export const test = base.extend<{
   context: BrowserContext;
   extensionId: string;
 }>({
   // eslint-disable-next-line no-empty-pattern
   context: async ({}, use) => {
-    const context = await chromium.launchPersistentContext("", {
-      headless: false,
-      channel: "chromium",
-      args: [
-        `--disable-extensions-except=${extension}`,
-        `--load-extension=${extension}`,
-      ],
+    const context = await createExtensionContext();
+    await context.grantPermissions(["clipboard-read", "clipboard-write"], {
+      origin: "https://leetcode.com",
     });
     await use(context);
     await context.close();
@@ -54,3 +64,4 @@ export const test = base.extend<{
 });
 
 export const expect = test.expect;
+export { createExtensionContext };
