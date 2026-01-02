@@ -5,11 +5,6 @@ export interface RoomInfo {
   id: string;
 }
 
-export interface CreateRoomOptions {
-  name?: string;
-  isPublic: boolean;
-}
-
 async function createRoom(page: Page): Promise<RoomInfo> {
   const createRoomButton = page.locator('button:has-text("Create Room")');
   await createRoomButton.click();

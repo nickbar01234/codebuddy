@@ -1,10 +1,10 @@
-import type { Page } from "@playwright/test";
+import type { BrowserContext, Page } from "@playwright/test";
 import { test } from "./fixture";
 
 export interface AuthenticatedUser {
   email: string;
   page: Page;
-  context: any;
+  context: BrowserContext;
   extensionId: string;
 }
 
