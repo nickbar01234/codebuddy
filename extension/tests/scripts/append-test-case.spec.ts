@@ -25,11 +25,6 @@ test("Copy test", async ({ page }) => {
     expect(buttons.length).toBe(initialCount + 1);
   }).toPass();
 
-  const buttons = page
-    .locator('button[data-e2e-locator="console-testcase-tag"]')
-    .last()
-    .click({ force: true });
-
   await expect(async () => {
     const inputs = await page.$$(
       'div[data-e2e-locator="console-testcase-input"][contenteditable="true"]'
