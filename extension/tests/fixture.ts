@@ -21,13 +21,8 @@ async function createExtensionContext(): Promise<BrowserContext> {
       `--disable-extensions-except=${extension}`,
       `--load-extension=${extension}`,
     ],
+    permissions: ["clipboard-read", "clipboard-write", "local-network-access"],
   });
-  await context.grantPermissions(
-    ["clipboard-read", "clipboard-write", "local-network-access"],
-    {
-      origin: "https://leetcode.com",
-    }
-  );
   return context;
 }
 
