@@ -23,6 +23,7 @@ async function createExtensionContext(): Promise<BrowserContext> {
       "--disable-features=LocalNetworkAccessChecks",
     ],
   });
+
   await context.grantPermissions(
     ["clipboard-read", "clipboard-write", "local-network-access"],
     {
