@@ -20,6 +20,7 @@ async function createExtensionContext(): Promise<BrowserContext> {
     args: [
       `--disable-extensions-except=${extension}`,
       `--load-extension=${extension}`,
+      "--disable-features=LocalNetworkAccessChecks",
     ],
   });
   await context.grantPermissions(
