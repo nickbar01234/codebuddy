@@ -26,6 +26,13 @@ async function createExtensionContext(): Promise<BrowserContext> {
   return context;
 }
 
+async function getExtensionId(context: BrowserContext): Promise<string> {
+  let [serviceWorker] = context.serviceWorkers();
+  if (!serviceWorker)
+    serviceWorker = await context.waitForEvent("serviceworker");
+
+  return serviceWorker.url().split("/")[2];
+}
 export const test = base.extend<{
   context: BrowserContext;
   extensionId: string;
@@ -37,11 +44,7 @@ export const test = base.extend<{
     await context.close();
   },
   extensionId: async ({ context }, use) => {
-    let [serviceWorker] = context.serviceWorkers();
-    if (!serviceWorker)
-      serviceWorker = await context.waitForEvent("serviceworker");
-
-    const extensionId = serviceWorker.url().split("/")[2];
+    const extensionId = await getExtensionId(context);
     await use(extensionId);
   },
   page: async ({ page }, use) => {
@@ -60,4 +63,4 @@ export const test = base.extend<{
 });
 
 export const expect = test.expect;
-export { createExtensionContext };
+export { createExtensionContext, getExtensionId };

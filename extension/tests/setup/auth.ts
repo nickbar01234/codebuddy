@@ -1,5 +1,5 @@
 import type { BrowserContext, Page } from "@playwright/test";
-import { test } from "./fixture";
+import { test } from "../fixture";
 
 export interface AuthenticatedUser {
   email: string;
@@ -12,10 +12,8 @@ async function signIn(page: Page, email: string): Promise<void> {
   await page.goto("https://leetcode.com/problems/two-sum", {
     waitUntil: "domcontentloaded",
   });
-  const emailInput = page.locator('input[type="email"]');
-  await emailInput.fill(email);
-  const continueButton = page.getByRole("button", { name: "Continue" });
-  await continueButton.click();
+  await page.locator('input[type="email"]').fill(email);
+  await page.getByRole("button", { name: "Continue" }).click();
 }
 
 export const authenticatedTest = test.extend<{
