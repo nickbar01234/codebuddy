@@ -10,7 +10,7 @@ public:
 twoUserRoomTest("User1 can copy code from User2", async ({ user1, user2 }) => {
   await user1.page.getByRole("tab", { name: /Code/i }).click();
   await user1.page.getByTestId("toggle-code-visibility").click();
-  await user1.page.getByTestId("copy-code").click({ force: true });
+  await user1.page.getByTestId("copy-code").click();
 
   await expect(async () => {
     const copiedCode = await user1.page.evaluate(async () => {

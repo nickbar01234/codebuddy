@@ -118,6 +118,7 @@ export const twoUserRoomTest = test.extend<{
     };
 
     await use(user2);
+    await user2Context.close();
   },
 });
 
