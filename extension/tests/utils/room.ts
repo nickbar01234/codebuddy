@@ -22,8 +22,6 @@ export async function createRoom(page: Page): Promise<RoomInfo> {
 }
 
 export async function joinRoom(page: Page, roomId: string): Promise<void> {
-  //joinRoomButton is hidden by beta banner
-  await page.locator(".lucide.lucide-x").click();
   await page.getByRole("button", { name: "Join room" }).click();
   await page.getByRole("textbox", { name: "Enter room ID" }).fill(roomId);
   await page.getByRole("button", { name: "Join" }).click();
