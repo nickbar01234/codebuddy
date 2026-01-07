@@ -40,6 +40,19 @@ async function getExtensionId(context: BrowserContext): Promise<string> {
   return serviceWorker.url().split("/")[2];
 }
 
+async function setupPage(page: Page): Promise<void> {
+  page.on("console", (msg) => {
+    console.log("Received message from page", msg.text(), msg.type());
+  });
+  await page.goto("https://leetcode.com/problems/two-sum", {
+    waitUntil: "domcontentloaded",
+  });
+  await page.waitForSelector(DOM.LEETCODE_ROOT_ID, {
+    state: "visible",
+    timeout: 30_000,
+  });
+}
+
 export const test = base.extend<{
   context: BrowserContext;
   extensionId: string;
@@ -55,16 +68,7 @@ export const test = base.extend<{
     await use(extensionId);
   },
   page: async ({ page }, use) => {
-    page.on("console", (msg) => {
-      console.log("Received message from page", msg.text(), msg.type());
-    });
-    await page.goto("https://leetcode.com/problems/two-sum", {
-      waitUntil: "domcontentloaded",
-    });
-    await page.waitForSelector(DOM.LEETCODE_ROOT_ID, {
-      state: "visible",
-      timeout: 30_000,
-    });
+    await setupPage(page);
     await use(page);
   },
 });
@@ -74,39 +78,38 @@ export interface User {
   email: string;
   extensionId: string;
   context: BrowserContext;
+  room?: RoomInfo;
 }
 
 export const twoUserRoomTest = test.extend<{
-  room: RoomInfo;
   user1: User;
   user2: User;
 }>({
-  user1: async ({ context, extensionId }, use) => {
-    const page = context.pages()[0] || (await context.newPage());
+  user1: async ({ page, context, extensionId }, use) => {
     const email = `user1-${Date.now()}@test.com`;
-
     await signIn(page, email);
-
+    const room = await createRoom(page);
     const user1: User = {
       email,
       page,
       context,
       extensionId,
+      room,
     };
-
     await use(user1);
   },
-  room: async ({ user1 }, use) => {
-    const room = await createRoom(user1.page);
-    await use(room);
-  },
-  user2: async ({ room }, use) => {
+  user2: async ({ user1 }, use) => {
+    if (!user1.room) {
+      throw new Error("user1 must have a room for user2 to join");
+    }
+
     const user2Context = await createExtensionContext();
     const user2Page = user2Context.pages()[0] || (await user2Context.newPage());
+    await setupPage(user2Page);
     const user2Email = `user2-${Date.now()}@test.com`;
 
     await signIn(user2Page, user2Email);
-    await joinRoom(user2Page, room.id);
+    await joinRoom(user2Page, user1.room.id);
 
     const user2ExtensionId = await getExtensionId(user2Context);
 
@@ -115,6 +118,7 @@ export const twoUserRoomTest = test.extend<{
       page: user2Page,
       context: user2Context,
       extensionId: user2ExtensionId,
+      room: user1.room,
     };
 
     await use(user2);

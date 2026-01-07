@@ -10,13 +10,7 @@ export async function createRoom(page: Page): Promise<RoomInfo> {
   await page.getByRole("button", { name: "Create" }).click();
   await page.getByRole("img", { name: "Copy room ID" }).click();
 
-  const roomId = await page.evaluate(async () => {
-    return await navigator.clipboard.readText();
-  });
-
-  if (!roomId) {
-    throw new Error("Failed to extract room ID after creating room. ");
-  }
+  const roomId = await page.evaluate(() => navigator.clipboard.readText());
 
   return { id: roomId };
 }
