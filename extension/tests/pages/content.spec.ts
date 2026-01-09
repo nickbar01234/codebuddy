@@ -1,4 +1,5 @@
-import { expect, test, twoUserRoomTest } from "@tests/fixture";
+import { expect, test } from "@tests/fixture";
+import { inRoomExpect, inRoomTest } from "@tests/fixture/in-room";
 
 test("Content script is mounted", async ({ page }) => {
   await expect(page.getByText("CodeBuddy").first()).toBeVisible({
@@ -13,14 +14,14 @@ public:
     }
 };`;
 
-twoUserRoomTest("User1 can copy code from User2", async ({ user1, user2 }) => {
+inRoomTest("User1 can copy code from User2", async ({ user1 }) => {
   await user1.page.getByRole("tab", { name: /Code/i }).click();
   await user1.page.getByTestId("toggle-code-visibility").click();
   await user1.page.getByTestId("copy-code").click();
-  await expect(async () => {
+  await inRoomExpect(async () => {
     const copiedCode = await user1.page.evaluate(() =>
       navigator.clipboard.readText()
     );
-    expect(copiedCode.trim()).toBe(EXPECTED_CPP_CODE.trim());
+    inRoomExpect(copiedCode.trim()).toBe(EXPECTED_CPP_CODE.trim());
   }).toPass();
 });
