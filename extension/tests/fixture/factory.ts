@@ -1,19 +1,6 @@
-import { DOM } from "@cb/constants";
 import { test as base, BrowserContext, chromium, Page } from "@playwright/test";
 import { signIn } from "@tests/utils/auth";
-import fs from "node:fs";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
-
-const extension = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  "../../dist/chrome-mv3-dev"
-);
-
-if (!fs.existsSync(extension)) {
-  throw new Error(`Invalid path ${extension}`);
-}
-
+import { getExtensionId, getExtensionPath, setupPage } from "../utils/page";
 export interface UserPage {
   page: Page;
   email: string;
@@ -24,26 +11,14 @@ export interface UserPage {
 interface PlayWrightPageFactory {
   instantiate: (email: string) => Promise<UserPage>;
 }
-
-const setupPage = async (page: Page) => {
-  page.on("console", (msg) => {
-    console.log("Received message from page", msg.text(), msg.type());
-  });
-  await page.goto("https://leetcode.com/problems/two-sum", {
-    waitUntil: "domcontentloaded",
-  });
-  await page.waitForSelector(DOM.LEETCODE_ROOT_ID, {
-    state: "visible",
-    timeout: 30_000,
-  });
-};
+const extension = getExtensionPath();
 
 export const factory = base.extend<{ pageCreator: PlayWrightPageFactory }>({
   // eslint-disable-next-line no-empty-pattern
   pageCreator: async ({}, use) => {
-    let context: BrowserContext | undefined;
+    const contexts: BrowserContext[] = [];
     const instantiate: PlayWrightPageFactory["instantiate"] = async (email) => {
-      context = await chromium.launchPersistentContext("", {
+      const context = await chromium.launchPersistentContext("", {
         headless: false,
         channel: "chromium",
         args: [
@@ -56,12 +31,9 @@ export const factory = base.extend<{ pageCreator: PlayWrightPageFactory }>({
           "local-network-access",
         ],
       });
+      contexts.push(context);
 
-      let [serviceWorker] = context.serviceWorkers();
-      if (!serviceWorker)
-        serviceWorker = await context.waitForEvent("serviceworker");
-      const extensionId = serviceWorker.url().split("/")[2];
-
+      const extensionId = await getExtensionId(context);
       const page = context.pages()[0] ?? (await context.newPage());
       await setupPage(page);
       await signIn(page, email);
@@ -71,8 +43,6 @@ export const factory = base.extend<{ pageCreator: PlayWrightPageFactory }>({
 
     await use({ instantiate });
 
-    if (context != undefined) {
-      context.close();
-    }
+    await Promise.all(contexts.map((ctx) => ctx.close()));
   },
 });

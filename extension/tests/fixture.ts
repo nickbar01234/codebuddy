@@ -1,57 +1,9 @@
-import { DOM } from "@cb/constants";
+import { test as base, type BrowserContext } from "@playwright/test";
 import {
-  test as base,
-  chromium,
-  type BrowserContext,
-  type Page,
-} from "@playwright/test";
-import fs from "node:fs";
-import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
-import { signIn } from "./utils/auth";
-import { createRoom, joinRoom, type RoomInfo } from "./utils/room";
-
-const extension = resolve(
-  dirname(fileURLToPath(import.meta.url)),
-  "../dist/chrome-mv3-dev"
-);
-
-if (!fs.existsSync(extension)) {
-  throw new Error(`Invalid path ${extension}`);
-}
-
-async function createExtensionContext(): Promise<BrowserContext> {
-  const context = await chromium.launchPersistentContext("", {
-    headless: false,
-    channel: "chromium",
-    args: [
-      `--disable-extensions-except=${extension}`,
-      `--load-extension=${extension}`,
-    ],
-    permissions: ["clipboard-read", "clipboard-write", "local-network-access"],
-  });
-  return context;
-}
-
-async function getExtensionId(context: BrowserContext): Promise<string> {
-  let [serviceWorker] = context.serviceWorkers();
-  if (!serviceWorker)
-    serviceWorker = await context.waitForEvent("serviceworker");
-  return serviceWorker.url().split("/")[2];
-}
-
-async function setupPage(page: Page): Promise<void> {
-  page.on("console", (msg) => {
-    console.log("Received message from page", msg.text(), msg.type());
-  });
-  await page.goto("https://leetcode.com/problems/two-sum", {
-    waitUntil: "domcontentloaded",
-  });
-  await page.waitForSelector(DOM.LEETCODE_ROOT_ID, {
-    state: "visible",
-    timeout: 30_000,
-  });
-}
+  createExtensionContext,
+  getExtensionId,
+  setupPage,
+} from "./utils/page";
 
 export const test = base.extend<{
   context: BrowserContext;
@@ -70,59 +22,6 @@ export const test = base.extend<{
   page: async ({ page }, use) => {
     await setupPage(page);
     await use(page);
-  },
-});
-
-export interface User {
-  page: Page;
-  email: string;
-  extensionId: string;
-  context: BrowserContext;
-  room?: RoomInfo;
-}
-
-export const twoUserRoomTest = test.extend<{
-  user1: User;
-  user2: User;
-}>({
-  user1: async ({ page, context, extensionId }, use) => {
-    const email = `user1-${Date.now()}@test.com`;
-    await signIn(page, email);
-    const room = await createRoom(page);
-    const user1: User = {
-      email,
-      page,
-      context,
-      extensionId,
-      room,
-    };
-    await use(user1);
-  },
-  user2: async ({ user1 }, use) => {
-    if (!user1.room) {
-      throw new Error("user1 must have a room for user2 to join");
-    }
-
-    const user2Context = await createExtensionContext();
-    const user2Page = user2Context.pages()[0] || (await user2Context.newPage());
-    await setupPage(user2Page);
-    const user2Email = `user2-${Date.now()}@test.com`;
-
-    await signIn(user2Page, user2Email);
-    await joinRoom(user2Page, user1.room.id);
-
-    const user2ExtensionId = await getExtensionId(user2Context);
-
-    const user2: User = {
-      email: user2Email,
-      page: user2Page,
-      context: user2Context,
-      extensionId: user2ExtensionId,
-      room: user1.room,
-    };
-
-    await use(user2);
-    await user2Context.close();
   },
 });
 
