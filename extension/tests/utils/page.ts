@@ -1,5 +1,10 @@
 import { DOM } from "@cb/constants";
-import { chromium, type BrowserContext, type Page } from "@playwright/test";
+import {
+  test as base,
+  chromium,
+  type BrowserContext,
+  type Page,
+} from "@playwright/test";
 import fs from "node:fs";
 import { dirname, resolve } from "path";
 import { fileURLToPath } from "url";
@@ -49,3 +54,25 @@ export async function setupPage(page: Page): Promise<void> {
     timeout: 30_000,
   });
 }
+
+export const test = base.extend<{
+  context: BrowserContext;
+  extensionId: string;
+}>({
+  // eslint-disable-next-line no-empty-pattern
+  context: async ({}, use) => {
+    const context = await createExtensionContext();
+    await use(context);
+    await context.close();
+  },
+  extensionId: async ({ context }, use) => {
+    const extensionId = await getExtensionId(context);
+    await use(extensionId);
+  },
+  page: async ({ page }, use) => {
+    await setupPage(page);
+    await use(page);
+  },
+});
+
+export const expect = test.expect;

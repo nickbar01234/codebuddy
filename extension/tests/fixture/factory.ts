@@ -1,6 +1,7 @@
 import { test as base, BrowserContext, chromium, Page } from "@playwright/test";
 import { signIn } from "@tests/utils/auth";
-import { getExtensionId, getExtensionPath, setupPage } from "../utils/page";
+import { getExtensionId, getExtensionPath, setupPage } from "@tests/utils/page";
+
 export interface UserPage {
   page: Page;
   email: string;

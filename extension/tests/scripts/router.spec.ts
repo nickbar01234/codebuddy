@@ -1,6 +1,6 @@
 import { WindowMessage } from "@cb/types";
 import { getNormalizedUrl } from "@cb/utils";
-import { expect, test } from "@tests/fixture";
+import { expect, test } from "@tests/utils/page";
 
 test("Navigate to different problem", async ({ page }) => {
   const navigateTo = "https://leetcode.com/problems/add-two-numbers";

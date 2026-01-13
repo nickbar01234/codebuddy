@@ -1,5 +1,5 @@
 import { WindowMessage } from "@cb/types";
-import { expect, test } from "@tests/fixture";
+import { expect, test } from "@tests/utils/page";
 
 test("Copy test", async ({ page }) => {
   const testValues = ["[3,2,4]", "9"];
