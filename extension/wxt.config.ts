@@ -15,8 +15,11 @@ export default defineConfig({
   },
   hooks: {
     "server:started": async (_wxt, server) => {
+      // Wait for browser to fully connect, then reload to inject content script
       setTimeout(() => {
-        console.log("[WXT] Reloading extension after startup...");
+        console.log(
+          "[WXT] Reloading extension for content script injection..."
+        );
         server.reloadExtension();
       }, 10000);
     },
@@ -27,6 +30,8 @@ export default defineConfig({
       "--disable-web-security",
       `--user-data-dir=./.wxt/chrome-data/${USER_PROFILE}`,
       "--auto-open-devtools-for-tabs",
+      "--hide-crash-restore-bubble",
+      "--test-type",
     ],
   },
   manifestVersion: 3,
