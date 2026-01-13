@@ -14,15 +14,6 @@ export default defineConfig({
     warn: () => {},
   },
   hooks: {
-    "server:started": async (_wxt, server) => {
-      // Wait for browser to fully connect, then reload to inject content script
-      setTimeout(() => {
-        console.log(
-          "[WXT] Reloading extension for content script injection..."
-        );
-        server.reloadExtension();
-      }, 10000);
-    },
     "build:manifestGenerated": (wxt, manifest) => {
       if (wxt.config.mode === "development") {
         manifest.name = `[DEV] ${manifest.name}`;
