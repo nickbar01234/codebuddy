@@ -1,6 +1,9 @@
+import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
+import { useCopyTestCaseToLeetCode } from "@cb/hooks/editor";
 import { useRoomData } from "@cb/hooks/store";
 import { Identifiable, PeerState, SelectableTestCase } from "@cb/types";
+import { Copy } from "lucide-react";
 import React from "react";
 
 interface TestTabProps {
@@ -14,6 +17,7 @@ export const TestTab: React.FC<TestTabProps> = ({
   activeTest,
   selectTest,
 }) => {
+  const copyTestCaseToLeetCode = useCopyTestCaseToLeetCode();
   const { self } = useRoomData();
   return (
     <SkeletonWrapper loading={false} className="relative">
@@ -36,6 +40,19 @@ export const TestTab: React.FC<TestTabProps> = ({
               )
             )}
           </div>
+          <Tooltip
+            trigger={{
+              node: (
+                <div
+                  className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-center focus:outline-none p-2 rounded-md cursor-pointer"
+                  onClick={() => copyTestCaseToLeetCode(activeTest)}
+                >
+                  <Copy size={16} />
+                </div>
+              ),
+            }}
+            content="Copy test case to LeetCode"
+          />
         </div>
         <div className="space-y-4 pb-12">
           <div>

@@ -23,6 +23,11 @@ export default defineConfig({
         server.reloadExtension();
       }, 10000);
     },
+    "build:manifestGenerated": (wxt, manifest) => {
+      if (wxt.config.mode === "development") {
+        manifest.name = `[DEV] ${manifest.name}`;
+      }
+    },
   },
   webExt: {
     startUrls: ["https://leetcode.com/problems/two-sum/"],
@@ -38,7 +43,7 @@ export default defineConfig({
   manifest: {
     name: "CodeBuddy",
     description: "Leetcode together",
-    version: "3.10.0",
+    version: "3.11.0",
     action: {},
     icons: {
       "16": "icons/16.png",
@@ -58,7 +63,12 @@ export default defineConfig({
       },
       {
         // We want css to be accessible to iframe
-        resources: ["proxy.js", "content-scripts/content.css"],
+        resources: [
+          "router.js",
+          "content-scripts/content.css",
+          "set-codebuddy-code.js",
+          "append-test-case.js",
+        ],
         matches: ["https://leetcode.com/*"],
       },
       {

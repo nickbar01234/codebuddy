@@ -41,7 +41,7 @@ export enum QuestionProgressStatus {
 }
 
 export type QuestionProgress = {
-  code: ServiceResponse["getValue"];
+  code: ServiceResponse["getUserCode"];
   tests: TestCases;
   status: QuestionProgressStatus;
 };

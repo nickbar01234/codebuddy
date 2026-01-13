@@ -13,7 +13,9 @@ export default defineContentScript({
   async main(ctx) {
     // Initialize controllers on startup
     getOrCreateControllers();
-    await injectScript("/proxy.js", { keepInDom: true });
+    await injectScript("/router.js", { keepInDom: true });
+    await injectScript("/set-codebuddy-code.js", { keepInDom: true });
+    await injectScript("/append-test-case.js", { keepInDom: true });
 
     ctx.addEventListener(window, "wxt:locationchange", () =>
       mountExtensionIdempotent(ctx)
@@ -25,6 +27,7 @@ export default defineContentScript({
 
 const mountExtensionIdempotent = (ctx: ContentScriptContext) => {
   if (document.querySelector(`#${DOM.CODEBUDDY_EXTENSION_ID}`) == null) {
+    console.log("Have not mounted CodeBuddy panel");
     waitForElement(DOM.LEETCODE_ROOT_ID).then(() => {
       const ui = createUi(ctx);
       ui.mount();

@@ -11,4 +11,21 @@ interface NavigateMessage extends GenericMessage {
   url: string;
 }
 
-export type WindowMessage = LeetCodeOnChangeMessage | NavigateMessage;
+interface SetCodeBuddyCodeMessage extends GenericMessage {
+  action: "setCodeBuddyCode";
+  code: string;
+  language: string;
+  changes: monaco.editor.IModelContentChange;
+  changeUser: boolean;
+}
+
+interface AppendTestCaseToLeetCodeMessage extends GenericMessage {
+  action: "appendTestCaseToLeetCode";
+  testValues: string[];
+}
+
+export type WindowMessage =
+  | LeetCodeOnChangeMessage
+  | NavigateMessage
+  | SetCodeBuddyCodeMessage
+  | AppendTestCaseToLeetCodeMessage;

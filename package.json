@@ -17,7 +17,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tsx": "^4.21.0",
     "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.1",
+    "typescript-eslint": "^8.51.0",
     "vitest": "^3.0.7"
   },
   "scripts": {
@@ -29,7 +29,7 @@
   },
   "type": "module",
   "lint-staged": {
-    "*.{ts,tsx,md,html,css}": [
+    "**/*.{ts,tsx,md,html,css}": [
       "prettier --write --config .prettierrc",
       "eslint --fix --config eslint.config.mjs"
     ]
