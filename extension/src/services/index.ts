@@ -11,15 +11,12 @@ export {
   clearLocalStorage,
   clearLocalStorageForRoom,
   getLocalStorage,
-  removeLocalStorage,
-  setLocalStorage,
-} from "@cb/utils/localstorage";
-
-export {
   getSessionStorage,
+  removeLocalStorage,
   removeSessionStorage,
+  setLocalStorage,
   setSessionStorage,
-} from "@cb/utils/sessionstorage";
+} from "@cb/utils/storage";
 
 interface Controllers {
   emitter: EventEmitter;

@@ -13,7 +13,6 @@ export const useDev = () => {
 
     const hasAttempted = getSessionStorage("devAutoJoinAttempted") === true;
 
-    // First load: reload page to ensure content scripts are injected
     if (!hasAttempted) {
       setSessionStorage("devAutoJoinAttempted", true);
       console.log("[DEV] Reloading page for content script injection...");
@@ -21,7 +20,6 @@ export const useDev = () => {
       return;
     }
 
-    // Second load: proceed with auto-join
     if (
       authStatus !== AppStatus.AUTHENTICATED ||
       roomStatus !== RoomStatus.HOME
@@ -30,16 +28,23 @@ export const useDev = () => {
 
     const autoJoin = async () => {
       const roomActions = useRoom.getState().actions.room;
+      const isHost = IS_HOST;
 
-      const existingRoom = await db.room.get(DEV_ROOM.ID);
-
-      if (existingRoom) {
-        await roomActions.join(DEV_ROOM.ID);
-      } else {
+      if (isHost) {
         await roomActions.create(
           { name: DEV_ROOM.NAME, isPublic: false },
           DEV_ROOM.ID
         );
+      } else {
+        const existingRoom = await db.room.get(DEV_ROOM.ID);
+        if (existingRoom) {
+          await roomActions.join(DEV_ROOM.ID);
+        } else {
+          await roomActions.create(
+            { name: DEV_ROOM.NAME, isPublic: false },
+            DEV_ROOM.ID
+          );
+        }
       }
     };
     autoJoin();

@@ -70,6 +70,10 @@ export default defineConfig({
   },
   vite: () => ({
     plugins: [react()],
+    define: {
+      USER_PROFILE: JSON.stringify(USER_PROFILE),
+      IS_HOST: JSON.stringify(USER_PROFILE === "code"),
+    },
     css: {
       postcss: {
         plugins: [tailwindcss()],
