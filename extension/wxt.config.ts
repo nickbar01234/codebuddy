@@ -14,6 +14,12 @@ export default defineConfig({
     warn: () => {},
   },
   hooks: {
+    "server:started": async (_wxt, server) => {
+      setTimeout(() => {
+        console.log("[WXT] Reloading extension after startup...");
+        server.reloadExtension();
+      }, 10000);
+    },
     "build:manifestGenerated": (wxt, manifest) => {
       if (wxt.config.mode === "development") {
         manifest.name = `[DEV] ${manifest.name}`;
@@ -70,10 +76,6 @@ export default defineConfig({
   },
   vite: () => ({
     plugins: [react()],
-    define: {
-      USER_PROFILE: JSON.stringify(USER_PROFILE),
-      IS_HOST: JSON.stringify(USER_PROFILE === "code"),
-    },
     css: {
       postcss: {
         plugins: [tailwindcss()],

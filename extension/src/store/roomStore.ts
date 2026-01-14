@@ -94,8 +94,7 @@ interface RoomAction {
       args: Omit<
         NonNullable<RoomState["room"]>,
         "id" | "questions" | "usernames"
-      >,
-      id?: Id
+      >
     ) => Promise<void>;
     join: (id: Id) => Promise<void>;
     leave: () => Promise<void>;
@@ -324,7 +323,7 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
         },
         actions: {
           room: {
-            create: async (args, id) => {
+            create: async (args) => {
               try {
                 get().actions.room.loading();
                 const metadata = await getProblemMetaBySlugServer(
@@ -335,23 +334,20 @@ const createRoomStore = (background: BackgroundProxy, appStore: AppStore) => {
                 ) {
                   throw new Error(`Graphql metadata errors ${metadata}`);
                 }
-                const room = await getOrCreateControllers().room.create(
-                  {
-                    ...args,
-                    questions: [metadata.data],
-                  },
-                  id
-                );
-                const { id: roomId, name, isPublic, users } = room.getRoom();
+                const room = await getOrCreateControllers().room.create({
+                  ...args,
+                  questions: [metadata.data],
+                });
+                const { id, name, isPublic, users } = room.getRoom();
                 setRoom({
-                  id: roomId,
+                  id,
                   name,
                   isPublic,
                   questions: [metadata.data],
                   usernames: Object.keys(users),
                 });
                 setSelfProgressForCurrentUrl(metadata.data);
-                await initializeChatMessages(roomId);
+                await initializeChatMessages(id);
               } catch (error) {
                 toast.error("Failed to create room. Please try again.");
                 console.error("Failed to create room", error);

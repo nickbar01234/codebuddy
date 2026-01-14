@@ -131,27 +131,20 @@ const getUserRef = (roomId: string, username: string) =>
 
 export const firebaseDatabaseServiceImpl: DatabaseService = {
   room: {
-    async create(room, id) {
+    async create(room) {
       const doc = {
         ...room,
         users: {},
         version: 0,
       };
-
-      if (id) {
-        const ref = getRoomRef(id);
-        await setDoc(ref, {
-          ...doc,
-          createdAt: serverTimestamp(),
-        });
-        return { id, ...doc };
-      }
-
       const ref = await addDoc(getRoomRefs(), {
         ...doc,
         createdAt: serverTimestamp(),
       });
-      return { id: ref.id, ...doc };
+      return {
+        id: ref.id,
+        ...doc,
+      };
     },
 
     get(id) {

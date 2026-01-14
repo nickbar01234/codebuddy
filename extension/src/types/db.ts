@@ -141,8 +141,7 @@ interface DatabaseRoomObserver {
 
 interface DatabaseRoomService {
   create(
-    room: Pick<Room, "name" | "isPublic" | "questions">,
-    id?: Id
+    room: Pick<Room, "name" | "isPublic" | "questions">
   ): Promise<Identifiable<Room>>;
   get(id: Id): Promise<Room | undefined>;
   addUser(id: Id, user: User): Promise<void>;
