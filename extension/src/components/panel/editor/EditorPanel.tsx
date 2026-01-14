@@ -113,7 +113,6 @@ const EditorPanel = () => {
                 trigger={{
                   node: (
                     <div
-                      data-testid="toggle-code-visibility"
                       className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
                       onClick={toggleCodeVisibility}
                     >

@@ -3,7 +3,6 @@ import { DOM, EXTENSION } from "@cb/constants";
 import { useHtmlActions } from "@cb/hooks/store";
 import useResource from "@cb/hooks/useResource";
 import { Question } from "@cb/types";
-import { waitForElement } from "@cb/utils";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
 

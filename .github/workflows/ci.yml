@@ -60,17 +60,6 @@ jobs:
         # todo(nickbar01234): Cache playwright?
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
-
-      - name: Start Firebase emulator
-        run: docker compose up -d
-      - name: Wait for firebase emulator
-        run: |
-          echo "Waiting to check firebase to be healthy"
-          until [ "$(docker inspect --format='{{.State.Health.Status}}' firebase)" = "healthy" ]; do
-            echo "Waiting..."
-            sleep 2
-          done
-          echo "Firebase is healthy"
       # todo(nickbar01234): Should switch to chrome-mv3 for production build or setup CI to point to docker firebase
       - name: Build extension in dev mode
         run: pnpm build:dev
