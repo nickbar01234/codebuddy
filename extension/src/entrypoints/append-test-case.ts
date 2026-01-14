@@ -57,6 +57,7 @@ const appendTestCaseToLeetCode = async (
     console.error("Failed to append test case:", error);
   }
 };
+
 export default defineUnlistedScript(() => {
   window.addEventListener(
     "message",
