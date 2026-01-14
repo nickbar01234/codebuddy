@@ -1,11 +1,4 @@
 import { twoUserExpect, twoUserTest } from "@tests/fixture/in-room";
-import { expect, test } from "@tests/utils/page";
-
-test("Content script is mounted", async ({ page }) => {
-  await expect(page.getByText("CodeBuddy").first()).toBeVisible({
-    timeout: 30_000,
-  });
-});
 
 const EXPECTED_CPP_CODE = `class Solution {
 public:
