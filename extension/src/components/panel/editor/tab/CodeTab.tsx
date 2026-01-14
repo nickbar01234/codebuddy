@@ -17,7 +17,7 @@ export const CodeTab: React.FC = () => {
                 className="h-fit hover:bg-fill-quaternary dark:hover:bg-fill-quaternary inline-flex items-center justify-between focus:outline-none p-2 rounded-md cursor-pointer"
                 onClick={copyCode}
               >
-                <Copy size={16} />
+                <Copy data-testid="copy-code" size={16} />
               </div>
             ),
           }}
