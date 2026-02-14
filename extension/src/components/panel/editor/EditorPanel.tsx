@@ -1,6 +1,10 @@
 import { UserDropDownMenu } from "@cb/components/navigator/menu/UserDropDownMenu";
 import CreateRoomLoadingPanel from "@cb/components/panel/editor/CreateRoomLoadingPanel";
-import { CodeTab, TestTab } from "@cb/components/panel/editor/tab";
+import {
+  CodeTab,
+  TestResultTab,
+  TestTab,
+} from "@cb/components/panel/editor/tab";
 import { Tooltip } from "@cb/components/tooltip";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import {
@@ -26,7 +30,8 @@ const EditorPanel = () => {
   const { selectedPeer, peers } = usePeers();
   const { self } = useRoomData();
   const roomStatus = useRoomStatus();
-  const { selectTest, toggleCodeVisibility } = usePeerActions();
+  const { selectTest, selectTestResult, toggleCodeVisibility } =
+    usePeerActions();
   const { getLanguageExtension } = useLeetCodeActions();
 
   const url = self?.url ?? "";
@@ -38,6 +43,16 @@ const EditorPanel = () => {
   const upperTabConfigs = React.useMemo(() => {
     const extension =
       getLanguageExtension(selectedPeer?.questions[url]?.code?.language) ?? "";
+
+    const activeTestResult = selectedPeer?.questions[url]?.testResults.find(
+      (testResult) => testResult.selected
+    );
+
+    const allTestResult = selectedPeer?.questions[url]?.testResults ?? [];
+    const generalResult = allTestResult.every(
+      (r) => r.testResult[0].output === r.testResult[0].expected
+    );
+
     return [
       {
         value: "code",
@@ -57,8 +72,28 @@ const EditorPanel = () => {
           />
         ),
       },
+      {
+        value: "testResult",
+        label: "Test Result",
+        Icon: FlaskConical,
+        Content: (
+          <TestResultTab
+            activePeer={selectedPeer}
+            activeTestResult={activeTestResult}
+            selectTestResult={selectTestResult}
+            generalResult={generalResult}
+          />
+        ),
+      },
     ];
-  }, [selectedPeer, activeTest, selectTest, getLanguageExtension, url]);
+  }, [
+    selectedPeer,
+    activeTest,
+    selectTest,
+    selectTestResult,
+    getLanguageExtension,
+    url,
+  ]);
 
   const hideCode = !selectedPeer?.questions[self?.url ?? ""]?.viewable;
 

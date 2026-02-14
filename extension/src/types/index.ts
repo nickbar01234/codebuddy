@@ -15,13 +15,27 @@ interface Assignment {
   value: string;
 }
 
+interface ResultAssignment {
+  input: Record<string, string>;
+  output: string;
+  expected: string;
+}
+
 export interface TestCase {
   test: Assignment[];
 }
 
+export interface TestResult {
+  testResult: ResultAssignment[];
+}
+
 export type TestCases = TestCase[];
 
+export type TestResults = TestResult[];
+
 export interface SelectableTestCase extends TestCase, Selectable {}
+
+export interface SelectableTestResult extends TestResult, Selectable {}
 
 // Refactor post redux
 export interface LocalStorage {

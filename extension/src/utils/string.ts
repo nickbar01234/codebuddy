@@ -1,5 +1,5 @@
-import { Question, TestCase } from "@cb/types";
 import { Timestamp } from "firebase/firestore";
+import { Question, TestCase, TestCases, TestResult } from "@cb/types";
 
 export const capitalize = (str: string | undefined) =>
   str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
@@ -27,6 +27,64 @@ export const groupTestCases = (
       value: assignment,
     })),
   }));
+};
+
+export const groupTestResults = (
+  variables: Question["variables"] | undefined,
+  testInputs: TestCases,
+  testOutputs: string[],
+  testExpectedOutputs: string[]
+): TestResult[] => {
+  const numCases = testInputs.length;
+
+  if (
+    variables == undefined ||
+    testInputs.length !== numCases ||
+    testExpectedOutputs.length !== numCases
+  ) {
+    console.error(
+      "Variables are undefined or tests do not match up",
+      variables,
+      testInputs,
+      testOutputs,
+      testExpectedOutputs
+    );
+    return [];
+  }
+
+  const results: TestResult[] = [];
+  const varCount = variables?.count ?? 0;
+
+  for (let curCaseNo = 0; curCaseNo < numCases; curCaseNo++) {
+    if (testInputs[curCaseNo].test.length !== varCount) {
+      console.error(
+        `Case ${curCaseNo} does not have the correct number of variables`,
+        variables,
+        testInputs
+      );
+      return [];
+    }
+
+    const inputObj: Record<string, string> = {};
+    const currentTestInputs = testInputs[curCaseNo];
+
+    for (let v = 0; v < varCount; v++) {
+      const name: string = currentTestInputs.test[v].variable ?? `var${v}`;
+      inputObj[name] = currentTestInputs.test[v].value;
+    }
+
+    results.push({
+      testResult: [
+        {
+          input: inputObj,
+          output: testOutputs[curCaseNo] ?? "",
+          expected: testExpectedOutputs[curCaseNo] ?? "",
+        },
+      ],
+    });
+  }
+
+  return results;
 };
 
 export const safeJsonParse = (content: string): object => {

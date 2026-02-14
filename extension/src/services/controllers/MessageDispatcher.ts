@@ -63,6 +63,7 @@ export class MessageDispatcher {
 
     this.unsubscribers.push(this.subscribeToCodeEditor());
     this.unsubscribers.push(this.subscribeToTestEditor());
+    this.unsubscribers.push(this.subscribeToRunTest());
     this.unsubscribers.push(this.subscribeToRtcOpen());
     this.unsubscribers.push(this.subscribeToRtcMessage());
     this.unsubscribers.push(this.subscribeToRoomChanges());
@@ -159,6 +160,21 @@ export class MessageDispatcher {
     return () => {
       observer.disconnect();
       clearInterval(interval);
+    };
+  }
+
+  private subscribeToRunTest(): () => void {
+    const messageHandler = async (event: MessageEvent) => {
+      if (event.data.type === "LC_HOOK") {
+        const testResult = await this.getTestResultPayload(event.data);
+        this.emitter.emit("rtc.send.message", {
+          message: testResult,
+        });
+      }
+    };
+    window.addEventListener("message", messageHandler);
+    return () => {
+      window.removeEventListener("message", messageHandler);
     };
   }
 
@@ -260,6 +276,19 @@ export class MessageDispatcher {
             questions: {
               [url]: {
                 tests,
+                status: QuestionProgressStatus.IN_PROGRESS,
+              },
+            },
+          });
+          break;
+        }
+
+        case "testResults": {
+          const { testResults, url } = message;
+          this.roomStore.getState().actions.peers.update(from, {
+            questions: {
+              [url]: {
+                testResults,
                 status: QuestionProgressStatus.IN_PROGRESS,
               },
             },
@@ -400,6 +429,15 @@ export class MessageDispatcher {
       this.roomStore
         .getState()
         .actions.room.getVariables(getNormalizedUrl(window.location.href))
+    );
+  }
+
+  private getTestResultPayload(eventData: MessageEvent) {
+    return getTestResultsPayload(
+      this.roomStore
+        .getState()
+        .actions.room.getVariables(getNormalizedUrl(window.location.href)),
+      eventData.data
     );
   }
 }

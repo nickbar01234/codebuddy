@@ -17,6 +17,30 @@ export const getTestsPayload = (
   };
 };
 
+export const getTestResultsPayload = (
+  variables: Question["variables"] | undefined,
+  testResults?: any //fix type here?
+): ExtractMessage<PeerMessage, "testResults"> => {
+  if (!testResults) {
+    return {
+      action: "testResults",
+      testResults: [],
+      url: getNormalizedUrl(window.location.href),
+    };
+  }
+
+  return {
+    action: "testResults",
+    testResults: groupTestResults(
+      variables,
+      getTestsPayload(variables).tests,
+      testResults.code_answer.slice(0, -1),
+      testResults.expected_code_answer.slice(0, -1)
+    ),
+    url: getNormalizedUrl(window.location.href),
+  };
+};
+
 export const getCodePayload = async (
   changes: Partial<monaco.editor.IModelContentChange>
 ): Promise<ExtractMessage<PeerMessage, "code">> => {
