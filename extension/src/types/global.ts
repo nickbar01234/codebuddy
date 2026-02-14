@@ -10,5 +10,6 @@ declare global {
         push: (url: string) => Promise<boolean>;
       };
     };
+    __LC_FETCH_HOOKED__?: boolean;
   }
 }
