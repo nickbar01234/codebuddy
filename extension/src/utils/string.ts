@@ -65,12 +65,15 @@ export const groupTestResults = (
       return [];
     }
 
-    const inputObj: Record<string, string> = {};
+    const inputObj: Array<any> = [];
     const currentTestInputs = testInputs[curCaseNo];
 
     for (let v = 0; v < varCount; v++) {
-      const name: string = currentTestInputs.test[v].variable ?? `var${v}`;
-      inputObj[name] = currentTestInputs.test[v].value;
+      const name: string = currentTestInputs.test[v].variable ?? "";
+      inputObj.push({
+        variable: name,
+        value: currentTestInputs.test[v].value,
+      });
     }
 
     results.push({

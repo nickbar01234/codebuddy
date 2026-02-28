@@ -19,7 +19,7 @@ export const getTestsPayload = (
 
 export const getTestResultsPayload = (
   variables: Question["variables"] | undefined,
-  testResults?: any //fix type here?
+  testResults?: any
 ): ExtractMessage<PeerMessage, "testResults"> => {
   if (!testResults) {
     return {
@@ -34,8 +34,8 @@ export const getTestResultsPayload = (
     testResults: groupTestResults(
       variables,
       getTestsPayload(variables).tests,
-      testResults.code_answer.slice(0, -1),
-      testResults.expected_code_answer.slice(0, -1)
+      testResults.code_answer?.slice(0, -1),
+      testResults.expected_code_answer?.slice(0, -1)
     ),
     url: getNormalizedUrl(window.location.href),
   };
