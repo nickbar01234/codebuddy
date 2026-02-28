@@ -15,8 +15,8 @@ interface Assignment {
   value: string;
 }
 
-interface ResultAssignment {
-  input: Record<string, string>;
+export interface ResultAssignment {
+  input: Assignment[];
   output: string;
   expected: string;
 }
