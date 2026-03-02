@@ -1,4 +1,4 @@
-import { DOM } from "@cb/constants";
+import { DOM, TEST_RESULT_ERROR } from "@cb/constants";
 import background from "@cb/services/background";
 import { ExtractMessage, PeerMessage, Question } from "@cb/types";
 import monaco from "monaco-editor";
@@ -29,13 +29,25 @@ export const getTestResultsPayload = (
     };
   }
 
+  const statusMsg: string = testResults.invalid_testcase
+    ? "Invalid Testcase"
+    : testResults.status_msg;
+
   return {
     action: "testResults",
     testResults: groupTestResults(
       variables,
+      statusMsg,
+      testResults.code_answer,
+      testResults.invalid_testcase_idx,
       getTestsPayload(variables).tests,
       testResults.code_answer?.slice(0, -1),
-      testResults.expected_code_answer?.slice(0, -1)
+      testResults.expected_code_answer?.slice(0, -1),
+      statusMsg === "Invalid Testcase" ||
+        statusMsg === "Runtime Error" ||
+        statusMsg === "Compile Error"
+        ? TEST_RESULT_ERROR[statusMsg as keyof typeof TEST_RESULT_ERROR]
+        : ""
     ),
     url: getNormalizedUrl(window.location.href),
   };
