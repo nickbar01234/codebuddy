@@ -148,12 +148,23 @@ export const groupTestResults = (
   codeAnswer: string[] = [],
   invalidTestCaseIdx: number | undefined,
   testInputs: TestCases,
-  testOutputs: string[],
-  testExpectedOutputs: string[],
+  testOutputs: string[] = [],
+  testExpectedOutputs: string[] = [],
   testResultError: string = ""
 ): TestResult[] => {
   const numCases = testInputs.length;
   const varCount = variables?.count ?? 0;
+
+  console.log("grouping test results with: ", {
+    variables,
+    testResultStatus,
+    codeAnswer,
+    invalidTestCaseIdx,
+    testInputs,
+    testOutputs,
+    testExpectedOutputs,
+    testResultError,
+  });
 
   const baseResponse = (overrides: Partial<TestResult> = {}): TestResult => ({
     testResultStatus,
@@ -166,17 +177,17 @@ export const groupTestResults = (
       ? codeAnswer.length
       : codeAnswer.findIndex((val) => val !== "0");
 
-  // Validation
-  if (!variables || testExpectedOutputs.length !== numCases) {
-    console.error(
-      "Variables undefined or test lengths mismatch",
-      variables,
-      testInputs,
-      testOutputs,
-      testExpectedOutputs
-    );
-    return [baseResponse()];
-  }
+  // // Validation
+  // if (!variables || testExpectedOutputs.length !== numCases) {
+  //   console.error(
+  //     "Variables undefined or test lengths mismatch",
+  //     variables,
+  //     testInputs,
+  //     testOutputs,
+  //     testExpectedOutputs
+  //   );
+  //   return [baseResponse()];
+  // }
 
   // Global error states (no need to iterate test cases)
   if (
@@ -206,7 +217,7 @@ export const groupTestResults = (
     return [
       baseResponse({
         errorMessage: testResultError,
-        invalidTestCaseIdx,
+        invalidTestCaseIdx: invalidTestCaseIdx,
       }),
     ];
   }

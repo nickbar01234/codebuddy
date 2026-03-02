@@ -12,14 +12,14 @@ interface TestResultTabProps {
   activePeer: Identifiable<PeerState> | undefined;
   activeTestResult: SelectableTestResult | undefined;
   selectTestResult: (index: number) => void;
-  generalResult: boolean;
+  // generalResult: boolean;
 }
 
 export const TestResultTab: React.FC<TestResultTabProps> = ({
   activePeer,
   activeTestResult,
   selectTestResult,
-  generalResult,
+  // generalResult,
 }) => {
   const { self } = useRoomData();
   console.log(
@@ -33,11 +33,11 @@ export const TestResultTab: React.FC<TestResultTabProps> = ({
           <div className="text-label-1 dark:text-dark-label-1 text-xl">
             {activeTestResult ? (
               <>
-                {generalResult ? (
+                {/* {generalResult ? (
                   <span className="text-green-500">Accepted</span>
                 ) : (
                   <span className="text-red-500">Wrong Answer</span>
-                )}
+                )} */}
               </>
             ) : null}
           </div>

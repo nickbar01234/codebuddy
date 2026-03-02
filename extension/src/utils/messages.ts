@@ -39,14 +39,14 @@ export const getTestResultsPayload = (
       variables,
       statusMsg,
       testResults.code_answer,
-      testResults.invalid_testcase_idx,
+      testResults.case_idx + 1,
       getTestsPayload(variables).tests,
       testResults.code_answer?.slice(0, -1),
       testResults.expected_code_answer?.slice(0, -1),
       statusMsg === "Invalid Testcase" ||
         statusMsg === "Runtime Error" ||
         statusMsg === "Compile Error"
-        ? TEST_RESULT_ERROR[statusMsg as keyof typeof TEST_RESULT_ERROR]
+        ? testResults[TEST_RESULT_ERROR[statusMsg]]
         : ""
     ),
     url: getNormalizedUrl(window.location.href),
