@@ -5,7 +5,6 @@ import {
   PeerState,
   ResultAssignment,
   SelectableTestResult,
-  TestResult,
 } from "@cb/types";
 import React from "react";
 
@@ -23,15 +22,10 @@ export const TestResultTab: React.FC<TestResultTabProps> = ({
   generalResult,
 }) => {
   const { self } = useRoomData();
-  const emptyTestResults: TestResult = {
-    testResult: [
-      {
-        input: [{ variable: "", value: "" }],
-        output: "",
-        expected: "",
-      },
-    ],
-  };
+  console.log(
+    "all test results (TestResultTab): ",
+    activePeer?.questions[self?.url ?? ""]?.testResults ?? []
+  );
   return (
     <SkeletonWrapper loading={false} className="relative">
       <div className="p-5 flex flex-col space-y-4 h-full w-full overflow-scroll hide-scrollbar">

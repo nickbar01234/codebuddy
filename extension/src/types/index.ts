@@ -26,6 +26,20 @@ export interface TestCase {
 }
 
 export interface TestResult {
+  testResultStatus:
+    | "Unexamined"
+    | "Accepted"
+    | "Unknown Error"
+    | "Runtime Error"
+    | "Time Limit Exceeded"
+    | "Memory Limit Exceeded"
+    | "Output Limit Exceeded"
+    | "Compile Error"
+    | "Invalid Testcase"
+    | string;
+  errorMessage?: string;
+  lastTestCaseRun?: number;
+  invalidTestCaseIdx?: number;
   testResult: ResultAssignment[];
 }
 

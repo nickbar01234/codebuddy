@@ -112,3 +112,9 @@ export const PANEL = {
   DEFAULT_WIDTH: 350, // px
   COLLAPSED_WIDTH: 40, // px
 };
+
+export const TEST_RESULT_ERROR = {
+  "Runtime Error": "runtime_error",
+  "Compile Error": "compile_error",
+  "Invalid Testcase": "runtime_error",
+};
