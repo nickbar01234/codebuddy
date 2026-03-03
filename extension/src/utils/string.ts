@@ -244,8 +244,13 @@ export const groupTestResults = (
         value: t.value,
       }));
 
+      //compare output and expected output to determine pass or fail for each test case
+      //if all matches, keep as "Accepted", if not, change to "Wrong Answer"
+      const caseResultStatus =
+        testOutputs[i] === testExpectedOutputs[i] ? "Accepted" : "Wrong Answer";
+
       results.push({
-        testResultStatus,
+        testResultStatus: caseResultStatus,
         testResult: [
           {
             input,
