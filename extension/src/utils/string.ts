@@ -214,7 +214,7 @@ export const groupTestResults = (
     ];
   }
 
-  if (testResultStatus === "Invalid Testcase") {
+  if (testResultStatus === "Invalid Test Case") {
     return [
       baseResponse({
         errorMessage: testResultError,

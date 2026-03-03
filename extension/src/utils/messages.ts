@@ -30,7 +30,7 @@ export const getTestResultsPayload = (
   }
 
   const statusMsg: string = testResults.invalid_testcase
-    ? "Invalid Testcase"
+    ? "Invalid Test Case"
     : testResults.status_msg;
 
   return {
@@ -43,7 +43,7 @@ export const getTestResultsPayload = (
       getTestsPayload(variables).tests,
       testResults.code_answer?.slice(0, -1),
       testResults.expected_code_answer?.slice(0, -1),
-      statusMsg === "Invalid Testcase" ||
+      statusMsg === "Invalid Test Case" ||
         statusMsg === "Runtime Error" ||
         statusMsg === "Compile Error"
         ? testResults[TEST_RESULT_ERROR[statusMsg]]

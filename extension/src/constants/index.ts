@@ -114,7 +114,7 @@ export const PANEL = {
 };
 
 export const TEST_RESULT_ERROR = {
-  "Runtime Error": "runtime_error",
-  "Compile Error": "compile_error",
-  "Invalid Testcase": "runtime_error",
+  "Runtime Error": "full_runtime_error",
+  "Compile Error": "full_compile_error",
+  "Invalid Test Case": "full_runtime_error",
 };
