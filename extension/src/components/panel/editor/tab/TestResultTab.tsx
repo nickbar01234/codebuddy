@@ -8,15 +8,14 @@ import {
 } from "@cb/types";
 import React from "react";
 import {
-  AcceptedResult,
   CompileErrorResult,
   InvalidTestCaseResult,
   MemoryLimitExceededResult,
   RuntimeErrorResult,
+  TestResultDisplay,
   TestResultStatus,
   TimeLimitExceededResult,
-  WrongAnswerResult,
-} from "./test-result";
+} from "./testResultComponents";
 
 const STATUS_CONFIG: Record<
   TestResultStatus,
@@ -45,9 +44,9 @@ const renderTestResultContent = (activeTestResult: SelectableTestResult) => {
 
   switch (status) {
     case "Accepted":
-      return <AcceptedResult activeTestResult={activeTestResult} />;
+      return <TestResultDisplay activeTestResult={activeTestResult} />;
     case "Wrong Answer":
-      return <WrongAnswerResult activeTestResult={activeTestResult} />;
+      return <TestResultDisplay activeTestResult={activeTestResult} />;
     case "Compile Error":
       return <CompileErrorResult activeTestResult={activeTestResult} />;
     case "Runtime Error":
@@ -59,7 +58,7 @@ const renderTestResultContent = (activeTestResult: SelectableTestResult) => {
     case "Invalid Test Case":
       return <InvalidTestCaseResult activeTestResult={activeTestResult} />;
     default:
-      return <WrongAnswerResult activeTestResult={activeTestResult} />;
+      return <TestResultDisplay activeTestResult={activeTestResult} />;
   }
 };
 
