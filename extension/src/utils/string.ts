@@ -28,120 +28,6 @@ export const groupTestCases = (
   }));
 };
 
-// export const groupTestResults = (
-//   variables: Question["variables"] | undefined,
-//   testResultStatus: string,
-//   codeAnswer: string[] = [],
-//   testResultError: string = "",
-//   invalidTestCaseIdx: number | undefined,
-//   testInputs: TestCases,
-//   testOutputs: string[],
-//   testExpectedOutputs: string[],
-// ): TestResults => {
-//   const numCases = testInputs.length;
-
-//   if (
-//     variables == undefined ||
-//     testInputs.length !== numCases ||
-//     testExpectedOutputs.length !== numCases
-//   ) {
-//     console.error(
-//       "Variables are undefined or tests do not match up",
-//       variables,
-//       testInputs,
-//       testOutputs,
-//       testExpectedOutputs
-//     );
-//     return {
-//       testResultStatus: testResultStatus,
-//       testResults: [],
-//     };
-//   }
-
-//   const results: TestResult[] = [];
-//   const varCount = variables?.count ?? 0;
-
-//   for (let curCaseNo = 0; curCaseNo < numCases; curCaseNo++) {
-//     if (testInputs[curCaseNo].test.length !== varCount) {
-//       console.error(
-//         `Case ${curCaseNo} does not have the correct number of variables`,
-//         variables,
-//         testInputs
-//       );
-//       return {
-//         testResultStatus: testResultStatus,
-//         testResults: [],
-//       };
-//     }
-
-//     switch (testResultStatus) {
-//       case "Time Limit Exceeded":
-//       case "Memory Limit Exceeded":
-//       case "Output Limit Exceeded":
-//         let lastTestCaseRunIdx = 0;
-//         let i = 0;
-//         while (i < codeAnswer.length && codeAnswer[i] === "0") {
-//           lastTestCaseRunIdx++;
-//           i++;
-//         }
-//         return {
-//           testResultStatus: testResultStatus,
-//           lastTestCaseRun: lastTestCaseRunIdx,
-//           testResults: [],
-//         };
-//       case "Runtime Error":
-//       case "Compile Error":
-//         let lastTestCaseRunIdx = 0;
-//         let i = 0;
-//         while (i < codeAnswer.length && codeAnswer[i] === "0") {
-//           lastTestCaseRunIdx++;
-//           i++;
-//         }
-//         return {
-//           testResultStatus: testResultStatus,
-//           errorMessage: testResultError,
-//           lastTestCaseRun: lastTestCaseRunIdx,
-//           testResults: [],
-//         };
-//       case "Invalid Testcase":
-//         return {
-//           testResultStatus: testResultStatus,
-//           errorMessage: testResultError,
-//           invalidTestCaseIdx: invalidTestCaseIdx,
-//           testResults: [],
-//         };
-//       case "Accepted":
-//         const inputObj: Array<any> = [];
-//         const currentTestInputs = testInputs[curCaseNo];
-
-//         for (let v = 0; v < varCount; v++) {
-//           const name: string = currentTestInputs.test[v].variable ?? "";
-//           inputObj.push({
-//             variable: name,
-//             value: currentTestInputs.test[v].value,
-//           });
-//         }
-
-//         results.push({
-//           testResult: [
-//             {
-//               input: inputObj,
-//               output: testOutputs[curCaseNo] ?? "",
-//               expected: testExpectedOutputs[curCaseNo] ?? "",
-//             },
-//           ],
-//         });
-
-//       return {
-//         testResultStatus: testResultStatus,
-//         testResults: results,
-//       };
-
-//       default:
-//         break;
-//     }
-// };
-
 export const groupTestResults = (
   variables: Question["variables"] | undefined,
   testResultStatus: string,
@@ -161,22 +47,63 @@ export const groupTestResults = (
       ? codeAnswer.length
       : codeAnswer.findIndex((val) => val !== "0");
 
-  const createResponse = (
-    input: { variable: string; value: string }[],
-    index: number,
+  const getFirstInput = () => {
+    if (numCases === 0) return [];
+    const firstTest = testInputs[0];
+    if (firstTest.test.length !== varCount) return [];
+    return firstTest.test.map((t) => ({
+      variable: t.variable ?? "",
+      value: t.value,
+    }));
+  };
+
+  const createErrorResponse = (
     overrides: Partial<TestResult> = {}
   ): TestResult => ({
     testResultStatus,
-    testResult: [
-      {
-        input,
-        output: testOutputs[index] ?? "",
-        expected: testExpectedOutputs[index] ?? "",
-      },
-    ],
+    testResult: [{ input: getFirstInput(), output: "", expected: "" }],
     ...overrides,
   });
 
+  if (
+    [
+      "Time Limit Exceeded",
+      "Memory Limit Exceeded",
+      "Output Limit Exceeded",
+    ].includes(testResultStatus)
+  ) {
+    return [createErrorResponse({ lastTestCaseRun: getLastRunIndex() })];
+  }
+
+  if (testResultStatus === "Runtime Error") {
+    return [
+      createErrorResponse({
+        errorMessage: testResultError,
+        lastTestCaseRun: getLastRunIndex(),
+      }),
+    ];
+  }
+
+  if (testResultStatus === "Compile Error") {
+    return [createErrorResponse({ errorMessage: testResultError })];
+  }
+
+  if (testResultStatus === "Invalid Test Case") {
+    return [
+      createErrorResponse({
+        errorMessage: testResultError,
+        invalidTestCaseIdx,
+      }),
+    ];
+  }
+
+  // Determine overall status before looping
+  const allMatch = testOutputs.every(
+    (output, i) => output === testExpectedOutputs[i]
+  );
+  const overallStatus = allMatch ? "Accepted" : "Wrong Answer";
+
+  // Only loop for Accepted cases
   for (let i = 0; i < numCases; i++) {
     const currentTest = testInputs[i];
 
@@ -194,55 +121,16 @@ export const groupTestResults = (
       value: t.value,
     }));
 
-    // Global error states - return immediately
-    if (
-      [
-        "Time Limit Exceeded",
-        "Memory Limit Exceeded",
-        "Output Limit Exceeded",
-      ].includes(testResultStatus)
-    ) {
-      return [createResponse(input, i, { lastTestCaseRun: getLastRunIndex() })];
-    }
-
-    if (testResultStatus === "Runtime Error") {
-      return [
-        createResponse(input, i, {
-          errorMessage: testResultError,
-          lastTestCaseRun: getLastRunIndex(),
-        }),
-      ];
-    }
-
-    if (testResultStatus === "Compile Error") {
-      return [createResponse(input, i, { errorMessage: testResultError })];
-    }
-
-    if (testResultStatus === "Invalid Test Case") {
-      return [
-        createResponse(input, i, {
-          errorMessage: testResultError,
-          invalidTestCaseIdx,
-        }),
-      ];
-    }
-
-    // Accepted case - accumulate results
-    if (testResultStatus === "Accepted") {
-      const caseResultStatus =
-        testOutputs[i] === testExpectedOutputs[i] ? "Accepted" : "Wrong Answer";
-
-      results.push({
-        testResultStatus: caseResultStatus,
-        testResult: [
-          {
-            input,
-            output: testOutputs[i] ?? "",
-            expected: testExpectedOutputs[i] ?? "",
-          },
-        ],
-      });
-    }
+    results.push({
+      testResultStatus: overallStatus,
+      testResult: [
+        {
+          input,
+          output: testOutputs[i] ?? "",
+          expected: testExpectedOutputs[i] ?? "",
+        },
+      ],
+    });
   }
 
   return results.length > 0 ? results : [{ testResultStatus, testResult: [] }];
