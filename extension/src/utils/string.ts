@@ -154,97 +154,81 @@ export const groupTestResults = (
 ): TestResult[] => {
   const numCases = testInputs.length;
   const varCount = variables?.count ?? 0;
-
-  console.log("grouping test results with: ", {
-    variables,
-    testResultStatus,
-    codeAnswer,
-    invalidTestCaseIdx,
-    testInputs,
-    testOutputs,
-    testExpectedOutputs,
-    testResultError,
-  });
-
-  const baseResponse = (overrides: Partial<TestResult> = {}): TestResult => ({
-    testResultStatus,
-    testResult: [],
-    ...overrides,
-  });
+  const results: TestResult[] = [];
 
   const getLastRunIndex = () =>
     codeAnswer.findIndex((val) => val !== "0") === -1
       ? codeAnswer.length
       : codeAnswer.findIndex((val) => val !== "0");
 
-  // // Validation
-  // if (!variables || testExpectedOutputs.length !== numCases) {
-  //   console.error(
-  //     "Variables undefined or test lengths mismatch",
-  //     variables,
-  //     testInputs,
-  //     testOutputs,
-  //     testExpectedOutputs
-  //   );
-  //   return [baseResponse()];
-  // }
+  const createResponse = (
+    input: { variable: string; value: string }[],
+    index: number,
+    overrides: Partial<TestResult> = {}
+  ): TestResult => ({
+    testResultStatus,
+    testResult: [
+      {
+        input,
+        output: testOutputs[index] ?? "",
+        expected: testExpectedOutputs[index] ?? "",
+      },
+    ],
+    ...overrides,
+  });
 
-  // Global error states (no need to iterate test cases)
-  if (
-    [
-      "Time Limit Exceeded",
-      "Memory Limit Exceeded",
-      "Output Limit Exceeded",
-    ].includes(testResultStatus)
-  ) {
-    return [
-      baseResponse({
-        lastTestCaseRun: getLastRunIndex(),
-      }),
-    ];
-  }
+  for (let i = 0; i < numCases; i++) {
+    const currentTest = testInputs[i];
 
-  if (["Runtime Error", "Compile Error"].includes(testResultStatus)) {
-    return [
-      baseResponse({
-        errorMessage: testResultError,
-        lastTestCaseRun: getLastRunIndex(),
-      }),
-    ];
-  }
+    if (currentTest.test.length !== varCount) {
+      console.error(
+        `Case ${i} does not match expected variable count`,
+        variables,
+        testInputs
+      );
+      return [{ testResultStatus, testResult: [] }];
+    }
 
-  if (testResultStatus === "Invalid Test Case") {
-    return [
-      baseResponse({
-        errorMessage: testResultError,
-        invalidTestCaseIdx: invalidTestCaseIdx,
-      }),
-    ];
-  }
+    const input = currentTest.test.map((t) => ({
+      variable: t.variable ?? "",
+      value: t.value,
+    }));
 
-  // Accepted case
-  if (testResultStatus === "Accepted") {
-    const results: TestResult[] = [];
+    // Global error states - return immediately
+    if (
+      [
+        "Time Limit Exceeded",
+        "Memory Limit Exceeded",
+        "Output Limit Exceeded",
+      ].includes(testResultStatus)
+    ) {
+      return [createResponse(input, i, { lastTestCaseRun: getLastRunIndex() })];
+    }
 
-    for (let i = 0; i < numCases; i++) {
-      const currentTest = testInputs[i];
+    if (testResultStatus === "Runtime Error") {
+      return [
+        createResponse(input, i, {
+          errorMessage: testResultError,
+          lastTestCaseRun: getLastRunIndex(),
+        }),
+      ];
+    }
 
-      if (currentTest.test.length !== varCount) {
-        console.error(
-          `Case ${i} does not match expected variable count`,
-          variables,
-          testInputs
-        );
-        return [baseResponse()];
-      }
+    if (testResultStatus === "Compile Error") {
+      return [createResponse(input, i, { errorMessage: testResultError })];
+    }
 
-      const input = currentTest.test.map((t) => ({
-        variable: t.variable ?? "",
-        value: t.value,
-      }));
+    if (testResultStatus === "Invalid Test Case") {
+      return [
+        createResponse(input, i, {
+          errorMessage: testResultError,
+          invalidTestCaseIdx,
+        }),
+      ];
+    }
 
-      //compare output and expected output to determine pass or fail for each test case
-      //if all matches, keep as "Accepted", if not, change to "Wrong Answer"
+    // Accepted case - accumulate results
+    if (testResultStatus === "Accepted") {
       const caseResultStatus =
         testOutputs[i] === testExpectedOutputs[i] ? "Accepted" : "Wrong Answer";
 
@@ -259,11 +243,9 @@ export const groupTestResults = (
         ],
       });
     }
-
-    return results;
   }
 
-  return [baseResponse()];
+  return results.length > 0 ? results : [{ testResultStatus, testResult: [] }];
 };
 
 export const safeJsonParse = (content: string): object => {
