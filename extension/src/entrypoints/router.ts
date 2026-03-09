@@ -5,6 +5,7 @@ export default defineUnlistedScript(() => {
   console.log("Inject router");
 
   (function () {
+    console.log("Inject proxy");
     if (window.__LC_FETCH_HOOKED__) return;
     window.__LC_FETCH_HOOKED__ = true;
 
