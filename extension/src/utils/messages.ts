@@ -29,6 +29,7 @@ export const getTestResultsPayload = (
     };
   }
 
+  // Because statusMessage of invalid test case is the same as runtime error although they are handled differently
   const statusMsg: string = testResults.invalid_testcase
     ? "Invalid Test Case"
     : testResults.status_msg;
@@ -43,6 +44,7 @@ export const getTestResultsPayload = (
       getTestsPayload(variables).tests,
       testResults.code_answer?.slice(0, -1),
       testResults.expected_code_answer?.slice(0, -1),
+      // To read the error message for invalid test case, runtime error, and compile error (empty for other test result statuses)
       statusMsg === "Invalid Test Case" ||
         statusMsg === "Runtime Error" ||
         statusMsg === "Compile Error"

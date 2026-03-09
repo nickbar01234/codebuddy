@@ -50,12 +50,6 @@ const EditorPanel = () => {
       (testResult) => testResult.selected
     );
 
-    // const allTestResult = selectedPeer?.questions[url]?.testResults ?? [];
-    // console.log("generalResult", allTestResult);
-    // const generalResult = allTestResult.every(
-    //   (r) => r.testResult && r.testResult[0].output === r.testResult[0].expected
-    // );
-
     return [
       {
         value: "code",
@@ -84,7 +78,6 @@ const EditorPanel = () => {
             activePeer={selectedPeer}
             activeTestResult={activeTestResult}
             selectTestResult={selectTestResult}
-            // generalResult={generalResult}
           />
         ),
       },
