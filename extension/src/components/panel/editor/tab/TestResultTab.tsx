@@ -1,3 +1,5 @@
+import checkIcon from "@cb/assets/accepted_icon.png";
+import xIcon from "@cb/assets/wrong_answer_icon.png";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRoomData } from "@cb/hooks/store";
 import {
@@ -58,7 +60,7 @@ const renderTestResultContent = (activeTestResult: SelectableTestResult) => {
     case "Invalid Test Case":
       return <InvalidTestCaseResult activeTestResult={activeTestResult} />;
     default:
-      return <TestResultDisplay activeTestResult={activeTestResult} />;
+      return null;
   }
 };
 
@@ -111,9 +113,14 @@ export const TestResultTab: React.FC<TestResultTabProps> = ({
                 return (
                   <div key={idx} onClick={() => selectTestResult(idx)}>
                     <button
-                      className={`${baseClasses} ${selected ? selectedClasses : unselectedClasses}`}
+                      className={`${baseClasses} ${selected ? selectedClasses : unselectedClasses} gap-2`}
                     >
-                      {passed ? "V" : "X"} Case {idx + 1}
+                      <img
+                        src={passed ? checkIcon : xIcon}
+                        alt={passed ? "passed" : "failed"}
+                        className="w-3 h-3 rounded-sm"
+                      />
+                      Case {idx + 1}
                     </button>
                   </div>
                 );
