@@ -24,6 +24,7 @@ export default defineUnlistedScript(() => {
       scrollBeyondLastLine: false,
       automaticLayout: true,
       minimap: { enabled: false },
+      wordWrap: "on",
       padding: {
         top: 8,
       },
