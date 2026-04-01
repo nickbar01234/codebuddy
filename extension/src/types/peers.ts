@@ -2,8 +2,11 @@ import {
   Id,
   QuestionProgressStatus,
   SelectableTestCase,
+  SelectableTestResult,
   TestCase,
   TestCases,
+  TestResult,
+  TestResults,
 } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, Selectable } from "./utils";
@@ -22,6 +25,11 @@ export interface CodeWithChanges extends MonacoCode {
 
 interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
   action: "code";
+}
+
+interface PeerTestResultMessage extends PeerGenericMessage {
+  action: "testResults";
+  testResults: TestResults;
 }
 
 interface PeerTestMessage extends PeerGenericMessage {
@@ -65,6 +73,7 @@ type PeerEventMessage = PeerEventSubmissionMesage | PeerEventAddQuestionMessage;
 export type PeerMessage =
   | PeerCodeMessage
   | PeerTestMessage
+  | PeerTestResultMessage
   | PeerEventMessage
   | RequestProgressMessage
   | SendProgressMessage;
@@ -72,6 +81,7 @@ export type PeerMessage =
 interface PeerQuestionProgress {
   code?: CodeWithChanges;
   tests: SelectableTestCase[];
+  testResults: SelectableTestResult[];
   status: QuestionProgressStatus;
   viewable: boolean;
 }
@@ -79,6 +89,7 @@ interface PeerQuestionProgress {
 interface SelfQuestionProgress {
   code?: MonacoCode;
   tests: TestCase[];
+  testResults?: TestResult[];
   status: QuestionProgressStatus;
 }
 
