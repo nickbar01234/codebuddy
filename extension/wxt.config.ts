@@ -32,6 +32,8 @@ export default defineConfig({
       "--disable-web-security",
       `--user-data-dir=./.wxt/chrome-data/${USER_PROFILE}`,
       "--auto-open-devtools-for-tabs",
+      "--hide-crash-restore-bubble",
+      "--test-type",
     ],
   },
   manifestVersion: 3,

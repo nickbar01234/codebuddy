@@ -242,8 +242,12 @@ export class WebRtcController {
         connection.isSettingRemoteAnswerPending);
 
     const offerCollision = data.type === "offer" && !readyOffer;
-    connection.ignoreOffer = !polite && offerCollision;
-    if (connection.ignoreOffer) return;
+    const ignoreOffer = !polite && offerCollision;
+    const ignoreAnswer =
+      data.type === "answer" && pc.signalingState === "stable";
+    connection.ignoreOffer = ignoreOffer;
+
+    if (ignoreOffer || ignoreAnswer) return;
 
     try {
       connection.isSettingRemoteAnswerPending = data.type === "answer";
