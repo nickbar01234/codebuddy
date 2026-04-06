@@ -29,7 +29,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.5",
-    "firebase": "^10.12.2",
+    "firebase": "^12.7.0",
     "framer-motion": "^11.5.4",
     "immer": "^11.0.1",
     "lodash": "^4.17.21",
