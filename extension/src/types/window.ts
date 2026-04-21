@@ -11,4 +11,8 @@ interface NavigateMessage extends GenericMessage {
   url: string;
 }
 
+export interface LeetCodeHook extends MessageEvent {
+  type: "LC_SUBMISSION_RESULT";
+}
+
 export type WindowMessage = LeetCodeOnChangeMessage | NavigateMessage;

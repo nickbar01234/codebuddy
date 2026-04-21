@@ -27,7 +27,7 @@ interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
   action: "code";
 }
 
-interface PeerTestResultMessage extends PeerGenericMessage {
+export interface PeerTestResultMessage extends PeerGenericMessage {
   action: "testResults";
   testResults: TestResults;
 }

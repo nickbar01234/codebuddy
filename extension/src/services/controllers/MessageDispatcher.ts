@@ -6,6 +6,7 @@ import {
   ContentRequest,
   Events,
   EventType,
+  LeetCodeHook,
   QuestionProgressStatus,
   ResponseStatus,
   User,
@@ -154,7 +155,7 @@ export class MessageDispatcher {
   }
 
   private subscribeToRunTest(): () => void {
-    const messageHandler = async (event: MessageEvent) => {
+    const messageHandler = async (event: MessageEvent<LeetCodeHook>) => {
       if (event.data.type === "LC_SUBMISSION_RESULT") {
         const testResult = await this.getTestResultPayload(event.data);
         this.emitter.emit("rtc.send.message", {
