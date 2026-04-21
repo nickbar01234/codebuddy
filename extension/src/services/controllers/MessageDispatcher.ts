@@ -155,7 +155,7 @@ export class MessageDispatcher {
 
   private subscribeToRunTest(): () => void {
     const messageHandler = async (event: MessageEvent) => {
-      if (event.data.type === "LC_HOOK") {
+      if (event.data.type === "LC_SUBMISSION_RESULT") {
         const testResult = await this.getTestResultPayload(event.data);
         this.emitter.emit("rtc.send.message", {
           message: testResult,

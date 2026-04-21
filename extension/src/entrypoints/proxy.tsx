@@ -26,10 +26,10 @@ export default defineUnlistedScript(() => {
               .then((data) => {
                 window.postMessage(
                   {
-                    source: "LC_HOOK",
+                    source: "LC_SUBMISSION_RESULT",
                     url: res.url,
                     data: data,
-                    type: "LC_HOOK",
+                    type: "LC_SUBMISSION_RESULT",
                   },
                   "*"
                 );
