@@ -1,3 +1,4 @@
+import { TEST_RESULT_STATUSES } from "@cb/constants";
 import { Selectable } from "./utils";
 
 export * from "./content";
@@ -26,7 +27,7 @@ export interface TestCase {
 }
 
 export interface TestResult {
-  testResultStatus: string;
+  testResultStatus: (typeof TEST_RESULT_STATUSES)[number] | unknown;
   errorMessage?: string;
   lastTestCaseRun?: number;
   invalidTestCaseIdx?: number;
