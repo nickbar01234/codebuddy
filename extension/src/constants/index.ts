@@ -117,3 +117,15 @@ export const TEST_RESULT_ERROR = {
   "Compile Error": "full_compile_error",
   "Invalid Test Case": "full_runtime_error",
 };
+
+export const TEST_RESULT_STATUSES = [
+  "Accepted",
+  "Wrong Answer",
+  "Time Limit Exceeded",
+  "Runtime Error",
+  "Compile Error",
+  "Invalid Test Case",
+  "Memory Limit Exceeded",
+] as const;
+
+export type TestResultStatus = (typeof TEST_RESULT_STATUSES)[number];
