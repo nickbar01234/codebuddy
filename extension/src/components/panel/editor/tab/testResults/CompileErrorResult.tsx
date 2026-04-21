@@ -1,5 +1,5 @@
 import React from "react";
-import { ErrorMessage } from "./sharedComponents";
+import { ErrorMessage } from "./base";
 import { TestResultContentProps } from "./types";
 
 export const CompileErrorResult: React.FC<TestResultContentProps> = ({

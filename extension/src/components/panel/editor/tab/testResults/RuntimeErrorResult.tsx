@@ -1,12 +1,13 @@
 import React from "react";
-import { LastExecutedInput } from "./sharedComponents";
+import { ErrorMessage, LastExecutedInput } from "./base";
 import { TestResultContentProps } from "./types";
 
-export const MemoryLimitExceededResult: React.FC<TestResultContentProps> = ({
+export const RuntimeErrorResult: React.FC<TestResultContentProps> = ({
   activeTestResult,
 }) => {
   return (
     <div className="space-y-4 pb-12">
+      <ErrorMessage message={activeTestResult.errorMessage} />
       <LastExecutedInput activeTestResult={activeTestResult} />
     </div>
   );

@@ -17,7 +17,7 @@ import {
   TestResultDisplay,
   TestResultStatus,
   TimeLimitExceededResult,
-} from "./testResultComponents";
+} from "./testResults";
 
 const STATUS_CONFIG: Record<
   TestResultStatus,
@@ -70,6 +70,33 @@ interface TestResultTabProps {
   selectTestResult: (index: number) => void;
 }
 
+class TestResultTabErrorBoundary extends React.Component<
+  React.PropsWithChildren,
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo) {
+    console.error("TestResultTab crashed:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-5 text-label-2 dark:text-dark-label-2">
+          Unable to display test results.
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 export const TestResultTab: React.FC<TestResultTabProps> = ({
   activePeer,
   activeTestResult,
@@ -87,48 +114,52 @@ export const TestResultTab: React.FC<TestResultTabProps> = ({
   };
 
   return (
-    <SkeletonWrapper loading={false} className="relative">
-      <div className="p-5 flex flex-col space-y-4 h-full w-full overflow-scroll hide-scrollbar">
-        <div className="flex w-full flex-col items-start justify-between gap-4">
-          <div className="text-label-1 dark:text-dark-label-1 text-xl">
-            {activeTestResult &&
-              getStatusBadge(
-                activeTestResult.testResultStatus as TestResultStatus
-              )}
+    <TestResultTabErrorBoundary>
+      <SkeletonWrapper loading={false} className="relative">
+        <div className="p-5 flex flex-col space-y-4 h-full w-full overflow-scroll hide-scrollbar">
+          <div className="flex w-full flex-col items-start justify-between gap-4">
+            <div className="text-label-1 dark:text-dark-label-1 text-xl">
+              {activeTestResult &&
+                getStatusBadge(
+                  activeTestResult.testResultStatus as TestResultStatus
+                )}
+            </div>
+            <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
+              {(activeTestResult?.testResultStatus === "Accepted" ||
+                activeTestResult?.testResultStatus === "Wrong Answer") &&
+                testResults.map((test: SelectableTestResult, idx: number) => {
+                  const passed = (test.testResult ?? []).every(
+                    (r: ResultAssignment) => r.output === r.expected
+                  );
+                  const baseClasses =
+                    "relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 text-sm font-semibold focus:outline-none";
+                  const selectedClasses =
+                    "bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1";
+                  const unselectedClasses =
+                    "hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent bg-transparent";
+                  return (
+                    <div key={idx} onClick={() => selectTestResult(idx)}>
+                      <button
+                        className={cn(baseClasses, {
+                          selectedClasses: test.selected,
+                          unselectedClasses: !test.selected,
+                        })}
+                      >
+                        <img
+                          src={passed ? checkIcon : xIcon}
+                          alt={passed ? "passed" : "failed"}
+                          className="w-3 h-3 rounded-sm"
+                        />
+                        Case {idx + 1}
+                      </button>
+                    </div>
+                  );
+                })}
+            </div>
           </div>
-          <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
-            {(activeTestResult?.testResultStatus === "Accepted" ||
-              activeTestResult?.testResultStatus === "Wrong Answer") &&
-              testResults.map((test: SelectableTestResult, idx: number) => {
-                const passed = (test.testResult ?? []).every(
-                  (r: ResultAssignment) => r.output === r.expected
-                );
-                const selected = !!test.selected;
-                const baseClasses =
-                  "relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 text-sm font-semibold focus:outline-none";
-                const selectedClasses =
-                  "bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1";
-                const unselectedClasses =
-                  "hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent bg-transparent";
-                return (
-                  <div key={idx} onClick={() => selectTestResult(idx)}>
-                    <button
-                      className={`${baseClasses} ${selected ? selectedClasses : unselectedClasses} gap-2`}
-                    >
-                      <img
-                        src={passed ? checkIcon : xIcon}
-                        alt={passed ? "passed" : "failed"}
-                        className="w-3 h-3 rounded-sm"
-                      />
-                      Case {idx + 1}
-                    </button>
-                  </div>
-                );
-              })}
-          </div>
+          {activeTestResult && renderTestResultContent(activeTestResult)}
         </div>
-        {activeTestResult && renderTestResultContent(activeTestResult)}
-      </div>
-    </SkeletonWrapper>
+      </SkeletonWrapper>
+    </TestResultTabErrorBoundary>
   );
 };

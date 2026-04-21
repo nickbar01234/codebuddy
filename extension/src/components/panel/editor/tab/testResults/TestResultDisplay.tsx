@@ -1,10 +1,6 @@
 import { ResultAssignment, SelectableTestResult } from "@cb/types";
 import React from "react";
-import {
-  ExpectedDisplay,
-  InputDisplay,
-  OutputDisplay,
-} from "./sharedComponents";
+import { ExpectedDisplay, InputDisplay, OutputDisplay } from "./base";
 
 interface TestResultDisplayProps {
   activeTestResult: SelectableTestResult;

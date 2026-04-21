@@ -16,7 +16,7 @@ export default defineUnlistedScript(() => {
         const regexTestResult =
           /^https:\/\/leetcode\.com\/submissions\/detail\/runcode_[^/]+\/check\/$/;
 
-        if (typeof res.url === "string" && regexTestResult.test(res.url)) {
+        if (regexTestResult.test(res.url)) {
           const contentType = res.headers.get("content-type") || "";
 
           if (contentType.includes("application/json")) {

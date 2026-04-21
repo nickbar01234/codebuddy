@@ -24,7 +24,14 @@ import {
 } from "@cb/lib/components/ui/tabs";
 import { RoomStatus } from "@cb/store";
 import { cn } from "@cb/utils/cn";
-import { CodeXml, Copy, Eye, EyeOff, FlaskConical } from "lucide-react";
+import {
+  CodeXml,
+  Copy,
+  Eye,
+  EyeOff,
+  FlaskConical,
+  Terminal,
+} from "lucide-react";
 import React from "react";
 
 const EditorPanel = () => {
@@ -72,7 +79,7 @@ const EditorPanel = () => {
       {
         value: "testResult",
         label: "Test Result",
-        Icon: FlaskConical,
+        Icon: Terminal,
         Content: (
           <TestResultTab
             activePeer={selectedPeer}

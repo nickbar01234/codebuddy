@@ -11,12 +11,6 @@ export default defineContentScript({
   matches: [URLS.ALL_PROBLEMS],
   runAt: "document_end",
   async main(ctx) {
-    const s = document.createElement("script");
-    s.src = chrome.runtime.getURL("proxy.js");
-    s.type = "text/javascript";
-    s.onload = () => s.remove();
-    document.documentElement.appendChild(s);
-
     // Initialize controllers on startup
     getOrCreateControllers();
     await injectScript("/proxy.js", { keepInDom: true });

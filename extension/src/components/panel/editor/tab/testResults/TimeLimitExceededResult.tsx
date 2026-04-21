@@ -1,5 +1,5 @@
 import React from "react";
-import { LastExecutedInput } from "./sharedComponents";
+import { LastExecutedInput } from "./base";
 import { TestResultContentProps } from "./types";
 
 export const TimeLimitExceededResult: React.FC<TestResultContentProps> = ({
