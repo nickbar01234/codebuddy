@@ -61,7 +61,7 @@ export const groupTestResults = (
     overrides: Partial<TestResult> = {}
   ): TestResult => ({
     testResultStatus,
-    testResult: [{ input: getFirstInput(), output: "", expected: "" }],
+    testResult: { input: getFirstInput(), output: "", expected: "" },
     ...overrides,
   });
 
@@ -113,7 +113,9 @@ export const groupTestResults = (
         variables,
         testInputs
       );
-      return [{ testResultStatus, testResult: [] }];
+      return [
+        { testResultStatus, testResult: createErrorResponse().testResult },
+      ]; // Return with empty test result on error
     }
 
     const input = currentTest.test.map((t) => ({
@@ -123,17 +125,17 @@ export const groupTestResults = (
 
     results.push({
       testResultStatus: overallStatus,
-      testResult: [
-        {
-          input,
-          output: testOutputs[i] ?? "",
-          expected: testExpectedOutputs[i] ?? "",
-        },
-      ],
+      testResult: {
+        input,
+        output: testOutputs[i] ?? "",
+        expected: testExpectedOutputs[i] ?? "",
+      },
     });
   }
 
-  return results.length > 0 ? results : [{ testResultStatus, testResult: [] }];
+  return results.length > 0
+    ? results
+    : [{ testResultStatus, testResult: createErrorResponse().testResult }];
 };
 
 export const safeJsonParse = (content: string): object => {

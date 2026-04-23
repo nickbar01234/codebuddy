@@ -6,7 +6,6 @@ import {
   TestCase,
   TestCases,
   TestResult,
-  TestResults,
 } from ".";
 import type { ServiceResponse } from "./services";
 import { GenericMessage, Selectable } from "./utils";
@@ -29,7 +28,7 @@ interface PeerCodeMessage extends PeerGenericMessage, CodeWithChanges {
 
 export interface PeerTestResultMessage extends PeerGenericMessage {
   action: "testResults";
-  testResults: TestResults;
+  testResults: TestResult[];
 }
 
 interface PeerTestMessage extends PeerGenericMessage {

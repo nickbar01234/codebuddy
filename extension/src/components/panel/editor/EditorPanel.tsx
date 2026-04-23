@@ -56,6 +56,9 @@ const EditorPanel = () => {
     const activeTestResult = selectedPeer?.questions[url]?.testResults.find(
       (testResult) => testResult.selected
     );
+    const selectedTestResultIdx: number | undefined = selectedPeer?.questions[
+      url
+    ]?.testResults.findIndex((testResult) => testResult.selected);
 
     return [
       {
@@ -84,6 +87,7 @@ const EditorPanel = () => {
           <TestResultTab
             activePeer={selectedPeer}
             activeTestResult={activeTestResult}
+            testCaseIdx={selectedTestResultIdx}
             selectTestResult={selectTestResult}
           />
         ),

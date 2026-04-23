@@ -31,12 +31,10 @@ export interface TestResult {
   errorMessage?: string;
   lastTestCaseRun?: number;
   invalidTestCaseIdx?: number;
-  testResult: ResultAssignment[];
+  testResult: ResultAssignment;
 }
 
 export type TestCases = TestCase[];
-
-export type TestResults = TestResult[];
 
 export interface SelectableTestCase extends TestCase, Selectable {}
 

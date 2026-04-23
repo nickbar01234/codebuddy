@@ -2,12 +2,7 @@ import checkIcon from "@cb/assets/accepted_icon.png";
 import xIcon from "@cb/assets/wrong_answer_icon.png";
 import { SkeletonWrapper } from "@cb/components/ui/SkeletonWrapper";
 import { useRoomData } from "@cb/hooks/store";
-import {
-  Identifiable,
-  PeerState,
-  ResultAssignment,
-  SelectableTestResult,
-} from "@cb/types";
+import { Identifiable, PeerState, SelectableTestResult } from "@cb/types";
 import React from "react";
 import {
   CompileErrorResult,
@@ -41,14 +36,27 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const renderTestResultContent = (activeTestResult: SelectableTestResult) => {
+const renderTestResultContent = (
+  activeTestResult: SelectableTestResult,
+  testCaseIdx: number | undefined
+) => {
   const status = activeTestResult.testResultStatus as TestResultStatus;
 
   switch (status) {
     case "Accepted":
-      return <TestResultDisplay activeTestResult={activeTestResult} />;
+      return (
+        <TestResultDisplay
+          activeTestResult={activeTestResult}
+          testCaseIdx={testCaseIdx}
+        />
+      );
     case "Wrong Answer":
-      return <TestResultDisplay activeTestResult={activeTestResult} />;
+      return (
+        <TestResultDisplay
+          activeTestResult={activeTestResult}
+          testCaseIdx={testCaseIdx}
+        />
+      );
     case "Compile Error":
       return <CompileErrorResult activeTestResult={activeTestResult} />;
     case "Runtime Error":
@@ -67,6 +75,7 @@ const renderTestResultContent = (activeTestResult: SelectableTestResult) => {
 interface TestResultTabProps {
   activePeer: Identifiable<PeerState> | undefined;
   activeTestResult: SelectableTestResult | undefined;
+  testCaseIdx: number | undefined;
   selectTestResult: (index: number) => void;
 }
 
@@ -100,6 +109,7 @@ class TestResultTabErrorBoundary extends React.Component<
 export const TestResultTab: React.FC<TestResultTabProps> = ({
   activePeer,
   activeTestResult,
+  testCaseIdx,
   selectTestResult,
 }) => {
   const { self } = useRoomData();
@@ -127,37 +137,40 @@ export const TestResultTab: React.FC<TestResultTabProps> = ({
             <div className="hide-scrollbar flex flex-nowrap items-center gap-x-2 gap-y-4 overflow-x-scroll">
               {(activeTestResult?.testResultStatus === "Accepted" ||
                 activeTestResult?.testResultStatus === "Wrong Answer") &&
-                testResults.map((test: SelectableTestResult, idx: number) => {
-                  const passed = (test.testResult ?? []).every(
-                    (r: ResultAssignment) => r.output === r.expected
-                  );
-                  const baseClasses =
-                    "relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 text-sm font-semibold focus:outline-none";
-                  const selectedClasses =
-                    "bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1";
-                  const unselectedClasses =
-                    "hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent bg-transparent";
-                  return (
-                    <div key={idx} onClick={() => selectTestResult(idx)}>
-                      <button
-                        className={cn(baseClasses, {
-                          selectedClasses: test.selected,
-                          unselectedClasses: !test.selected,
-                        })}
-                      >
-                        <img
-                          src={passed ? checkIcon : xIcon}
-                          alt={passed ? "passed" : "failed"}
-                          className="w-3 h-3 rounded-sm"
-                        />
-                        Case {idx + 1}
-                      </button>
-                    </div>
-                  );
-                })}
+                testResults.map(
+                  (selectableTestResult: SelectableTestResult, idx: number) => {
+                    const passed =
+                      selectableTestResult.testResult.output ===
+                      selectableTestResult.testResult.expected;
+                    const baseClasses =
+                      "relative inline-flex items-center whitespace-nowrap rounded-lg px-4 py-1 text-sm font-semibold focus:outline-none";
+                    const selectedClasses =
+                      "bg-fill-3 dark:bg-dark-fill-3 hover:bg-fill-2 dark:hover:bg-dark-fill-2 hover:text-label-1 dark:hover:text-dark-label-1 text-label-1 dark:text-dark-label-1";
+                    const unselectedClasses =
+                      "hover:bg-fill-2 dark:hover:bg-dark-fill-2 text-label-2 dark:text-dark-label-2 hover:text-label-1 dark:hover:text-dark-label-1 dark:bg-dark-transparent bg-transparent";
+                    return (
+                      <div key={idx} onClick={() => selectTestResult(idx)}>
+                        <button
+                          className={cn(baseClasses, {
+                            selectedClasses: selectableTestResult.selected,
+                            unselectedClasses: !selectableTestResult.selected,
+                          })}
+                        >
+                          <img
+                            src={passed ? checkIcon : xIcon}
+                            alt={passed ? "passed" : "failed"}
+                            className="w-3 h-3 rounded-sm"
+                          />
+                          Case {idx + 1}
+                        </button>
+                      </div>
+                    );
+                  }
+                )}
             </div>
           </div>
-          {activeTestResult && renderTestResultContent(activeTestResult)}
+          {activeTestResult &&
+            renderTestResultContent(activeTestResult, testCaseIdx)}
         </div>
       </SkeletonWrapper>
     </TestResultTabErrorBoundary>
